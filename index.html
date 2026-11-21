@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한 걸음 수학</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 모눈종이 위의 수학 노트. 형광펜(노랑)은 '지금 할 것'에만, 파란 잉크는 눌러 볼 수 있는 것에만 쓴다. */
+:root{
+  --paper:#f6f7f3;
+  --grid:rgba(40,60,110,.075);
+  --ink:#1d2640;
+  --ink-soft:#5a6377;
+  --line:#d8dce4;
+  --card:#ffffff;
+  --accent:#2a4d9e;
+  --accent-soft:#e8eefb;
+  --hi:#ffe266;
+  --hi-soft:#fff6c7;
+  --ok:#2b7a4b;
+  --ok-soft:#e5f4ea;
+  --bad:#b83a3a;
+  --bad-soft:#fbe9e9;
+  --display:"Gowun Batang","Nanum Myeongjo",serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;
+  -webkit-text-size-adjust:100%;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.3;text-wrap:balance;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.mark{background:linear-gradient(transparent 58%,var(--hi) 58%,var(--hi) 92%,transparent 92%);padding:0 .1em}
+
+/* 머리 */
+.top{position:sticky;top:0;z-index:20;background:rgba(246,247,243,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;min-height:60px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:10px}
+.brand svg{flex:none}
+.crumbs{display:flex;gap:6px;align-items:center;color:var(--ink-soft);font-size:15px;flex-wrap:wrap}
+.crumbs a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid transparent}
+.crumbs a:hover{border-color:var(--ink-soft)}
+.crumbs .sep{opacity:.5}
+
+main{padding:28px 0 64px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+
+/* 홈 */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;margin-bottom:36px}
+.hero h1{font-size:clamp(30px,4.4vw,46px);margin-bottom:14px}
+.hero p{color:var(--ink-soft);max-width:34em;margin:0 0 8px}
+.hero-fig{aspect-ratio:1/1;max-height:360px;width:100%}
+.hero-fig canvas{width:100%;height:100%;display:block}
+.hero-note{font-size:14px;color:var(--ink-soft);text-align:center;margin-top:-6px}
+.sec-title{display:flex;align-items:baseline;gap:4px 12px;margin:8px 0 14px;flex-wrap:wrap}
+.sec-title h2{font-size:24px}
+.sec-title span{color:var(--ink-soft);font-size:15px}
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.unit{padding:16px 18px;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;min-height:110px;position:relative}
+.unit .no{font-family:var(--math);font-size:15px;color:var(--ink-soft)}
+.unit b{font-family:var(--display);font-size:20px}
+.unit .st{font-size:14px;color:var(--ink-soft);margin-top:auto}
+.unit.ready{border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);transition:transform .15s,box-shadow .15s}
+.unit.ready:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.unit.ready .st{color:var(--ink);font-weight:500}
+.unit.soon{opacity:.55;background:rgba(255,255,255,.6)}
+
+/* 단원 */
+.unit-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.unit-head h1{font-size:clamp(28px,4vw,40px)}
+.unit-head p{margin:6px 0 0;color:var(--ink-soft)}
+.legend{display:flex;gap:14px;font-size:14px;color:var(--ink-soft);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);margin-right:5px;vertical-align:-1px}
+.legend i.on{background:var(--ink)}
+.lessons{display:flex;flex-direction:column;gap:10px}
+.lesson{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:center;padding:16px 20px;text-decoration:none;color:inherit}
+.lesson .n{font-family:var(--math);font-size:30px;text-align:center;color:var(--ink-soft)}
+.lesson b{font-family:var(--display);font-size:21px;display:block}
+.lesson small{color:var(--ink-soft);font-size:15px}
+.lesson.ready{border-left:6px solid var(--ink)}
+.lesson.ready:hover{background:var(--hi-soft)}
+.lesson.soon{opacity:.5}
+.pips{display:flex;gap:6px;align-items:center}
+.pip{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink)}
+.pip.on{background:var(--ink)}
+.soon-tag{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--ink-soft);justify-self:start}
+
+/* 차시 */
+.lesson-head{margin-bottom:16px}
+.lesson-head .kicker{font-family:var(--math);color:var(--ink-soft);font-size:16px}
+.lesson-head h1{font-size:clamp(28px,4vw,40px)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.tab{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--ink);border-radius:12px;background:var(--card);cursor:pointer;text-align:left;min-height:56px}
+.tab .num{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-family:var(--math);font-size:16px}
+.tab .tl{font-weight:700;line-height:1.2}
+.tab .tl small{display:block;font-weight:400;font-size:13px;color:var(--ink-soft)}
+.tab.on{background:var(--ink);color:#fff}
+.tab.on .num{border-color:#fff}
+.tab.on .tl small{color:#c9cfdc}
+.tab.done .num{background:var(--hi);border-color:var(--ink);color:var(--ink)}
+.panel{padding:24px}
+.panel+.panel{margin-top:16px}
+.panel h2{font-size:24px;margin-bottom:10px}
+.panel h3{font-size:19px;margin:18px 0 8px}
+.lead{font-size:19px;margin:0 0 14px}
+.muted{color:var(--ink-soft)}
+.next-row{display:flex;justify-content:flex-end;margin-top:18px;gap:10px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);border-radius:10px;padding:10px 18px;cursor:pointer;font-weight:500;min-height:46px;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--hi-soft)}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary:hover{background:#2c3860}
+.btn.ghost{border-color:var(--line)}
+.btn:disabled{opacity:.4;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;cursor:pointer;min-height:40px}
+.chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:9px 16px;cursor:pointer;min-height:44px}
+.seg button+button{border-left:1.5px solid var(--ink)}
+.seg button.on{background:var(--ink);color:#fff}
+
+/* 용어 */
+.term{background:none;border:0;padding:0;color:var(--accent);border-bottom:2px dotted var(--accent);cursor:help;font:inherit;line-height:inherit}
+.term:hover,.term.open{background:var(--accent-soft)}
+.pop{position:fixed;z-index:50;width:min(370px,calc(100vw - 24px));background:var(--card);border:1.5px solid var(--ink);border-radius:14px;box-shadow:6px 6px 0 rgba(29,38,64,.18);padding:16px 18px 18px;font-size:16px;line-height:1.6}
+.pop[hidden]{display:none}
+.pop-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pop-h h4{margin:0;font-family:var(--display);font-size:20px;flex:1}
+.pop-h button{border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer;min-width:36px;min-height:36px}
+.pop p{margin:6px 0}
+.pop canvas{width:100%;height:150px;display:block;margin-top:8px}
+.pop .kicker{font-size:13px;color:var(--ink-soft)}
+.pop .pfig3{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.pop .pfig3 canvas{height:130px;margin:0;border:1px solid var(--line);border-radius:8px}
+@media (max-width:640px){.pop{left:12px!important;right:12px;bottom:12px;top:auto!important;width:auto}}
+
+/* 개념 */
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.figbox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+.figbox canvas{width:100%;display:block;touch-action:pan-y}
+.figcap{text-align:center;font-size:15px;color:var(--ink-soft);margin-top:4px}
+.defs{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.defs li{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:baseline;padding:10px 12px;border-radius:10px;background:var(--paper)}
+.defs b{font-family:var(--display);font-size:18px}
+.box{border:1.5px solid var(--ink);border-radius:12px;padding:14px 18px;background:var(--hi-soft);margin:14px 0}
+.box.plain{background:#fff;border-color:var(--line)}
+.formula{font-family:var(--display);font-size:20px;text-align:center;margin:6px 0}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.t{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:9px 10px;text-align:center}
+table.t th{background:var(--paper);font-weight:700}
+table.t td.l{text-align:left}
+.tablewrap{overflow-x:auto}
+.math{font-family:var(--math);font-style:italic}
+.rm{font-family:var(--math)}
+
+/* 탐구 */
+.explore{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:start}
+.stage{background:#fff;border:1px solid var(--line);border-radius:12px;position:relative;overflow:hidden}
+.stage canvas{width:100%;height:420px;display:block;touch-action:none;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.stage .hint{position:absolute;left:12px;bottom:10px;font-size:13px;color:var(--ink-soft);background:rgba(255,255,255,.85);padding:2px 8px;border-radius:6px;pointer-events:none}
+.ctrl{display:flex;flex-direction:column;gap:16px}
+.ctrl .cap{font-weight:700;display:block;margin-bottom:6px}
+.ctrl .seg{align-self:flex-start}
+.prob-body.nofig{grid-template-columns:1fr;max-width:720px}
+.counter{font-size:20px}
+.counter b{font-family:var(--math);font-size:34px;padding:0 4px}
+.feedback{border-radius:10px;padding:12px 14px;font-size:16px}
+.feedback.ok{background:var(--ok-soft);color:var(--ok)}
+.feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback.info{background:var(--accent-soft);color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--ink);height:32px}
+.cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.cls{padding:10px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.cls canvas{width:100%;height:130px;display:block;touch-action:pan-y}
+.cls .nm{text-align:center;font-weight:700}
+.cls .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cls .two button{border:1.5px solid var(--ink);border-radius:8px;background:#fff;padding:6px 4px;cursor:pointer;font-size:15px;min-height:42px}
+.cls .why{font-size:14px;border-radius:8px;padding:6px 8px}
+.cls.ok{border-color:var(--ok)}
+.cls.ok .why{background:var(--ok-soft);color:var(--ok)}
+.cls.bad{border-color:var(--bad)}
+.cls.bad .why{background:var(--bad-soft);color:var(--bad)}
+.ptable td.q{color:var(--line)}
+.ptable tr.cur td{background:var(--hi-soft)}
+
+/* 문제 */
+.prob-q{font-weight:700;font-size:19px;margin-bottom:14px;font-family:var(--body)}
+.prob-body{display:grid;grid-template-columns:minmax(260px,.85fr) 1.15fr;gap:22px;align-items:start}
+.prob-fig{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px}
+.prob-fig canvas{width:100%;height:300px;display:block;touch-action:pan-y}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.step{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.step .sq{display:flex;gap:8px}
+.step .sn{font-family:var(--math);font-size:18px;flex:none}
+.step.lock{opacity:.45}
+.step.cur{border-color:var(--ink);box-shadow:inset 6px 0 0 var(--hi)}
+.step.done{border-color:var(--ok);background:var(--ok-soft)}
+.step.done .ans{font-weight:700;color:var(--ok)}
+.step.shown{border-color:var(--bad);background:var(--bad-soft)}
+.step .expl{font-size:15px;color:var(--ink-soft);margin-top:4px}
+.step .hintmsg{margin-top:8px;font-size:15px;background:var(--hi-soft);border-radius:8px;padding:8px 10px}
+.answer{margin-top:10px}
+.field{display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:10px;padding:6px 12px;min-height:52px;font-family:var(--math);font-size:26px;background:#fff;max-width:280px}
+.field .val{min-width:1ch}
+.field .ph{color:#b9bfcc}
+.field .suf{font-family:var(--body);font-size:18px;color:var(--ink-soft)}
+.field .caret{width:2px;height:28px;background:var(--ink);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.keys{display:grid;grid-template-columns:repeat(4,64px);grid-auto-rows:52px;gap:6px;margin-top:10px}
+.keys button{border:1.5px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;font-family:var(--math);font-size:22px}
+.keys button:active{background:var(--hi-soft)}
+.keys .ok{grid-column:4;grid-row:3/span 2;background:var(--ink);color:#fff;border-color:var(--ink);font-family:var(--body);font-size:17px}
+.keys .zero{grid-column:span 2}
+.keys .fn{font-family:var(--body);font-size:16px}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.choices button{border:1.5px solid var(--ink);border-radius:10px;background:#fff;padding:9px 18px;cursor:pointer;min-height:48px;font-size:18px}
+.choices button.math{font-family:var(--math);font-style:italic}
+.choices button:hover{background:var(--hi-soft)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.result{margin-top:14px;padding:14px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.result.ok{background:var(--ok-soft);color:var(--ok)}
+.result.bad{background:var(--bad-soft);color:var(--bad)}
+.statbar{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.stat{display:flex;flex-direction:column}
+.stat small{color:var(--ink-soft);font-size:13px}
+.stat b{font-family:var(--math);font-size:26px;line-height:1.1}
+.lvl{margin-left:auto;font-size:15px;border:1.5px solid var(--ink);border-radius:999px;padding:4px 14px;background:var(--hi-soft)}
+.retry-tag{font-size:13px;background:var(--bad-soft);color:var(--bad);border-radius:999px;padding:2px 10px;margin-left:6px;font-weight:500}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:60;font-size:16px}
+.prob-fig{position:relative}
+.fighint{font-size:13px;color:var(--ink-soft);text-align:center;padding:2px 0 4px}
+.netbtn{margin:4px auto 6px;display:flex;min-height:40px;padding:6px 14px;font-size:15px}
+/* 개념 접고 펼치기 */
+.fold-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.fold-tools{display:flex;gap:6px}
+.fold-tools button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;min-height:38px}
+.fold-tools button:hover{background:var(--hi-soft)}
+.folds{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.fold{border:1.5px solid var(--line);border-radius:12px;background:#fff}
+.fold[open]{border-color:var(--ink)}
+.fold summary{list-style:none;display:flex;align-items:center;gap:14px;padding:12px 18px;cursor:pointer;min-height:62px;border-radius:12px}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary:hover{background:var(--hi-soft)}
+.fold .fn{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-family:var(--math);font-size:16px}
+.fold[open] .fn{background:var(--hi)}
+.fold .ft{flex:1;display:flex;flex-direction:column;line-height:1.35}
+.fold .ft b{font-family:var(--display);font-size:19px}
+.fold .ft small{color:var(--ink-soft);font-size:15px}
+.fold[open] .ft small{display:none}
+.fold .chev{flex:none;width:11px;height:11px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg);margin:0 6px 4px 0;transition:transform .2s}
+.fold[open] .chev{transform:rotate(-135deg);margin-bottom:-4px}
+.fold .fb{padding:4px 18px 18px}
+.quad{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:860px){.quad{grid-template-columns:repeat(2,1fr)}}
+.figcap .rm{font-size:18px}
+.lgs{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;font-size:13px;color:var(--ink-soft);margin-top:2px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.qbox{display:grid;place-items:center;border:2px dashed var(--line);border-radius:12px;font-family:var(--display);font-size:48px;color:var(--ink-soft);min-height:190px;background:#fff}
+/* 층으로 나누어 세기 */
+.chip small{font-size:12px;opacity:.75;margin-left:2px}
+.flsteps{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap;counter-reset:fl}
+.flsteps li{counter-increment:fl;display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-soft);padding:3px 12px 3px 4px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.flsteps li::before{content:counter(fl);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--line);color:var(--ink);font-size:13px;font-weight:700}
+.flsteps li.on{color:var(--ink);border-color:var(--ink);font-weight:700}
+.flsteps li.on::before{background:var(--ink);color:#fff}
+.flsteps li.done::before{content:'✓';background:var(--hi)}
+.fltask{font-size:20px;line-height:1.45}
+.fltask small{display:block;font-size:15px;color:var(--ink-soft);margin-top:4px}
+.fltask .hl{background:var(--hi);padding:0 .25em;border-radius:4px}
+.flmsg{min-height:1.5em;font-size:16px}
+.flmsg .ok{color:var(--ok);font-weight:700}
+.fleq{display:flex;flex-direction:column;gap:4px;background:var(--paper);border-radius:10px;padding:10px 14px;font-size:18px}
+.fleq:empty{display:none}
+.fleq .rm{font-size:21px;letter-spacing:.02em}
+.fleq .cur b{background:var(--hi);padding:0 .2em;border-radius:4px}
+/* 면 목록 */
+.falist .cap{font-weight:700;margin-bottom:6px}
+.falist ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.falist li{display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.falist li.cur{border-color:var(--ink);box-shadow:inset 5px 0 0 var(--hi)}
+.falist .ico{display:inline-flex;width:40px;height:40px}
+.falist li b{flex:1;font-weight:700}
+.falist .cnt{font-size:20px}
+.dupbox{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.dupbox .prob-q{font-size:17px}
+/* 탐구 활동 고르기 */
+.actnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.actnav button{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;min-height:44px;font-size:15px}
+.actnav button .an{flex:none;width:28px;height:28px;border-radius:50%;background:var(--paper);border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--math);font-size:15px}
+.actnav button.done .an{background:var(--hi);border-color:var(--ink)}
+.actnav button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.actnav button.on .an{background:#fff;color:var(--ink);border-color:#fff}
+/* 내 기록 */
+.who{margin-left:auto;display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--ink);border-radius:999px;padding:4px 12px;text-decoration:none;color:#fff;background:var(--ink);font-size:14px;min-height:36px;font-weight:500}
+.who .dot{width:8px;height:8px;border-radius:50%;background:#7bd39b}.who .dot.wait{background:var(--hi)}.who .dot.bad{background:#ff8a8a}
+.who .ws{display:none}
+.mepill{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--ink);border-radius:999px;padding:4px 12px;text-decoration:none;color:var(--ink);background:#fff;font-size:14px;min-height:36px}
+.mepill b{font-family:var(--math);font-size:18px}
+.mepill .sep{opacity:.4}
+.mepill:hover{background:var(--hi-soft)}
+.ptpop{position:fixed;transform:translateX(-50%);z-index:80;background:var(--hi);border:1.5px solid var(--ink);border-radius:999px;padding:2px 10px;font-weight:700;font-family:var(--math);font-size:16px;pointer-events:none;animation:ptup 1.1s ease-out forwards}
+@keyframes ptup{0%{opacity:0;transform:translate(-50%,6px)}20%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-18px)}}
+.today{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:30px}
+.todo{padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-height:150px}
+.todo .k{font-size:13px;color:var(--ink-soft)}
+.todo b.t{font-family:var(--display);font-size:21px}
+.todo p{margin:0;color:var(--ink-soft);font-size:15px}
+.todo .btn{margin-top:auto;align-self:flex-start}
+.todo.doneday{background:var(--ok-soft);border-color:#bfe0cb}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.badge{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.badge b{display:block;font-size:15px}
+.badge small{display:block;color:var(--ink-soft);font-size:12.5px;line-height:1.35}
+.badge.off{opacity:.65}
+.bigstats{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:18px}
+.bigstats .stat b{font-size:34px}
+.rv-from{display:inline-block;font-size:13px;font-weight:500;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 10px;margin-bottom:6px}
+/* 오늘의 계산 */
+.drill{max-width:620px;margin:0 auto}
+.drill .dq{font-size:clamp(26px,5vw,36px);text-align:center;margin:18px 0 6px;font-family:var(--body);font-weight:700}
+.drill .dq .rm{font-family:var(--math);font-weight:400}
+.drill .answer{display:flex;flex-direction:column;align-items:center}
+.drill .field{margin:0 auto}
+.dbar{display:flex;gap:4px}
+.dbar i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.dbar i.ok{background:var(--ok)}.dbar i.bad{background:var(--bad)}.dbar i.cur{background:var(--hi);outline:1.5px solid var(--ink)}
+.dmeta{display:flex;justify-content:space-between;color:var(--ink-soft);font-size:15px;margin-top:8px;font-variant-numeric:tabular-nums}
+.dflash{text-align:center;min-height:1.6em;font-weight:700;margin-top:6px}
+.dflash.ok{color:var(--ok)}.dflash.bad{color:var(--bad)}
+@media (max-width:860px){.today{grid-template-columns:1fr}}
+@media (max-width:520px){.mepill .sep,.mepill span:last-child{display:none}.who .wl{display:none}.who .ws{display:inline}.crumbs{display:none}.brand{font-size:19px}.who,.mepill{padding:4px 10px}}
+/* 로그인 */
+.login-wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.demo{background:var(--hi-soft);border:1.5px dashed #c9a400;border-radius:12px;padding:12px 16px;font-size:15px;line-height:1.6}
+.login-card .logtab{width:100%}.login-card .logtab button{flex:1}
+.lg-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.lg-row .cap{font-weight:700;min-width:36px}
+.inp{font:inherit;border:1.5px solid var(--ink);border-radius:10px;padding:8px 12px;min-height:46px;background:#fff;color:var(--ink)}
+.inp.sel{min-width:96px}.inp.num{width:80px}
+.login-card input[type=password]{width:100%}
+.pinpad{margin-top:8px;max-width:300px}
+.pindots{display:flex;gap:14px;justify-content:center;margin:6px 0 12px}
+.pindots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--ink);background:#fff}
+.pindots i.on{background:var(--ink)}
+.pinkeys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pinkeys button{min-height:58px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font-family:var(--math);font-size:26px;cursor:pointer}
+.pinkeys button:active{background:var(--hi-soft)}
+.flmsg.bad{color:var(--bad);font-weight:500}
+.acct{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+/* 교사 화면 */
+.t-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.t-head h2{margin:0}
+.t-sel{display:flex;align-items:center;gap:8px;font-weight:700}
+.t-tiles{display:flex;gap:28px;flex-wrap:wrap;margin:6px 0 14px}
+.t-roster td,.t-roster th{white-space:nowrap;padding:8px 6px}
+.t-roster .pips{gap:3px}
+.t-roster th small{font-weight:400;color:var(--ink-soft);font-size:11.5px}
+.t-num{border:0;background:none;font:inherit;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.t-old{color:var(--ink-soft)}
+.t-lock{font-size:12px;background:var(--bad-soft);color:var(--bad);border-radius:999px;padding:1px 8px}
+.t-due{color:var(--bad)}
+.t-mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;min-height:32px;margin:0 2px}
+.t-mini:hover{background:var(--hi-soft)}
+.t-confirm{font-size:13px;white-space:normal}
+.t-newpin{font-size:14px;background:var(--hi-soft);border-radius:8px;padding:3px 8px}
+.t-detail td{background:var(--paper);text-align:left;white-space:normal}
+.t-att{margin:0;padding-left:18px;font-size:14px;line-height:1.8}
+.t-att .ok{color:var(--ok)}.t-att .bad{color:var(--bad)}
+.t-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.t-stat{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.t-stat-h{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+.t-stat ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.t-stat li{display:grid;grid-template-columns:1fr 90px 40px;gap:8px;align-items:center;font-size:14px}
+.t-stat .sl{line-height:1.35}
+.bar{position:relative;height:12px;background:#eef0f4;border-radius:6px;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.bar .w{background:#efb0b0}.bar .r{background:#b83a3a}
+.pc{text-align:right}
+.t-legend{font-size:13px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.t-legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.t-legend .lw{background:#efb0b0}.t-legend .lr{background:#b83a3a}
+.t-create{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.t-create label{display:flex;gap:6px;align-items:center;font-weight:700}
+.t-newbox{margin-top:12px;border:1.5px solid var(--ink);border-radius:12px;padding:12px 14px;background:var(--hi-soft)}
+.t-pinlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px 12px;font-size:16px}
+.t-pinlist .rm{font-size:20px;letter-spacing:.08em}
+.pincards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.pincard{border:1.5px dashed var(--ink);border-radius:10px;padding:10px 12px;background:#fff;display:flex;flex-direction:column;gap:2px}
+.pincard .pc-brand{font-family:var(--display);font-size:14px;color:var(--ink-soft)}
+.pincard b{font-size:18px}.pincard .pc-pin{font-size:30px;letter-spacing:.12em}
+.pincard small{color:var(--ink-soft);font-size:12px}
+.t-pw{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.t-pw label{display:flex;flex-direction:column;gap:4px;font-weight:700}
+.tPwBox summary{cursor:pointer}
+@media print{body.printing-cards *{visibility:hidden}body.printing-cards .pincards,body.printing-cards .pincards *{visibility:visible}body.printing-cards .pincards{position:absolute;left:0;top:0;width:100%}}
+/* 연동: 입체도형 탐구 */
+.lab-acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:6px}
+.lab-act{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:2px solid var(--ink);border-radius:12px;background:#fff;cursor:pointer;text-align:left;box-shadow:4px 4px 0 var(--ink);transition:transform .15s,box-shadow .15s}
+.lab-act:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.lab-act b{font-family:var(--display);font-size:19px}
+.lab-act span{font-size:15px;color:var(--ink-soft)}
+.lab-act em{font-style:normal;font-size:13px;font-family:var(--math);color:var(--ink-soft)}
+.labov{position:fixed;inset:0;z-index:70;background:var(--paper);display:flex;flex-direction:column}
+.labov[hidden]{display:none}
+.labbar{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.labbar b{font-family:var(--display);font-size:19px;flex:1}
+.labbar a{font-size:14px;color:var(--ink-soft)}
+.labov iframe{flex:1;width:100%;border:0;background:#f3f6fb}
+body.locked{overflow:hidden}
+footer{color:var(--ink-soft);font-size:14px;border-top:1px solid var(--line);padding:18px 0 30px}
+
+@media (max-width:860px){
+  .hero,.concept-grid,.explore,.prob-body{grid-template-columns:1fr}
+  .hero-fig{max-height:280px}
+  .tabs{grid-template-columns:repeat(2,1fr)}
+  .stage canvas{height:360px}
+}
+@media (max-width:640px){.trio{grid-template-columns:1fr}}
+@media (max-width:860px){.explore .stage{position:sticky;top:64px;z-index:5;box-shadow:0 6px 14px rgba(29,38,64,.08)}}
+@media (max-width:520px){.stage canvas{height:280px}.explore .stage{top:104px}}
+@media (max-width:420px){
+  .wrap{padding:0 14px}
+  .keys{grid-template-columns:repeat(4,1fr)}
+  .lesson{grid-template-columns:40px 1fr}
+  .lesson .pips,.lesson .soon-tag{grid-column:2}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="#home" aria-label="한 걸음 수학 처음 화면">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M3 26h8v-7h7v-7h8" fill="none" stroke="#1d2640" stroke-width="3" stroke-linejoin="round"/><circle cx="26" cy="12" r="3" fill="#ffe266" stroke="#1d2640" stroke-width="1.5"/></svg>
+    한 걸음 수학
+  </a>
+  <nav class="crumbs" id="crumbs" aria-label="현재 위치"></nav>
+  <a class="who" id="whoChip" href="#login">로그인</a>
+  <a class="mepill" id="mePill" href="#me" aria-label="내 기록 보기"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,1 10.2,5.6 15,6.2 11.5,9.6 12.4,14.6 8,12.2 3.6,14.6 4.5,9.6 1,6.2 5.8,5.6" fill="#ffe266" stroke="#1d2640" stroke-width="1.2" stroke-linejoin="round"/></svg><b id="mePts">0</b><span class="sep">·</span><span><span id="meStreak">0</span>일 연속</span></a>
+</div></header>
+<main><div class="wrap" id="app"></div></main>
+<footer><div class="wrap">시범판 · 1학년 입체도형 단원 · 로그인하면 기록이 학교 서버에, 아니면 이 기기에만 저장돼요. · <a href="#teacher">교사 화면</a></div></footer>
+<div class="pop" id="pop" hidden role="dialog" aria-live="polite"></div>
+<div class="labov" id="labov" hidden role="dialog" aria-label="입체도형 탐구"><div class="labbar"><b>입체도형 탐구</b><a href="https://kinggodgirl.github.io/polyhedron-lab/" target="_blank" rel="noopener">새 탭에서 열기</a><button type="button" class="btn" id="labClose">닫고 돌아가기</button></div><iframe id="labFrame" title="입체도형 탐구 활동"></iframe></div>
+
+<script src="config.js"></script>
+<script>
+"use strict";
+/* ───────── 공통 도구 ───────── */
+const TAU=Math.PI*2;
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild}
+function mulberry(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const ri=(r,a,b)=>a+Math.floor(r()*(b-a+1));
+const pick=(r,a)=>a[Math.floor(r()*a.length)];
+function shuffle(r,a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const newSeed=()=>Math.floor(Math.random()*2**31);
+const KD=['','일','이','삼','사','오','육','칠','팔','구'];
+function kn(n){if(n<10)return KD[n];const t=Math.floor(n/10),o=n%10;return(t>1?KD[t]:'')+'십'+KD[o]}
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function toast(msg){const t=el(`<div class="toast" role="status">${msg}</div>`);document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+const CHECK='<svg width="14" height="14" viewBox="0 0 14 14" aria-label="완료"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const T=(key,label)=>`<button type="button" class="term" data-t="${key}">${label||key}</button>`;
+
+/* ───────── 저장(이 기기 전용) ───────── */
+const STORE_KEY='hangeoreum-math-v1',AUTH_KEY='hangeoreum-auth-v1',TKEY='hangeoreum-teacher-v1';
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let AUTH=lsGet(AUTH_KEY,null);if(!AUTH||AUTH.role!=='student'||!AUTH.token)AUTH=null;
+const isStudent=()=>!!(AUTH&&AUTH.role==='student');
+const storeKey=()=>isStudent()?STORE_KEY+':'+AUTH.sid:STORE_KEY;
+let DB={};
+function loadDB(){DB=lsGet(storeKey(),{})||{};if(typeof DB!=='object'||Array.isArray(DB))DB={}}
+loadDB();
+const SYNC={timer:null,dirty:false,busy:false,last:null,err:null};
+function save(){DB._ts=Date.now();lsSet(storeKey(),DB);if(isStudent()){SYNC.dirty=true;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(()=>pushDB(),1500)}}
+function prog(id){DB[id]=DB[id]||{concept:false,explore:false,steps:0,prac:{solved:0,streak:0,level:1,fails:0,retry:[]}};return DB[id]}
+
+
+/* ───────── 내 기록: 포인트·배지·복습 (이 기기 전용) ───────── */
+function today(d=new Date()){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
+function addDays(ds,n){const[y,m,d]=ds.split('-').map(Number);return today(new Date(y,m-1,d+n))}
+function me(){DB._me=DB._me||{pts:0,last:null,streak:0,once:{},cnt:{},badges:{}};const M=DB._me;M.once=M.once||{};M.cnt=M.cnt||{};M.badges=M.badges||{};return M}
+function liveStreak(){const M=me(),t=today();return(M.last===t||M.last===addDays(t,-1))?M.streak:0}
+function award(n,onceKey){const M=me();if(onceKey){if(M.once[onceKey])return false;M.once[onceKey]=1}
+  const t=today();if(M.last!==t){M.streak=(M.last===addDays(t,-1))?M.streak+1:1;M.last=t}
+  M.pts+=n;save();updatePill();popPts(n);checkBadges();return true}
+function bump(k,n=1){const M=me();M.cnt[k]=(M.cnt[k]||0)+n;save();checkBadges()}
+const onceCount=(M,pre)=>Object.keys(M.once).filter(k=>k.startsWith(pre)).length;
+const BADGES=[
+  {k:'first',nm:'첫걸음',d:'처음으로 포인트 받기',ok:M=>M.pts>0},
+  {k:'face5',nm:'면 모양 탐정',d:'면 목록 5개 완성하기',ok:M=>onceCount(M,'face:')>=5},
+  {k:'floor9',nm:'층 세기 달인',d:'층 세기 9개 도형 모두 끝내기',ok:M=>onceCount(M,'floor:')>=9},
+  {k:'regular',nm:'정다면체 도전자',d:'정이십면체나 정십이면체 끝까지 세기',ok:M=>!!(M.once['floor:ico']||M.once['floor:dod']||M.once['face:ico']||M.once['face:dod'])},
+  {k:'nets',nm:'전개도 박사',d:'전개도 4가지 끝까지 펼치기',ok:M=>onceCount(M,'net:')>=4},
+  {k:'solo',nm:'혼자서도 척척',d:'연습에서 ‘단계 없이 도전’까지 오르기',ok:()=>LESSONS.some(l=>DB[l.id]&&DB[l.id].prac&&DB[l.id].prac.level>=2)},
+  {k:'review5',nm:'다시 보면 내 것',d:'복습 문제 5개 맞히기',ok:M=>(M.cnt.review||0)>=5},
+  {k:'streak3',nm:'꾸준함',d:'3일 연속 공부하기',ok:M=>M.streak>=3},
+  {k:'drill5',nm:'계산 근육',d:'오늘의 계산 5번 끝내기',ok:M=>(M.cnt.drill||0)>=5}];
+function checkBadges(){const M=me();BADGES.forEach(b=>{if(!M.badges[b.k]&&b.ok(M)){M.badges[b.k]=today();save();setTimeout(()=>toast(`배지를 받았어요 · ${b.nm}`),400)}})}
+function badgeIcon(i,on){const n=3+(i%4),R=17,c=22;const pts=regPoly(n,R,-Math.PI/2).map(p=>`${(c+p[0]).toFixed(1)},${(c+p[1]).toFixed(1)}`).join(' ');
+  return`<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><polygon points="${pts}" fill="${on?FC[i%5]:'#eef0f4'}" stroke="${on?'#1d2640':'#c3c8d2'}" stroke-width="2" stroke-linejoin="round"/>${on?`<text x="22" y="27" text-anchor="middle" font-size="13" font-weight="700" fill="#1d2640" font-family="IBM Plex Sans KR,sans-serif">${n}</text>`:''}</svg>`}
+function updatePill(){const P=$('#mePts'),S=$('#meStreak');if(P)P.textContent=me().pts;if(S)S.textContent=liveStreak()}
+function popPts(n){const pill=$('#mePill');if(!pill||n<=0)return;const r=pill.getBoundingClientRect();const f=el(`<div class="ptpop">+${n}</div>`);f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+4)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),1100)}
+/* 복습 노트: 틀리거나 헤맨 문제를 1·3·7일 뒤에 다시 */
+function addReview(g,seed,lid){DB._rev=DB._rev||[];if(DB._rev.some(x=>x.g===g&&x.seed===seed))return;DB._rev.push({g,seed,lid,due:addDays(today(),1),stage:0,added:today()});save()}
+function dueReviews(){return(DB._rev||[]).filter(x=>x.due<=today())}
+function reviewResult(item,ok){if(ok){item.stage++;if(item.stage>=3){DB._rev=DB._rev.filter(x=>x!==item);bump('mastered')}else item.due=addDays(today(),[1,3,7][item.stage])}else{item.stage=0;item.due=addDays(today(),1)}save()}
+
+/* ───────── 3D 메시 ───────── */
+function faceNormal(V,f,c){let nx=0,ny=0,nz=0;for(let i=0;i<f.length;i++){const p=V[f[i]],q=V[f[(i+1)%f.length]];nx+=(p[1]-q[1])*(p[2]+q[2]);ny+=(p[2]-q[2])*(p[0]+q[0]);nz+=(p[0]-q[0])*(p[1]+q[1])}
+  const L=Math.hypot(nx,ny,nz)||1;nx/=L;ny/=L;nz/=L;let fx=0,fy=0,fz=0;f.forEach(i=>{fx+=V[i][0];fy+=V[i][1];fz+=V[i][2]});fx/=f.length;fy/=f.length;fz/=f.length;
+  if(c&&(fx-c[0])*nx+(fy-c[1])*ny+(fz-c[2])*nz<0){nx=-nx;ny=-ny;nz=-nz}return[nx,ny,nz]}
+function makeMesh(V,F,o={}){
+  const m={V,F,smooth:o.smooth||F.map(()=>false),hard:new Set(o.hard||[]),curved:!!o.curved};
+  const em=new Map();
+  F.forEach((f,fi)=>{for(let i=0;i<f.length;i++){const a=f[i],b=f[(i+1)%f.length];const k=Math.min(a,b)+'-'+Math.max(a,b);if(!em.has(k))em.set(k,{a:Math.min(a,b),b:Math.max(a,b),k,f:[]});em.get(k).f.push(fi)}});
+  m.E=[...em.values()];
+  const c=[0,0,0];V.forEach(p=>{c[0]+=p[0];c[1]+=p[1];c[2]+=p[2]});m.c=c.map(x=>x/V.length);
+  m.N=F.map(f=>faceNormal(V,f,m.c));
+  m.R=Math.max(...V.map(p=>Math.hypot(p[0]-m.c[0],p[1]-m.c[1],p[2]-m.c[2])));
+  return m;
+}
+function regPoly(n,R,rot){rot=rot??(-Math.PI/2+Math.PI/n);const p=[];for(let k=0;k<n;k++){const t=rot+TAU*k/n;p.push([R*Math.cos(t),R*Math.sin(t)])}return p}
+const range=n=>[...Array(n).keys()];
+function prism(P,h,smooth){const n=P.length,V=[...P.map(p=>[p[0],p[1],0]),...P.map(p=>[p[0],p[1],h])];const F=[range(n).reverse(),range(n).map(i=>i+n)];const sm=[false,false];
+  for(let i=0;i<n;i++){const j=(i+1)%n;F.push([i,j,j+n,i+n]);sm.push(!!smooth)}const m=makeMesh(V,F,{smooth:sm,curved:smooth});m.base=[0,1];return m}
+function pyramid(P,h,smooth){const n=P.length;let cx=0,cy=0;P.forEach(p=>{cx+=p[0];cy+=p[1]});const V=[...P.map(p=>[p[0],p[1],0]),[cx/n,cy/n,h]];const F=[range(n).reverse()];const sm=[false];
+  for(let i=0;i<n;i++){F.push([i,(i+1)%n,n]);sm.push(!!smooth)}const m=makeMesh(V,F,{smooth:sm,curved:smooth});m.base=[0];return m}
+function frustum(P,k,h){const n=P.length;let cx=0,cy=0;P.forEach(p=>{cx+=p[0];cy+=p[1]});cx/=n;cy/=n;
+  const V=[...P.map(p=>[p[0],p[1],0]),...P.map(p=>[cx+k*(p[0]-cx),cy+k*(p[1]-cy),h])];const F=[range(n).reverse(),range(n).map(i=>i+n)];
+  for(let i=0;i<n;i++){const j=(i+1)%n;F.push([i,j,j+n,i+n])}const m=makeMesh(V,F);m.base=[0,1];return m}
+function octahedron(R){const V=[[R,0,0],[-R,0,0],[0,R,0],[0,-R,0],[0,0,R],[0,0,-R]];const F=[];
+  [0,1].forEach(x=>[2,3].forEach(y=>[4,5].forEach(z=>F.push([x,y,z]))));return makeMesh(V,F)}
+function sphere(R,nu=30,nv=16){const V=[[0,0,R]];for(let i=1;i<nv;i++){const ph=Math.PI*i/nv;for(let j=0;j<nu;j++){const th=TAU*j/nu;V.push([R*Math.sin(ph)*Math.cos(th),R*Math.sin(ph)*Math.sin(th),R*Math.cos(ph)])}}V.push([0,0,-R]);
+  const S=V.length-1,id=(i,j)=>1+(i-1)*nu+(j%nu),F=[];
+  for(let j=0;j<nu;j++)F.push([0,id(1,j),id(1,j+1)]);
+  for(let i=1;i<nv-1;i++)for(let j=0;j<nu;j++)F.push([id(i,j),id(i+1,j),id(i+1,j+1),id(i,j+1)]);
+  for(let j=0;j<nu;j++)F.push([S,id(nv-1,j+1),id(nv-1,j)]);
+  const eq=nv/2,hard=[];for(let j=0;j<nu;j++){const a=id(eq,j),b=id(eq,j+1);hard.push(Math.min(a,b)+'-'+Math.max(a,b))}
+  return makeMesh(V,F,{smooth:F.map(()=>true),hard,curved:true})}
+
+function icosahedron(e=1.1){const r=e/(2*Math.sin(Math.PI/5)),dz=Math.sqrt(e*e-(2*r*Math.sin(Math.PI/10))**2),dz2=Math.sqrt(e*e-r*r);
+  const V=[[0,0,dz/2+dz2]];for(let k=0;k<5;k++){const t=TAU*k/5;V.push([r*Math.cos(t),r*Math.sin(t),dz/2])}for(let k=0;k<5;k++){const t=TAU*k/5+Math.PI/5;V.push([r*Math.cos(t),r*Math.sin(t),-dz/2])}V.push([0,0,-dz/2-dz2]);
+  const U=k=>1+(k%5),D=k=>6+(k%5),F=[];for(let k=0;k<5;k++){F.push([0,U(k),U(k+1)]);F.push([U(k),D(k),U(k+1)]);F.push([D(k),D(k+1),U(k+1)]);F.push([11,D(k+1),D(k)])}return makeMesh(V,F)}
+function dodecahedron(){const I=icosahedron(1.65);const C=I.F.map(f=>{const c=[0,0,0];f.forEach(i=>{for(let q=0;q<3;q++)c[q]+=I.V[i][q]/3});return c});
+  const F=I.V.map((v,vi)=>{const L=Math.hypot(...v),n=v.map(x=>x/L);let u=Math.abs(n[0])<0.9?[1,0,0]:[0,1,0];const d=u[0]*n[0]+u[1]*n[1]+u[2]*n[2];u=u.map((x,q)=>x-d*n[q]);const ul=Math.hypot(...u);u=u.map(x=>x/ul);
+    const w=[n[1]*u[2]-n[2]*u[1],n[2]*u[0]-n[0]*u[2],n[0]*u[1]-n[1]*u[0]];
+    const fs=I.F.map((f,fi)=>f.includes(vi)?fi:-1).filter(x=>x>=0);
+    return fs.sort((a,b)=>{const A=C[a].map((x,q)=>x-v[q]),B=C[b].map((x,q)=>x-v[q]);return Math.atan2(A[0]*w[0]+A[1]*w[1]+A[2]*w[2],A[0]*u[0]+A[1]*u[1]+A[2]*u[2])-Math.atan2(B[0]*w[0]+B[1]*w[1]+B[2]*w[2],B[0]*u[0]+B[1]*u[1]+B[2]*u[2])})});
+  return makeMesh(C,F)}
+
+/* 입체도형 목록 */
+const SOLIDS={
+  cube:{name:'정육면체',poly:true,mk:()=>prism(regPoly(4,1.6/Math.SQRT2,Math.PI/4),1.6)},
+  p3:{name:'삼각기둥',poly:true,mk:()=>prism(regPoly(3,1.0),2.3)},
+  y4:{name:'사각뿔',poly:true,mk:()=>pyramid(regPoly(4,1.2,Math.PI/4),1.7)},
+  p5:{name:'오각기둥',poly:true,mk:()=>prism(regPoly(5,1.05),1.7)},
+  f4:{name:'사각뿔대',poly:true,mk:()=>frustum(regPoly(4,1.25,Math.PI/4),.55,1.3)},
+  oct:{name:'정팔면체',poly:true,mk:()=>octahedron(1.3)},
+  y6:{name:'육각뿔',poly:true,mk:()=>pyramid(regPoly(6,1.15),1.7)},
+  p6:{name:'육각기둥',poly:true,mk:()=>prism(regPoly(6,1),1.7)},
+  f5:{name:'오각뿔대',poly:true,mk:()=>frustum(regPoly(5,1.2),.55,1.3)},
+  cyl:{name:'원기둥',poly:false,why:'옆면이 굽은 면(곡면)이라서 다면체가 아니에요.',mk:()=>prism(regPoly(48,1),1.8,true)},
+  cone:{name:'원뿔',poly:false,why:'밑면이 원이고 옆면이 곡면이라서 다면체가 아니에요.',mk:()=>pyramid(regPoly(48,1.1),1.8,true)},
+  ico:{name:'정이십면체',poly:true,mk:()=>icosahedron(1.1)},
+  dod:{name:'정십이면체',poly:true,mk:()=>dodecahedron()},
+  sph:{name:'구',poly:false,why:'전체가 곡면이라서 다면체가 아니에요.',mk:()=>sphere(1.2)},
+};
+const TYPE={prism:{nm:'각기둥',F:n=>n+2,E:n=>3*n,V:n=>2*n,fF:'n+2',fE:'3n',fV:'2n',side:'직사각형',mk:n=>prism(regPoly(n,1.05),Math.max(1.7,2*1.05*Math.sin(Math.PI/n)*1.4))},
+  pyramid:{nm:'각뿔',F:n=>n+1,E:n=>2*n,V:n=>n+1,fF:'n+1',fE:'2n',fV:'n+1',side:'삼각형',mk:n=>pyramid(regPoly(n,1.15),1.75)},
+  frustum:{nm:'각뿔대',F:n=>n+2,E:n=>3*n,V:n=>2*n,fF:'n+2',fE:'3n',fV:'2n',side:'사다리꼴',mk:n=>frustum(regPoly(n,1.2),.55,1.3)}};
+const PART={F:'면',E:'모서리',V:'꼭짓점'};
+
+/* ───────── 뷰어(캔버스 3D) ───────── */
+const VIEWERS=new Set();
+const HI='#ffe266';
+class Viewer{
+  constructor(canvas,o={}){
+    this.cv=canvas;this.ctx=canvas.getContext('2d');this.o=o;
+    this.yaw=o.yaw??-0.55;this.pitch=o.pitch??0.42;this.auto=!!o.auto&&!reduced;this.style=o.style||'shade';this.pad=o.pad??0.40;
+    this.scene=[];this.marks={f:new Set(),e:new Set(),v:new Set()};this.mode=null;this.dirty=true;this.userMoved=false;
+    if(o.interactive!==false)this._bind();
+    this._resize();VIEWERS.add(this);
+    if('ResizeObserver' in window){this.ro=new ResizeObserver(()=>this._resize());this.ro.observe(canvas)}
+    this.visible=true;if('IntersectionObserver' in window){this.io=new IntersectionObserver(es=>{es.forEach(en=>{this.visible=en.isIntersecting;if(this.visible)this.dirty=true})});this.io.observe(canvas)}
+  }
+  flyTo(yaw,pitch,ms=450){let d=yaw-this.yaw;while(d>Math.PI)d-=TAU;while(d<-Math.PI)d+=TAU;this.anim={y0:this.yaw,p0:this.pitch,dy:d,dp:pitch-this.pitch,t0:performance.now(),ms:reduced?1:ms};this.userMoved=true}
+  stepAnim(){const A=this.anim;if(!A)return;let t=Math.min(1,(performance.now()-A.t0)/A.ms);const e=t*t*(3-2*t);this.yaw=A.y0+A.dy*e;this.pitch=A.p0+A.dp*e;this.dirty=true;if(t>=1)this.anim=null}
+  _resize(){const d=window.devicePixelRatio||1;const w=this.cv.clientWidth||300,h=this.cv.clientHeight||300;if(w===this.w&&h===this.h)return;this.w=w;this.h=h;this.cv.width=Math.round(w*d);this.cv.height=Math.round(h*d);this.ctx.setTransform(d,0,0,d,0,0);this.dirty=true;this.draw()}
+  setScene(sc,o={}){this.scene=sc;this.cen=o.center||sc[0].mesh.c;this.R=o.R||Math.max(...sc.map(s=>s.mesh.R));this.dirty=true}
+  setMesh(m){this.marks={f:new Set(),e:new Set(),v:new Set()};this.setScene([{mesh:m}])}
+  get scale(){return Math.min(this.w,this.h)*this.pad/(this.R||1)}
+  proj(p){const a=this.yaw,b=this.pitch,ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);const c=this.cen||[0,0,0];
+    const x=p[0]-c[0],y=p[1]-c[1],z=p[2]-c[2];const x1=x*ca-y*sa,y1=x*sa+y*ca;const s=this.scale;
+    return[this.w/2+(this.o.dx||0)+s*x1,this.h/2+(this.o.dy||0)-s*(y1*sb+z*cb),-y1*cb+z*sb]}
+  facing(n){const y1=n[0]*Math.sin(this.yaw)+n[1]*Math.cos(this.yaw);return -y1*Math.cos(this.pitch)+n[2]*Math.sin(this.pitch)}
+  _bind(){
+    const cv=this.cv;let st=null;
+    cv.addEventListener('pointerdown',e=>{this.touch=e.pointerType==='touch';st={x:e.clientX,y:e.clientY,yaw:this.yaw,pitch:this.pitch,moved:false};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+    cv.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.moved&&Math.hypot(dx,dy)>6){st.moved=true;this.dragging=true}
+      if(st.moved){this.yaw=st.yaw+dx*0.011;this.pitch=Math.max(-1.57,Math.min(1.57,st.pitch+dy*0.011));this.anim=null;this.userMoved=true;this.dirty=true}});
+    const end=e=>{if(!st)return;if(!st.moved&&this.mode){const r=cv.getBoundingClientRect();this.tap(e.clientX-r.left,e.clientY-r.top)}st=null;this.dragging=false};
+    cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',()=>{st=null;this.dragging=false});
+  }
+  tap(x,y){
+    const m=this.scene[0].mesh,P=m.V.map(v=>this.proj(v));let hit=null;
+    if(this.mode==='f'){m.F.forEach((f,i)=>{if(this.facing(m.N[i])<=1e-6)return;if(inPoly(x,y,f.map(k=>P[k])))hit=i});
+      }
+    else if(this.mode==='v'){let best=1e9;P.forEach((p,i)=>{const d=Math.hypot(p[0]-x,p[1]-y)-p[2]*2;if(Math.hypot(p[0]-x,p[1]-y)<(this.touch?32:24)&&d<best){best=d;hit=i}})}
+    else if(this.mode==='e'){let best=1e9;m.E.forEach(e=>{const A=P[e.a],B=P[e.b];const d=segDist(x,y,A,B);if(d<(this.touch?22:16)){const sc=d-(A[2]+B[2]);if(sc<best){best=sc;hit=e.k}}})}
+    if(this.onHit){if(hit!=null)this.onHit(this.mode,hit);this.dirty=true;return}
+    if(hit!=null)toggle(this.marks[this.mode],hit);
+    this.dirty=true;if(hit!=null&&this.onMark)this.onMark();
+  }
+  draw(){
+    if(!this.w)return;if(!this.scene.length&&!this.o.draw)return;const ctx=this.ctx;ctx.clearRect(0,0,this.w,this.h);
+    if(this.o.draw){this.o.draw(ctx,this);}
+    else{this.scene.forEach((s,i)=>{this.drawMesh(s.mesh,s.off,s.st||{});if(this.o.between)this.o.between(ctx,this,i)})}
+    if(this.o.after)this.o.after(ctx,this);
+  }
+  drawMesh(m,off=[0,0,0],st={}){
+    const ctx=this.ctx,tb=this.style==='textbook';
+    const P=m.V.map(v=>this.proj([v[0]+off[0],v[1]+off[1],v[2]+off[2]]));
+    const fr=m.N.map(n=>this.facing(n)>1e-6);
+    const L=[-0.45,-0.55,0.7];
+    m.F.forEach((f,i)=>{if(!fr[i])return;ctx.beginPath();f.forEach((k,j)=>{const p=P[k];j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.closePath();
+      let col;
+      const hc=this.fcol&&this.fcol(i);
+      if(hc)col=hc;
+      else if(this.marks.f.has(i)&&this.mode)col=HI;
+      else if(tb)col='#ffffff';
+      else{const n=m.N[i];const lam=Math.max(0,n[0]*L[0]+n[1]*L[1]+n[2]*L[2]);const base=st.tint||[232,237,247];const k=0.86+0.14*lam;col=`rgb(${base.map(c=>Math.round(c*k+ (255-c)*0.0)).join(',')})`;
+        col=`rgb(${base.map(c=>Math.min(255,Math.round(c*k+40*lam))).join(',')})`}
+      ctx.fillStyle=col;ctx.fill();if(m.smooth[i]&&!tb){ctx.strokeStyle=col;ctx.lineWidth=.8;ctx.stroke()}});
+    const vis=[],hid=[];
+    m.E.forEach(e=>{const sm=e.f.every(fi=>m.smooth[fi]);const hard=!sm||m.hard.has(e.k);const any=e.f.some(fi=>fr[fi]);
+      if(hard)(any?vis:hid).push(e);else if(e.f.length===2&&fr[e.f[0]]!==fr[e.f[1]])vis.push(e)});
+    const lw=tb?2.2:2.4;
+    if(this.ecol){ctx.lineCap='round';ctx.lineWidth=11;m.E.forEach(e=>{const c=this.ecol(e.k);if(c){ctx.strokeStyle=c;line(ctx,P[e.a],P[e.b])}})}
+    else if(this.mode==='e'){ctx.lineCap='round';ctx.strokeStyle='rgba(255,210,40,.95)';ctx.lineWidth=11;m.E.forEach(e=>{if(this.marks.e.has(e.k))line(ctx,P[e.a],P[e.b])})}
+    if(st.noHidden!==true){ctx.setLineDash([5,5]);ctx.strokeStyle=tb?'#222':'#3b4256';ctx.lineWidth=tb?1.5:1.5;hid.forEach(e=>line(ctx,P[e.a],P[e.b]));ctx.setLineDash([])}
+    ctx.strokeStyle=st.stroke||'#151a28';ctx.lineWidth=lw;ctx.lineJoin='round';ctx.lineCap='round';vis.forEach(e=>line(ctx,P[e.a],P[e.b]));
+    if(this.mode==='v'){P.forEach((p,i)=>{const front=m.F.some((f,fi)=>fr[fi]&&f.includes(i));ctx.beginPath();const vc=this.vcol&&this.vcol(i);ctx.arc(p[0],p[1],(vc||this.marks.v.has(i))?8.5:5.5,0,TAU);
+      ctx.fillStyle=vc||(this.marks.v.has(i)?HI:(front?'#151a28':'#fff'));ctx.fill();ctx.lineWidth=1.6;ctx.strokeStyle='#151a28';ctx.stroke()})}
+    return P;
+  }
+}
+function toggle(s,k){s.has(k)?s.delete(k):s.add(k)}
+function line(ctx,A,B){ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke()}
+function inPoly(x,y,pts){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const a=pts[i],b=pts[j];if(((a[1]>y)!==(b[1]>y))&&(x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]))c=!c}return c}
+function segDist(x,y,A,B){const dx=B[0]-A[0],dy=B[1]-A[1];const L=dx*dx+dy*dy||1;let t=((x-A[0])*dx+(y-A[1])*dy)/L;t=Math.max(0,Math.min(1,t));return Math.hypot(A[0]+t*dx-x,A[1]+t*dy-y)}
+(function loop(){for(const v of VIEWERS){if(!v.cv.isConnected){VIEWERS.delete(v);v.ro&&v.ro.disconnect();v.io&&v.io.disconnect();continue}
+  if(v.tick)v.tick();v.stepAnim();if(!v.visible)continue;if(v.auto&&!v.dragging&&!v.userMoved){v.yaw+=0.006;v.dirty=true}if(v.dirty){v.dirty=false;v.draw()}}requestAnimationFrame(loop)})();
+
+/* 교과서 글씨 */
+function cssW(ctx){return ctx.canvas.clientWidth||ctx.canvas.width}
+function mtext(ctx,text,x,y,o={}){ctx.save();const size=o.size||21;ctx.font=`${o.italic?'italic ':''}${size}px "Times New Roman",Times,serif`;ctx.textAlign=o.align||'center';ctx.textBaseline='middle';
+  if(!o.align||o.align==='center'){const hw=ctx.measureText(text).width/2+4,W=cssW(ctx);x=Math.min(Math.max(x,hw),W-hw)}
+  ctx.lineWidth=6;ctx.strokeStyle='#fff';ctx.lineJoin='round';ctx.strokeText(text,x,y);ctx.fillStyle=o.color||'#111';ctx.fillText(text,x,y);ctx.restore()}
+function ktext(ctx,text,x,y,o={}){ctx.save();const size=o.size||16;ctx.font=`${o.bold?'700 ':''}${size}px "IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif`;ctx.textAlign=o.align||'center';ctx.textBaseline='middle';
+  if(o.halo!==false){ctx.lineWidth=5;ctx.strokeStyle='#fff';ctx.lineJoin='round';ctx.strokeText(text,x,y)}ctx.fillStyle=o.color||'#1d2640';ctx.fillText(text,x,y);ctx.restore()}
+function chip(ctx,text,x,y,o={}){ctx.save();const it=!!o.italic,size=o.size||(it?22:17);
+  ctx.font=it?`italic ${size}px "Times New Roman",Times,serif`:`700 ${size}px "IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  const w=ctx.measureText(text).width,pw=w/2+8,ph=size/2+5;{const W=cssW(ctx);x=Math.min(Math.max(x,pw+2),W-pw-2)}ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-pw,y-ph,pw*2,ph*2,8);else ctx.rect(x-pw,y-ph,pw*2,ph*2);
+  ctx.fillStyle=o.bg||'#fff';ctx.fill();ctx.lineWidth=1.6;ctx.strokeStyle=o.border||'#2a4d9e';ctx.stroke();ctx.fillStyle=o.color||'#1d2640';ctx.fillText(text,x,y+1);ctx.restore();return pw*2}
+const lab=(ctx,text,x,y,o={})=>o.chip?chip(ctx,text,x,y,o):mtext(ctx,text,x,y,o);
+function edgeLabel(ctx,v,a,b,text,o={}){const A=v.proj(a),B=v.proj(b);const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2;let nx=-(B[1]-A[1]),ny=B[0]-A[0];const L=Math.hypot(nx,ny)||1;nx/=L;ny/=L;
+  const C=o.from?v.proj(o.from):v.proj(v.cen);if((mx-C[0])*nx+(my-C[1])*ny<0){nx=-nx;ny=-ny}if(o.flip){nx=-nx;ny=-ny}
+  ctx.font=o.chip?'700 17px "IBM Plex Sans KR",sans-serif':'21px "Times New Roman",serif';const tw=ctx.measureText(text).width+(o.chip?16:0);const off=(o.off??14)+Math.abs(nx)*tw/2+Math.abs(ny)*(o.chip?14:8);lab(ctx,text,mx+nx*off,my+ny*off,o)}
+
+/* 교과서 형식 정지 그림 */
+/* f.visual: 1~3단계용(색·회전·이름표), 아니면 4단계 연습용 교과서 형식 */
+function figure(canvas,f){
+  const vis=!!f.visual;
+  const v=new Viewer(canvas,{style:vis?'shade':'textbook',interactive:vis,chip:vis,yaw:f.yaw??-0.5,pitch:f.pitch??0.36,pad:f.pad??0.36,dy:f.dy||0,
+    after:(ctx,vw)=>{(f.labels||[]).forEach(L=>edgeLabel(ctx,vw,L[0],L[1],L[2],Object.assign({chip:vis},L[3]||{})));if(f.after)f.after(ctx,vw)}});
+  v.setScene([{mesh:f.mesh,st:f.st||(vis?{tint:[236,239,245]}:{})}],{R:f.R,center:f.center});return v}
+const HL_BASE='#9fbcf2',HL_SIDE='#f7c97f';
+function applyHl(v,m,hl){v.fcol=null;v.ecol=null;v.vcol=null;v.mode=null;v.dirty=true;if(!hl)return;
+  const base=m.base||[],side=m.F.map((f,i)=>i).filter(i=>!base.includes(i)),top=base.length>1?[base[1]]:base.slice(0,1);
+  const keysOf=fs=>{const K=new Set();fs.forEach(fi=>{const f=m.F[fi];f.forEach((a,j)=>{const b=f[(j+1)%f.length];K.add(Math.min(a,b)+'-'+Math.max(a,b))})});return K};
+  if(hl==='base')v.fcol=i=>base.includes(i)?HL_BASE:null;
+  else if(hl==='base1')v.fcol=i=>top.includes(i)?HL_BASE:null;
+  else if(hl==='side')v.fcol=i=>side.includes(i)?HL_SIDE:null;
+  else if(hl==='all')v.fcol=i=>base.includes(i)?HL_BASE:HL_SIDE;
+  else if(hl==='baseEdge'){const K=keysOf(top);v.ecol=k=>K.has(k)?'rgba(42,77,158,.8)':null;v.fcol=i=>top.includes(i)?'#e6eefc':null}
+  else if(hl[0]==='F'){const kind=hl[1],I=floorInfo(m),gi=(k,id)=>I.G[k].findIndex(g=>g.ids.includes(id));
+    if(kind==='v'){v.mode='v';v.vcol=i=>GC[gi('v',i)%5]}if(kind==='e')v.ecol=k=>GC[gi('e',k)%5]+'cc';if(kind==='f')v.fcol=i=>FC[gi('f',i)%5]}}
+
+/* ───────── 전개도 펼치기 ───────── */
+function buildUnfold(P,h,t,smooth){
+  const n=P.length;const[x0,y0]=P[0];const ang=Math.atan2(P[1][1]-y0,P[1][0]-x0);const c=Math.cos(-ang),s=Math.sin(-ang);
+  const Q=P.map(([x,y])=>{x-=x0;y-=y0;return[x*c-y*s,x*s+y*c]});
+  const Ls=[],ext=[];for(let i=0;i<n;i++){const a=Q[i],b=Q[(i+1)%n],d=Q[(i+2)%n];Ls.push(Math.hypot(b[0]-a[0],b[1]-a[1]));let e=Math.atan2(d[1]-b[1],d[0]-b[0])-Math.atan2(b[1]-a[1],b[0]-a[0]);while(e>Math.PI)e-=TAU;while(e<=-Math.PI)e+=TAU;ext.push(e)}
+  let px=0,py=0,phi=0;const faces=[];
+  for(let i=0;i<n;i++){const nx=px+Ls[i]*Math.cos(phi),ny=py+Ls[i]*Math.sin(phi);faces.push({kind:'side',pts:[[px,py,0],[nx,ny,0],[nx,ny,h],[px,py,h]],sl:smooth&&i>0,sr:smooth&&i<n-1});px=nx;py=ny;phi+=ext[i]*(1-t)}
+  const th=t*Math.PI/2,ct=Math.cos(th),st=Math.sin(th);
+  faces.push({kind:'base',pts:Q.map(([u,w])=>[u,w*ct,-w*st])});
+  faces.push({kind:'base',pts:Q.map(([u,w])=>[u,w*ct,h+w*st])});
+  return{faces,perim:Ls.reduce((a,b)=>a+b,0),L0:Ls[0],maxW:Math.max(...Q.map(q=>q[1]))}}
+function bbox(faces){const mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];faces.forEach(f=>f.pts.forEach(p=>{for(let i=0;i<3;i++){mn[i]=Math.min(mn[i],p[i]);mx[i]=Math.max(mx[i],p[i])}}));return{c:mn.map((v,i)=>(v+mx[i])/2),r:Math.hypot(mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2])/2}}
+function unfoldViewer(canvas,o){
+  const U={t:o.t??0,shape:o.shape};
+  const v=new Viewer(canvas,{yaw:-0.6,pitch:0.42,pad:o.pad||0.6,draw:(ctx,vw)=>drawUnfold(ctx,vw,U,o)});
+  U.set=sh=>{U.shape=sh;const a=buildUnfold(sh.P,sh.h,0,sh.smooth),b=buildUnfold(sh.P,sh.h,1,sh.smooth);U.b0=bbox(a.faces);U.b1=bbox(b.faces);v.R=U.b1.r;v.cen=U.b0.c;v.scene=[{mesh:{c:U.b0.c,R:U.b1.r}}];v.dirty=true};
+  U.set(o.shape);U.v=v;return U}
+function drawUnfold(ctx,vw,U,o){
+  if(!U.b0)return;const sh=U.shape,t=U.t;const B=buildUnfold(sh.P,sh.h,t,sh.smooth);
+  const e=t*t*(3-2*t);vw.cen=U.b0.c.map((c,i)=>c+(U.b1.c[i]-c)*e);
+  if(!vw.userMoved){vw.yaw=-0.6*(1-e);vw.pitch=0.42*(1-e)+0.02*e}
+  const items=B.faces.map(f=>{const P=f.pts.map(p=>vw.proj(p));const d=P.reduce((a,p)=>a+p[2],0)/P.length;return{f,P,d}}).sort((a,b)=>a.d-b.d);
+  items.forEach(({f,P})=>{ctx.beginPath();P.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+    ctx.fillStyle=f.kind==='base'?(o.textbook?'#fff':'#e6eefc'):(o.textbook?'#fff':'#fff4c2');ctx.fill();
+    ctx.lineJoin='round';ctx.lineCap='round';ctx.lineWidth=2.2;ctx.strokeStyle='#151a28';
+    if(f.kind==='base'){ctx.stroke()}else{line(ctx,P[2],P[3]);if(!f.sl)line(ctx,P[3],P[0]);if(!f.sr)line(ctx,P[1],P[2]);
+      ctx.strokeStyle=o.textbook?'#151a28':'#2a4d9e';ctx.lineWidth=o.textbook?2.2:4;line(ctx,P[0],P[1])}});
+  if(!o.textbook){const bb=items.find(i=>i.f===B.faces[B.faces.length-2]);ctx.strokeStyle='#2a4d9e';ctx.lineWidth=4;ctx.beginPath();bb.P.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.stroke()}
+  if(t>0.97&&o.areas&&sh.areas){const fmtA=x=>{const r=Math.round(x*100)/100;return String(r)};
+    B.faces.forEach((f,fi)=>{const P=f.pts;if(f.kind==='side'){if(sh.smooth)return;const L=Math.hypot(P[1][0]-P[0][0],P[1][1]-P[0][1],P[1][2]-P[0][2]);const c=vw.proj([(P[0][0]+P[1][0])/2,(P[0][1]+P[2][1])/2,sh.h/2]);chip(ctx,fmtA(L*sh.h),c[0],c[1],{size:14,bg:'#fff',border:'#e08a1e'})}
+      else{let cx=0,cy=0,cz=0;P.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2]});const c=vw.proj([cx/P.length,cy/P.length,cz/P.length]);chip(ctx,sh.areas.base,c[0],c[1],{size:14,bg:'#fff',border:'#2a4d9e'})}});
+    if(sh.smooth){const c=vw.proj([B.perim/2,0,sh.h*0.72]);chip(ctx,sh.areas.lateral,c[0],c[1],{size:14,bg:'#fff',border:'#e08a1e'})}}
+  if(t>0.97&&o.labels!==false){
+    const A=vw.proj([0,0,0]),Bp=vw.proj([B.perim,0,0]),Tp=vw.proj([B.perim,0,sh.h]);
+    ctx.strokeStyle='#2a4d9e';ctx.lineWidth=1.6;
+    if(sh.inside){const y=A[1]-12;arrow(ctx,[A[0]+4,y],[Bp[0]-4,y]);ktext(ctx,sh.perimLabel,(A[0]+Bp[0])/2,(A[1]+Tp[1])/2,{color:'#2a4d9e',bold:true,size:16})}
+    else{const y=A[1]+16;arrow(ctx,[A[0],y],[Bp[0],y]);const lx=(vw.proj([B.L0,0,0])[0]+Bp[0])/2;ktext(ctx,sh.perimLabel||'밑면의 둘레',lx,y+18,{color:'#2a4d9e',bold:true,size:16})}
+    const x=Bp[0]+16;arrow(ctx,[x,Bp[1]],[x,Tp[1]]);
+    if(sh.hItalic)mtext(ctx,sh.hLabel,x+16,(Bp[1]+Tp[1])/2,{italic:true,size:22});else ktext(ctx,sh.hLabel||'높이',x+10,(Bp[1]+Tp[1])/2,{align:'left',bold:true,size:16});
+  }
+}
+function arrow(ctx,A,B){line(ctx,A,B);const a=Math.atan2(B[1]-A[1],B[0]-A[0]);[[A,a+Math.PI],[B,a]].forEach(([P,an])=>{ctx.beginPath();ctx.moveTo(P[0],P[1]);ctx.lineTo(P[0]-9*Math.cos(an-0.4),P[1]-9*Math.sin(an-0.4));ctx.moveTo(P[0],P[1]);ctx.lineTo(P[0]-9*Math.cos(an+0.4),P[1]-9*Math.sin(an+0.4));ctx.stroke()})}
+const UNF={
+  tri:{name:'삼각기둥',areas:{base:'6',sum:'6 + 6 + 20 + 25 + 15 = 72'},P:[[0,0],[4,0],[0,3]],h:5,info:'밑면: 세 변이 3 cm, 4 cm, 5 cm인 직각삼각형 · 높이 5 cm',perim:'3+4+5 = 12 (cm)',lat:'12 × 5 = 60 (cm²)'},
+  box:{name:'직육면체',areas:{base:'12',sum:'12 + 12 + 20 + 15 + 20 + 15 = 94'},P:[[0,0],[4,0],[4,3],[0,3]],h:5,info:'밑면: 가로 4 cm, 세로 3 cm인 직사각형 · 높이 5 cm',perim:'4+3+4+3 = 14 (cm)',lat:'14 × 5 = 70 (cm²)'},
+  pent:{name:'오각기둥',areas:{base:'밑넓이',sum:'(밑넓이) × 2 + 10 × 5'},P:regPoly(5,1.7),h:5,info:'밑면: 한 변이 2 cm인 정오각형 · 높이 5 cm',perim:'2 × 5 = 10 (cm)',lat:'10 × 5 = 50 (cm²)'},
+  cyl:{name:'원기둥',areas:{base:'4π',lateral:'20π',sum:'4π + 4π + 20π = 28π'},P:regPoly(64,2),h:5,smooth:true,info:'밑면: 반지름이 2 cm인 원 · 높이 5 cm',perim:'2 × π × 2 = 4π (cm)',lat:'4π × 5 = 20π (cm²)'},
+};
+UNF.pent.P=(()=>{const s=2,R=s/(2*Math.sin(Math.PI/5));return regPoly(5,R)})();
+
+/* ───────── 용어 사전 ───────── */
+const TERMS={
+  '다각형':{k:'초등 · 평면도형',b:`<p>선분으로만 둘러싸인 평면도형이에요. 변이 3개면 삼각형, 4개면 사각형, ….</p><p>원은 굽은 선(곡선)이 있으니까 다각형이 <b>아니에요</b>.</p>`,fig:'polys'},
+  'n각형':{k:'다각형',b:`<p>변이 <span class="math">n</span>개인 다각형이에요. 변이 <span class="math">n</span>개면 꼭짓점도 <span class="math">n</span>개예요.</p><p>예) 오각형: 변 5개, 꼭짓점 5개</p>`},
+  '입체도형':{k:'초등 · 도형',b:`<p>공간을 차지하는 도형이에요. 상자, 주사위, 캔처럼 손으로 쥘 수 있는 모양을 떠올리세요.</p><p>종이 위에 그려지는 ${T('평면도형')}과 비교해 보세요.</p>`,fig:'solid'},
+  '평면도형':{k:'초등 · 도형',b:`<p>한 평면 위에 있는 도형이에요. 삼각형, 사각형, 원처럼 종이 위에 납작하게 그려져요. 두께가 없어요.</p><p>상자나 캔 같은 ${T('입체도형')}과 비교해 보세요.</p>`,fig:'flat'},
+  '곡면':{k:'입체도형',b:`<p>평평하지 않고 둥글게 굽은 면이에요. 캔의 옆면, 공의 겉면이 곡면이에요.</p><p>곡면이 하나라도 있으면 ${T('다각형')}으로만 둘러싸인 게 아니니 다면체가 아니에요.</p>`},
+  '합동':{k:'도형',b:`<p>모양과 크기가 똑같아서 완전히 포개어지는 두 도형을 서로 합동이라고 해요.</p><p>각기둥의 두 밑면은 합동이에요.</p>`},
+  '평행':{k:'도형',b:`<p>두 직선(또는 두 평면)을 아무리 늘여도 만나지 않을 때 평행하다고 해요.</p><p>각기둥의 두 밑면은 위아래로 마주 보며 평행해요.</p>`},
+  '사다리꼴':{k:'초등 · 사각형',b:`<p>마주 보는 한 쌍의 변이 서로 ${T('평행')}한 사각형이에요.</p>`,fig:'trap'},
+  '넓이':{k:'초등 · 측정',b:`<p>평면도형이 차지하는 크기예요. 한 변이 1 cm인 정사각형(1 cm²)이 몇 개 들어가는지로 나타내요.</p><p>가장 기본은 ${T('직사각형의 넓이')}예요.</p>`,fig:'grid'},
+  '직사각형의 넓이':{k:'초등 · 넓이',b:`<p class="formula">(가로) × (세로)</p><p>가로 4 cm, 세로 3 cm이면 1 cm² 정사각형이 4개씩 3줄 → 12 cm²</p>`,fig:'grid'},
+  '삼각형의 넓이':{k:'초등 · 넓이',b:`<p class="formula">(밑변) × (높이) ÷ 2</p><p>직사각형을 대각선으로 자른 절반이에요. 직각삼각형은 직각을 낀 두 변을 곱해서 2로 나누면 돼요.</p>`,fig:'tri'},
+  '원주율':{k:'6학년 · 원',b:`<p>원의 둘레가 지름의 몇 배인지 나타내는 수로, 약 3.14예요. 중학교에서는 기호 <span class="rm">π</span>(파이)로 써요.</p><p>답은 3.14로 계산하지 않고 <span class="rm">12π</span>처럼 π를 붙여 나타내요.</p>`},
+  '원의 넓이':{k:'6학년 · 원',b:`<p class="formula">π × (반지름) × (반지름)</p><p>반지름이 3 cm이면 π × 3 × 3 = <span class="rm">9π</span> (cm²)</p><p>${T('원주율')} π가 뭔지 다시 보기</p>`,fig:'circle'},
+  '원의 둘레':{k:'6학년 · 원',b:`<p class="formula">2 × π × (반지름)</p><p>지름 × π와 같아요. 반지름이 3 cm이면 2 × π × 3 = <span class="rm">6π</span> (cm)</p>`,fig:'circle'},
+  '둘레':{k:'초등 · 측정',b:`<p>도형의 바깥을 한 바퀴 도는 길이예요. 다각형이면 모든 변의 길이를 더해요.</p><p>원이면 ${T('원의 둘레')}를 써요.</p>`},
+  '전개도':{k:'입체도형',b:`<p>입체도형의 모서리를 잘라 평면 위에 펼쳐 놓은 그림이에요. 전개도의 넓이가 곧 입체도형의 겉넓이예요.</p>`},
+  '밑넓이':{k:'입체도형',b:`<p>밑면 <b>하나</b>의 넓이예요. 기둥은 밑면이 2개라서 겉넓이를 구할 때 밑넓이를 2번 더해요.</p><p>밑면 모양에 따라 ${T('직사각형의 넓이')}, ${T('삼각형의 넓이')}, ${T('원의 넓이')}를 써요.</p>`},
+  '옆넓이':{k:'입체도형',b:`<p>옆면 전체의 넓이예요. 기둥의 옆면을 펼치면 하나의 직사각형이 돼요.</p><p class="formula">(밑면의 둘레) × (높이)</p>`},
+  '밑면':{k:'입체도형',b:`<p>각기둥과 각뿔대에서는 위아래로 마주 보는 두 면, 각뿔에서는 뾰족한 꼭짓점과 마주 보는 아래 면이에요. 그림에서 파랗게 칠한 면이에요.</p>`,fig3:[{s:'p5',hl:'base'},{s:'y4',hl:'base'}]},
+  '옆면':{k:'입체도형',b:`<p>밑면이 아닌 면이에요. 각기둥은 직사각형, 각뿔은 삼각형, 각뿔대는 사다리꼴이에요. 그림에서 주황색으로 칠한 면이에요.</p>`,fig3:[{s:'p5',hl:'side'},{s:'y4',hl:'side'}]},
+  '겉넓이':{k:'입체도형',b:`<p>입체도형의 겉면 전체의 넓이예요. 모든 면의 넓이를 더한 것이고, ${T('전개도')}의 넓이와 같아요.</p><p>기둥이면 (밑넓이) × 2 + (옆넓이)</p>`,fig:'net'},
+  'cm²':{k:'초등 · 넓이의 단위',b:`<p>한 변이 1 cm인 정사각형의 넓이를 <b>1 cm²</b>(1 제곱센티미터)라고 해요.</p><p>가로 4 cm, 세로 3 cm인 직사각형에는 1 cm²가 12개 → 12 cm²</p>`,fig:'grid'},
+  '정다각형':{k:'초등 · 다각형',b:`<p>변의 길이가 모두 같고, 각의 크기도 모두 같은 다각형이에요. 정삼각형, 정사각형, 정오각형, 정육각형, …</p>`,fig:'regs'},
+  '정삼각형':{k:'초등 · 삼각형',b:`<p>세 변의 길이가 모두 같은 삼각형이에요. 세 각의 크기도 모두 같아요.</p><p>정삼각형은 두 변의 길이가 같으니 ${T('이등변삼각형')}이기도 해요.</p>`,fig:'tris'},
+  '이등변삼각형':{k:'초등 · 삼각형',b:`<p>두 변의 길이가 같은 삼각형이에요. 각뿔의 옆면은 보통 이등변삼각형이에요.</p>`,fig:'tris'},
+  '직사각형':{k:'초등 · 사각형',b:`<p>네 각이 모두 직각인 사각형이에요. 각기둥의 옆면은 직사각형이에요.</p>`,fig:'quads'},
+  '정사각형':{k:'초등 · 사각형',b:`<p>네 변의 길이가 모두 같고 네 각이 모두 직각인 사각형이에요. 정사각형도 직사각형의 한 종류예요.</p>`,fig:'quads'},
+  '방정식':{k:'1학년 · 일차방정식',b:`<p><span class="rm">3</span><span class="math">n</span><span class="rm"> = 24</span>처럼 모르는 수가 들어간 등식이에요.</p><p>양변을 3으로 나누면 <span class="math">n</span><span class="rm"> = 8</span>.<br><span class="math">n</span><span class="rm"> + 2 = 10</span>이면 양변에서 2를 빼서 <span class="math">n</span><span class="rm"> = 8</span>.</p>`},
+};
+function termFig(cv,kind){
+  const d=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;cv.width=w*d;cv.height=h*d;const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);
+  c.strokeStyle='#151a28';c.lineWidth=2;c.lineJoin='round';const poly=(pts)=>{c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.stroke()};
+  const slot=k=>w*(k+0.5)/4,R=Math.min(w/8-6,36),cy0=70;
+  if(kind==='polys'){
+    poly(regPoly(3,R*1.15,-Math.PI/2).map(q=>[slot(0)+q[0],cy0+8+q[1]]));
+    poly(regPoly(4,R*1.1,Math.PI/4).map(q=>[slot(1)+q[0],cy0+q[1]]));
+    poly(regPoly(5,R*1.05,-Math.PI/2).map(q=>[slot(2)+q[0],cy0+q[1]]));
+    c.beginPath();c.arc(slot(3),cy0,R,0,TAU);c.strokeStyle='#b83a3a';c.setLineDash([4,4]);c.stroke();c.setLineDash([]);c.strokeStyle='#151a28';
+    ['삼각형','사각형','오각형'].forEach((t,k)=>ktext(c,t,slot(k),cy0+R+26,{size:14}));ktext(c,'원 ✕',slot(3),cy0+R+26,{size:14,color:'#b83a3a',bold:true})}
+  if(kind==='flat'){const s3=k=>w*(k+0.5)/3;
+    c.fillStyle='#fff6c7';
+    [[regPoly(3,R*1.15,-Math.PI/2).map(q=>[s3(0)+q[0],cy0+8+q[1]]),'삼각형'],[regPoly(4,R*1.1,Math.PI/4).map(q=>[s3(1)+q[0],cy0+q[1]]),'사각형']].forEach(([pts,t],k)=>{c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();ktext(c,t,s3(k),cy0+R+26,{size:14})});
+    c.beginPath();c.arc(s3(2),cy0,R,0,TAU);c.fill();c.stroke();ktext(c,'원',s3(2),cy0+R+26,{size:14});
+    ktext(c,'종이 위에 납작하게',w/2,14,{size:12,color:'#5a6377'})}
+  if(kind==='solid'){const s3=k=>w*(k+0.5)/3,a=R*0.95,d=R*0.45,yb=cy0+R*0.75;
+    // 정육면체
+    {const x=s3(0)-a/2-d/2,y=yb;const F=[[x,y],[x+a,y],[x+a,y-a],[x,y-a]],B=F.map(p=>[p[0]+d,p[1]-d]);
+     c.fillStyle='#e8eefb';c.beginPath();[F[3],F[2],B[2],B[3]].forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();
+     c.fillStyle='#d3ddf3';c.beginPath();[F[1],B[1],B[2],F[2]].forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();
+     c.fillStyle='#f4f7fd';c.beginPath();F.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();
+     c.setLineDash([4,4]);c.lineWidth=1.3;line(c,F[0],B[0]);line(c,B[0],B[1]);line(c,B[0],B[3]);c.setLineDash([]);c.lineWidth=2;ktext(c,'정육면체',s3(0),cy0+R+26,{size:14})}
+    // 원기둥
+    {const x=s3(1),rx=R*0.62,ry=R*0.2,top=yb-a*1.05;c.fillStyle='#e8eefb';c.beginPath();c.moveTo(x-rx,top);c.lineTo(x-rx,yb);c.ellipse(x,yb,rx,ry,0,Math.PI,0,true);c.lineTo(x+rx,top);c.closePath();c.fill();
+     c.beginPath();c.moveTo(x-rx,top);c.lineTo(x-rx,yb);c.moveTo(x+rx,top);c.lineTo(x+rx,yb);c.stroke();
+     c.beginPath();c.ellipse(x,yb,rx,ry,0,0,Math.PI);c.stroke();c.setLineDash([4,4]);c.lineWidth=1.3;c.beginPath();c.ellipse(x,yb,rx,ry,0,Math.PI,TAU);c.stroke();c.setLineDash([]);c.lineWidth=2;
+     c.fillStyle='#f4f7fd';c.beginPath();c.ellipse(x,top,rx,ry,0,0,TAU);c.fill();c.stroke();ktext(c,'원기둥',x,cy0+R+26,{size:14})}
+    // 원뿔
+    {const x=s3(2),rx=R*0.7,ry=R*0.22,ap=yb-a*1.15;c.fillStyle='#e8eefb';c.beginPath();c.moveTo(x,ap);c.lineTo(x-rx,yb);c.ellipse(x,yb,rx,ry,0,Math.PI,0,true);c.closePath();c.fill();
+     c.beginPath();c.moveTo(x-rx,yb);c.lineTo(x,ap);c.lineTo(x+rx,yb);c.stroke();c.beginPath();c.ellipse(x,yb,rx,ry,0,0,Math.PI);c.stroke();
+     c.setLineDash([4,4]);c.lineWidth=1.3;c.beginPath();c.ellipse(x,yb,rx,ry,0,Math.PI,TAU);c.stroke();c.setLineDash([]);c.lineWidth=2;ktext(c,'원뿔',x,cy0+R+26,{size:14})}
+    ktext(c,'공간을 차지해요',w/2,14,{size:12,color:'#5a6377'})}
+  if(kind==='grid'){const s=24,x0=(w-4*s)/2,y0=24;c.lineWidth=1;c.strokeStyle='#9aa3b5';for(let i=0;i<=4;i++){c.beginPath();c.moveTo(x0+i*s,y0);c.lineTo(x0+i*s,y0+3*s);c.stroke()}for(let j=0;j<=3;j++){c.beginPath();c.moveTo(x0,y0+j*s);c.lineTo(x0+4*s,y0+j*s);c.stroke()}
+    c.lineWidth=2.2;c.strokeStyle='#151a28';c.strokeRect(x0,y0,4*s,3*s);mtext(c,'4 cm',x0+2*s,y0+3*s+16,{size:17});mtext(c,'3 cm',x0-26,y0+1.5*s,{size:17})}
+  if(kind==='tri'){const x0=w/2-70,y0=120;c.setLineDash([4,4]);c.strokeRect(x0,y0-80,140,80);c.setLineDash([]);poly([[x0,y0],[x0+140,y0],[x0,y0-80]]);mtext(c,'밑변',x0+70,y0+14,{size:15});mtext(c,'높이',x0-22,y0-40,{size:15})}
+  if(kind==='circle'){const cx=w/2,cy=74,r=50;c.beginPath();c.arc(cx,cy,r,0,TAU);c.stroke();c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+r,cy);c.stroke();c.beginPath();c.arc(cx,cy,3,0,TAU);c.fillStyle='#151a28';c.fill();
+    mtext(c,'O',cx-12,cy+12,{size:18});mtext(c,'반지름',cx+r/2,cy-12,{size:14})}
+  if(kind==='trap'){poly([[w/2-40,40],[w/2+40,40],[w/2+80,115],[w/2-80,115]]);ktext(c,'↔ 평행 ↔',w/2,78,{size:13,color:'#5a6377'})}
+  const tick=(A,B,k=1)=>{const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2,dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L,tx=dx/L,ty=dy/L;for(let i=0;i<k;i++){const o=(i-(k-1)/2)*5;c.beginPath();c.moveTo(mx+tx*o-nx*6,my+ty*o-ny*6);c.lineTo(mx+tx*o+nx*6,my+ty*o+ny*6);c.stroke()}};
+  if(kind==='regs'){[3,4,5,6].forEach((n,k)=>{const P=regPoly(n,R*1.05,n===4?Math.PI/4:-Math.PI/2).map(q=>[slot(k)+q[0],cy0+(n===3?6:0)+q[1]]);c.fillStyle=FC[k];c.beginPath();P.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();c.lineWidth=1.4;P.forEach((p,i)=>tick(p,P[(i+1)%n]));c.lineWidth=2;
+    ktext(c,['정삼각형','정사각형','정오각형','정육각형'][k],slot(k),cy0+R+26,{size:13})})}
+  if(kind==='tris'){const s3=k=>w*(k+0.5)/2;const E=regPoly(3,R*1.25,-Math.PI/2).map(q=>[s3(0)+q[0],cy0+10+q[1]]);const I=[[s3(1),cy0-R*1.1],[s3(1)-R*0.7,cy0+R*0.75],[s3(1)+R*0.7,cy0+R*0.75]];
+    [[E,'정삼각형',[1,1,1]],[I,'이등변삼각형',[1,0,1]]].forEach(([P,t,ks],k)=>{c.fillStyle='#fff6c7';c.beginPath();P.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();c.lineWidth=1.4;P.forEach((p,i)=>{if(ks[i])tick(p,P[(i+1)%3])});c.lineWidth=2;ktext(c,t,s3(k),cy0+R+26,{size:13})});
+    ktext(c,'같은 표시 = 같은 길이',w/2,14,{size:12,color:'#5a6377'})}
+  if(kind==='quads'){const s3=k=>w*(k+0.5)/3,a=R*1.3;const Q=[[[s3(0)-a/2,cy0-a/2],[s3(0)+a/2,cy0-a/2],[s3(0)+a/2,cy0+a/2],[s3(0)-a/2,cy0+a/2]],[[s3(1)-a*0.75,cy0-a*0.4],[s3(1)+a*0.75,cy0-a*0.4],[s3(1)+a*0.75,cy0+a*0.4],[s3(1)-a*0.75,cy0+a*0.4]],[[s3(2)-a*0.35,cy0-a*0.45],[s3(2)+a*0.35,cy0-a*0.45],[s3(2)+a*0.7,cy0+a*0.45],[s3(2)-a*0.7,cy0+a*0.45]]];
+    Q.forEach((P,k)=>{c.fillStyle=FC[k];c.beginPath();P.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.stroke();if(k<2){c.lineWidth=1.2;const p=P[3];c.strokeRect(p[0],p[1]-8,8,8);c.lineWidth=2}ktext(c,['정사각형','직사각형','사다리꼴'][k],s3(k),cy0+R+26,{size:13})})}
+  if(kind==='net'){const q=Math.min(26,(w-40)/4),x0=(w-4*q)/2,y0=cy0-1.5*q+4;const cells=[[1,0,1],[0,1,0],[1,1,0],[2,1,0],[3,1,0],[1,2,1]];cells.forEach(([i,j,b])=>{c.fillStyle=b?'#c9d6f2':'#fff4c2';c.fillRect(x0+i*q,y0+j*q,q,q);c.strokeRect(x0+i*q,y0+j*q,q,q)});
+    ktext(c,'정육면체를 펼친 전개도: 면 6개의 넓이를 모두 더하면 겉넓이',w/2,y0+3*q+18,{size:12,color:'#5a6377'})}
+}
+const pop=$('#pop');let popStack=[],popAnchor=null,popPinned=false,popHideT=null;
+function showTerm(key,anchor,push){
+  const t=TERMS[key];if(!t)return;
+  if(push)popStack.push(key);else popStack=[key];
+  if(anchor){popAnchor&&popAnchor.classList.remove('open');popAnchor=anchor;anchor.classList.add('open')}
+  pop.innerHTML=`<div class="kicker">${t.k} · 미리 알아야 할 것</div><div class="pop-h">${popStack.length>1?'<button type="button" data-back aria-label="이전 용어로">‹</button>':''}<h4>${key}</h4><button type="button" data-close aria-label="닫기">✕</button></div>${t.b}${t.fig?'<canvas></canvas>':''}${t.fig3?`<div class="pfig3">${t.fig3.map(()=>'<canvas></canvas>').join('')}</div>`:''}`;
+  pop.hidden=false;
+  if(t.fig)termFig($('canvas',pop),t.fig);
+  if(t.fig3)$$('.pfig3 canvas',pop).forEach((cv,i)=>{const F=t.fig3[i],m=SOLIDS[F.s].mk();const v=figure(cv,{visual:true,mesh:m,pitch:0.34,pad:0.4});applyHl(v,m,F.hl)});
+  if(popAnchor&&innerWidth>640){const r=popAnchor.getBoundingClientRect();const pw=pop.offsetWidth,ph=pop.offsetHeight;let x=Math.min(innerWidth-pw-12,Math.max(12,r.left));let y=r.bottom+8;if(y+ph>innerHeight-8)y=Math.max(8,r.top-ph-8);pop.style.left=x+'px';pop.style.top=y+'px'}
+}
+function hideTerm(){pop.hidden=true;popStack=[];popPinned=false;popAnchor&&popAnchor.classList.remove('open');popAnchor=null}
+document.addEventListener('click',e=>{
+  const tb=e.target.closest('.term');
+  if(tb){e.preventDefault();const inPop=pop.contains(tb);if(!inPop&&popAnchor===tb&&popPinned&&!pop.hidden){hideTerm();return}showTerm(tb.dataset.t,inPop?null:tb,inPop);popPinned=true;return}
+  if(e.target.closest('[data-close]')){hideTerm();return}
+  if(e.target.closest('[data-back]')){popStack.pop();const k=popStack.pop();showTerm(k,null,true);return}
+  if(!pop.hidden&&!pop.contains(e.target))hideTerm();
+});
+const canHover=matchMedia('(hover: hover)').matches;
+if(canHover){
+  document.addEventListener('mouseover',e=>{const tb=e.target.closest('.term');if(tb&&!pop.contains(tb)){clearTimeout(popHideT);if(popAnchor!==tb||pop.hidden){popPinned=false;showTerm(tb.dataset.t,tb,false)}}
+    else if(pop.contains(e.target))clearTimeout(popHideT)});
+  document.addEventListener('mouseout',e=>{const tb=e.target.closest('.term');if((tb&&!pop.contains(tb))||(pop.contains(e.target)&&!pop.contains(e.relatedTarget))){if(!popPinned){clearTimeout(popHideT);popHideT=setTimeout(()=>{if(!popPinned)hideTerm()},350)}}});
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hideTerm()});
+
+/* ───────── 답 입력(패드용 키패드) ───────── */
+let activeBox=null;
+function answerUI(step,onTry){
+  const wrap=el('<div class="answer"></div>');
+  if(step.type==='choice'){
+    const box=el('<div class="choices"></div>');
+    step.choices.forEach(c=>{const b=el(`<button type="button" class="${step.mathChoices?'math':''}"></button>`);b.textContent=c;b.onclick=()=>{if(onTry(c)===false){b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400)}};box.appendChild(b)});
+    wrap.appendChild(box);return wrap}
+  let val='';
+  const field=el(`<div class="field" tabindex="0" role="textbox" aria-label="답 입력"><span class="val"></span><span class="caret"></span>${step.suffix?`<span class="suf">${step.suffix}</span>`:''}</div>`);
+  const keys=el('<div class="keys"></div>');
+  const L=['7','8','9','⌫','4','5','6',step.type==='pi'?'π':'','1','2','3','확인','0','.'];
+  const render=()=>{$('.val',field).innerHTML=val?val.replace(/π/g,'<span class="rm">π</span>'):'<span class="ph">?</span>'};
+  const press=k=>{if(k==='⌫')val=val.slice(0,-1);else if(k==='확인'){if(!val)return;if(onTry(val)===false){field.classList.add('shake');setTimeout(()=>field.classList.remove('shake'),400)}return}
+    else if(k==='π'){if(!val.includes('π'))val+='π'}else if(k==='.'){if(!val.includes('.')&&!val.includes('π'))val+=(val?'':'0')+'.'}else{if(val.includes('π'))return;if(val.length<7)val=(val==='0'?'':val)+k}render()};
+  L.forEach(k=>{if(k===''){keys.appendChild(el('<span></span>'));return}const b=el(`<button type="button" class="${k==='확인'?'ok':k==='0'?'zero':k==='⌫'?'fn':''}">${k==='π'?'<span class="rm">π</span>':k}</button>`);b.onclick=()=>press(k);keys.appendChild(b)});
+  wrap.append(field,keys);render();
+  activeBox={press,node:wrap};
+  return wrap}
+document.addEventListener('keydown',e=>{if(!activeBox||!activeBox.node.isConnected)return;if(e.target.closest&&e.target.closest('input,textarea'))return;
+  if(/^[0-9]$/.test(e.key))activeBox.press(e.key);else if(e.key==='Backspace'){e.preventDefault();activeBox.press('⌫')}else if(e.key==='Enter'){e.preventDefault();activeBox.press('확인')}else if(e.key==='p'||e.key==='P')activeBox.press('π');else if(e.key==='.')activeBox.press('.')});
+function check(step,v){
+  if(step.type==='choice')return v===step.ans;
+  if(step.type==='pi'){if(!v.includes('π'))return'nopi';const c=v.replace('π','');const k=c===''?1:parseFloat(c);return Math.abs(k-step.ans)<1e-9}
+  if(v.includes('π'))return false;return Math.abs(parseFloat(v)-step.ans)<1e-9}
+function fmtAns(step){if(step.suffix&&/^각/.test(step.suffix))return kn(step.ans)+step.suffix;if(step.type==='pi')return(step.ans===1?'':step.ans)+'π'+(step.suffix?' '+step.suffix:'');return step.ans+(step.suffix?' '+step.suffix:'')}
+
+/* ───────── 단계 문제 화면 ───────── */
+function renderProblem(host,prob,opt={}){
+  let mode=(opt.mode==='final'&&prob.steps.length>1)?'final':'steps';
+  let usedSteps=mode==='steps',revealed=false;
+  host.innerHTML='';
+  const root=el(`<div class="prob"><div class="prob-q"></div><div class="prob-body"><div class="prob-fig"><canvas aria-label="문제 그림"></canvas></div><div class="side"><ol class="steps"></ol><div class="tail"></div></div></div></div>`);
+  $('.prob-q',root).innerHTML=prob.title;host.appendChild(root);
+  const vis=!!opt.visual;let fv=null,netU=null;const figBox=$('.prob-fig',root);
+  const mkFig=cv=>{fv=figure(cv,Object.assign({},prob.fig,vis?{visual:true}:{}));return fv};
+  if(prob.fig){mkFig($('canvas',root));if(vis)figBox.insertAdjacentHTML('beforeend','<div class="fighint">끌어서 돌려 볼 수 있어요</div>')}
+  else{figBox.remove();$('.prob-body',root).classList.add('nofig')}
+  if(vis&&prob.fig&&prob.fig.net){const nb=el('<button type="button" class="btn ghost netbtn">전개도로 펼쳐 보기</button>');figBox.appendChild(nb);
+    nb.onclick=()=>{const old=$('canvas',figBox),cv=el('<canvas aria-label="문제 그림"></canvas>');old.replaceWith(cv);
+      if(!netU){const N=prob.fig.net;netU=unfoldViewer(cv,{shape:N,t:0});netU.v.tick=()=>{if(netU.t<1){netU.t=Math.min(1,netU.t+(reduced?1:0.015));netU.v.dirty=true}};nb.textContent='입체도형으로 보기'}
+      else{netU=null;mkFig(cv);syncHl();nb.textContent='전개도로 펼쳐 보기'}}}
+  const ol=$('.steps',root),tail=$('.tail',root);
+  let cur=0,tries=0,wrongs=0,sw=[],rv=[];
+  function syncHl(){if(!vis||!fv||netU)return;const S=list();const st=S[Math.min(cur,S.length-1)];applyHl(fv,prob.fig.mesh,cur>=S.length?(prob.endHl||st.hl):st.hl)}
+  function revealAfter(){if(!vis||!prob.figAfter||cur<prob.figAfter.at||$('.prob-fig',root))return;
+    const box=el(`<div class="prob-fig"><canvas aria-label="찾은 입체도형"></canvas><div class="fighint">${prob.figAfter.cap}</div></div>`);$('.prob-body',root).prepend(box);$('.prob-body',root).classList.remove('nofig');
+    const v2=figure($('canvas',box),Object.assign({visual:true},prob.figAfter.fig));applyHl(v2,prob.figAfter.fig.mesh,prob.figAfter.hl)}
+  const list=()=>mode==='final'?[Object.assign({},prob.steps[prob.steps.length-1],{q:prob.finalQ||prob.steps[prob.steps.length-1].q})]:prob.steps;
+  function draw(){
+    syncHl();revealAfter();
+    ol.innerHTML='';const S=list();
+    S.forEach((s,i)=>{const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):i===cur?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
+      const sb=$('.sb',li);
+      if(i<cur){sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':'✓ '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
+      if(i===cur){
+        const hm=el('<div class="hintmsg" hidden></div>');
+        const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
+          tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
+          if(tries>=3&&!$('.reveal',li)){const rb=el('<button type="button" class="btn ghost reveal" style="margin-top:8px">정답 확인하고 넘어가기</button>');rb.onclick=()=>{s._shown=true;revealed=true;rv[i]=1;tries=0;cur++;draw();if(cur>=S.length)finish()};sb.appendChild(rb)}
+          return false});
+        sb.append(ui,hm);
+        if(mode==='final'){const swb=el('<button type="button" class="btn ghost" style="margin-top:10px">단계로 나누어 풀기</button>');swb.onclick=()=>{mode='steps';usedSteps=true;cur=0;tries=0;sw=[];rv=[];draw()};sb.appendChild(swb)}
+      }
+      ol.appendChild(li)});
+  }
+  function finish(){const good=!revealed;tail.innerHTML='';const r=el(`<div class="result ${good?'ok':'bad'}"><span>${good?(mode==='final'?'단계 없이 혼자 풀었어요!':'모든 단계를 해냈어요!'):'정답을 확인한 단계가 있어요. 비슷한 문제를 다시 풀어 봐요.'}</span></div>`);tail.appendChild(r);
+    const n=list().length,stepWrongs=range(n).map(k=>sw[k]||0),revealedArr=range(n).map(k=>rv[k]||0);
+    if(opt.onDone)opt.onDone({good,usedSteps,mode,wrongs,stepWrongs,revealed:revealedArr,box:r})}
+  prob.steps.forEach(s=>delete s._shown);
+  draw();
+}
+
+/* ───────── 문제 만들기 ───────── */
+function solidFig(m,o={}){return{mesh:m,yaw:o.yaw??-0.45,pitch:o.pitch??0.33,pad:o.pad??0.40,labels:o.labels}}
+const GEN={};
+/* 1차시: 다면체 */
+GEN.polyStep=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid']),n=ri(r,3,8),Ty=TYPE[tp];
+  const nm=kn(n)+'각형';const opts=shuffle(r,(n===3?[n,n+1,n+2]:[n-1,n,n+1]).map(k=>kn(k)+'각형'));const F=Ty.F(n);
+  return{ptype:'poly:'+tp,title:'다음 다면체는 몇 면체인지 구하시오.',fig:solidFig(Ty.mk(n)),finalQ:'이 다면체는 몇 면체인가요?',steps:[
+    {hl:'base',q:`${T('밑면')}의 모양은 어떤 ${T('다각형')}인가요?`,type:'choice',choices:opts,ans:nm,hint:tp==='prism'?'위아래로 마주 보는 면의 변을 세어 보세요.':'맨 아래 면의 변을 세어 보세요. 뾰족한 꼭짓점과 마주 보는 면이에요.',ok:`밑면은 ${nm}이에요.`},
+    {hl:'base',q:`${T('밑면')}은 몇 개인가요?`,type:'num',ans:tp==='prism'?2:1,suffix:'개',hint:tp==='prism'?'각기둥은 위와 아래에 밑면이 있어요.':'각뿔은 밑면이 아래에만 있어요.'},
+    {hl:'side',q:`${T('옆면')}은 몇 개인가요?`,type:'num',ans:n,suffix:'개',hint:`밑면의 변 하나마다 옆면이 하나씩 붙어 있어요. 밑면의 변은 ${n}개예요.`},
+    {hl:'all',q:'면의 개수를 모두 더하면, 이 다면체는 몇 면체인가요?',type:'num',ans:F,suffix:'면체',hint:`(밑면의 개수) + (옆면의 개수) = ${tp==='prism'?2:1} + ${n}`,ok:`면이 ${F}개이므로 ${kn(F)}면체예요.`}]}};
+GEN.poly=seed=>{const r=mulberry(seed);const k=pick(r,['is','is','count','count','step']);
+  if(k==='step')return GEN.polyStep(seed+7);
+  if(k==='is'){const id=pick(r,Object.keys(SOLIDS)),S=SOLIDS[id];
+    return{ptype:'poly:is',title:'다음 입체도형은 다면체인지 아닌지 고르시오.',fig:solidFig(S.mk()),steps:[{q:'이 입체도형은 다면체인가요?',type:'choice',choices:['다면체이다','다면체가 아니다'],ans:S.poly?'다면체이다':'다면체가 아니다',
+      hint:'모든 면이 다각형인지, 굽은 면(곡면)이 있는지 살펴보세요.',ok:S.poly?`${josa(S.name,'은','는')} 다각형인 면으로만 둘러싸여 있어요.`:S.why}]}}
+  const ids=['cube','p3','y4','p5','f4','y6','p6','f5'];const id=pick(r,ids),m=SOLIDS[id].mk(),part=pick(r,['F','E','V']);const ans={F:m.F.length,E:m.E.length,V:m.V.length}[part];
+  return{ptype:'poly:count',title:`다음 다면체의 ${PART[part]}의 개수를 구하시오.`,fig:solidFig(m),steps:[{q:`${josa(PART[part],'은','는')} 모두 몇 개인가요?`,type:'num',ans,suffix:'개',
+    hint:'먼저 몇 층 건물인지 보고, 층마다 세어 더해 보세요. 점선은 보이지 않는 뒤쪽 모서리예요.',ok:`${SOLIDS[id].name}의 ${josa(PART[part],'은','는')} ${ans}개예요.`}]}};
+/* 2차시: 각기둥·각뿔·각뿔대 */
+GEN.typesStep=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],n=ri(r,3,10);
+  const parts=shuffle(r,['F','E','V']);const g=parts[0],a=parts[1];const gv=Ty[g](n),av=Ty[a](n),gf=Ty['f'+g],af=Ty['f'+a];
+  const solveHint=gf.includes('+')?`양변에서 ${josa(gf.split('+')[1],'을','를')} 빼 보세요.`:`양변을 ${josaRo(gf[0])} 나누어 보세요.`;
+  return{ptype:'types:'+tp,title:`${PART[g]}의 개수가 ${gv}개인 ${Ty.nm}의 ${PART[a]}의 개수를 구하시오.`,fig:null,figAfter:{at:3,fig:solidFig(Ty.mk(n)),hl:'F'+a.toLowerCase(),cap:`${kn(n)}${Ty.nm} · ${josa(PART[a],'을','를')} 층별로 칠했어요`},finalQ:`${PART[a]}의 개수는 몇 개인가요?`,steps:[
+    {q:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}의 개수를 <span class="math">n</span>을 사용하여 나타내면?`,type:'choice',mathChoices:true,choices:['n+1','n+2','2n','3n'],ans:gf,hint:`삼${Ty.nm}, 사${josa(Ty.nm,'을','를')} 떠올려 ${josa(PART[g],'을','를')} 세어 보세요. 개념 카드의 표도 도움이 돼요.`,ok:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}: ${gf.replace('n','<span class="math">n</span>')}개`},
+    {q:`${gf.replace('n','<span class="math">n</span>')} = ${gv} 이므로 <span class="math">n</span>의 값은?`,type:'num',ans:n,hint:`${T('방정식')}을 풀어요. ${solveHint}`},
+    {q:'이 입체도형의 이름은?',type:'num',ans:n,suffix:Ty.nm,hint:`<span class="math">n</span>의 값이 곧 밑면의 변의 개수예요.`,ok:`${kn(n)}${Ty.nm}${Ty.nm.endsWith('대')?'예요':'이에요'}.`},
+    {q:`${kn(n)}${Ty.nm}의 ${PART[a]}의 개수는?`,type:'num',ans:av,suffix:'개',hint:`${PART[a]}의 개수는 ${af.replace('n','<span class="math">n</span>')}개예요. <span class="math">n</span> = ${n}을 넣어 보세요.`}]}};
+GEN.types=seed=>{const r=mulberry(seed);const k=pick(r,['step','step','direct','direct','side','name']);
+  if(k==='step')return GEN.typesStep(seed+3);
+  const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],n=ri(r,3,9);
+  if(k==='direct'){const p=pick(r,['F','E','V']),v=Ty[p](n);return{ptype:'types:direct',title:`${kn(n)}${Ty.nm}의 ${PART[p]}의 개수를 구하시오.`,fig:solidFig(Ty.mk(n)),steps:[{q:`${josa(PART[p],'은','는')} 몇 개인가요?`,type:'num',ans:v,suffix:'개',hint:`밑면이 ${kn(n)}각형이에요. 그림에서 세어도 되고, <span class="math">n</span>${Ty.nm}의 ${PART[p]}: ${Ty['f'+p].replace('n','<span class="math">n</span>')}개를 써도 돼요.`}]}}
+  if(k==='side')return{ptype:'types:side',title:`${Ty.nm}의 옆면의 모양을 고르시오.`,fig:solidFig(Ty.mk(n)),steps:[{q:'옆면은 어떤 모양인가요?',type:'choice',choices:['직사각형','삼각형','사다리꼴','오각형'],ans:Ty.side,hint:'밑면이 아닌 면 하나를 골라 변을 세고, 마주 보는 변이 평행한지 보세요.',ok:`${Ty.nm}의 옆면은 모두 ${Ty.side}이에요.`}]};
+  const F=Ty.F(n);return{ptype:'types:name',title:`${josa(kn(n)+Ty.nm,'은','는')} 몇 면체인지 구하시오.`,fig:solidFig(Ty.mk(n)),steps:[{q:'몇 면체인가요?',type:'num',ans:F,suffix:'면체',hint:`밑면 ${tp==='pyramid'?1:2}개와 옆면 ${n}개를 더해요.`,ok:`${kn(F)}면체예요.`}]}};
+/* 5차시: 기둥의 겉넓이 */
+GEN.areaStep=seed=>{const r=mulberry(seed);const k=pick(r,['tri','box','cyl']);
+  if(k==='tri'){const[a,b,c]=pick(r,[[3,4,5],[6,8,10],[5,12,13]]),h=ri(r,Math.round(c*0.6),c+1);const B=a*b/2,Pm=a+b+c,Lt=Pm*h,S=2*B+Lt;
+    const m=prism([[0,0],[a,0],[0,b]],h);const top=z=>[[0,0,z],[a,0,z],[0,b,z]];const t=top(h),bt=top(0);
+    return{ptype:'area:tri',title:'다음 그림과 같은 삼각기둥의 겉넓이를 구하시오.',finalQ:'삼각기둥의 겉넓이는 몇 cm²인가요?',fig:{net:{P:[[0,0],[a,0],[0,b]],h,perimLabel:`밑면의 둘레 = ${Pm} cm`,hLabel:`높이 ${h} cm`},mesh:m,yaw:0.62,pitch:0.5,pad:0.34,labels:[[bt[0],bt[1],a+' cm'],[bt[0],bt[2],b+' cm'],[t[1],t[2],c+' cm',{from:[a/3,b/3,h]}],[bt[1],t[1],h+' cm']]},steps:[
+      {hl:'base1',q:`${T('밑넓이')}는 몇 ${T('cm²')}인가요?`,type:'num',ans:B,suffix:'cm²',hint:`밑면은 직각삼각형이에요. ${T('삼각형의 넓이')}: ${a} × ${b} ÷ 2`,ok:`${a} × ${b} ÷ 2 = ${B}`},
+      {hl:'baseEdge',q:`밑면의 ${T('둘레')}는 몇 cm인가요?`,type:'num',ans:Pm,suffix:'cm',hint:`세 변의 길이를 모두 더해요: ${a} + ${b} + ${c}`},
+      {hl:'side',q:`${T('옆넓이')}는 몇 cm²인가요?`,type:'num',ans:Lt,suffix:'cm²',hint:`옆면을 펼치면 가로가 ${Pm} cm(밑면의 둘레), 세로가 ${h} cm(높이)인 직사각형이에요.`,ok:`${Pm} × ${h} = ${Lt}`},
+      {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'num',ans:S,suffix:'cm²',hint:`(밑넓이) × 2 + (옆넓이) = ${B} × 2 + ${Lt}`,ok:`${B} × 2 + ${Lt} = ${S}`}]}}
+  if(k==='box'){const a=ri(r,3,9),b=ri(r,2,7),h=ri(r,3,9);const B=a*b,Pm=2*(a+b),Lt=Pm*h,S=2*B+Lt;const m=prism([[0,0],[a,0],[a,b],[0,b]],h);
+    return{ptype:'area:box',title:'다음 그림과 같은 직육면체의 겉넓이를 구하시오.',finalQ:'직육면체의 겉넓이는 몇 cm²인가요?',fig:{net:{P:[[0,0],[a,0],[a,b],[0,b]],h,perimLabel:`밑면의 둘레 = ${Pm} cm`,hLabel:`높이 ${h} cm`},mesh:m,yaw:-0.5,pitch:0.4,pad:0.36,labels:[[[0,0,0],[a,0,0],a+' cm'],[[a,0,0],[a,b,0],b+' cm'],[[a,0,0],[a,0,h],h+' cm']]},steps:[
+      {hl:'base1',q:`${T('밑넓이')}는 몇 ${T('cm²')}인가요?`,type:'num',ans:B,suffix:'cm²',hint:`밑면은 직사각형이에요. ${T('직사각형의 넓이')}: ${a} × ${b}`},
+      {hl:'baseEdge',q:`밑면의 ${T('둘레')}는 몇 cm인가요?`,type:'num',ans:Pm,suffix:'cm',hint:`네 변을 모두 더해요: ${a} + ${b} + ${a} + ${b}`},
+      {hl:'side',q:`${T('옆넓이')}는 몇 cm²인가요?`,type:'num',ans:Lt,suffix:'cm²',hint:`옆면을 펼친 직사각형: 가로 ${Pm} cm × 세로 ${h} cm`,ok:`${Pm} × ${h} = ${Lt}`},
+      {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'num',ans:S,suffix:'cm²',hint:`${B} × 2 + ${Lt}`,ok:`${B} × 2 + ${Lt} = ${S}`}]}}
+  const rr=ri(r,2,6),h=ri(r,3,10);const m=prism(regPoly(64,rr),h,true);
+  return{ptype:'area:cyl',title:'다음 그림과 같은 원기둥의 겉넓이를 구하시오.',finalQ:'원기둥의 겉넓이는 몇 cm²인가요?',fig:{net:{P:regPoly(64,rr),h,smooth:true,perimLabel:`밑면의 둘레 = ${2*rr}π cm`,hLabel:`높이 ${h} cm`,inside:true},mesh:m,yaw:0,pitch:0.34,pad:0.34,after:(ctx,v)=>cylLabels(ctx,v,rr,h)},steps:[
+    {hl:'baseEdge',q:'원기둥의 전개도에서 옆면(직사각형)의 가로의 길이는 무엇과 같나요?',type:'choice',choices:['밑면의 둘레','밑면의 반지름','원기둥의 높이'],ans:'밑면의 둘레',hint:'옆면을 감싼 종이를 펼친다고 생각해 보세요. 밑면의 원을 한 바퀴 둘러요.',ok:'옆면의 가로 = 밑면인 원의 둘레'},
+    {hl:'base1',q:`${T('밑넓이')}는 몇 cm²인가요?`,type:'pi',ans:rr*rr,suffix:'cm²',hint:`${T('원의 넓이')}: π × ${rr} × ${rr}`},
+    {hl:'baseEdge',q:`밑면의 둘레는 몇 cm인가요?`,type:'pi',ans:2*rr,suffix:'cm',hint:`${T('원의 둘레')}: 2 × π × ${rr}`},
+    {hl:'side',q:'옆넓이는 몇 cm²인가요?',type:'pi',ans:2*rr*h,suffix:'cm²',hint:`(밑면의 둘레) × (높이) = ${2*rr}π × ${h}`,ok:`${2*rr}π × ${h} = ${2*rr*h}π`},
+    {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'pi',ans:2*rr*rr+2*rr*h,suffix:'cm²',hint:`(밑넓이) × 2 + (옆넓이) = ${rr*rr}π × 2 + ${2*rr*h}π`,ok:`${2*rr*rr}π + ${2*rr*h}π = ${2*rr*rr+2*rr*h}π`}]}};
+GEN.area=seed=>GEN.areaStep(seed);
+function cylLabels(ctx,v,r,h,lr,lh){const C=v.proj([0,0,h]);const ang=-0.35;const Rp=v.proj([r*Math.cos(ang),r*Math.sin(ang),h]);
+  ctx.strokeStyle='#151a28';ctx.lineWidth=2;line(ctx,C,Rp);ctx.beginPath();ctx.arc(C[0],C[1],3.2,0,TAU);ctx.fillStyle='#151a28';ctx.fill();
+  lab(ctx,lr||r+' cm',(C[0]+Rp[0])/2,(C[1]+Rp[1])/2-18,{italic:!!lr,chip:v.o.chip});
+  let best=null;for(let k=0;k<64;k++){const th=TAU*k/64;const p=v.proj([r*Math.cos(th),r*Math.sin(th),0]);if(!best||p[0]>best.p[0])best={p,th}}
+  const T2=v.proj([r*Math.cos(best.th),r*Math.sin(best.th),h]);ctx.font='21px "Times New Roman",serif';const ht=lh||h+' cm';const tw=ctx.measureText(ht).width+(v.o.chip?16:0);lab(ctx,ht,best.p[0]+12+tw/2,(best.p[1]+T2[1])/2,{italic:!!lh,chip:v.o.chip})}
+
+/* ───────── 차시 정보 ───────── */
+const LESSONS=[
+  {id:'poly',no:1,title:'다면체',sub:'다각형으로만 둘러싸인 입체도형',ready:true},
+  {id:'types',no:2,title:'각기둥 · 각뿔 · 각뿔대',sub:'밑면과 옆면으로 이름 짓고 개수의 규칙 찾기',ready:true},
+  {id:'regular',no:3,title:'정다면체',sub:'모든 면이 합동인 정다각형',ready:false},
+  {id:'rotation',no:4,title:'회전체',sub:'평면도형을 한 바퀴 돌리면',ready:false},
+  {id:'area',no:5,title:'기둥의 겉넓이',sub:'전개도를 펼쳐서 넓이 구하기',ready:true},
+  {id:'volume',no:6,title:'기둥의 부피',sub:'밑넓이 × 높이',ready:false},
+  {id:'cone',no:7,title:'뿔의 겉넓이와 부피',sub:'기둥의 1/3',ready:false},
+  {id:'sphere',no:8,title:'구의 겉넓이와 부피',sub:'원기둥과 비교하기',ready:false},
+];
+const TABS=[{id:'concept',t:'개념',s:'핵심 정리'},{id:'explore',t:'탐구',s:'보고 만지기'},{id:'steps',t:'단계 문제',s:'한 걸음씩'},{id:'practice',t:'연습',s:'반복해서 풀기'}];
+const UNITS=[['소인수분해',false],['정수와 유리수',false],['문자의 사용과 식',false],['일차방정식',false],['좌표평면과 그래프',false],['기본 도형',false],['평면도형의 성질',false],['입체도형의 성질',true],['자료의 정리와 해석',false]];
+
+/* ───────── 화면: 홈 ───────── */
+const app=$('#app'),crumbs=$('#crumbs');
+function lessonDone(id){const p=DB[id];return p?[p.concept,p.explore,p.steps>0,p.prac&&p.prac.solved>=5].filter(Boolean).length:0}
+function viewHome(){
+  crumbs.innerHTML='';
+  const done=LESSONS.filter(l=>l.ready).reduce((a,l)=>a+lessonDone(l.id),0);
+  const D=DB._drill||{},drillToday=D.last===today(),due=dueReviews().length,wait=(DB._rev||[]).length-due;
+  const last=DB._last&&LESSONS.find(l=>l.id===DB._last.id&&l.ready);const lastTab=last?TABS.find(t=>t.id===DB._last.tab)||TABS[0]:null;
+  const M=me(),nb=Object.keys(M.badges).length;
+  app.innerHTML=`
+  <section class="hero">
+    <div>
+      <h1>수업에서 배운 것을<br><span class="mark">한 걸음씩</span> 다시.</h1>
+      <p>모르는 낱말은 눌러서 바로 확인하고, 그림은 직접 돌려 보고, 어려운 문제는 단계로 나누어 풀어요.</p>
+      <p style="margin-top:18px"><a class="btn primary" href="#unit-solid">입체도형 단원 시작하기</a></p>
+    </div>
+    <div><div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div></div>
+  </section>
+  <div class="sec-title"><h2>오늘 할 일</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
+  <div class="today">
+    <div class="card todo ${drillToday?'doneday':''}"><span class="k">계산이 빨라지면 문제에 집중할 수 있어요</span><b class="t">오늘의 계산</b>
+      <p>${drillToday?`오늘 끝냈어요 ✓ ${D.lastScore!=null?`(첫 시도 ${D.lastScore}/10)`:''}`:'10문제 · 3분쯤 · 곱셈, 넓이, π 계산'}</p><a class="btn ${drillToday?'':'primary'}" href="#drill">${drillToday?'한 번 더 하기':'시작하기'}</a></div>
+    <div class="card todo ${!due&&wait?'doneday':''}"><span class="k">틀린 문제를 1일·3일·7일 뒤에 다시</span><b class="t">복습 노트</b>
+      <p>${due?`오늘 복습할 문제 <b class="rm">${due}</b>개`:(wait?`오늘은 없어요 ✓ · 기다리는 문제 ${wait}개`:'아직 없어요. 연습에서 틀린 문제가 여기로 와요.')}</p>${due?'<a class="btn primary" href="#review">복습하기</a>':''}</div>
+    <div class="card todo"><span class="k">${last?'지난번에 여기까지 했어요':'처음이라면'}</span><b class="t">${last?`${last.no}차시 ${last.title}`:'1차시 다면체'}</b>
+      <p>${last?`${lastTab.t} 탭 · 진행 ${lessonDone(last.id)}/4`:'개념부터 차근차근 시작해요.'}</p><a class="btn" href="#${last?last.id+(lastTab.id==='concept'?'':'-'+lastTab.id):'poly'}">이어서 하기 →</a></div>
+  </div>
+  <div class="sec-title"><h2>1학년 단원</h2><span>지금은 입체도형 단원을 시범으로 열어 두었어요 · 진행 ${done}/12</span></div>
+  <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="#unit-solid"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · 3개 차시 →</span></a>`:`<div class="card unit soon"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">준비 중</span></div>`).join('')}</div>`;
+  const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk());
+}
+function viewMe(){
+  crumbs.innerHTML=`<span class="sep">›</span><span>내 기록</span>`;const M=me();setTimeout(()=>{const b=$('.meOut');if(b)b.onclick=async()=>{await studentLogout();toast('로그아웃했어요.');viewMe()}},0);
+  app.innerHTML=`<div class="unit-head"><div><h1>내 기록</h1><p>포인트는 정답보다 <b>끝까지 해 본 것</b>에 더 많이 줘요.</p></div></div>
+  <div class="card panel acct">${isStudent()?`<div><b>${whoLabel(AUTH)}</b>으로 로그인했어요. 기록은 서버에 저장돼요.<br><span class="muted syncNow">${syncText()}</span></div><button type="button" class="btn meOut">로그아웃</button>`:`<div><b>로그인하지 않았어요.</b> 지금 기록은 이 기기에만 저장돼요.<br><span class="muted">로그인하면 다른 기기에서도 이어서 하고, 선생님이 진도를 볼 수 있어요.</span></div><a class="btn primary" href="#login">로그인</a>`}</div>
+  <div class="card panel"><div class="bigstats"><div class="stat"><small>포인트</small><b>${M.pts}</b></div><div class="stat"><small>연속 공부</small><b>${liveStreak()}일</b></div><div class="stat"><small>배지</small><b>${Object.keys(M.badges).length}/${BADGES.length}</b></div><div class="stat"><small>졸업한 복습 문제</small><b>${M.cnt.mastered||0}</b></div></div>
+   <h2>배지</h2><div class="badges">${BADGES.map((b,i)=>{const on=!!M.badges[b.k];return`<div class="badge ${on?'':'off'}">${badgeIcon(i,on)}<span><b>${b.nm}</b><small>${on?M.badges[b.k]+' 받음':b.d}</small></span></div>`}).join('')}</div></div>
+  <div class="card panel"><h2>차시별 진행</h2><div class="lessons">${LESSONS.filter(l=>l.ready).map(l=>`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${(DB[l.id]&&DB[l.id].prac?`연습 ${DB[l.id].prac.solved}문제 · `:'')}단계 문제 ${(DB[l.id]&&DB[l.id].steps)||0}번</small></span><span class="pips">${pipsOf(l.id)}</span></a>`).join('')}</div></div>
+  <div class="card panel"><h2>포인트 받는 방법</h2><table class="t"><tbody>
+   <tr><td class="l">단계 문제 끝까지 풀기</td><td class="rm">+10</td></tr><tr><td class="l">연습 문제 맞히기 (단계 없이 맞히면 +5)</td><td class="rm">+3</td></tr><tr><td class="l">연습 문제 끝까지 풀기 (틀려도)</td><td class="rm">+1</td></tr>
+   <tr><td class="l">복습 문제 한 번에 맞히기</td><td class="rm">+5</td></tr><tr><td class="l">탐구 활동 끝내기 (도형마다 한 번)</td><td class="rm">+2 ~ +5</td></tr><tr><td class="l">개념 처음 읽기</td><td class="rm">+5</td></tr><tr><td class="l">오늘의 계산 끝내기 (하루 한 번) + 첫 시도 정답마다 1</td><td class="rm">+5</td></tr></tbody></table></div>`;
+}
+function viewReview(){
+  crumbs.innerHTML=`<span class="sep">›</span><span>복습 노트</span>`;
+  app.innerHTML=`<div class="unit-head"><div><h1>복습 노트</h1><p>틀렸거나 헤맸던 문제를 1일, 3일, 7일 뒤에 다시 풀어요. 세 번 연속 한 번에 맞히면 졸업이에요. 시험처럼 교과서 형식으로 나와요.</p></div></div>
+   <div class="card panel"><div class="statbar"><div class="stat"><small>오늘 남은 문제</small><b class="rvLeft">0</b></div><div class="stat"><small>졸업한 문제</small><b class="rvDone">${me().cnt.mastered||0}</b></div><div class="stat"><small>나중에 나올 문제</small><b class="rvWait">0</b></div></div><div class="rvHost"></div></div>`;
+  const host=$('.rvHost',app);
+  const stats=()=>{const L=dueReviews();$('.rvLeft',app).textContent=L.length;$('.rvWait',app).textContent=(DB._rev||[]).length-L.length;$('.rvDone',app).textContent=me().cnt.mastered||0;return L};
+  function next(){const L=stats();
+    if(!L.length){host.innerHTML=`<div class="feedback ok">오늘 복습할 문제를 모두 풀었어요! ${(DB._rev||[]).length?`나머지 ${(DB._rev||[]).length}문제는 정해진 날에 다시 나와요.`:''}</div><div class="next-row" style="justify-content:flex-start"><a class="btn" href="#home">처음 화면으로</a></div>`;return}
+    const item=L[0],prob=GEN[item.g](item.seed),L0=LESSONS.find(l=>l.id===item.lid);
+    prob.title=`<span class="rv-from">${L0?L0.no+'차시 '+L0.title+' · ':''}${item.stage+1}번째 복습</span><br>`+prob.title;
+    renderProblem(host,prob,{mode:'final',onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);logAttempt({lesson:item.lid||'',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
+      if(ok){bump('review');award(5)}else award(1);
+      box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?(item.stage>=3?'졸업! 이 문제는 이제 나오지 않아요.':`한 번에 맞혔어요. ${[1,3,7][item.stage]}일 뒤에 한 번 더 나와요.`):'헷갈렸던 문제예요. 내일 다시 나와요.'}</span>`);
+      const nb=el('<button type="button" class="btn primary">다음 →</button>');nb.onclick=next;box.appendChild(nb);stats()}})}
+  next();
+}
+/* 오늘의 계산: 짧고 쉬운 계산을 빠르고 정확하게 (작업기억을 문제 이해에 쓰도록) */
+function drillQs(seed){const r=mulberry(seed);
+  const mul=()=>{const a=ri(r,2,9),b=ri(r,2,9);return{q:`<span class="rm">${a} × ${b}</span>`,ans:a*b,type:'num'}};
+  const mul2=()=>{const a=ri(r,11,19),b=ri(r,2,9);return{q:`<span class="rm">${a} × ${b}</span>`,ans:a*b,type:'num'}};
+  const rect=()=>{const a=ri(r,3,12),b=ri(r,2,9);return{q:`가로 <span class="rm">${a} cm</span>, 세로 <span class="rm">${b} cm</span>인<br>직사각형의 넓이`,ans:a*b,type:'num',suffix:'cm²'}};
+  const tri=()=>{let a=ri(r,2,12),b=ri(r,2,10);if((a*b)%2)a++;return{q:`밑변 <span class="rm">${a} cm</span>, 높이 <span class="rm">${b} cm</span>인<br>삼각형의 넓이`,ans:a*b/2,type:'num',suffix:'cm²'}};
+  const per=()=>{const a=ri(r,3,12),b=ri(r,2,9);return{q:`가로 <span class="rm">${a} cm</span>, 세로 <span class="rm">${b} cm</span>인<br>직사각형의 둘레`,ans:2*(a+b),type:'num',suffix:'cm'}};
+  const pi1=()=>{const k=ri(r,2,9);return{q:`<span class="rm">π × ${k} × ${k}</span>`,ans:k*k,type:'pi'}};
+  const pi2=()=>{const k=ri(r,2,9);return{q:`<span class="rm">2 × π × ${k}</span>`,ans:2*k,type:'pi'}};
+  const cnt=()=>{const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],n=ri(r,3,9),pp=pick(r,['F','E','V']);return{q:`${kn(n)}${Ty.nm}의<br>${PART[pp]}의 개수`,ans:Ty[pp](n),type:'num',suffix:'개'}};
+  const eq=()=>{const a=ri(r,2,5),n=ri(r,3,12);return{q:`<span class="rm">${a}<i>n</i> = ${a*n}</span>일 때,<br><i class="math">n</i>의 값`,ans:n,type:'num'}};
+  return shuffle(r,[mul,mul,mul2,rect,tri,per,pi1,pi2,cnt,eq].map(f=>f()))}
+function viewDrill(){
+  crumbs.innerHTML=`<span class="sep">›</span><span>오늘의 계산</span>`;
+  const D=DB._drill=DB._drill||{};
+  app.innerHTML=`<div class="unit-head"><div><h1>오늘의 계산</h1><p>짧은 계산이 손에 붙으면, 문제를 풀 때 머릿속 자리를 생각하는 데 쓸 수 있어요. 빠르기보다 <b>정확하게</b>가 먼저예요.</p></div></div>
+   <div class="card panel"><div class="drill"><div class="dbar"></div><div class="dmeta"><span class="dNo"></span><span class="dTime">0:00</span></div><div class="dq"></div><div class="dIn"></div><div class="dflash"></div></div></div>`;
+  const Q=drillQs(newSeed()).map(q=>Object.assign(q,{state:null}));const queue=Q.slice();let first=0,t0=performance.now(),timer=null,busy=false;
+  const fmt=ms=>{const s=Math.round(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+  timer=setInterval(()=>{const tt=$('.dTime',app);if(!tt){clearInterval(timer);return}tt.textContent=fmt(performance.now()-t0)},500);
+  const bar=()=>{$('.dbar',app).innerHTML=Q.map(q=>`<i class="${q.state==='ok'?'ok':q.state==='bad'?'bad':q===queue[0]?'cur':''}"></i>`).join('')};
+  function ask(){busy=false;bar();const q=queue[0];if(!q){return finish()}
+    $('.dNo',app).textContent=q.retry?'다시 한 번':`${Q.indexOf(q)+1} / ${Q.length}`;$('.dq',app).innerHTML=q.q;$('.dflash',app).textContent='';$('.dflash',app).className='dflash';
+    const host=$('.dIn',app);host.innerHTML='';
+    host.appendChild(answerUI({type:q.type,suffix:q.suffix},v=>{if(busy)return true;const r=check({type:q.type,ans:q.ans},v);const fl=$('.dflash',app);
+      if(r===true){busy=true;if(!q.retry){q.state='ok';first++}queue.shift();fl.textContent='정답!';fl.className='dflash ok';setTimeout(ask,reduced?0:380);return true}
+      if(r==='nopi'){fl.textContent='π를 붙여서 답해요. 예) 12π';fl.className='dflash bad';return false}
+      busy=true;if(!q.retry){q.state='bad'}fl.innerHTML=`정답은 <span class="rm">${q.type==='pi'?(q.ans===1?'':q.ans)+'π':q.ans}</span>${q.suffix?' '+q.suffix:''}. 끝에 한 번 더 나와요.`;fl.className='dflash bad';
+      queue.shift();if(!q.retry)queue.push(Object.assign({},q,{retry:true}));setTimeout(ask,reduced?0:1500);return true}))}
+  function finish(){clearInterval(timer);const ms=performance.now()-t0;const best=D.best;const isBest=first>=8&&(!best||ms<best);if(isBest)D.best=ms;
+    const firstToday=D.last!==today();D.last=today();D.lastScore=first;D.runs=(D.runs||0)+1;save();bump('drill');if(first)award(first);award(5,'drill:'+today());
+    $('.dq',app).innerHTML='';$('.dflash',app).textContent='';$('.dNo',app).textContent='끝!';bar();
+    $('.dIn',app).innerHTML=`<div class="feedback ok" style="text-align:center">첫 시도에 맞힌 문제 <b class="rm">${first}</b> / ${Q.length} · 걸린 시간 <b class="rm">${fmt(ms)}</b><br>${isBest?'최고 기록이에요!':D.best?`내 최고 기록은 ${fmt(D.best)} (8문제 이상 맞혔을 때)`:'8문제 이상 맞히면 최고 기록이 남아요.'}</div>
+      <div class="next-row" style="justify-content:center"><a class="btn" href="#home">처음 화면으로</a><button type="button" class="btn primary dAgain">한 번 더</button></div>`;
+    $('.dAgain',app).onclick=()=>viewDrill()}
+  ask();
+}
+/* 화면: 단원 */
+function pipsOf(id){const p=DB[id];const a=p?[p.concept,p.explore,p.steps>0,p.prac&&p.prac.solved>=5]:[0,0,0,0];return a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}
+function viewUnit(){
+  crumbs.innerHTML=`<span class="sep">›</span><span>입체도형의 성질</span>`;
+  app.innerHTML=`<div class="unit-head"><div><h1>입체도형의 성질</h1><p>1학년 2학기 · 시범 단원</p></div>
+    <div class="legend"><span><i class="on"></i>개념 → 탐구 → 단계 문제 → 연습 5문제</span></div></div>
+  <div class="lessons">${LESSONS.map(l=>l.ready?`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small></span><span class="pips" aria-label="진행 상황">${pipsOf(l.id)}</span></a>`
+    :`<div class="card lesson soon"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small></span><span class="soon-tag">준비 중</span></div>`).join('')}</div>`;
+}
+/* 화면: 차시 */
+function viewLesson(id,tab){
+  const L=LESSONS.find(l=>l.id===id);const p=prog(id);
+  crumbs.innerHTML=`<span class="sep">›</span><a href="#unit-solid">입체도형의 성질</a><span class="sep">›</span><span>${L.title}</span>`;
+  const doneOf={concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac.solved>=5};
+  app.innerHTML=`<div class="lesson-head"><div class="kicker">${L.no}차시</div><h1>${L.title}</h1></div>
+   <div class="tabs" role="tablist">${TABS.map((t,i)=>`<button type="button" role="tab" class="tab ${t.id===tab?'on':''} ${doneOf[t.id]?'done':''}" data-tab="${t.id}" aria-selected="${t.id===tab}"><span class="num">${doneOf[t.id]&&t.id!==tab?CHECK:i+1}</span><span class="tl">${t.t}<small>${t.s}</small></span></button>`).join('')}</div>
+   <div id="tabBody"></div>`;
+  $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
+  const body=$('#tabBody');
+  const nextBtn=(label,to)=>`<div class="next-row"><a class="btn primary" href="#${id}-${to}">${label} →</a></div>`;
+  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('beforeend',nextBtn('탐구하러 가기','explore'));p.concept=true;save();award(5,'concept:'+id)}
+  if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('단계 문제 풀기','steps'));p.explore=true;save()}
+  DB._last={id,tab};save();
+  if(tab==='steps')viewSteps(body,id);
+  if(tab==='practice')viewPractice(body,id);
+}
+const STEPGEN={poly:GEN.polyStep,types:GEN.typesStep,area:GEN.areaStep};
+function viewSteps(body,id){
+  const p=prog(id);
+  const wrap=el(`<div><div class="card panel"><div class="statbar"><div class="stat"><small>단계 문제를 끝까지 푼 횟수</small><b>${p.steps}</b></div>
+    <span class="muted" style="font-size:15px">한 단계씩 맞혀야 다음 단계가 열려요. 막히면 파란 낱말을 눌러 보세요.</span>
+    <button type="button" class="btn ghost" id="newProb" style="margin-left:auto">다른 숫자로 다시</button></div><div id="probHost"></div></div></div>`);
+  body.appendChild(wrap);
+  const SG={poly:'polyStep',types:'typesStep',area:'areaStep'}[id];
+  const go=()=>{const seed=newSeed(),prob=GEN[SG](seed);renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG,seed,ptype:prob.ptype,stepWrongs,revealed});if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요. 내일 다시 나와요.</span>')}
+    const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn">하나 더</button><a class="btn primary" href="#${id}-practice">연습하러 가기 →</a></span>`);$('button',nb).onclick=go;box.appendChild(nb)}})};
+  $('#newProb',wrap).onclick=go;go();
+}
+function viewPractice(body,id){
+  const p=prog(id),P=p.prac;
+  const wrap=el(`<div class="card panel"><div class="statbar">
+     <div class="stat"><small>푼 문제</small><b id="sSolved">${P.solved}</b></div>
+     <div class="stat"><small>연속 정답</small><b id="sStreak">${P.streak}</b></div>
+     <span class="lvl" id="sLvl"></span>${(DB._rev||[]).length?`<a class="lvl" style="margin-left:0;background:#fff" href="#review">복습 노트 ${dueReviews().length?'· 오늘 '+dueReviews().length+'문제':'· '+(DB._rev||[]).length+'문제 대기'}</a>`:''}</div><div id="practHost"></div></div>`);
+  body.appendChild(wrap);
+  const upd=()=>{$('#sSolved',wrap).textContent=P.solved;$('#sStreak',wrap).textContent=P.streak;$('#sLvl',wrap).textContent=P.level>=2?'단계 없이 도전 중':'단계 따라 풀기';save()};
+  function next(){
+    let seed,isRetry=false;
+    P.retry.forEach(x=>x.due--);const ri_=P.retry.findIndex(x=>x.due<=0);
+    if(ri_>=0){seed=P.retry[ri_].seed;P.retry.splice(ri_,1);isRetry=true}else seed=newSeed();
+    const prob=GEN[id](seed);
+    if(isRetry)prob.title+='<span class="retry-tag">다시 도전</span>';
+    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
+      logAttempt({lesson:id,kind:'practice',good,wrongs,mode,gen:id,seed,ptype:prob.ptype,stepWrongs,revealed});
+      P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(id,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
+      if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else if(prob.steps.length>1&&!usedSteps){P.streak++}else{P.streak++}}
+      else{P.streak=0;P.fails++;P.retry.push({seed,due:2});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
+      upd();const nb=el('<button type="button" class="btn primary">다음 문제 →</button>');nb.onclick=next;box.appendChild(nb);nb.focus()}});
+  }
+  upd();next();
+}
+
+/* ───────── 개념 카드 ───────── */
+const CONCEPT={};
+const GC=['#2a4d9e','#e08a1e','#3f9e6e','#c0504d','#7b5ea7'];
+const FC=['#c9d6f2','#f6d9b0','#c5e6d4','#efc6c4','#dccff0'];
+function drawPlates(ctx,vw,base,I,labels){
+  I.lv.forEach((z,f)=>{const ids=I.G.v.find(q=>q.key==='v'+f).ids;let cx=0,cy=0;ids.forEach(i=>{cx+=base.V[i][0];cy+=base.V[i][1]});cx/=ids.length;cy/=ids.length;
+    const r=Math.max(0.28,...ids.map(i=>Math.hypot(base.V[i][0]-cx,base.V[i][1]-cy)))*1.18+0.18;
+    const pts=range(40).map(q=>vw.proj([cx+r*Math.cos(TAU*q/40),cy+r*Math.sin(TAU*q/40),z]));
+    if(!labels){ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle='rgba(42,77,158,.07)';ctx.fill();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(42,77,158,.4)';ctx.lineWidth=1.3;ctx.stroke();ctx.setLineDash([])}
+    else{const L=pts.reduce((a,p)=>p[0]<a[0]?p:a,pts[0]);ktext(ctx,`${f+1}층`,L[0]-6,L[1],{align:'right',bold:true,size:15,color:'#2a4d9e'})}})}
+function floorFig(canvas,mesh,kind,o={}){
+  const I=floorInfo(mesh);const gi=(k,id)=>I.G[k].findIndex(g=>g.ids.includes(id));
+  const v=new Viewer(canvas,{interactive:false,yaw:o.yaw??-0.5,pitch:o.pitch??0.3,pad:o.pad??0.40,draw:(ctx,vw)=>{drawPlates(ctx,vw,mesh,I,false);vw.drawMesh(mesh);drawPlates(ctx,vw,mesh,I,true)}});
+  if(kind==='v'){v.mode='v';v.vcol=i=>GC[gi('v',i)%5]}
+  if(kind==='e')v.ecol=k=>GC[gi('e',k)%5]+'cc';
+  if(kind==='f')v.fcol=i=>FC[gi('f',i)%5];
+  v.setScene([{mesh}],{R:mesh.R*1.12});return I}
+function floorCap(I,kind){const parts=I.G[kind].map((g,i)=>`<span style="color:${GC[i%5]};font-weight:700">${g.ids.length}</span>`);
+  return `${KIND_NM[kind]} = <span class="rm">${parts.join(' + ')} = ${I.G[kind].reduce((a,g)=>a+g.ids.length,0)}</span>`}
+function floorLegend(I,kind){return I.G[kind].map((g,i)=>`<span class="lg"><i style="background:${kind==='f'?FC[i%5]:GC[i%5]}"></i>${g.label}</span>`).join('')}
+const fold=(i,title,tease,inner,open)=>`<details class="fold" data-i="${i}"${open?' open':''}><summary><span class="fn">${i}</span><span class="ft"><b>${title}</b><small>${tease}</small></span><span class="chev" aria-hidden="true"></span></summary><div class="fb">${inner}</div></details>`;
+const foldPanel=(title,lead,folds)=>`<div class="card panel"><div class="fold-head"><h2>${title}</h2><div class="fold-tools"><button type="button" data-all="1">모두 펼치기</button><button type="button" data-all="0">모두 접기</button></div></div>${lead}<div class="folds">${folds}</div></div>`;
+function wireFolds(body,id){
+  const p=prog(id);const D=$$('details.fold',body);
+  if(p.fold)D.forEach(d=>{if(d.dataset.i in p.fold)d.open=p.fold[d.dataset.i]});
+  const remember=()=>{p.fold={};D.forEach(d=>p.fold[d.dataset.i]=d.open);save()};
+  D.forEach(d=>d.addEventListener('toggle',remember));
+  $$('.fold-tools button',body).forEach(b=>b.onclick=()=>{D.forEach(d=>d.open=b.dataset.all==='1');remember()});
+}
+CONCEPT.poly=body=>{
+  body.innerHTML=foldPanel('다면체',`<p class="lead">${T('다각형')}인 면으로만 둘러싸인 ${T('입체도형')}을 <b class="mark">다면체</b>라고 해요.</p>`,
+   fold(1,'면 · 모서리 · 꼭짓점','다면체를 이루는 세 가지',`<div class="concept-grid">
+     <div class="figbox"><canvas id="cCube" style="height:300px"></canvas></div>
+     <ul class="defs">
+       <li><b>면</b><span>다면체를 둘러싸고 있는 다각형</span></li>
+       <li><b>모서리</b><span>다각형의 변. 면과 면이 만나는 선분</span></li>
+       <li><b>꼭짓점</b><span>다각형의 꼭짓점. 모서리와 모서리가 만나는 점</span></li></ul></div>`,true)+
+   fold(2,'면의 모양 살펴보기','어떤 다각형으로 이루어졌는지 먼저 봐요',`<p style="margin-top:0">다면체를 보면 먼저 <b>어떤 다각형으로 이루어졌는지</b> 살펴봐요. 그림에서는 비스듬히 보이기 때문에 실제 모양과 다르게 보일 수 있어요.</p>
+     <div class="trio"><div class="figbox"><canvas id="cFace1" style="height:200px"></canvas><div class="figcap">비스듬히 보면<br>평행사변형처럼 보여요</div></div>
+       <div class="figbox"><canvas id="cFace2" style="height:200px"></canvas><div class="figcap">정면에서 보면<br><b>직사각형</b>이에요</div></div>
+       <div class="figbox"><div class="falist" id="cFaceList" style="padding:6px 4px"></div><div class="figcap">오각기둥의 <b>면 목록</b><br>면 7개 → 칠면체</div></div></div>
+     <p class="muted" style="font-size:15px;margin-bottom:0">면 목록을 만들면 이름도 보여요. 옆면이 직사각형이면 각기둥, 삼각형이면 각뿔이에요. 탐구의 '면의 모양 찾기'에서 직접 해 볼 수 있어요.</p>`)+
+   fold(3,'이름 짓기','면의 개수로 ○면체라고 불러요',`<p style="margin-top:0">면이 4개, 5개, 6개, …인 다면체를 각각 <b>사면체, 오면체, 육면체, …</b>라고 해요.</p>
+     <div class="quad">${[['y3','삼각뿔',4],['y4','사각뿔',5],['cube','정육면체',6],['p5','오각기둥',7]].map(([k,n,f])=>`<div class="figbox"><canvas data-nm="${k}" style="height:170px"></canvas><div class="figcap">${n}<br>면 <b class="rm">${f}</b>개 → <b>${kn(f)}면체</b></div></div>`).join('')}</div>`)+
+   fold(4,'세는 방법: 몇 층 건물?','같은 높이에 있는 꼭짓점끼리 한 층',`<p style="margin-top:0">입체도형을 건물이라고 생각하고, 먼저 <b>몇 층 건물</b>인지 찾아요. 그다음 층마다 세어 더해요.</p>
+     <div class="trio">${['v','e','f'].map(k=>`<div class="figbox"><canvas data-fl="${k}" style="height:210px"></canvas><div class="figcap" data-cap="${k}"></div><div class="lgs" data-lg="${k}"></div></div>`).join('')}</div>
+     <p class="muted" style="font-size:15px;margin-bottom:0">탐구에서 직접 눌러 세어 볼 수 있어요. 정십이면체 같은 4층 건물도 같은 방법으로 셀 수 있어요.</p>`)+
+   fold(5,'다면체가 아닌 것','곡면이 있으면 다면체가 아니에요',`<p style="margin-top:0">${T('곡면')}이 있으면 다각형으로만 둘러싸인 게 아니니 다면체가 아니에요.</p>
+     <div class="trio">${['cyl','cone','sph'].map(k=>`<div class="figbox"><canvas data-s="${k}" style="height:170px"></canvas><div class="figcap">${SOLIDS[k].name}</div></div>`).join('')}</div>`)+
+   fold(6,'생각해 보기','면이 3개인 다면체도 있을까요?',`<p style="margin-top:0">면을 하나씩 줄여 가면 어디까지 줄일 수 있을까요? 면이 3개인 다면체도 있을까요? <span class="muted">(탐구에서 확인해 보세요)</span></p>
+     <div class="quad">${[['cube','정육면체',6],['p3','삼각기둥',5]].map(([k,n,f])=>`<div class="figbox"><canvas data-nm="${k}" style="height:170px"></canvas><div class="figcap">${n} · 면 <b class="rm">${f}</b>개</div></div>`).join('')}
+       <div class="qbox">?<span style="font-size:15px;font-family:var(--body)">면 4개?</span></div><div class="qbox">?<span style="font-size:15px;font-family:var(--body)">면 3개?</span></div></div>`));
+  wireFolds(body,'poly');
+  const cube=SOLIDS.cube.mk();
+  figure($('#cCube'),{visual:true,mesh:cube,yaw:-0.5,pitch:0.42,pad:0.33,after:(ctx,v)=>{
+    const top=cube.F[1];const P=top.map(i=>v.proj(cube.V[i]));ctx.beginPath();P.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle='rgba(255,226,102,.75)';ctx.fill();ctx.strokeStyle='#151a28';ctx.lineWidth=2.2;ctx.stroke();
+    const fc=P.reduce((a,p)=>[a[0]+p[0]/4,a[1]+p[1]/4],[0,0]);ktext(ctx,'면',fc[0],fc[1],{bold:true,size:18});
+    const fr=cube.N.map(n=>v.facing(n)>0);const Vs=cube.V.map(p=>v.proj(p));
+    const vi=Vs.reduce((b,p,i)=>p[0]>Vs[b][0]?i:b,0);const VP=Vs[vi];ctx.beginPath();ctx.arc(VP[0],VP[1],7,0,TAU);ctx.fillStyle='#151a28';ctx.fill();ktext(ctx,'꼭짓점',VP[0]+14,VP[1]+2,{bold:true,size:17,align:'left'});
+    const lo=Vs.reduce((b,p,i)=>p[1]>Vs[b][1]?i:b,0);const e=cube.E.find(e=>(e.a===lo||e.b===lo)&&Math.abs(cube.V[e.a][2]-cube.V[e.b][2])<1e-6&&e.f.some(fi=>fr[fi])&&(Vs[e.a===lo?e.b:e.a][0]<Vs[lo][0]));
+    if(e){const A=Vs[e.a],B=Vs[e.b];ctx.strokeStyle='#e0a800';ctx.lineWidth=7;line(ctx,A,B);ctx.strokeStyle='#151a28';ctx.lineWidth=2.2;line(ctx,A,B);ktext(ctx,'모서리',(A[0]+B[0])/2-6,(A[1]+B[1])/2+24,{bold:true,size:17})}}});
+  $$('canvas[data-s]',body).forEach(cv=>figure(cv,{visual:true,mesh:SOLIDS[cv.dataset.s].mk(),pitch:0.32,pad:0.38}));
+  $$('canvas[data-nm]',body).forEach(cv=>{const k=cv.dataset.nm;figure(cv,{visual:true,mesh:k==='y3'?pyramid(regPoly(3,1.15),1.6):SOLIDS[k].mk(),pitch:0.32,pad:0.38})});
+  {const m=SOLIDS.p5.mk();const f1=figure($('#cFace1',body),{visual:true,mesh:m,yaw:-0.5,pitch:0.35,pad:0.36});
+   let fi=2,bd=9;for(let i=2;i<m.F.length;i++){const d=Math.abs(f1.facing(m.N[i])-0.5);if(f1.facing(m.N[i])>0.15&&d<bd){bd=d;fi=i}}f1.fcol=i=>i===fi?HL_SIDE:null;f1.dirty=true;
+   const n=m.N[fi],a=faceOnAngles(n,0);const f2=figure($('#cFace2',body),{visual:true,mesh:m,yaw:a.yaw,pitch:a.pitch,pad:0.36});f2.fcol=i=>i===fi?HL_SIDE:null;
+   const L=$('#cFaceList',body);L.innerHTML='<ul>'+[['정오각형',0,2],['직사각형',fi,5]].map(([nm,f,k],j)=>`<li><span class="ico" data-j="${j}"></span><b>${nm}</b><span class="rm cnt">${k}개</span></li>`).join('')+'</ul>';
+   $$('.ico',L).forEach(sp=>{const j=+sp.dataset.j,f=j?fi:0;sp.appendChild(shapeIcon(face2D(m,f),40,j?HL_SIDE:HL_BASE))})}
+  const cm=SOLIDS.cube.mk();$$('canvas[data-fl]',body).forEach(cv=>{const k=cv.dataset.fl,I=floorFig(cv,cm,k);$(`[data-cap="${k}"]`,body).innerHTML=floorCap(I,k);$(`[data-lg="${k}"]`,body).innerHTML=floorLegend(I,k)});
+};
+CONCEPT.types=body=>{
+  body.innerHTML=foldPanel('각기둥, 각뿔, 각뿔대',`<p class="lead">${T('밑면')}이 ${T('n각형','<span class="math">n</span>각형')}일 때, <b class="mark">${T('옆면')}의 모양</b>으로 세 가지를 구별해요.</p>`,
+   fold(1,'세 가지 입체도형','옆면이 직사각형 · 삼각형 · 사다리꼴',`<div class="trio">
+     <div class="figbox"><canvas data-k="prism" style="height:200px"></canvas><div class="figcap"><b>오각기둥</b></div></div>
+     <div class="figbox"><canvas data-k="pyramid" style="height:200px"></canvas><div class="figcap"><b>오각뿔</b></div></div>
+     <div class="figbox"><canvas data-k="frustum" style="height:200px"></canvas><div class="figcap"><b>오각뿔대</b></div></div></div>
+     <div class="trio" style="margin-top:12px">
+     <p style="margin:0"><b>각기둥</b>: 두 밑면이 서로 ${T('평행')}하고 ${T('합동')}인 다각형이고, 옆면은 모두 직사각형</p>
+     <p style="margin:0"><b>각뿔</b>: 밑면이 다각형 1개이고, 옆면은 모두 한 꼭짓점에서 만나는 삼각형</p>
+     <p style="margin:0"><b>각뿔대</b>: 두 밑면이 평행하지만 합동이 아니고, 옆면은 모두 ${T('사다리꼴')}</p></div>`,true)+
+   fold(2,'각뿔대는 어떻게 생길까?','각뿔을 밑면에 평행하게 자르면',`<p style="margin-top:0">각뿔을 밑면에 평행한 평면으로 자르면 두 입체도형이 생겨요. 그중 <b>각뿔이 아닌 쪽</b>이 각뿔대예요. 위쪽은 작은 각뿔이 돼요. <span class="muted">(탐구에서 직접 잘라 볼 수 있어요)</span></p>
+     <div class="trio"><div class="figbox"><canvas id="cCut1" style="height:220px"></canvas><div class="figcap">① 밑면에 평행하게 자르기</div></div>
+       <div class="figbox"><canvas id="cCut2" style="height:220px"></canvas><div class="figcap">② 떼어 내기</div></div>
+       <div class="figbox"><canvas id="cCut3" style="height:220px"></canvas><div class="figcap">③ 남은 아래쪽 = <b>사각뿔대</b></div></div></div>`)+
+   fold(3,'몇 층 건물로 생각하기','공식을 외우지 않아도 셀 수 있어요',`<p style="margin-top:0">셋 다 <b>2층 건물</b>이에요. 층마다 세어 더하면 개수가 나와요. 그림은 오각기둥, 오각뿔, 오각뿔대의 꼭짓점을 층별로 칠한 거예요.</p>
+     <div class="trio" style="margin-bottom:14px">${['prism','pyramid','frustum'].map(k=>`<div class="figbox"><canvas data-tf="${k}" style="height:210px"></canvas><div class="figcap"><b>오${TYPE[k].nm}</b><br><span data-tcap="${k}"></span></div></div>`).join('')}</div>
+     <div class="tablewrap"><table class="t"><thead><tr><th></th><th><span class="math">n</span>각기둥</th><th><span class="math">n</span>각뿔</th><th><span class="math">n</span>각뿔대</th></tr></thead><tbody>
+       <tr><th>층별 꼭짓점</th><td class="rm"><i>n</i> + <i>n</i></td><td class="rm">1 + <i>n</i> <small class="muted">(꼭대기 층이 점 하나)</small></td><td class="rm"><i>n</i> + <i>n</i></td></tr>
+       <tr><th>모서리<br><small class="muted">위층 · 사이 · 아래층</small></th><td class="rm"><i>n</i> + <i>n</i> + <i>n</i></td><td class="rm"><i>n</i> + <i>n</i> <small class="muted">(사이 · 아래층)</small></td><td class="rm"><i>n</i> + <i>n</i> + <i>n</i></td></tr>
+       <tr><th>면<br><small class="muted">지붕 · 벽 · 바닥</small></th><td class="rm">1 + <i>n</i> + 1</td><td class="rm"><i>n</i> + 1 <small class="muted">(벽 · 바닥)</small></td><td class="rm">1 + <i>n</i> + 1</td></tr></tbody></table></div>`)+
+   fold(4,'개수 정리 표','면 · 모서리 · 꼭짓점의 개수',`<div class="tablewrap"><table class="t"><thead><tr><th></th><th><span class="math">n</span>각기둥</th><th><span class="math">n</span>각뿔</th><th><span class="math">n</span>각뿔대</th></tr></thead><tbody>
+     <tr><th>밑면</th><td>2개 (합동)</td><td>1개</td><td>2개 (합동 아님)</td></tr>
+     <tr><th>옆면 모양</th><td>직사각형</td><td>삼각형</td><td>사다리꼴</td></tr>
+     <tr><th>면의 개수</th><td class="rm"><i>n</i> + 2</td><td class="rm"><i>n</i> + 1</td><td class="rm"><i>n</i> + 2</td></tr>
+     <tr><th>모서리의 개수</th><td class="rm">3<i>n</i></td><td class="rm">2<i>n</i></td><td class="rm">3<i>n</i></td></tr>
+     <tr><th>꼭짓점의 개수</th><td class="rm">2<i>n</i></td><td class="rm"><i>n</i> + 1</td><td class="rm">2<i>n</i></td></tr></tbody></table></div>
+     <p style="margin-bottom:8px">3번의 층별 식을 정리하면 이 표가 돼요. 예) <span class="rm"><i>n</i> + <i>n</i> + <i>n</i> = 3<i>n</i></span></p>
+     <p class="muted" style="font-size:15px;margin:0 0 8px">밑면의 변이 하나 늘 때마다 모서리는 층마다 하나씩, 모두 3개 늘어요.</p>
+     <div class="trio">${[3,4,5].map(n=>`<div class="figbox"><canvas data-pe="${n}" style="height:190px"></canvas><div class="figcap">${kn(n)}각기둥 · 모서리 <span class="rm" data-pcap="${n}"></span></div></div>`).join('')}</div>`));
+  wireFolds(body,'types');
+  $$('canvas[data-k]',body).forEach(cv=>figure(cv,{visual:true,mesh:TYPE[cv.dataset.k].mk(5),pitch:0.34,pad:0.40}));
+  $$('canvas[data-tf]',body).forEach(cv=>{const k=cv.dataset.tf,I=floorFig(cv,TYPE[k].mk(5),'v');$(`[data-tcap="${k}"]`,body).innerHTML=floorCap(I,'v')});
+  $$('canvas[data-pe]',body).forEach(cv=>{const n=+cv.dataset.pe,I=floorFig(cv,TYPE.prism.mk(n),'e');$(`[data-pcap="${n}"]`,body).innerHTML=I.G.e.map((g,i)=>`<span style="color:${GC[i]};font-weight:700">${g.ids.length}</span>`).join(' + ')+' = '+3*n});
+  // 각뿔대 만들기 3단계 그림
+  const P4=regPoly(4,1.25,Math.PI/4),H=1.9,k=0.5;
+  const pyr=pyramid(P4,H),fr=frustum(P4,1-k,H*k),top=pyramid(P4.map(p=>[p[0]*(1-k),p[1]*(1-k)]),H*(1-k));
+  const plane=(ctx,vw)=>{const R0=1.25*(1-k)*1.6,z=H*k;const Q=[[-R0,-R0,z],[R0,-R0,z],[R0,R0,z],[-R0,R0,z]].map(p=>vw.proj(p));ctx.beginPath();Q.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle='rgba(42,77,158,.15)';ctx.fill();ctx.strokeStyle='rgba(42,77,158,.7)';ctx.lineWidth=1.6;ctx.stroke()};
+  const c1=new Viewer($('#cCut1',body),{interactive:false,yaw:-0.5,pitch:0.3,pad:0.34,after:plane});c1.setScene([{mesh:pyr}],{center:[0,0,H*0.55],R:1.75});
+  const c2=new Viewer($('#cCut2',body),{interactive:false,yaw:-0.5,pitch:0.3,pad:0.34,after:(ctx,vw)=>{ktext(ctx,'작은 각뿔',vw.w*0.78,vw.h*0.16,{bold:true,size:15,color:'#8a6300'});ktext(ctx,'각뿔대',vw.w*0.8,vw.h*0.72,{bold:true,size:15,color:'#2a4d9e'})}});
+  c2.setScene([{mesh:fr},{mesh:top,off:[0,0,H*k+0.75],st:{tint:[255,240,190]}}],{center:[0,0,H*0.7],R:2.0});
+  const c3=new Viewer($('#cCut3',body),{interactive:false,yaw:-0.5,pitch:0.3,pad:0.34,after:(ctx,vw)=>{ktext(ctx,'두 밑면은 평행, 크기는 달라요',vw.w/2,vw.h-14,{size:13,color:'#5a6377'})}});
+  c3.setScene([{mesh:fr}],{center:[0,0,H*0.35],R:1.6});
+};
+CONCEPT.area=body=>{
+  body.innerHTML=foldPanel('기둥의 겉넓이',`<p class="lead">입체도형의 겉면 전체의 넓이를 <b class="mark">겉넓이</b>라고 해요. ${T('전개도')}의 넓이와 같아요.</p>
+   <div class="box"><p class="formula">(기둥의 겉넓이) = (${T('밑넓이')}) × 2 + (${T('옆넓이')})</p></div>`,
+   fold(1,'옆면을 펼치면 직사각형','가로는 밑면의 둘레, 세로는 높이',`<div class="concept-grid">
+     <div class="figbox"><canvas id="cNet" style="height:300px"></canvas><div class="figcap">직육면체의 전개도</div></div>
+     <div><ul class="defs"><li><b>가로</b><span>밑면의 ${T('둘레')}</span></li><li><b>세로</b><span>기둥의 높이</span></li></ul>
+      <p class="formula" style="margin-top:12px">(옆넓이) = (밑면의 둘레) × (높이)</p></div></div>`,true)+
+   fold(2,'원기둥이라면','밑면이 원일 때 쓰는 식',`<div class="concept-grid" style="margin-bottom:14px"><div class="figbox"><canvas id="cCyl" style="height:240px"></canvas><div class="figcap">반지름 <i class="math">r</i>, 높이 <i class="math">h</i>인 원기둥</div></div>
+       <div class="figbox"><canvas id="cCylNet" style="height:240px"></canvas><div class="figcap">원기둥의 전개도 · 옆면은 직사각형</div></div></div><ul class="defs"><li><b>밑넓이</b><span>${T('원의 넓이')}: <span class="rm">π</span><i class="math">r</i><sup class="rm">2</sup></span></li>
+       <li><b>밑면 둘레</b><span>${T('원의 둘레')}: <span class="rm">2π</span><i class="math">r</i></span></li></ul>
+      <p style="margin-bottom:0">반지름이 <i class="math">r</i>, 높이가 <i class="math">h</i>이면 겉넓이는 <span class="rm">2π</span><i class="math">r</i><sup class="rm">2</sup> + <span class="rm">2π</span><i class="math">rh</i></p>`));
+  wireFolds(body,'area');
+  unfoldViewer($('#cNet'),{shape:UNF.box,t:1,labels:true});
+  figure($('#cCyl',body),{visual:true,mesh:prism(regPoly(64,1.4),2.2,true),yaw:0,pitch:0.34,pad:0.33,after:(ctx,v)=>cylLabels(ctx,v,1.4,2.2,'r','h')});
+  unfoldViewer($('#cCylNet',body),{shape:Object.assign({},UNF.cyl,{perimLabel:'가로 = 밑면의 둘레 = 2πr',hLabel:'h',inside:true,hItalic:true}),t:1,labels:true,pad:0.56});
+};
+
+/* ───────── 연동: 입체도형 탐구 ───────── */
+const LAB_SRC='labs/polyhedron-lab.html';
+const LAB_ACTS={1:{t:'활동 1 · 다면체일까?',d:'예시와 비예시 살펴보기 → 맞혀 보기 → 다면체의 뜻 만들기 → 도형 20개 분류'},
+  2:{t:'활동 2 · 기둥·뿔·뿔대',d:'각뿔을 평행하게/비스듬히 자르기 → 윗면 크기 바꾸기 → 네 칸 분류(18개)'},
+  3:{t:'활동 3 · 세어 보기',d:'도형 6개의 이름 짓기 → 면·모서리·꼭짓점 세기 → 결과 표'}};
+function labCards(acts){
+  const sec=el(`<div class="lab-acts">${acts.map(n=>`<button type="button" class="lab-act" data-act="${n}"><em>${LAB_ACTS[n].t.split(' · ')[0]}</em><b>${LAB_ACTS[n].t.split(' · ')[1]}</b><span>${LAB_ACTS[n].d}</span></button>`).join('')}</div>`);
+  $$('.lab-act',sec).forEach(b=>b.onclick=()=>openLab(+b.dataset.act));return sec}
+function openLab(n){const ov=$('#labov'),fr=$('#labFrame');fr.src=LAB_SRC+'#act'+n;ov.hidden=false;document.body.classList.add('locked');$('#labClose').focus()}
+function closeLab(){$('#labov').hidden=true;document.body.classList.remove('locked')}
+$('#labClose').onclick=closeLab;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#labov').hidden)closeLab()});
+
+/* ───────── 몇 층 건물? 층으로 나누어 세기 ───────── */
+function floorInfo(m){
+  const zs=m.V.map(v=>v[2]).sort((a,b)=>a-b),lv=[];zs.forEach(z=>{if(!lv.length||z-lv[lv.length-1]>1e-4)lv.push(z)});
+  const fi=m.V.map(v=>lv.findIndex(l=>Math.abs(l-v[2])<=1e-4));const top=lv.length-1;
+  const G={v:[],e:[],f:[]};
+  const add=(kind,key,label,z,id,floors)=>{let g=G[kind].find(g=>g.key===key);if(!g){g={key,label,z,floors,ids:[]};G[kind].push(g)}g.ids.push(id)};
+  m.V.forEach((v,i)=>add('v','v'+fi[i],`${fi[i]+1}층`,lv[fi[i]],i,[fi[i]]));
+  m.E.forEach(e=>{const a=fi[e.a],b=fi[e.b];if(a===b)add('e','in'+a,`${a+1}층 안`,lv[a],e.k,[a]);
+    else{const lo=Math.min(a,b),hi=Math.max(a,b);add('e','bt'+lo+'-'+hi,`${lo+1}층과 ${hi+1}층 사이`,(lv[lo]+lv[hi])/2,e.k,[lo,hi])}});
+  m.F.forEach((f,i)=>{const fs=f.map(k=>fi[k]),lo=Math.min(...fs),hi=Math.max(...fs);
+    if(lo===hi)add('f','fl'+lo,lo===top?'지붕':lo===0?'바닥':`${lo+1}층 바닥`,lv[lo]+(lo===top?1e-3:-1e-3),i,[lo]);
+    else add('f','w'+lo+'-'+hi,'벽',(lv[lo]+lv[hi])/2,i,range(hi-lo+1).map(q=>lo+q))});
+  const walls=G.f.filter(g=>g.key[0]==='w');if(walls.length>1)walls.forEach(g=>{g.label=`벽 (${g.floors[0]+1}~${g.floors[g.floors.length-1]+1}층)`});
+  ['v','e','f'].forEach(k=>G[k].sort((a,b)=>b.z-a.z));
+  return{lv,fi,G,n:lv.length}}
+const KIND_NM={v:'꼭짓점',e:'모서리',f:'면'};
+const DIGIT_JONG={'0':21,'1':8,'2':0,'3':16,'4':0,'5':0,'6':1,'7':8,'8':8,'9':0};
+function jong(w){const ch=String(w).slice(-1);if(ch in DIGIT_JONG)return DIGIT_JONG[ch];const c=ch.charCodeAt(0)-0xAC00;return(c>=0&&c<11172)?c%28:0}
+function josa(w,a,b){return w+(jong(w)?a:b)}
+function josaRo(w){const j=jong(w);return w+((j&&j!==8)?'으로':'로')}
+const KIND_TIP={v:'같은 높이에 있는 꼭짓점끼리 한 층이에요.',e:'층 안 모서리는 바닥 둘레, 층 사이 모서리는 층과 층을 잇는 기둥이나 계단이에요.',f:'지붕과 바닥, 그리고 옆을 둘러싼 벽으로 나누어 세요.'};
+const DONE_COL={v:'#7d9fe0',e:'rgba(125,159,224,.75)',f:'#d7e3fb'};
+function floorActivity(host,keys,opt={}){
+  host.innerHTML=`<div class="explore"><div class="stage"><canvas id="flCv" aria-label="층으로 나누어 셀 입체도형"></canvas><span class="hint">끌어서 돌리고, 눌러서 표시해요</span></div>
+    <div class="ctrl">
+      <div><span class="cap">입체도형</span><div class="chips" id="flShapes">${keys.map((k,i)=>`<button type="button" class="chip ${i===0?'on':''}" data-k="${k}">${SOLIDS[k].name}${['oct','ico','dod'].includes(k)?' <small>도전</small>':''}</button>`).join('')}</div></div>
+      <ol class="flsteps" id="flSteps"></ol>
+      <div class="fltask" id="flTask"></div>
+      <div id="flBody"></div>
+      <div class="fleq" id="flEq"></div>
+      <div><label class="cap" for="flGap">층 벌려 보기</label><input type="range" id="flGap" min="0" max="100" value="0"></div>
+    </div></div>`;
+  const PH=['floors','v','e','f','done'];
+  const S={key:keys[0],base:null,info:null,ph:'floors',gi:0,found:{v:new Set(),e:new Set(),f:new Set()},doneG:{v:[],e:[],f:[]},gap:0,showFloors:false,msg:''};
+  const v=new Viewer($('#flCv',host),{pad:0.34,yaw:-0.5,pitch:0.32,draw:(ctx,vw)=>drawAll(ctx,vw)});
+  const disp=()=>{const g=S.gap*0.45;const V=S.base.V.map((p,i)=>[p[0],p[1],p[2]+S.info.fi[i]*g]);return Object.assign({},S.base,{V})};
+  const setScene=()=>{const m=disp();const zmax=S.info.lv[S.info.n-1]+(S.info.n-1)*0.45,zmin=S.info.lv[0];v.setScene([{mesh:m}],{center:[0,0,(zmax+zmin)/2],R:Math.max(S.base.R,(zmax-zmin)/2)*1.12});v.marks={f:new Set(),e:new Set(),v:new Set()}};
+  const groupOfId=(kind,id)=>S.info.G[kind].findIndex(g=>g.ids.includes(id));
+  v.vcol=i=>{if(S.ph==='floors')return null;if(S.found.v.has(i))return S.ph==='v'&&groupOfId('v',i)===S.gi?HI:DONE_COL.v;return null};
+  v.ecol=k=>{if(S.found.e.has(k))return S.ph==='e'&&groupOfId('e',k)===S.gi?'rgba(255,210,40,.95)':DONE_COL.e;return null};
+  v.fcol=i=>{if(S.found.f.has(i))return S.ph==='f'&&groupOfId('f',i)===S.gi?HI:DONE_COL.f;return null};
+  v.onHit=(kind,id)=>{if(kind!==S.ph)return;const G=S.info.G[kind],g=G[S.gi];const gi=groupOfId(kind,id);
+    if(gi===S.gi){toggle(S.found[kind],id);S.msg='';const n=g.ids.filter(x=>S.found[kind].has(x)).length;
+      if(n===g.ids.length){S.doneG[kind].push(g.ids.length);S.msg=`<span class="ok">${g.label} ${KIND_NM[kind]} ${g.ids.length}개!</span>`;S.gi++;
+        if(S.gi>=G.length){S.msg=`<span class="ok">${josa(KIND_NM[kind],'을','를')} 모두 셌어요.</span>`}render()}else render()}
+    else if(S.doneG[kind].length>gi)S.msg='이미 센 층이에요.';
+    else S.msg=`그건 <b>${G[gi].label}</b>의 ${KIND_NM[kind]}이에요. 지금은 <b>${g.label}</b>의 ${josa(KIND_NM[kind],'을','를')} 세요.`;
+    if(gi!==S.gi)renderMsg()};
+  function drawAll(ctx,vw){
+    if(!S.info||!vw.scene.length)return;const m=vw.scene[0].mesh;const g=S.gap*0.45;const I=S.info;
+    const act=S.ph!=='floors'&&S.ph!=='done'&&I.G[S.ph][S.gi]?I.G[S.ph][S.gi].floors:[];
+    const plates=I.lv.map((z,f)=>{const ids=I.G.v.find(q=>q.key==='v'+f).ids;let cx=0,cy=0;ids.forEach(i=>{cx+=S.base.V[i][0];cy+=S.base.V[i][1]});cx/=ids.length;cy/=ids.length;
+      const r=Math.max(0.28,...ids.map(i=>Math.hypot(S.base.V[i][0]-cx,S.base.V[i][1]-cy)))*1.18+0.18;
+      const pts=range(40).map(q=>vw.proj([cx+r*Math.cos(TAU*q/40),cy+r*Math.sin(TAU*q/40),z+f*g]));return{f,pts}});
+    if(S.showFloors)plates.forEach(({f,pts})=>{const on=act.includes(f);ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=on?'rgba(255,226,102,.45)':'rgba(42,77,158,.07)';ctx.fill();ctx.setLineDash([5,4]);ctx.strokeStyle=on?'rgba(200,150,0,.8)':'rgba(42,77,158,.35)';ctx.lineWidth=1.4;ctx.stroke();ctx.setLineDash([])});
+    vw.drawMesh(m);
+    if(S.showFloors)plates.forEach(({f,pts})=>{const L=pts.reduce((a,p)=>p[0]<a[0]?p:a,pts[0]);ktext(ctx,`${f+1}층`,L[0]-8,L[1],{align:'right',bold:true,size:16,color:act.includes(f)?'#8a6300':'#2a4d9e'})});
+  }
+  function eqLine(kind){const G=S.info.G[kind];const parts=G.map((g,i)=>i<S.doneG[kind].length?S.doneG[kind][i]:'?');const done=S.doneG[kind].length===G.length;
+    return `<div class="${kind===S.ph?'cur':''}"><b>${KIND_NM[kind]}</b> = <span class="rm">${parts.join(' + ')}${done?' = '+parts.reduce((a,b)=>a+b,0):''}</span></div>`}
+  function renderMsg(){const mb=$('#flMsg',host);if(mb)mb.innerHTML=S.msg}
+  function render(){
+    v.mode=S.ph==='floors'?'v':S.ph==='done'?null:S.ph;v.dirty=true;
+    const idx=PH.indexOf(S.ph);
+    $('#flSteps',host).innerHTML=['몇 층?','꼭짓점','모서리','면'].map((t,i)=>`<li class="${i<idx?'done':i===idx?'on':''}">${t}</li>`).join('');
+    const I=S.info,body=$('#flBody',host),task=$('#flTask',host);
+    if(S.ph==='floors'){task.innerHTML='이 입체도형은 <b>몇 층 건물</b>인가요?<small>같은 높이에 있는 꼭짓점끼리 한 층이에요. 돌려서 옆에서 보면 잘 보여요.</small>';
+      body.innerHTML=`<div class="choices">${[2,3,4,5].map(n=>`<button type="button" data-n="${n}">${n}층</button>`).join('')}</div><div id="flMsg" class="flmsg">${S.msg}</div>`;
+      $$('button',body).forEach(b=>b.onclick=()=>{if(+b.dataset.n===I.n){S.showFloors=true;S.ph='v';S.gi=0;S.msg=`<span class="ok">맞아요! ${I.n}층 건물이에요. 아래부터 1층, 2층…</span>`;render()}else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);S.msg='옆에서 보이게 돌려 보세요. 꼭짓점이 몇 가지 높이에 있나요?';renderMsg()}})}
+    else if(S.ph==='done'){task.innerHTML=`<b>${SOLIDS[S.key].name}</b>의 꼭짓점, 모서리, 면을 모두 셌어요!`;if(opt.onDone&&!S.reported){S.reported=true;opt.onDone(S.key)}
+      const F=I.G.f.reduce((a,g)=>a+g.ids.length,0);let name='';
+      if(I.n===2){const c=I.G.v.map(g=>g.ids.length);const rad=f=>{const ids=I.G.v.find(q=>q.key==='v'+f).ids;return Math.max(...ids.map(i=>Math.hypot(S.base.V[i][0],S.base.V[i][1])))};
+        name=c[0]===1?'2층 건물인데 꼭대기 층이 점 하나 → <b>뿔</b>':Math.abs(rad(0)-rad(1))<1e-3?'2층 건물이고 두 층의 크기가 같아요 → <b>기둥</b>':'2층 건물이고 위층이 더 작아요 → <b>뿔대</b>'}
+      body.innerHTML=`<div class="feedback ok">면이 ${F}개이니 <b>${kn(F)}면체</b>예요.${name?'<br>'+name:''}</div><div class="next-row" style="justify-content:flex-start"><button type="button" class="btn" id="flAgain">다시 세기</button><button type="button" class="btn primary" id="flNext">다른 도형 세기 →</button></div>`;
+      $('#flAgain',host).onclick=()=>load(S.key);
+      $('#flNext',host).onclick=()=>{const i=keys.indexOf(S.key);pickShape(keys[(i+1)%keys.length])}}
+    else{const G=I.G[S.ph];
+      if(S.gi>=G.length){task.innerHTML=`<b>${josa(KIND_NM[S.ph],'을','를')}</b> 모두 셌어요.`;const nx=PH[idx+1];
+        body.innerHTML=`<div id="flMsg" class="flmsg">${S.msg}</div><button type="button" class="btn primary" id="flGo">${nx==='done'?'결과 보기':KIND_NM[nx]+' 세러 가기'} →</button>`;
+        $('#flGo',host).onclick=()=>{S.ph=nx;S.gi=0;S.msg='';render()}}
+      else{const g=G[S.gi];const n=g.ids.filter(x=>S.found[S.ph].has(x)).length;
+        task.innerHTML=`<b class="hl">${g.label}</b>의 ${josa(KIND_NM[S.ph],'을','를')} 모두 눌러 보세요.<small>${KIND_TIP[S.ph]}</small>`;
+        body.innerHTML=`<div class="counter">찾은 개수: <b>${n}</b>개</div><div id="flMsg" class="flmsg">${S.msg}</div>`}}
+    $('#flEq',host).innerHTML=['v','e','f'].filter(k=>PH.indexOf(k)<=idx).map(eqLine).join('');
+  }
+  function load(k){S.key=k;S.reported=false;S.base=SOLIDS[k].mk();S.info=floorInfo(S.base);S.ph='floors';S.gi=0;S.found={v:new Set(),e:new Set(),f:new Set()};S.doneG={v:[],e:[],f:[]};S.showFloors=false;S.msg='';
+    v.userMoved=false;v.yaw=-0.5;v.pitch=k==='dod'||k==='ico'?0.22:0.3;setScene();render()}
+  function pickShape(k){$$('#flShapes .chip',host).forEach(x=>x.classList.toggle('on',x.dataset.k===k));load(k)}
+  $$('#flShapes .chip',host).forEach(b=>b.onclick=()=>pickShape(b.dataset.k));
+  $('#flGap',host).oninput=e=>{S.gap=e.target.value/100;setScene()};
+  load(keys[0]);
+}
+
+
+/* ───────── 면의 모양 찾기 (1단계: 어떤 다각형으로 이루어졌나) ───────── */
+const v3={sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],len:a=>Math.hypot(a[0],a[1],a[2])};
+function face2D(m,fi){const P=m.F[fi].map(i=>m.V[i]),n=m.N[fi];const u0=v3.sub(P[1],P[0]),ul=v3.len(u0),u=u0.map(x=>x/ul),w=v3.cross(n,u);
+  return P.map(p=>{const d=v3.sub(p,P[0]);return[v3.dot(d,u),v3.dot(d,w)]})}
+function polyInfo(pts){const n=pts.length,L=[],A=[],D=[];
+  for(let i=0;i<n;i++){const a=pts[i],b=pts[(i+1)%n];L.push(Math.hypot(b[0]-a[0],b[1]-a[1]));D.push([b[0]-a[0],b[1]-a[1]])}
+  for(let i=0;i<n;i++){const p=D[(i+n-1)%n],q=D[i];const ang=Math.PI-Math.acos(Math.max(-1,Math.min(1,(p[0]*q[0]+p[1]*q[1])/(Math.hypot(...p)*Math.hypot(...q)))));A.push(ang)}
+  const mx=Math.max(...L),tol=1e-3*mx,eq=(x,y)=>Math.abs(x-y)<tol,eqL=L.every(x=>eq(x,L[0])),eqA=A.every(a=>Math.abs(a-A[0])<1e-3);
+  const par=(i,j)=>{const a=D[i],b=D[j];return Math.abs(a[0]*b[1]-a[1]*b[0])<1e-3*Math.hypot(...a)*Math.hypot(...b)};
+  const right=A.some(a=>Math.abs(a-Math.PI/2)<1e-3),allRight=A.every(a=>Math.abs(a-Math.PI/2)<1e-3);
+  return{n,L,A,eqL,eqA,right,allRight,iso:n===3&&(eq(L[0],L[1])||eq(L[1],L[2])||eq(L[0],L[2])),p02:n===4&&par(0,2),p13:n===4&&par(1,3)}}
+const SHAPE_NAMES=['정삼각형','이등변삼각형','직각삼각형','정사각형','직사각형','평행사변형','사다리꼴','정오각형','오각형','정육각형','육각형'];
+function shapeTrue(name,I){switch(name){
+  case'정삼각형':return I.n===3&&I.eqL;case'이등변삼각형':return I.n===3&&I.iso;case'직각삼각형':return I.n===3&&I.right;
+  case'정사각형':return I.n===4&&I.allRight&&I.eqL;case'직사각형':return I.n===4&&I.allRight;case'평행사변형':return I.n===4&&I.p02&&I.p13;
+  case'사다리꼴':return I.n===4&&(I.p02||I.p13);case'정오각형':return I.n===5&&I.eqL&&I.eqA;case'오각형':return I.n===5;
+  case'정육각형':return I.n===6&&I.eqL&&I.eqA;case'육각형':return I.n===6}return false}
+function shapeName(I){const order={3:['정삼각형','직각삼각형','이등변삼각형'],4:['정사각형','직사각형','평행사변형','사다리꼴'],5:['정오각형','오각형'],6:['정육각형','육각형']}[I.n]||[];
+  return order.find(nm=>shapeTrue(nm,I))||({3:'삼각형',4:'사각형'}[I.n]||kn(I.n)+'각형')}
+function shapeChoices(ans,I,r){const fam={3:['정삼각형','이등변삼각형','직각삼각형'],4:['정사각형','직사각형','평행사변형','사다리꼴'],5:['정오각형','오각형'],6:['정육각형','육각형']};
+  const same=shuffle(r,(fam[I.n]||[]).filter(nm=>nm!==ans&&!shapeTrue(nm,I)));
+  const other=shuffle(r,SHAPE_NAMES.filter(nm=>!shapeTrue(nm,I)&&!(fam[I.n]||[]).includes(nm)&&(nm.startsWith('정')||nm==='사다리꼴'||nm==='직사각형')));
+  const pick3=[...same.slice(0,2),...other].slice(0,3);return shuffle(r,[ans,...pick3])}
+const SHAPE_HINT={3:'변이 3개예요. 세 변의 길이를 비교해 보세요. 모두 같으면 정삼각형, 두 변만 같으면 이등변삼각형이에요.',
+  4:'변이 4개예요. 네 각이 모두 직각인지, 마주 보는 변이 평행한지 살펴보세요.',5:'변이 5개예요. 변의 길이가 모두 같은지 보세요.',6:'변이 6개예요. 변의 길이가 모두 같은지 보세요.'};
+const SOLID_KIND={cube:'cube',p3:'prism',p5:'prism',p6:'prism',y4:'pyramid',y6:'pyramid',f4:'frustum',f5:'frustum',oct:'regular',ico:'regular',dod:'regular'};
+function shapeIcon(pts,size=46,col='#fff6c7'){const cv=document.createElement('canvas');const d=window.devicePixelRatio||1;cv.width=size*d;cv.height=size*d;cv.style.width=size+'px';cv.style.height=size+'px';
+  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;pts.forEach(([x,y])=>{mnx=Math.min(mnx,x);mny=Math.min(mny,y);mxx=Math.max(mxx,x);mxy=Math.max(mxy,y)});
+  const sc=(size-8)/Math.max(mxx-mnx,mxy-mny),ox=(size-(mxx-mnx)*sc)/2,oy=(size-(mxy-mny)*sc)/2;c.beginPath();pts.forEach(([x,y],i)=>{const X=ox+(x-mnx)*sc,Y=size-(oy+(y-mny)*sc);i?c.lineTo(X,Y):c.moveTo(X,Y)});c.closePath();
+  c.fillStyle=col;c.fill();c.lineWidth=2;c.lineJoin='round';c.strokeStyle='#151a28';c.stroke();return cv}
+function faceOnAngles(n,curYaw){const r=Math.hypot(n[0],n[1]);return{yaw:r<1e-6?curYaw:Math.atan2(-n[0],-n[1]),pitch:Math.atan2(n[2],r)}}
+function faceActivity(host,keys,opt={}){
+  host.innerHTML=`<div class="explore"><div class="stage"><canvas class="faCv" aria-label="면의 모양을 찾을 입체도형"></canvas><span class="hint">끌어서 돌리고, 면을 눌러요</span></div>
+    <div class="ctrl">
+      <div><span class="cap">입체도형</span><div class="chips faShapes">${keys.map((k,i)=>`<button type="button" class="chip ${i===0?'on':''}" data-k="${k}">${SOLIDS[k].name}${['oct','ico','dod'].includes(k)?' <small>도전</small>':''}</button>`).join('')}</div></div>
+      <div class="fltask faTask"></div>
+      <div class="faBody"></div>
+      <div class="falist" aria-label="면 목록"></div>
+    </div></div>`;
+  const S={key:keys[0],m:null,info:[],groups:{},order:[],found:new Set(),cur:null,sel:null,ph:'pick',msg:'',tries:0};
+  const v=new Viewer($('.faCv',host),{pad:0.36,yaw:-0.5,pitch:0.32,draw:(ctx,vw)=>{if(!S.m)return;vw.drawMesh(S.m);
+    if(S.ph==='ask'&&S.sel!=null&&S.tries>0){const P=S.m.F[S.sel].map(i=>vw.proj(S.m.V[i]));P.forEach((p,i)=>{ctx.beginPath();ctx.arc(p[0],p[1],11,0,TAU);ctx.fillStyle='#1d2640';ctx.fill();ktext(ctx,String(i+1),p[0],p[1]+1,{size:12,bold:true,color:'#fff',halo:false})})}}});
+  v.mode='f';
+  const colorOf=nm=>FC[S.order.indexOf(nm)%5];
+  v.fcol=i=>{if(i===S.sel&&S.ph==='ask')return HI;if(!S.found.has(i))return null;const nm=S.info[i].name;return nm===S.cur&&S.ph==='collect'?HI:colorOf(nm)};
+  v.onHit=(kind,fi)=>{if(kind!=='f')return;
+    if(S.ph==='pick'){if(S.found.has(fi)){S.msg='이미 면 목록에 넣은 면이에요. 아직 칠해지지 않은 면을 골라 보세요.';renderMsg();return}
+      S.sel=fi;S.ph='ask';S.tries=0;S.msg='';const a=faceOnAngles(S.m.N[fi],v.yaw);v.flyTo(a.yaw,a.pitch);render()}
+    else if(S.ph==='collect'){const nm=S.info[fi].name;
+      if(S.found.has(fi)){S.msg=nm===S.cur?'이미 센 면이에요.':'이미 면 목록에 넣은 면이에요.';renderMsg();return}
+      if(nm!==S.cur){S.msg=`그 면은 ${josa(S.cur,'이','가')} 아니에요. 돌려서 다른 면을 찾아보세요.`;renderMsg();return}
+      S.found.add(fi);S.msg='';const g=S.groups[S.cur];const k=g.filter(x=>S.found.has(x)).length;
+      if(k===g.length)finishGroup();else render()}};
+  function finishGroup(){const g=S.groups[S.cur];S.msg=`<span class="ok">${S.cur} ${g.length}개를 면 목록에 넣었어요.</span>`;S.cur=null;
+    if(S.found.size===S.m.F.length){S.ph='done';if(opt.onDone)opt.onDone(S.key)}else{S.ph='pick';v.flyTo(-0.5,0.32)}render()}
+  function renderMsg(){const mb=$('.faMsg',host);if(mb)mb.innerHTML=S.msg}
+  function listHTML(){const items=S.order.map(nm=>{const g=S.groups[nm],k=g.filter(x=>S.found.has(x)).length,done=k===g.length;
+      return`<li class="${nm===S.cur?'cur':''}"><span class="ico" data-nm="${nm}"></span><b>${nm}</b><span class="rm cnt">${done?k+'개':k+'개 …'}</span></li>`}).join('');
+    const total=S.found.size;return S.order.length?`<div class="cap">면 목록</div><ul>${items}</ul>`:`<div class="cap">면 목록</div><p class="muted" style="margin:0;font-size:15px">아직 비어 있어요. 면을 눌러 모양을 찾으면 여기에 쌓여요.</p>`}
+  function render(){v.dirty=true;const task=$('.faTask',host),body=$('.faBody',host);
+    if(S.ph==='pick'){task.innerHTML=`아직 칠해지지 않은 <b class="hl">면을 하나</b> 눌러 보세요.<small>${S.found.size?'뒤쪽이나 아래쪽에 숨은 면도 있어요. 돌려서 찾아보세요.':'누르면 그 면이 정면으로 돌아와서 실제 모양을 보여 줘요.'}</small>`;body.innerHTML=`<div class="flmsg faMsg">${S.msg}</div>`}
+    else if(S.ph==='ask'){const I=S.info[S.sel],r=mulberry(S.sel*31+S.key.length*7);
+      task.innerHTML=`노랗게 칠한 면이 <b>정면</b>으로 돌아왔어요. 이 면의 <b class="hl">실제 모양</b>은?<small>비스듬히 볼 때와 정면에서 볼 때 모양이 어떻게 다른지도 살펴보세요.</small>`;
+      body.innerHTML=`<div class="choices faCh">${shapeChoices(I.name,I.poly,r).map(c=>`<button type="button">${c}</button>`).join('')}</div><div class="flmsg faMsg">${S.msg}</div>`;
+      $$('.faCh button',body).forEach(b=>b.onclick=()=>{if(b.textContent===I.name){S.cur=I.name;if(!S.order.includes(I.name))S.order.push(I.name);S.found.add(S.sel);S.sel=null;S.ph='collect';S.msg=`<span class="ok">맞아요, ${I.name}!</span>`;
+          const g=S.groups[S.cur];if(g.filter(x=>S.found.has(x)).length===g.length)finishGroup();else{v.flyTo(-0.5,0.32);render()}}
+        else{S.tries++;b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);S.msg=`꼭짓점에 번호를 붙였어요. ${SHAPE_HINT[I.poly.n]||''}<br>${({3:[T('정삼각형'),T('이등변삼각형')],4:[T('정사각형'),T('직사각형'),T('사다리꼴')]}[I.poly.n]||[T('정다각형')]).join(' · ')}`;renderMsg();v.dirty=true}})}
+    else if(S.ph==='collect'){const g=S.groups[S.cur],k=g.filter(x=>S.found.has(x)).length;
+      task.innerHTML=`<b class="hl">${S.cur}</b>인 면을 모두 찾아 눌러 보세요.<small>같은 모양이면 크기가 달라도 같은 이름이에요. 찾은 개수: ${k}개</small>`;body.innerHTML=`<div class="flmsg faMsg">${S.msg}</div>`}
+    else{const parts=S.order.map(nm=>`${nm} ${S.groups[nm].length}개`);const F=S.m.F.length;const kind=SOLID_KIND[S.key];
+      const side=S.order.find(nm=>S.m.base&&S.groups[nm].some(fi=>!S.m.base.includes(fi)));
+      const insight={prism:`옆면이 모두 ${side} → <b>각기둥</b>`,pyramid:`옆면이 모두 ${side} → <b>각뿔</b>`,frustum:`옆면이 모두 ${side} → <b>각뿔대</b>`,
+        cube:'모든 면이 합동인 정사각형 → <b>정육면체</b> (사각기둥이기도 해요)',regular:`모든 면이 합동인 ${S.order[0]} → <b>정다면체</b>로 이어져요`}[kind]||'';
+      task.innerHTML=`<b>${SOLIDS[S.key].name}</b>의 면 목록을 완성했어요!`;
+      body.innerHTML=`<div class="feedback ok"><span class="rm">${parts.join(' + ')}</span><br>= 면 <b>${F}</b>개 → <b>${kn(F)}면체</b>${insight?'<br>'+insight:''}</div>
+        <div class="next-row" style="justify-content:flex-start"><button type="button" class="btn faAgain">다시 하기</button><button type="button" class="btn primary faNext">다른 도형 →</button></div>
+        <div class="dupbox"><button type="button" class="btn ghost faDup">응용 도전 · 면 목록으로 모서리 세기</button><div class="dupHost"></div></div>`;
+      $('.faAgain',host).onclick=()=>load(S.key);$('.faNext',host).onclick=()=>{const i=keys.indexOf(S.key);pickShape(keys[(i+1)%keys.length])};
+      $('.faDup',host).onclick=e=>{e.target.remove();dupChallenge($('.dupHost',host),S.m,S.order.map(nm=>({nm,k:S.groups[nm].length,n:S.info[S.groups[nm][0]].poly.n})),S.key)}}
+    const L=$('.falist',host);L.innerHTML=listHTML();$$('.ico',L).forEach(sp=>{const nm=sp.dataset.nm,fi=S.groups[nm][0];sp.appendChild(shapeIcon(face2D(S.m,fi),40,colorOf(nm)))})}
+  function load(k){S.key=k;S.m=SOLIDS[k].mk();S.info=S.m.F.map((f,i)=>{const pts=face2D(S.m,i),I=polyInfo(pts);return{pts,poly:I,name:shapeName(I)}});
+    S.groups={};S.info.forEach((x,i)=>{(S.groups[x.name]=S.groups[x.name]||[]).push(i)});S.order=[];S.found=new Set();S.cur=null;S.sel=null;S.ph='pick';S.msg='';S.tries=0;
+    v.anim=null;v.userMoved=false;v.yaw=-0.5;v.pitch=0.32;v.setScene([{mesh:S.m,st:{tint:[226,234,248]}}]);render()}
+  function pickShape(k){$$('.faShapes .chip',host).forEach(x=>x.classList.toggle('on',x.dataset.k===k));load(k)}
+  $$('.faShapes .chip',host).forEach(b=>b.onclick=()=>pickShape(b.dataset.k));
+  load(keys[0]);
+}
+
+/* 응용: 면 목록에서 모서리·꼭짓점 구하기 (두 면이 모서리 하나를 함께 쓴다) */
+function dupChallenge(host,m,list,key){
+  const sum=list.reduce((a,x)=>a+x.n*x.k,0),E=m.E.length,Vn=m.V.length;
+  const deg=m.V.map((_,i)=>m.F.filter(f=>f.includes(i)).length),uni=deg.every(d=>d===deg[0]);
+  const parts=list.map(x=>`${x.nm} ${x.k}개 → <span class="rm">${x.n} × ${x.k} = ${x.n*x.k}</span>`).join('<br>');
+  const steps=[{q:`면 목록에 있는 다각형의 <b>변</b>을 모두 더하면 몇 개인가요?`,type:'num',ans:sum,suffix:'개',hint:parts,ok:`변을 모두 더하면 ${sum}개`},
+    {q:`모서리 하나에는 면 <b>두 개</b>가 붙어 있어요. 그래서 변을 셀 때 모서리마다 두 번씩 셌어요. 모서리는 몇 개인가요?`,type:'num',ans:E,suffix:'개',hint:`(변의 합) ÷ 2 = ${sum} ÷ 2`,ok:`${sum} ÷ 2 = ${E}`}];
+  if(uni)steps.push({q:`꼭짓점 하나에는 면이 <b>${deg[0]}개</b>씩 모여요. 다각형의 꼭짓점을 모두 더하면 ${sum}개예요. 꼭짓점은 몇 개인가요?`,type:'num',ans:Vn,suffix:'개',hint:`${sum} ÷ ${deg[0]}`,ok:`${sum} ÷ ${deg[0]} = ${Vn}`});
+  renderProblem(host,{title:'면 목록만 보고 모서리'+(uni?'와 꼭짓점':'')+'의 개수를 구해 보세요.',fig:null,steps},{mode:'steps',onDone:({good,box})=>{
+    box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${uni?'층으로 나누어 센 결과와 같은지 확인해 보세요.':'각뿔은 꼭대기 꼭짓점에만 면이 많이 모여서, 꼭짓점은 층으로 세는 편이 쉬워요.'}</span>`);if(good)award(3,'dup:'+key)}});
+}
+
+/* ───────── 면은 몇 개까지 줄일 수 있을까? ───────── */
+function reduceActivity(host,onDone){
+  host.innerHTML=`<div class="explore"><div class="stage"><canvas class="rdCv" aria-label="면의 개수를 줄여 보는 그림"></canvas><span class="hint">끌어서 돌려 보세요</span></div>
+    <div class="ctrl"><div><span class="cap">면을 몇 개 이어 붙일까요?</span><div class="seg rdSeg"><button type="button" data-n="2">면 2개</button><button type="button" data-n="3">면 3개</button><button type="button" data-n="4">면 4개</button></div></div>
+      <div class="feedback info rdTxt"></div><p class="muted" style="margin:0;font-size:15px">진한 색은 면의 <b>안쪽</b>이에요. 안쪽이 보인다는 건 어딘가 뚫려 있다는 뜻이에요.</p></div></div>`;
+  const P=regPoly(3,1.2),H=1.75;const base=pyramid(P,H);const V=base.V,cen=base.c;
+  const S={n:3,th:0,target:0,reported:false};
+  const TXT={2:'면 2개는 책처럼 펼쳐질 뿐이에요. 안쪽 공간을 둘러싸지 못해요.',3:'면 3개를 이어 붙이면 아래가 뚫린 텐트가 돼요. 아래에서 올려다보면 속(진한 색)이 다 보여요. 아직 다면체가 아니에요.',
+    4:'아래 면을 붙이니 빈틈없이 막혔어요! 면이 4개인 <b>사면체(삼각뿔)</b>가 가장 적은 면으로 만들 수 있는 다면체예요. 그래서 면이 3개인 다면체는 없어요.'};
+  const rotBase=p=>{const a=V[0],ax=v3.sub(V[1],a),al=v3.len(ax),u=ax.map(x=>x/al);const d=v3.sub(p,a),k=v3.dot(d,u),par=u.map(x=>x*k),perp=v3.sub(d,par),f=Math.PI-S.th,c=Math.cos(f),s=Math.sin(f),cr=v3.cross(u,perp);
+    return[a[0]+par[0]+perp[0]*c-cr[0]*s,a[1]+par[1]+perp[1]*c-cr[1]*s,a[2]+par[2]+perp[2]*c-cr[2]*s]};
+  const poly=(ctx,P2,fill,stroke,dash)=>{ctx.beginPath();P2.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.setLineDash(dash||[]);ctx.lineJoin='round';ctx.lineWidth=dash?1.6:2.4;ctx.strokeStyle=stroke;ctx.stroke();ctx.setLineDash([])}};
+  const v=new Viewer($('.rdCv',host),{pad:0.36,yaw:-0.5,pitch:-0.62,draw:(ctx,vw)=>{
+    const sides=[[0,1,3],[1,2,3],[2,0,3]],polys=sides.slice(0,S.n===2?2:3).map(f=>f.map(i=>V[i]));
+    if(S.n<4)poly(ctx,[V[0],V[1],V[2]].map(p=>vw.proj(p)),null,'#7a86a3',[6,5]);
+    if(S.n===2)poly(ctx,[V[2],V[0],V[3]].map(p=>vw.proj(p)),null,'#7a86a3',[6,5]);
+    if(S.n===4)polys.push([V[0],V[1],rotBase(V[2])]);
+    const items=polys.map(pts=>{const Pp=pts.map(p=>vw.proj(p));let n=v3.cross(v3.sub(pts[1],pts[0]),v3.sub(pts[2],pts[0]));const c=pts.reduce((q,p)=>[q[0]+p[0]/3,q[1]+p[1]/3,q[2]+p[2]/3],[0,0,0]);
+      if(v3.dot(n,v3.sub(c,cen))<0)n=n.map(x=>-x);const L=v3.len(n);n=n.map(x=>x/L);return{Pp,out:vw.facing(n)>0,d:Pp.reduce((a,p)=>a+p[2],0)/3}}).sort((a,b)=>a.d-b.d);
+    items.forEach(({Pp,out})=>poly(ctx,Pp,out?'rgba(219,230,250,.97)':'rgba(112,136,190,.97)','#151a28'));
+    if(S.n===3){const C=vw.proj([cen[0],cen[1],0]);chip(ctx,'뚫린 곳',C[0],C[1],{bg:'#fff6c7',border:'#b88a00',size:15})}
+    if(S.n===4&&S.th>3.1)chip(ctx,'빈틈없이 막혔어요 → 사면체',vw.w/2,26,{bg:'#e5f4ea',border:'#2b7a4b',color:'#2b7a4b',size:15})}});
+  v.setScene([{mesh:base}],{R:1.5,center:[cen[0],cen[1],H*0.32]});
+  v.tick=()=>{if(S.n===4&&Math.abs(S.th-S.target)>0.002){S.th+=Math.sign(S.target-S.th)*Math.min(Math.abs(S.target-S.th),reduced?9:0.04);v.dirty=true;if(S.th>3.1&&!S.reported){S.reported=true;onDone&&onDone()}}};
+  const set=n=>{S.n=n;$$('.rdSeg button',host).forEach(b=>b.classList.toggle('on',+b.dataset.n===n));$('.rdTxt',host).innerHTML=TXT[n];if(n===4){S.th=0;S.target=Math.PI}v.dirty=true};
+  $$('.rdSeg button',host).forEach(b=>b.onclick=()=>set(+b.dataset.n));set(3);
+}
+
+/* ───────── 탐구 활동 고르기 ───────── */
+function actNav(body,id,acts){
+  const p=prog(id);p.acts=p.acts||{};let cur=acts.some(a=>a.key===p.lastAct)?p.lastAct:acts[0].key;
+  body.innerHTML=`<div class="actnav" role="tablist" aria-label="탐구 활동">${acts.map((a,i)=>`<button type="button" role="tab" data-k="${a.key}"><span class="an">${p.acts[a.key]?CHECK:i+1}</span><span class="at">${a.t}</span></button>`).join('')}</div><div class="card panel actHost"></div>`;
+  const mark=k=>{if(!p.acts[k]){p.acts[k]=true;save()}const b=$(`.actnav button[data-k="${k}"] .an`,body);if(b)b.innerHTML=CHECK;$(`.actnav button[data-k="${k}"]`,body)?.classList.add('done')};
+  const show=k=>{cur=k;p.lastAct=k;save();$$('.actnav button',body).forEach(b=>{const on=b.dataset.k===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on);if(p.acts[b.dataset.k])b.classList.add('done')});
+    const i=acts.findIndex(a=>a.key===k),a=acts[i],host=$('.actHost',body);host.innerHTML=`<h2>${a.t}</h2>${a.lead?`<p class="muted">${a.lead}</p>`:''}<div class="actIn"></div>`;
+    a.mount($('.actIn',host),()=>mark(k));
+    if(i<acts.length-1){const nb=el(`<div class="next-row" style="justify-content:flex-start;margin-top:22px"><button type="button" class="btn">다음 활동: ${acts[i+1].t} →</button></div>`);$('button',nb).onclick=()=>{show(acts[i+1].key);body.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'})};host.appendChild(nb)}};
+  $$('.actnav button',body).forEach(b=>b.onclick=()=>show(b.dataset.k));show(cur);
+}
+
+/* ───────── 탐구 ───────── */
+const EXPLORE={};
+EXPLORE.poly=body=>{
+  actNav(body,'poly',[
+    {key:'cls',t:'다면체일까, 아닐까?',lead:'돌아가는 입체도형을 보고 골라 보세요. 다 고르면 다면체가 아닌 것들의 공통점을 찾아봐요.',mount:(h,done)=>clsActivity(h,done)},
+    {key:'face',t:'면의 모양 찾기',lead:'면을 하나 누르면 정면으로 돌아와 실제 모양을 보여 줘요. 모양 이름을 고르고 같은 모양의 면을 모두 찾아 <b>면 목록</b>을 완성해요.',mount:(h,done)=>faceActivity(h,['cube','p3','p5','y4','y6','f4','oct','ico','dod'],{onDone:k=>{done();award(3,'face:'+k)}})},
+    {key:'floor',t:'몇 층 건물일까?',lead:'먼저 몇 층 건물인지 찾고, 층마다 꼭짓점 → 모서리 → 면을 눌러 세어요. 다 세면 층별로 더한 식이 완성돼요.',mount:(h,done)=>floorActivity(h,['cube','p3','p5','y4','y6','f4','oct','ico','dod'],{onDone:k=>{done();award(3,'floor:'+k)}})},
+    {key:'reduce',t:'면은 몇 개까지 줄일 수 있을까?',lead:'면을 2개, 3개, 4개 이어 붙여 보세요. 공간을 빈틈없이 둘러싸려면 면이 몇 개 있어야 할까요?',mount:(h,done)=>reduceActivity(h,()=>{done();award(2,'reduce')})},
+    {key:'lab',t:'더 탐구하기',lead:'수업 시간에 했던 「입체도형 탐구」 활동을 다시 해 볼 수 있어요. 끝까지 하면 결과 화면이 나와요.',mount:(h,done)=>{h.appendChild(labCards([1,3]));done()}}]);
+};
+function clsActivity(host,done){
+  const order=shuffle(mulberry(newSeed()),['cube','cyl','p3','y4','sph','p5','cone','f4','oct','y6']);
+  host.innerHTML=`<p style="margin-top:0"><b class="clsScore">0 / ${order.length}</b></p><div class="cls-grid">${order.map(k=>`<div class="card cls" data-k="${k}"><canvas></canvas><div class="nm">${SOLIDS[k].name}</div><div class="two"><button type="button" data-a="1">다면체</button><button type="button" data-a="0">아니에요</button></div></div>`).join('')}</div><div class="clsEnd"></div>`;
+  let score=0,answered=0;
+  $$('.cls',host).forEach(c=>{const v=new Viewer($('canvas',c),{auto:true,pad:0.38,yaw:Math.random()*6,pitch:0.4});v.setMesh(SOLIDS[c.dataset.k].mk());
+    $$('button',c).forEach(b=>b.onclick=()=>{const S=SOLIDS[c.dataset.k];const ok=(b.dataset.a==='1')===S.poly;c.classList.add(ok?'ok':'bad');if(ok)score++;answered++;
+      $('.two',c).replaceWith(el(`<div class="why">${ok?'맞아요. ':'아쉬워요. '}${S.poly?'모든 면이 다각형이라 다면체예요.':S.why}</div>`));$('.clsScore',host).textContent=`${score} / ${order.length}`;if(answered===order.length)ending()})});
+  function ending(){const box=$('.clsEnd',host);box.innerHTML=`<div class="box" style="margin-top:18px"><b>생각 정리</b> · 다면체가 아닌 원기둥, 원뿔, 구의 공통점은 무엇일까요?<div class="choices">${shuffle(mulberry(7),['굽은 면(곡면)이 있다','꼭짓점이 많다','크기가 크다']).map(c=>`<button type="button">${c}</button>`).join('')}</div><div class="clsMsg flmsg" style="margin-top:8px"></div></div>`;
+    $$('.choices button',box).forEach(b=>b.onclick=()=>{if(b.textContent.startsWith('굽은')){$('.clsMsg',box).innerHTML=`<span class="ok">맞아요! ${T('곡면')}이 하나라도 있으면 다각형으로만 둘러싸인 게 아니니 다면체가 아니에요.</span>`;done();award(5,'cls')}else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('.clsMsg',box).textContent='세 도형의 옆면이나 겉면을 다시 살펴보세요. 평평한가요, 굽었나요?'}})}
+}
+EXPLORE.types=body=>{
+  actNav(body,'types',[
+    {key:'face',t:'면 모양으로 이름 짓기',lead:'면 목록을 만들어 보면 옆면의 모양이 보여요. 옆면이 직사각형이면 각기둥, 삼각형이면 각뿔, 사다리꼴이면 각뿔대예요.',mount:(h,done)=>faceActivity(h,['p5','y4','f4','p3','y6','f5'],{onDone:k=>{done();award(3,'face:'+k)}})},
+    {key:'rule',t:'n을 바꾸며 규칙 찾기',lead:'밑면의 변의 개수를 늘려 보며 표를 채워 보세요. 표에는 층별로 센 식이 들어가요. 어떤 규칙이 보이나요?',mount:(h,done)=>ruleActivity(h,done)},
+    {key:'cut',t:'각뿔을 잘라 각뿔대 만들기',lead:'밑면에 평행한 평면으로 각뿔을 잘라 보세요.',mount:(h,done)=>cutActivity(h,done)},
+    {key:'lab',t:'더 탐구하기',lead:'비스듬히 자르면 어떻게 될까요? 각기둥·각뿔·각뿔대가 아닌 도형도 섞여 있어요.',mount:(h,done)=>{h.appendChild(labCards([2,3]));done()}}]);
+};
+function ruleActivity(host,done){
+  host.innerHTML=`<div class="explore"><div class="stage"><canvas class="tyCv"></canvas><span class="hint">끌어서 돌려 보세요</span></div>
+    <div class="ctrl">
+     <div class="seg tyType"><button type="button" class="on" data-t="prism">각기둥</button><button type="button" data-t="pyramid">각뿔</button><button type="button" data-t="frustum">각뿔대</button></div>
+     <div><label class="cap" for="tyN">밑면: <span class="tyNm">삼각형</span></label><input type="range" id="tyN" class="tyN" min="3" max="10" value="3"></div>
+     <div class="tablewrap"><table class="t ptable"><thead><tr><th>이름</th><th>면<br><small>지붕+벽+바닥</small></th><th>모서리<br><small>위층·사이·아래층</small></th><th>꼭짓점<br><small>층별</small></th></tr></thead><tbody class="tyBody"></tbody></table></div>
+     <div class="tyMsg flmsg"></div>
+    </div></div>`;
+  const v=new Viewer($('.tyCv',host),{pad:0.40,auto:true});let tp='prism',n=3;const seen={prism:new Set(),pyramid:new Set(),frustum:new Set()};
+  const draw=()=>{const Ty=TYPE[tp];v.setMesh(Ty.mk(n));seen[tp].add(n);$('.tyNm',host).textContent=kn(n)+'각형';
+    $('.tyBody',host).innerHTML=range(8).map(i=>{const k=i+3,s=seen[tp].has(k);let cells;
+      if(s){const I=floorInfo(Ty.mk(k));cells=['f','e','v'].map(q=>{const parts=I.G[q].map(g=>g.ids.length);return`<td><span class="rm">${parts.join('+')}</span> = <b class="rm">${parts.reduce((a,b)=>a+b,0)}</b></td>`}).join('')}
+      else cells='<td class="q">?</td>'.repeat(3);
+      return`<tr class="${k===n?'cur':''}"><td class="l">${kn(k)}${Ty.nm}</td>${cells}</tr>`}).join('');
+    if(seen[tp].size>=5){$('.tyMsg',host).innerHTML=`<span class="ok">${josa(Ty.nm,'을','를')} 5개 이상 살펴봤어요. 밑면의 변이 하나 늘면 모서리는 몇 개씩 늘어나나요?</span>`;done();award(3,'rule:'+tp)}};
+  $('.tyN',host).oninput=e=>{n=+e.target.value;draw()};
+  $$('.tyType button',host).forEach(b=>b.onclick=()=>{$$('.tyType button',host).forEach(x=>x.classList.toggle('on',x===b));tp=b.dataset.t;$('.tyMsg',host).innerHTML='';draw()});
+  draw();
+}
+function cutActivity(host,done){
+  host.innerHTML=`<div class="explore"><div class="stage"><canvas class="cutCv"></canvas><span class="hint">끌어서 돌려 보세요</span></div>
+    <div class="ctrl">
+     <div><span class="cap">각뿔</span><div class="chips cutN">${[3,4,5,6].map(n=>`<button type="button" class="chip ${n===4?'on':''}" data-n="${n}">${kn(n)}각뿔</button>`).join('')}</div></div>
+     <div><label class="cap" for="cutH">자르는 높이</label><input type="range" id="cutH" class="cutH" min="25" max="75" value="50"></div>
+     <button type="button" class="btn primary cutGo">잘라서 떼어 내기</button>
+     <div class="feedback info cutTxt">밑면에 평행한 평면으로 각뿔을 잘라 보세요.</div></div></div>`;
+  let cn=4,k=0.5,sep=0,target=0;const H=1.9;
+  const cv=new Viewer($('.cutCv',host),{pad:0.36,yaw:-0.5,pitch:0.32,between:(ctx,vw,i)=>{if(i===0&&sep<0.02){const R0=1.25*(1-k)*1.55;const z=H*k;const Q=[[-R0,-R0,z],[R0,-R0,z],[R0,R0,z],[-R0,R0,z]].map(p=>vw.proj(p));
+      ctx.beginPath();Q.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle='rgba(42,77,158,.13)';ctx.fill();ctx.strokeStyle='rgba(42,77,158,.6)';ctx.lineWidth=1.5;ctx.stroke()}}});
+  const build=()=>{const P=regPoly(cn,1.25,cn===4?Math.PI/4:undefined);const fr=frustum(P,1-k,H*k);const top=pyramid(P.map(p=>[p[0]*(1-k),p[1]*(1-k)]),H*(1-k));
+    cv.setScene([{mesh:fr,st:{}},{mesh:top,off:[0,0,H*k+sep*0.9],st:{tint:[255,240,190]}}],{center:[0,0,H*0.55],R:1.75})};
+  cv.tick=()=>{if(Math.abs(sep-target)>0.005){sep+=(target-sep)*0.12;build()}};
+  $('.cutH',host).oninput=e=>{k=e.target.value/100;build()};
+  const txt=()=>{$('.cutTxt',host).innerHTML=`아래쪽이 <b>${kn(cn)}각뿔대</b>, 위쪽은 작은 ${kn(cn)}각뿔이에요. 각뿔대의 두 밑면은 평행하지만 크기가 달라요. 옆면은 모두 사다리꼴이에요.`};
+  $$('.cutN .chip',host).forEach(b=>b.onclick=()=>{$$('.cutN .chip',host).forEach(x=>x.classList.toggle('on',x===b));cn=+b.dataset.n;build();if(target>0)txt()});
+  $('.cutGo',host).onclick=()=>{target=target>0?0:1;$('.cutGo',host).textContent=target>0?'다시 붙이기':'잘라서 떼어 내기';if(target>0){txt();done();award(2,'cut')}else $('.cutTxt',host).textContent='밑면에 평행한 평면으로 각뿔을 잘라 보세요.'};
+  build();
+}
+EXPLORE.area=body=>{
+  body.innerHTML=`<div class="card panel"><h2>전개도 펼치기</h2><p class="muted">파란 선은 밑면의 둘레예요. 펼치면 이 선이 어디로 가는지 따라가 보세요.</p>
+   <div class="explore"><div class="stage"><canvas id="unCv"></canvas><span class="hint">끌어서 돌려 보세요</span></div>
+    <div class="ctrl">
+     <div class="chips" id="unShape">${Object.entries(UNF).map(([k,s],i)=>`<button type="button" class="chip ${i===0?'on':''}" data-k="${k}">${s.name}</button>`).join('')}</div>
+     <div><label class="cap" for="unT">접기 ↔ 펼치기</label><input type="range" id="unT" min="0" max="100" value="0"></div>
+     <button type="button" class="btn primary" id="unPlay">펼치기</button>
+     <div class="box plain" id="unInfo" style="margin:0"></div></div></div></div>`;
+  let key='tri';const U=unfoldViewer($('#unCv'),{shape:UNF[key],areas:true});let target=null;
+  const info=()=>{const s=UNF[key],open=U.t>0.97;$('#unInfo').innerHTML=`<p style="margin:0 0 6px">${s.info.replace(/π/g,'<span class="rm">π</span>')}</p><p style="margin:0">옆면의 가로 = 밑면의 둘레<br><b class="rm">${s.perim}</b></p><p style="margin:6px 0 0">옆넓이 = 가로 × 세로(높이)<br><b class="rm">${s.lat}</b></p>`+(open?`<p style="margin:10px 0 0;padding-top:10px;border-top:1px dashed var(--line)"><b>전개도의 넓이를 모두 더하면 = 겉넓이</b><br><span class="rm">${s.areas.sum}</span> (cm²)</p>`:`<p class="muted" style="margin:10px 0 0;font-size:15px">끝까지 펼치면 면마다 넓이가 나타나요.</p>`)};
+  const setT=t=>{U.t=t;$('#unT').value=Math.round(t*100);U.v.dirty=true;$('#unPlay').textContent=t>0.5?'다시 접기':'펼치기';if(t>=0.999)award(1,'net:'+key);if((t>0.97)!==U.wasOpen){U.wasOpen=t>0.97;info()}};
+  $('#unT').oninput=e=>{target=null;setT(e.target.value/100)};
+  U.v.tick=()=>{if(target!=null){const d=target-U.t;if(Math.abs(d)<0.004){setT(target);target=null}else setT(U.t+Math.sign(d)*Math.min(Math.abs(d),0.012))}};
+  $('#unPlay').onclick=()=>{target=U.t>0.5?0:1;if(reduced){setT(target);target=null}};
+  $$('#unShape .chip').forEach(b=>b.onclick=()=>{$$('#unShape .chip').forEach(x=>x.classList.toggle('on',x===b));key=b.dataset.k;U.v.userMoved=false;U.set(UNF[key]);setT(0);target=null;info()});
+  info();
+};
+
+
+/* ───────── 2단계: 로그인 · 서버 연결 ───────── */
+const CFG=window.HG_CONFIG||{};
+const LIVE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const API={async call(fn,args={},o={}){
+  if(!LIVE)return MOCK.call(fn,args);
+  let r;try{r=await fetch(String(CFG.supabaseUrl).replace(/\/+$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',keepalive:!!o.keepalive,
+    headers:Object.assign({'apikey':CFG.supabaseAnonKey,'Content-Type':'application/json'},/^eyJ/.test(CFG.supabaseAnonKey)?{'Authorization':'Bearer '+CFG.supabaseAnonKey}:{}),body:JSON.stringify(args)})}
+  catch(e){const er=new Error('서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요.');er.net=true;throw er}
+  let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok){const er=new Error((j&&(j.message||j.hint))||('서버 오류가 났어요 ('+r.status+')'));er.status=r.status;throw er}
+  return j}};
+const isAuthErr=e=>/다시 로그인/.test((e&&e.message)||'');
+/* 체험 모드: 서버를 연결하기 전, 이 기기 안에서 똑같이 흉내 내는 가짜 서버 */
+const MOCK=(()=>{
+  const KEY='hangeoreum-demo-server-v1';let S=null;
+  const tok=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+  const newPin=()=>String(crypto.getRandomValues(new Uint16Array(1))[0]%10000).padStart(4,'0');
+  const nowISO=()=>new Date().toISOString();
+  const fail=m=>{const e=new Error(m);e.status=400;throw e};
+  const lockMsg=u=>`비밀번호를 여러 번 틀려서 잠시 잠겼어요. ${Math.ceil((u-Date.now())/60000)}분 뒤에 다시 해 보세요.`;
+  function load(){if(S)return S;S=lsGet(KEY,null);if(!S||S.v!==1){S=seedDemo();lsSet(KEY,S)}return S}
+  function sidOf(t){const x=S.sessions[t];if(!x||x.teacher||x.exp<Date.now()||!S.students[x.sid])fail('로그인이 끝났어요. 다시 로그인해 주세요.');return x.sid}
+  function needT(t){const x=S.sessions[t];if(!x||!x.teacher||x.exp<Date.now())fail('교사 로그인이 필요해요. 다시 로그인해 주세요.')}
+  const dropSessions=sid=>Object.keys(S.sessions).forEach(k=>{if(S.sessions[k].sid===sid)delete S.sessions[k]});
+  const F={
+    hg_login({p_sid,p_pin}){const s=S.students[p_sid];if(!s)return{ok:false,msg:'등록되지 않은 번호예요. 학년, 반, 번호를 확인해 주세요.'};
+      if(s.lock>Date.now())return{ok:false,msg:lockMsg(s.lock)};
+      if(s.pin!==p_pin){s.failed++;if(s.failed>=5){s.failed=0;s.lock=Date.now()+6e5;return{ok:false,msg:'비밀번호를 5번 틀려서 10분 동안 잠겼어요. 모르면 선생님께 물어보세요.'}}return{ok:false,msg:`비밀번호가 맞지 않아요. (${5-s.failed}번 더 틀리면 잠겨요)`}}
+      s.failed=0;s.lock=0;s.last_seen=nowISO();const t=tok();S.sessions[t]={sid:s.sid,exp:Date.now()+180*864e5};return{ok:true,token:t,sid:s.sid,grade:s.grade,klass:s.klass,num:s.num}},
+    hg_logout({p_token}){delete S.sessions[p_token];return{ok:true}},
+    hg_get_progress({p_token}){const sid=sidOf(p_token);S.students[sid].last_seen=nowISO();const p=S.progress[sid];return p?{data:p.data,updated_at:p.updated_at}:{data:{},updated_at:null}},
+    hg_save_progress({p_token,p_data}){const sid=sidOf(p_token);if(!p_data||typeof p_data!=='object'||Array.isArray(p_data))fail('저장할 기록의 모양이 올바르지 않아요.');const at=nowISO();S.progress[sid]={data:p_data,updated_at:at};S.students[sid].last_seen=at;return{ok:true,updated_at:at}},
+    hg_log_attempt(a){const sid=sidOf(a.p_token);if(!['steps','practice','review'].includes(a.p_kind)||!a.p_lesson)fail('풀이 기록의 모양이 올바르지 않아요.');
+      S.attempts.push({sid,lesson:a.p_lesson,kind:a.p_kind,mode:a.p_mode||null,gen:a.p_gen||null,seed:a.p_seed??null,ptype:a.p_ptype||null,good:!!a.p_good,wrongs:a.p_wrongs||0,step_wrongs:a.p_step_wrongs||null,revealed:a.p_revealed||null,created_at:nowISO()});
+      if(S.attempts.length>4000)S.attempts.splice(0,S.attempts.length-4000);return{ok:true}},
+    hg_teacher_login({p_password}){const T=S.teacher;if(T.lock>Date.now())return{ok:false,msg:lockMsg(T.lock)};
+      if(p_password!==T.pw){T.failed++;if(T.failed>=5){T.failed=0;T.lock=Date.now()+6e5;return{ok:false,msg:'비밀번호를 5번 틀려서 10분 동안 잠겼어요.'}}return{ok:false,msg:'교사 비밀번호가 맞지 않아요.'}}
+      T.failed=0;const t=tok();S.sessions[t]={teacher:true,exp:Date.now()+12*36e5};return{ok:true,token:t}},
+    hg_t_change_password({p_token,p_old,p_new}){needT(p_token);if(p_old!==S.teacher.pw)return{ok:false,msg:'지금 비밀번호가 맞지 않아요.'};if(!p_new||p_new.length<6)return{ok:false,msg:'새 비밀번호는 6자 이상으로 정해 주세요.'};S.teacher.pw=p_new;return{ok:true}},
+    hg_t_create_students({p_token,p_grade,p_klass,p_from,p_to}){needT(p_token);if(!(p_grade>=1&&p_grade<=3&&p_klass>=1&&p_klass<=20&&p_from>=1&&p_to<=50&&p_from<=p_to))fail('학년은 1~3, 반은 1~20, 번호는 1~50 사이로 정해 주세요.');
+      const out=[];for(let i=p_from;i<=p_to;i++){const sid=`${p_grade}-${p_klass}-${i}`;if(S.students[sid])out.push({sid,num:i,pin:null,existed:true});else{const pn=newPin();S.students[sid]={sid,grade:p_grade,klass:p_klass,num:i,pin:pn,failed:0,lock:0,last_seen:null};out.push({sid,num:i,pin:pn,existed:false})}}return out},
+    hg_t_reset_pin({p_token,p_sid}){needT(p_token);const s=S.students[p_sid];if(!s)fail('그 학생을 찾을 수 없어요.');s.pin=newPin();s.failed=0;s.lock=0;dropSessions(p_sid);return{sid:p_sid,pin:s.pin}},
+    hg_t_delete_student({p_token,p_sid}){needT(p_token);delete S.students[p_sid];delete S.progress[p_sid];S.attempts=S.attempts.filter(a=>a.sid!==p_sid);dropSessions(p_sid);return{ok:true}},
+    hg_t_overview({p_token}){needT(p_token);const wk=Date.now()-7*864e5;return Object.values(S.students).sort((a,b)=>a.grade-b.grade||a.klass-b.klass||a.num-b.num).map(s=>({sid:s.sid,grade:s.grade,klass:s.klass,num:s.num,last_seen:s.last_seen,locked:s.lock>Date.now(),
+      data:(S.progress[s.sid]||{}).data||{},updated_at:(S.progress[s.sid]||{}).updated_at||null,attempts_7d:S.attempts.filter(a=>a.sid===s.sid&&Date.parse(a.created_at)>wk).length}))},
+    hg_t_step_stats({p_token,p_days}){needT(p_token);const since=Date.now()-(p_days||30)*864e5,g={};
+      S.attempts.forEach(a=>{if(a.mode!=='steps'||!a.step_wrongs||Date.parse(a.created_at)<=since)return;a.step_wrongs.forEach((w,i)=>{const k=a.lesson+'|'+a.ptype+'|'+(i+1);
+        const x=g[k]=g[k]||{lesson:a.lesson,ptype:a.ptype,gen:a.gen,seed:a.seed,step:i+1,n:0,wrong:0,revealed:0};x.n++;if(w>0)x.wrong++;if(a.revealed&&a.revealed[i]>0)x.revealed++})});
+      return Object.values(g).sort((a,b)=>a.lesson.localeCompare(b.lesson)||String(a.ptype).localeCompare(String(b.ptype))||a.step-b.step)},
+    hg_t_student_attempts({p_token,p_sid,p_limit}){needT(p_token);return S.attempts.filter(a=>a.sid===p_sid).slice(-(p_limit||40)).reverse()}};
+  function seedDemo(){const st={v:1,teacher:{pw:'demo1234',failed:0,lock:0},students:{},progress:{},attempts:[],sessions:{}};
+    const r=mulberry(20261121),now=Date.now();
+    const prof={'area:cyl':[.15,.2,.45,.55,.3],'area:tri':[.25,.1,.35,.2],'area:box':[.1,.15,.3,.15],'types:prism':[.3,.4,.1,.25],'types:pyramid':[.35,.45,.1,.3],'types:frustum':[.4,.45,.12,.35],'poly:prism':[.1,.15,.2,.1],'poly:pyramid':[.15,.2,.25,.1]};
+    const seedOf={};for(let sd=1;sd<500&&Object.keys(seedOf).length<8;sd++)['polyStep','typesStep','areaStep'].forEach(g=>{const pt=GEN[g](sd).ptype;if(!seedOf[pt])seedOf[pt]={g,sd}});
+    for(let n=1;n<=20;n++){const sid='1-1-'+n,active=r()<0.85;
+      st.students[sid]={sid,grade:1,klass:1,num:n,pin:'1234',failed:0,lock:0,last_seen:active?new Date(now-ri(r,0,5)*864e5-ri(r,0,10)*36e5).toISOString():null};
+      if(!active)continue;const d={},lv=ri(r,1,3);
+      LESSONS.filter(l=>l.ready).forEach((l,i)=>{if(i<lv)d[l.id]={concept:true,explore:r()<.8,steps:ri(r,0,4),prac:{solved:ri(r,0,12),streak:ri(r,0,3),level:r()<.25?2:1,fails:0,retry:[]}}});
+      d._me={pts:ri(r,15,280),last:today(),streak:ri(r,0,4),once:{},cnt:{},badges:{first:today()}};
+      if(r()<.6)d._rev=range(ri(r,1,4)).map(()=>({g:'areaStep',seed:ri(r,1,999),lid:'area',due:addDays(today(),ri(r,-1,3)),stage:0}));
+      d._ts=now-ri(r,1,4)*864e5;st.progress[sid]={data:d,updated_at:new Date(d._ts).toISOString()};
+      const cnt=ri(r,4,12);for(let k=0;k<cnt;k++){const pt=pick(r,Object.keys(prof)),S0=seedOf[pt];if(!S0)continue;const P=prof[pt];
+        const swa=P.map(q=>r()<q?ri(r,1,3):0),rva=swa.map(w=>w>=3&&r()<.6?1:0);
+        st.attempts.push({sid,lesson:pt.split(':')[0],kind:'steps',mode:'steps',gen:S0.g,seed:S0.sd,ptype:pt,good:!rva.some(x=>x),wrongs:swa.reduce((a,b)=>a+b,0),step_wrongs:swa,revealed:rva,created_at:new Date(now-ri(r,0,19)*864e5-ri(r,0,20)*36e5).toISOString()})}}
+    st.attempts.sort((a,b)=>a.created_at.localeCompare(b.created_at));return st}
+  async function call(fn,args){load();await sleep(120);if(!F[fn]){const e=new Error('알 수 없는 요청이에요.');e.status=404;throw e}
+    const r=F[fn](JSON.parse(JSON.stringify(args||{})));lsSet(KEY,S);return r}
+  function reset(){S=null;try{localStorage.removeItem(KEY)}catch(e){}}
+  return{call,reset};
+})();
+
+/* 학생 로그인 상태와 기록 동기화 */
+const whoLabel=a=>`${a.grade}학년 ${a.klass}반 ${a.num}번`;
+async function pushDB(keepalive){if(!isStudent()||!SYNC.dirty||SYNC.busy)return;SYNC.busy=true;SYNC.dirty=false;const snap=JSON.parse(JSON.stringify(DB));
+  try{await API.call('hg_save_progress',{p_token:AUTH.token,p_data:snap},{keepalive});SYNC.last=new Date();SYNC.err=null;flushOutbox()}
+  catch(e){SYNC.dirty=true;SYNC.err=e.message;if(isAuthErr(e))authExpired()}
+  finally{SYNC.busy=false;updateWho()}}
+async function pullDB(){if(!isStudent())return;
+  try{const r=await API.call('hg_get_progress',{p_token:AUTH.token});const srv=(r&&r.data)||{};const st=+srv._ts||0,lt=+DB._ts||0;SYNC.last=new Date();SYNC.err=null;
+    if(st>lt){DB=srv;lsSet(storeKey(),DB);updatePill();route(true)}else if(lt>st){SYNC.dirty=true;pushDB()}
+    flushOutbox()}
+  catch(e){SYNC.err=e.message;if(isAuthErr(e))authExpired()}
+  updateWho()}
+const obKey=()=>'hangeoreum-outbox:'+(AUTH?AUTH.sid:'');
+function logAttempt(o){if(!isStudent())return;const item={p_lesson:o.lesson,p_kind:o.kind,p_good:!!o.good,p_wrongs:o.wrongs||0,p_mode:o.mode||null,p_gen:o.gen||null,p_seed:o.seed??null,p_ptype:o.ptype||null,p_step_wrongs:o.stepWrongs||null,p_revealed:o.revealed||null};
+  const ob=lsGet(obKey(),[]);ob.push(item);lsSet(obKey(),ob.slice(-300));flushOutbox()}
+let obBusy=false;
+async function flushOutbox(){if(!isStudent()||obBusy)return;const key=obKey();let ob=lsGet(key,[]);if(!ob.length)return;obBusy=true;
+  try{while(ob.length){try{await API.call('hg_log_attempt',Object.assign({p_token:AUTH.token},ob[0]))}catch(e){if(e.net||isAuthErr(e))throw e}ob.shift();lsSet(key,ob)}}
+  catch(e){if(isAuthErr(e))authExpired()}finally{obBusy=false}}
+function authExpired(){if(!isStudent())return;AUTH=null;try{localStorage.removeItem(AUTH_KEY)}catch(e){}loadDB();updatePill();updateWho();toast('로그인이 끝났어요. 다시 로그인해 주세요.')}
+async function studentLogin(sid,pin){const r=await API.call('hg_login',{p_sid:sid,p_pin:pin});if(!r||!r.ok)return r||{ok:false,msg:'로그인하지 못했어요.'};
+  AUTH={role:'student',token:r.token,sid:r.sid,grade:r.grade,klass:r.klass,num:r.num};lsSet(AUTH_KEY,AUTH);loadDB();SYNC.dirty=false;SYNC.last=null;updatePill();updateWho();await pullDB();return r}
+async function studentLogout(){if(!isStudent())return;clearTimeout(SYNC.timer);if(SYNC.dirty)await pushDB();
+  const key=storeKey(),ok=!SYNC.dirty&&!lsGet(obKey(),[]).length;API.call('hg_logout',{p_token:AUTH.token}).catch(()=>{});
+  if(ok){try{localStorage.removeItem(key)}catch(e){}}  /* 함께 쓰는 기기에 기록을 남기지 않기 (서버에 저장된 경우만) */
+  AUTH=null;try{localStorage.removeItem(AUTH_KEY)}catch(e){}loadDB();updatePill();updateWho()}
+function syncText(){if(!isStudent())return'';if(SYNC.err&&SYNC.dirty)return'저장하지 못했어요. 인터넷이 연결되면 다시 저장해요.';if(SYNC.dirty||SYNC.busy)return'저장하는 중…';
+  return SYNC.last?`서버에 저장했어요 · ${SYNC.last.toLocaleTimeString('ko-KR',{hour:'numeric',minute:'2-digit'})}`:'서버와 연결하는 중…'}
+function updateWho(){const c=$('#whoChip');if(!c)return;
+  if(isStudent()){const st=SYNC.err&&SYNC.dirty?'bad':(SYNC.dirty||SYNC.busy)?'wait':'ok';c.innerHTML=`<i class="dot ${st}"></i><span class="wl">${whoLabel(AUTH)}</span><span class="ws">${AUTH.klass}반 ${AUTH.num}번</span>`;c.href='#me';c.title=syncText()}
+  else{c.innerHTML='로그인';c.href='#login';c.title=''}
+  const sb=$('.syncNow');if(sb)sb.textContent=syncText()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.dirty){clearTimeout(SYNC.timer);pushDB(true)}});
+addEventListener('online',()=>{if(SYNC.dirty)pushDB();flushOutbox()});
+function demoBanner(){return LIVE?'':`<div class="demo"><b>체험 모드</b> · 아직 서버(Supabase)를 연결하지 않아서, 로그인과 교사 화면이 이 기기 안에서만 흉내 내며 동작해요.<br>체험용 학생: <b>1학년 1반 1~20번</b>, 비밀번호 <b class="rm">1234</b> · 선생님 비밀번호 <b class="rm">demo1234</b></div>`}
+
+/* 로그인 화면 */
+function pinPad(onComplete){const w=el(`<div class="pinpad"><div class="pindots" aria-label="입력한 비밀번호 자리 수">${'<i></i>'.repeat(4)}</div><div class="pinkeys">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>k===''?'<span></span>':`<button type="button" data-k="${k}" aria-label="${k==='⌫'?'지우기':k}">${k}</button>`).join('')}</div></div>`);
+  let v='',lock=false;const draw=()=>$$('.pindots i',w).forEach((d,i)=>d.classList.toggle('on',i<v.length));
+  const press=k=>{if(lock)return;if(k==='⌫')v=v.slice(0,-1);else if(v.length<4)v+=k;draw();if(v.length===4){lock=true;const val=v;setTimeout(()=>onComplete(val,()=>{v='';lock=false;draw()}),120)}};
+  $$('button',w).forEach(b=>b.onclick=()=>press(b.dataset.k));w._press=press;return w}
+function teacherForm(){return`<form class="tLogin"><label class="cap" for="tPw">교사 비밀번호</label><input id="tPw" type="password" autocomplete="current-password" class="inp" required><button class="btn primary" style="margin-top:12px">교사 화면 열기</button><div class="flmsg tMsg" role="status"></div></form>`}
+function wireTeacherForm(root){const f=$('.tLogin',root);if(!f)return;f.onsubmit=async e=>{e.preventDefault();const m=$('.tMsg',root);m.textContent='확인하는 중…';
+  try{const r=await API.call('hg_teacher_login',{p_password:$('#tPw',root).value});if(r&&r.ok){tSet(r.token);if(location.hash==='#teacher')viewTeacher();else location.hash='#teacher'}else m.textContent=(r&&r.msg)||'로그인하지 못했어요.'}catch(err){m.textContent=err.message}}}
+let pinKeyHandler=null;
+function viewLogin(){
+  crumbs.innerHTML=`<span class="sep">›</span><span>로그인</span>`;const last=lsGet('hangeoreum-lastclass',{grade:1,klass:1});
+  if(isStudent()){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">${whoLabel(AUTH)}</h1><p>로그인되어 있어요. 기록은 서버에 저장돼요.</p><p class="muted syncNow">${syncText()}</p>
+    <div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#home">이어서 공부하기</a><button type="button" class="btn lgOut">로그아웃</button></div>
+    <p class="muted" style="font-size:15px">학교 패드처럼 여럿이 함께 쓰는 기기라면, 공부를 마친 뒤 꼭 로그아웃해 주세요.</p></div></div>`;
+    $('.lgOut',app).onclick=async()=>{await studentLogout();toast('로그아웃했어요.');viewLogin()};return}
+  app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card">
+    <div class="seg logtab" role="tablist"><button type="button" class="on" data-t="s" role="tab">학생</button><button type="button" data-t="t" role="tab">선생님</button></div>
+    <div class="logS">
+      <h1 style="font-size:28px;margin-top:14px">학생 로그인</h1>
+      <p class="muted" style="margin-top:4px">로그인하면 다른 기기에서도 이어서 할 수 있고, 선생님이 내 진도를 볼 수 있어요.</p>
+      <div class="lg-row"><span class="cap">학년</span><div class="seg lgGrade">${[1,2,3].map(g=>`<button type="button" data-g="${g}" class="${g===last.grade?'on':''}">${g}학년</button>`).join('')}</div></div>
+      <div class="lg-row"><label class="cap" for="lgK">반</label><select id="lgK" class="inp sel">${range(20).map(i=>`<option value="${i+1}"${i+1===last.klass?' selected':''}>${i+1}반</option>`).join('')}</select>
+        <label class="cap" for="lgN">번호</label><select id="lgN" class="inp sel">${range(50).map(i=>`<option value="${i+1}">${i+1}번</option>`).join('')}</select></div>
+      <div class="cap" style="margin-top:14px">비밀번호 4자리</div><div class="lgPin"></div><div class="flmsg lgMsg" role="status"></div>
+      <p style="margin:6px 0 0"><a href="#home">로그인 없이 둘러보기</a> <span class="muted" style="font-size:14px">(기록은 이 기기에만 남아요)</span></p>
+    </div>
+    <div class="logT" hidden><h1 style="font-size:28px;margin-top:14px">선생님 로그인</h1><p class="muted" style="margin-top:4px">교사 화면에서 학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div>
+  </div></div>`;
+  let grade=last.grade||1;
+  $$('.lgGrade button',app).forEach(b=>b.onclick=()=>{grade=+b.dataset.g;$$('.lgGrade button',app).forEach(x=>x.classList.toggle('on',x===b))});
+  $$('.logtab button',app).forEach(b=>b.onclick=()=>{$$('.logtab button',app).forEach(x=>x.classList.toggle('on',x===b));$('.logS',app).hidden=b.dataset.t!=='s';$('.logT',app).hidden=b.dataset.t!=='t'});
+  wireTeacherForm(app);
+  const msg=$('.lgMsg',app);
+  const pad=pinPad(async(pin,reset)=>{const klass=+$('#lgK',app).value,num=+$('#lgN',app).value,sid=`${grade}-${klass}-${num}`;msg.textContent='확인하는 중…';msg.className='flmsg lgMsg';
+    try{const r=await studentLogin(sid,pin);if(r.ok){lsSet('hangeoreum-lastclass',{grade,klass});toast(`${whoLabel(AUTH)}, 반가워요!`);location.hash='#home'}else{msg.textContent=r.msg;msg.className='flmsg lgMsg bad';pad.classList.add('shake');setTimeout(()=>pad.classList.remove('shake'),400);reset()}}
+    catch(e){msg.textContent=e.message;msg.className='flmsg lgMsg bad';reset()}});
+  $('.lgPin',app).appendChild(pad);
+  pinKeyHandler=e=>{if(!pad.isConnected||$('.logS',app).hidden||e.target.closest('input,select,textarea'))return;if(/^[0-9]$/.test(e.key))pad._press(e.key);else if(e.key==='Backspace'){e.preventDefault();pad._press('⌫')}};
+}
+document.addEventListener('keydown',e=>{if(pinKeyHandler)pinKeyHandler(e)});
+
+/* ───────── 교사 화면 ───────── */
+const tTok=()=>{try{return sessionStorage.getItem(TKEY)}catch(e){return null}};
+const tSet=t=>{try{t?sessionStorage.setItem(TKEY,t):sessionStorage.removeItem(TKEY)}catch(e){}};
+const PTYPE_NM={'poly:prism':'1차시 · 각기둥은 몇 면체?','poly:pyramid':'1차시 · 각뿔은 몇 면체?','poly:is':'1차시 · 다면체인지 고르기','poly:count':'1차시 · 면·모서리·꼭짓점 세기',
+  'types:prism':'2차시 · 각기둥 개수 문제','types:pyramid':'2차시 · 각뿔 개수 문제','types:frustum':'2차시 · 각뿔대 개수 문제','types:direct':'2차시 · 개수 바로 구하기','types:side':'2차시 · 옆면 모양 고르기','types:name':'2차시 · 몇 면체인지 구하기',
+  'area:tri':'5차시 · 삼각기둥의 겉넓이','area:box':'5차시 · 직육면체의 겉넓이','area:cyl':'5차시 · 원기둥의 겉넓이'};
+const KIND_KO={steps:'단계 문제',practice:'연습',review:'복습'};
+function relTime(iso){if(!iso)return'아직 없음';const d=(Date.now()-Date.parse(iso))/1000;if(d<3600)return Math.max(1,Math.round(d/60))+'분 전';if(d<86400)return Math.round(d/3600)+'시간 전';const days=Math.floor(d/86400);return days===1?'어제':days+'일 전'}
+function stripTags(h){const t=document.createElement('div');t.innerHTML=h;return t.textContent.replace(/\s+/g,' ').trim()}
+function dataSummary(d){const me=d._me||{},t=today(),streak=(me.last===t||me.last===addDays(t,-1))?(me.streak||0):0;
+  const les=LESSONS.filter(l=>l.ready).map(l=>{const p=d[l.id];return p?[p.concept,p.explore,p.steps>0,!!(p.prac&&p.prac.solved>=5)]:[false,false,false,false]});
+  const solved=LESSONS.reduce((a,l)=>a+((d[l.id]&&d[l.id].prac&&d[l.id].prac.solved)||0),0),rev=Array.isArray(d._rev)?d._rev:[];
+  return{pts:me.pts||0,streak,les,solved,rev:rev.length,due:rev.filter(x=>x.due<=t).length,badges:Object.keys(me.badges||{}).length}}
+function viewTeacher(){
+  crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();
+  if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
+  const ready=LESSONS.filter(l=>l.ready);
+  app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
+   <div class="card panel"><div class="t-head"><h2>학급 현황</h2><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label></div><div class="t-tiles"></div>
+    <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시<br><small>개념·탐구·단계·연습</small></th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
+    <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요.</p></div>
+   <div class="card panel"><div class="t-head"><h2>많이 막히는 단계</h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
+    <p class="muted" style="margin-top:0">단계 문제와 ‘단계 따라 풀기’ 연습에서 단계마다 틀린 비율이에요. 다음 수업에서 다시 짚을 곳을 찾을 때 써 보세요.</p><div class="tStats"></div></div>
+   <div class="card panel"><h2>학생 만들기</h2><p class="muted" style="margin-top:0">번호마다 4자리 비밀번호를 만들어요. 이미 있는 번호는 건너뛰어요. 비밀번호는 이 화면에서 <b>한 번만</b> 보여 주니 꼭 복사하거나 인쇄해 두세요.</p>
+    <form class="t-create"><label>학년 <select class="inp sel" name="g">${[1,2,3].map(g=>`<option>${g}</option>`).join('')}</select></label><label>반 <select class="inp sel" name="k">${range(20).map(i=>`<option>${i+1}</option>`).join('')}</select></label>
+     <label>번호 <input class="inp num" name="a" type="number" min="1" max="50" value="1"> ~ <input class="inp num" name="b" type="number" min="1" max="50" value="30"></label><button class="btn primary">만들기</button></form><div class="flmsg tCMsg" role="status"></div><div class="tNew"></div></div>
+   <details class="card panel tPwBox"><summary><b>교사 비밀번호 바꾸기</b></summary><form class="t-pw"><label>지금 비밀번호 <input class="inp" type="password" name="o" autocomplete="current-password" required></label><label>새 비밀번호 (6자 이상) <input class="inp" type="password" name="n" autocomplete="new-password" minlength="6" required></label><button class="btn">바꾸기</button></form><div class="flmsg tPMsg" role="status"></div></details>`;
+  let ROSTER=[],days=30,klassSel=lsGet('hangeoreum-t-class',null);
+  const fail=e=>{if(isAuthErr(e)){tSet(null);toast('교사 로그인이 끝났어요. 다시 로그인해 주세요.');viewTeacher();return true}toast(e.message);return false};
+  async function loadRoster(){try{ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[];renderRoster()}catch(e){fail(e)}}
+  async function loadStats(){try{renderStats(await API.call('hg_t_step_stats',{p_token:tTok(),p_days:days})||[])}catch(e){fail(e)}}
+  function classes(){const m=new Map();ROSTER.forEach(s=>m.set(`${s.grade}-${s.klass}`,{g:s.grade,k:s.klass}));return[...m.entries()]}
+  function renderRoster(){const sel=$('.tClass',app),C=classes();
+    if(klassSel&&!C.some(([k])=>k===klassSel))klassSel=null;if(!klassSel&&C.length)klassSel=C[0][0];
+    sel.innerHTML=C.length?C.map(([k,v])=>`<option value="${k}"${k===klassSel?' selected':''}>${v.g}학년 ${v.k}반</option>`).join('')+'<option value="all"'+(klassSel==='all'?' selected':'')+'>전체</option>':'<option>학생 없음</option>';
+    const L=ROSTER.filter(s=>klassSel==='all'||`${s.grade}-${s.klass}`===klassSel);$('.tEmpty',app).hidden=!!ROSTER.length;
+    const S=L.map(s=>Object.assign({s},dataSummary(s.data||{})));const wk=Date.now()-7*864e5;
+    const act=L.filter(s=>s.last_seen&&Date.parse(s.last_seen)>wk).length,avg=S.length?Math.round(S.reduce((a,x)=>a+x.pts,0)/S.length):0,tries=L.reduce((a,s)=>a+(s.attempts_7d||0),0);
+    $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
+    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
+      <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
+      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}</span></td>`).join('')}
+      <td class="rm">${solved}</td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td>
+      <td class="t-act"><button type="button" class="t-mini t-reset">비밀번호</button><button type="button" class="t-mini t-del">삭제</button></td></tr>`).join('');
+    $$('.tRows tr',app).forEach(tr=>wireRow(tr))}
+  function wireRow(tr){const sid=tr.dataset.sid;
+    $('.t-num',tr).onclick=async e=>{const b=e.currentTarget,nx=tr.nextElementSibling;if(nx&&nx.classList.contains('t-detail')){nx.remove();b.setAttribute('aria-expanded','false');return}
+      b.setAttribute('aria-expanded','true');const d=el(`<tr class="t-detail"><td colspan="${tr.children.length}"><span class="muted">불러오는 중…</span></td></tr>`);tr.after(d);
+      try{const A=await API.call('hg_t_student_attempts',{p_token:tTok(),p_sid:sid,p_limit:30})||[];
+        d.firstElementChild.innerHTML=A.length?`<ul class="t-att">${A.map(a=>`<li><span class="muted">${relTime(a.created_at)}</span> <b>${PTYPE_NM[a.ptype]||esc(a.ptype||a.lesson)}</b> · ${KIND_KO[a.kind]||a.kind} · ${a.good?'<span class="ok">✓ 해냄</span>':'<span class="bad">정답 확인함</span>'}${a.wrongs?` · 틀린 횟수 ${a.wrongs}`:''}${a.step_wrongs&&a.mode==='steps'?` <span class="muted">(단계별 틀림 ${a.step_wrongs.join(' · ')})</span>`:''}</li>`).join('')}</ul>`:'<span class="muted">아직 풀이 기록이 없어요.</span>'}
+      catch(e){d.remove();fail(e)}};
+    $('.t-reset',tr).onclick=e=>confirmInline(e.currentTarget,'새 비밀번호를 만들까요?',async()=>{try{const r=await API.call('hg_t_reset_pin',{p_token:tTok(),p_sid:sid});
+      const cell=$('.t-act',tr);cell.innerHTML=`<span class="t-newpin">새 비밀번호 <b class="rm">${esc(r.pin)}</b></span>`;toast('새 비밀번호는 지금만 보여요. 학생에게 알려 주세요.')}catch(er){fail(er)}});
+    $('.t-del',tr).onclick=e=>confirmInline(e.currentTarget,'이 학생의 기록을 모두 지울까요? 되돌릴 수 없어요.',async()=>{try{await API.call('hg_t_delete_student',{p_token:tTok(),p_sid:sid});toast('학생을 지웠어요.');loadRoster()}catch(er){fail(er)}})}
+  function confirmInline(btn,q,yes){const cell=btn.parentElement,keep=cell.innerHTML;cell.innerHTML=`<span class="t-confirm">${q} <button type="button" class="t-mini t-yes">네</button><button type="button" class="t-mini t-no">아니요</button></span>`;
+    $('.t-yes',cell).onclick=()=>{cell.innerHTML='<span class="muted">처리하는 중…</span>';yes()};$('.t-no',cell).onclick=()=>{cell.innerHTML=keep;wireRow(cell.parentElement)}}
+  function renderStats(rows){const host=$('.tStats',app);if(!rows.length){host.innerHTML='<p class="muted">아직 모인 기록이 없어요. 학생들이 단계 문제를 풀면 여기에 쌓여요.</p>';return}
+    const groups={};rows.forEach(x=>{const k=x.lesson+'|'+x.ptype;(groups[k]=groups[k]||{lesson:x.lesson,ptype:x.ptype,gen:x.gen,seed:x.seed,steps:[]}).steps.push(x)});
+    const label=(g,st)=>{try{return stripTags(GEN[g.gen](Number(g.seed)).steps[st.step-1].q)}catch(e){return st.step+'단계'}};
+    const G=Object.values(groups).map(g=>{g.n=Math.max(...g.steps.map(x=>x.n));g.max=Math.max(...g.steps.map(x=>x.n?x.wrong/x.n:0));return g}).sort((a,b)=>b.max-a.max);
+    const all=[];G.forEach(g=>g.steps.forEach(st=>{if(st.n>=3)all.push({g,st,rate:st.wrong/st.n})}));all.sort((a,b)=>b.rate-a.rate);const top=all[0];
+    host.innerHTML=(top?`<div class="box" style="margin-top:0"><b>가장 많이 막힌 단계</b> · ${PTYPE_NM[top.g.ptype]||esc(top.g.ptype)}<br>(${top.st.step}) ${esc(label(top.g,top.st))} — ${top.st.n}번 풀이 중 <b>${top.st.wrong}번</b> 틀렸어요 (${Math.round(top.rate*100)}%)</div>`:'')+
+      `<div class="t-stats">${G.map(g=>`<div class="t-stat"><div class="t-stat-h"><b>${PTYPE_NM[g.ptype]||esc(g.ptype)}</b><span class="muted">${g.n}번 풀었어요</span></div><ol>${g.steps.map(st=>{const w=st.n?Math.round(st.wrong/st.n*100):0,rv=st.n?Math.round(st.revealed/st.n*100):0;
+        return`<li><span class="sl">(${st.step}) ${esc(label(g,st))}</span><span class="bar" role="img" aria-label="틀림 ${w}%, 정답 확인 ${rv}%"><i class="w" style="width:${w}%"></i><i class="r" style="width:${rv}%"></i></span><span class="pc rm">${w}%</span></li>`}).join('')}</ol></div>`).join('')}</div>
+      <p class="muted t-legend"><i class="lw"></i>한 번이라도 틀린 비율 <i class="lr"></i>세 번 틀려서 정답을 확인한 비율</p>`}
+  $('.tClass',app).onchange=e=>{klassSel=e.target.value;lsSet('hangeoreum-t-class',klassSel);renderRoster()};
+  $$('.tDays button',app).forEach(b=>b.onclick=()=>{days=+b.dataset.d;$$('.tDays button',app).forEach(x=>x.classList.toggle('on',x===b));loadStats()});
+  $('.tRefresh',app).onclick=()=>{loadRoster();loadStats()};
+  $('.tOut',app).onclick=async()=>{const t=tTok();tSet(null);API.call('hg_logout',{p_token:t}).catch(()=>{});toast('교사 화면에서 로그아웃했어요.');viewTeacher()};
+  $('.t-create',app).onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tCMsg',app);const g=+f.g.value,k=+f.k.value,a=+f.a.value,b=+f.b.value;m.textContent='만드는 중…';
+    try{const R=await API.call('hg_t_create_students',{p_token:tTok(),p_grade:g,p_klass:k,p_from:a,p_to:b})||[];const made=R.filter(x=>!x.existed),skip=R.filter(x=>x.existed);
+      m.textContent=`${g}학년 ${k}반: 새로 ${made.length}명${skip.length?`, 이미 있던 ${skip.length}명은 건너뛰었어요`:''}.`;showNew(g,k,made);klassSel=`${g}-${k}`;lsSet('hangeoreum-t-class',klassSel);loadRoster()}
+    catch(er){m.textContent='';fail(er)}};
+  function showNew(g,k,list){const host=$('.tNew',app);if(!list.length){host.innerHTML='';return}
+    const text=list.map(x=>`${g}학년 ${k}반 ${x.num}번\t${x.pin}`).join('\n');
+    host.innerHTML=`<div class="t-newbox"><div class="t-head"><b>새로 만든 비밀번호 (${list.length}명)</b><span><button type="button" class="btn ghost t-copy">목록 복사</button> <button type="button" class="btn ghost t-cards">카드로 보기</button></span></div>
+      <div class="t-pinlist">${list.map(x=>`<span><b>${x.num}번</b> <span class="rm">${x.pin}</span></span>`).join('')}</div><div class="t-cardhost"></div></div>`;
+    $('.t-copy',host).onclick=async()=>{try{await navigator.clipboard.writeText(text);toast('복사했어요. 엑셀이나 메모장에 붙여 넣으세요.')}catch(er){const ta=el(`<textarea class="inp" rows="6" style="width:100%;margin-top:8px"></textarea>`);ta.value=text;host.appendChild(ta);ta.select();toast('복사가 막혀 있어요. 아래 칸을 직접 복사해 주세요.')}};
+    $('.t-cards',host).onclick=()=>{$('.t-cardhost',host).innerHTML=`<div class="pincards">${list.map(x=>`<div class="pincard"><span class="pc-brand">한 걸음 수학</span><b>${g}학년 ${k}반 ${x.num}번</b><span>비밀번호</span><span class="pc-pin rm">${x.pin}</span><small>학년·반·번호를 고르고 비밀번호를 누르세요</small></div>`).join('')}</div><p><button type="button" class="btn t-print">인쇄하기</button> <span class="muted" style="font-size:14px">인쇄가 안 되면 화면을 캡처해서 나눠 주세요.</span></p>`;
+      $('.t-print',host).onclick=()=>{document.body.classList.add('printing-cards');try{window.print()}catch(er){}setTimeout(()=>document.body.classList.remove('printing-cards'),500)}}}
+  $('.t-pw',app).onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tPMsg',app);try{const r=await API.call('hg_t_change_password',{p_token:tTok(),p_old:f.o.value,p_new:f.n.value});m.textContent=r&&r.ok?'비밀번호를 바꿨어요.':(r&&r.msg)||'바꾸지 못했어요.';if(r&&r.ok)f.reset()}catch(er){fail(er)}};
+  loadRoster();loadStats();
+}
+
+/* ───────── 길찾기 ───────── */
+function route(soft){
+  hideTerm();activeBox=null;pinKeyHandler=null;if(!$('#labov').hidden)closeLab();
+  const h=(location.hash||'').replace('#','');
+  if(!h||h==='home')viewHome();
+  else if(h==='unit-solid')viewUnit();
+  else if(h==='me')viewMe();
+  else if(h==='review')viewReview();
+  else if(h==='drill')viewDrill();
+  else if(h==='login')viewLogin();
+  else if(h==='teacher')viewTeacher();
+  else{const[id,tab]=h.split('-');const L=LESSONS.find(l=>l.id===id&&l.ready);if(L)viewLesson(id,TABS.some(t=>t.id===tab)?tab:'concept');else viewHome()}
+  if(!soft)window.scrollTo(0,0);updateWho();
+}
+addEventListener('hashchange',()=>route());route();updatePill();if(isStudent())pullDB();
+</script>
+</body>
+</html>
