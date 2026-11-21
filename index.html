@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>한 걸음 수학</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1d2640">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="한 걸음 수학">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -367,6 +374,12 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .t-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .t-head h2{margin:0}
 .t-sel{display:flex;align-items:center;gap:8px;font-weight:700}
+.t-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.whoov{position:fixed;inset:0;background:rgba(29,38,64,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.whocard{max-width:440px;width:100%;text-align:center}
+.whocard h2{font-size:30px;margin:6px 0 4px}
+.whobtns{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.whobtns .btn{width:100%;justify-content:center;min-height:52px;font-size:17px}
 .t-tiles{display:flex;gap:28px;flex-wrap:wrap;margin:6px 0 14px}
 .t-roster td,.t-roster th{white-space:nowrap;padding:8px 6px}
 .t-roster .pips{gap:3px}
@@ -488,8 +501,13 @@ const storeKey=()=>isStudent()?STORE_KEY+':'+AUTH.sid:STORE_KEY;
 let DB={};
 function loadDB(){DB=lsGet(storeKey(),{})||{};if(typeof DB!=='object'||Array.isArray(DB))DB={}}
 loadDB();
-const SYNC={timer:null,dirty:false,busy:false,last:null,err:null};
-function save(){DB._ts=Date.now();lsSet(storeKey(),DB);if(isStudent()){SYNC.dirty=true;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(()=>pushDB(),1500)}}
+const SYNC={timer:null,busy:false,pulling:false,last:null,err:null,contact:0};
+/* 기록이 끝없이 커지지 않게 정리 (서버 저장 한도 300KB) */
+function tidyDB(){const M=DB._me;if(M&&M.once&&typeof M.once==='object'){const d=new Date();d.setDate(d.getDate()-60);const cut=d.toISOString().slice(0,10);for(const k in M.once)if(k.startsWith('drill:')&&k.slice(6)<cut)delete M.once[k]}
+  if(Array.isArray(DB._rev)&&DB._rev.length>50)DB._rev=DB._rev.slice(-50);
+  for(const k in DB){const v=DB[k];if(v&&v.prac&&Array.isArray(v.prac.retry)&&v.prac.retry.length>20)v.prac.retry=v.prac.retry.slice(-20)}}
+function markActive(){try{localStorage.setItem('hangeoreum-active',String(Date.now()))}catch(e){}}
+function save(){tidyDB();DB._ts=Date.now();lsSet(storeKey(),DB);markActive();if(isStudent()){clearTimeout(SYNC.timer);SYNC.timer=setTimeout(()=>pushDB(),1500)}}
 function prog(id){DB[id]=DB[id]||{concept:false,explore:false,steps:0,prac:{solved:0,streak:0,level:1,fails:0,retry:[]}};return DB[id]}
 
 
@@ -915,7 +933,7 @@ function renderProblem(host,prob,opt={}){
     ol.innerHTML='';const S=list();
     S.forEach((s,i)=>{const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):i===cur?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
       const sb=$('.sb',li);
-      if(i<cur){sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':'✓ '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
+      if(i<cur){sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
       if(i===cur){
         const hm=el('<div class="hintmsg" hidden></div>');
         const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
@@ -958,10 +976,10 @@ GEN.typesStep=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid','
   const parts=shuffle(r,['F','E','V']);const g=parts[0],a=parts[1];const gv=Ty[g](n),av=Ty[a](n),gf=Ty['f'+g],af=Ty['f'+a];
   const solveHint=gf.includes('+')?`양변에서 ${josa(gf.split('+')[1],'을','를')} 빼 보세요.`:`양변을 ${josaRo(gf[0])} 나누어 보세요.`;
   return{ptype:'types:'+tp,title:`${PART[g]}의 개수가 ${gv}개인 ${Ty.nm}의 ${PART[a]}의 개수를 구하시오.`,fig:null,figAfter:{at:3,fig:solidFig(Ty.mk(n)),hl:'F'+a.toLowerCase(),cap:`${kn(n)}${Ty.nm} · ${josa(PART[a],'을','를')} 층별로 칠했어요`},finalQ:`${PART[a]}의 개수는 몇 개인가요?`,steps:[
-    {q:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}의 개수를 <span class="math">n</span>을 사용하여 나타내면?`,type:'choice',mathChoices:true,choices:['n+1','n+2','2n','3n'],ans:gf,hint:`삼${Ty.nm}, 사${josa(Ty.nm,'을','를')} 떠올려 ${josa(PART[g],'을','를')} 세어 보세요. 개념 카드의 표도 도움이 돼요.`,ok:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}: ${gf.replace('n','<span class="math">n</span>')}개`},
-    {q:`${gf.replace('n','<span class="math">n</span>')} = ${gv} 이므로 <span class="math">n</span>의 값은?`,type:'num',ans:n,hint:`${T('방정식')}을 풀어요. ${solveHint}`},
-    {q:'이 입체도형의 이름은?',type:'num',ans:n,suffix:Ty.nm,hint:`<span class="math">n</span>의 값이 곧 밑면의 변의 개수예요.`,ok:`${kn(n)}${Ty.nm}${Ty.nm.endsWith('대')?'예요':'이에요'}.`},
-    {q:`${kn(n)}${Ty.nm}의 ${PART[a]}의 개수는?`,type:'num',ans:av,suffix:'개',hint:`${PART[a]}의 개수는 ${af.replace('n','<span class="math">n</span>')}개예요. <span class="math">n</span> = ${n}을 넣어 보세요.`}]}};
+    {tag:'개수를 n을 사용한 식으로 나타내기',q:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}의 개수를 <span class="math">n</span>을 사용하여 나타내면?`,type:'choice',mathChoices:true,choices:['n+1','n+2','2n','3n'],ans:gf,hint:`삼${Ty.nm}, 사${josa(Ty.nm,'을','를')} 떠올려 ${josa(PART[g],'을','를')} 세어 보세요. 개념 카드의 표도 도움이 돼요.`,ok:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}: ${gf.replace('n','<span class="math">n</span>')}개`},
+    {tag:'방정식을 풀어 n의 값 구하기',q:`${gf.replace('n','<span class="math">n</span>')} = ${gv} 이므로 <span class="math">n</span>의 값은?`,type:'num',ans:n,hint:`${T('방정식')}을 풀어요. ${solveHint}`},
+    {tag:'입체도형의 이름 정하기',q:'이 입체도형의 이름은?',type:'num',ans:n,suffix:Ty.nm,hint:`<span class="math">n</span>의 값이 곧 밑면의 변의 개수예요.`,ok:`${kn(n)}${Ty.nm}${Ty.nm.endsWith('대')?'예요':'이에요'}.`},
+    {tag:'n을 넣어 구하는 개수 계산하기',q:`${kn(n)}${Ty.nm}의 ${PART[a]}의 개수는?`,type:'num',ans:av,suffix:'개',hint:`${PART[a]}의 개수는 ${af.replace('n','<span class="math">n</span>')}개예요. <span class="math">n</span> = ${n}을 넣어 보세요.`}]}};
 GEN.types=seed=>{const r=mulberry(seed);const k=pick(r,['step','step','direct','direct','side','name']);
   if(k==='step')return GEN.typesStep(seed+3);
   const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],n=ri(r,3,9);
@@ -1032,9 +1050,9 @@ function viewHome(){
   <div class="sec-title"><h2>오늘 할 일</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
   <div class="today">
     <div class="card todo ${drillToday?'doneday':''}"><span class="k">계산이 빨라지면 문제에 집중할 수 있어요</span><b class="t">오늘의 계산</b>
-      <p>${drillToday?`오늘 끝냈어요 ✓ ${D.lastScore!=null?`(첫 시도 ${D.lastScore}/10)`:''}`:'10문제 · 3분쯤 · 곱셈, 넓이, π 계산'}</p><a class="btn ${drillToday?'':'primary'}" href="#drill">${drillToday?'한 번 더 하기':'시작하기'}</a></div>
+      <p>${drillToday?`오늘 끝냈어요 ${CHECK} ${D.lastScore!=null?`(첫 시도 ${D.lastScore}/10)`:''}`:'10문제 · 3분쯤 · 곱셈, 넓이, π 계산'}</p><a class="btn ${drillToday?'':'primary'}" href="#drill">${drillToday?'한 번 더 하기':'시작하기'}</a></div>
     <div class="card todo ${!due&&wait?'doneday':''}"><span class="k">틀린 문제를 1일·3일·7일 뒤에 다시</span><b class="t">복습 노트</b>
-      <p>${due?`오늘 복습할 문제 <b class="rm">${due}</b>개`:(wait?`오늘은 없어요 ✓ · 기다리는 문제 ${wait}개`:'아직 없어요. 연습에서 틀린 문제가 여기로 와요.')}</p>${due?'<a class="btn primary" href="#review">복습하기</a>':''}</div>
+      <p>${due?`오늘 복습할 문제 <b class="rm">${due}</b>개`:(wait?`오늘은 없어요 ${CHECK} · 기다리는 문제 ${wait}개`:'아직 없어요. 연습에서 틀린 문제가 여기로 와요.')}</p>${due?'<a class="btn primary" href="#review">복습하기</a>':''}</div>
     <div class="card todo"><span class="k">${last?'지난번에 여기까지 했어요':'처음이라면'}</span><b class="t">${last?`${last.no}차시 ${last.title}`:'1차시 다면체'}</b>
       <p>${last?`${lastTab.t} 탭 · 진행 ${lessonDone(last.id)}/4`:'개념부터 차근차근 시작해요.'}</p><a class="btn" href="#${last?last.id+(lastTab.id==='concept'?'':'-'+lastTab.id):'poly'}">이어서 하기 →</a></div>
   </div>
@@ -1063,7 +1081,7 @@ function viewReview(){
     if(!L.length){host.innerHTML=`<div class="feedback ok">오늘 복습할 문제를 모두 풀었어요! ${(DB._rev||[]).length?`나머지 ${(DB._rev||[]).length}문제는 정해진 날에 다시 나와요.`:''}</div><div class="next-row" style="justify-content:flex-start"><a class="btn" href="#home">처음 화면으로</a></div>`;return}
     const item=L[0],prob=GEN[item.g](item.seed),L0=LESSONS.find(l=>l.id===item.lid);
     prob.title=`<span class="rv-from">${L0?L0.no+'차시 '+L0.title+' · ':''}${item.stage+1}번째 복습</span><br>`+prob.title;
-    renderProblem(host,prob,{mode:'final',onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);logAttempt({lesson:item.lid||'',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
+    renderProblem(host,prob,{mode:'final',onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
       if(ok){bump('review');award(5)}else award(1);
       box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?(item.stage>=3?'졸업! 이 문제는 이제 나오지 않아요.':`한 번에 맞혔어요. ${[1,3,7][item.stage]}일 뒤에 한 번 더 나와요.`):'헷갈렸던 문제예요. 내일 다시 나와요.'}</span>`);
       const nb=el('<button type="button" class="btn primary">다음 →</button>');nb.onclick=next;box.appendChild(nb);stats()}})}
@@ -1705,16 +1723,59 @@ const MOCK=(()=>{
 
 /* 학생 로그인 상태와 기록 동기화 */
 const whoLabel=a=>`${a.grade}학년 ${a.klass}반 ${a.num}번`;
-async function pushDB(keepalive){if(!isStudent()||!SYNC.dirty||SYNC.busy)return;SYNC.busy=true;SYNC.dirty=false;const snap=JSON.parse(JSON.stringify(DB));
-  try{await API.call('hg_save_progress',{p_token:AUTH.token,p_data:snap},{keepalive});SYNC.last=new Date();SYNC.err=null;flushOutbox()}
-  catch(e){SYNC.dirty=true;SYNC.err=e.message;if(isAuthErr(e))authExpired()}
-  finally{SYNC.busy=false;updateWho()}}
-async function pullDB(){if(!isStudent())return;
-  try{const r=await API.call('hg_get_progress',{p_token:AUTH.token});const srv=(r&&r.data)||{};const st=+srv._ts||0,lt=+DB._ts||0;SYNC.last=new Date();SYNC.err=null;
-    if(st>lt){DB=srv;lsSet(storeKey(),DB);updatePill();route(true)}else if(lt>st){SYNC.dirty=true;pushDB()}
-    flushOutbox()}
+const LESSON_OF={polyStep:'poly',poly:'poly',typesStep:'types',types:'types',areaStep:'area',area:'area'};
+/* base = 이 기기가 마지막으로 서버와 맞춘 기록의 버전(_ts).
+   이 기기의 _ts ≠ base → 아직 올리지 않은 변경이 있음. 서버의 _ts ≠ base → 다른 기기에서 바뀜. 둘 다면 합친다. */
+const baseKey=()=>'hangeoreum-base:'+(AUTH?AUTH.sid:'');
+const getBase=()=>+lsGet(baseKey(),0)||0;
+const setBase=(v,d)=>{lsSet(baseKey(),+v||0);lsSet(baseKey()+':pts',(d&&d._me&&+d._me.pts)||0)};
+const getBasePts=()=>+lsGet(baseKey()+':pts',0)||0;
+const localDirty=()=>isStudent()&&(+DB._ts||0)!==getBase();
+const STALE_MS=2*60*1000;
+function mergeVal(x,y){if(x===undefined||x===null)return y;if(y===undefined||y===null)return x;
+  if(typeof x==='boolean'&&typeof y==='boolean')return x||y;
+  if(typeof x==='number'&&typeof y==='number')return Math.max(x,y);
+  if(typeof x==='string'&&typeof y==='string')return x>y?x:y;
+  if(Array.isArray(x)||Array.isArray(y))return y;
+  if(typeof x==='object'&&typeof y==='object'){const o={};new Set([...Object.keys(x),...Object.keys(y)]).forEach(k=>{o[k]=mergeVal(x[k],y[k])});return o}
+  return y}
+function mergeDB(L,S){L=L||{};S=S||{};const out={},newer=(+L._ts||0)>(+S._ts||0)?L:S;
+  new Set([...Object.keys(L),...Object.keys(S)]).forEach(k=>{const a=L[k],b=S[k];
+    if(a===undefined){out[k]=b;return}if(b===undefined){out[k]=a;return}
+    if(k==='_ts'||k==='_last'){out[k]=newer[k];return}
+    if(k==='_rev'){const m=new Map();[...(Array.isArray(b)?b:[]),...(Array.isArray(a)?a:[])].forEach(x=>{if(!x||typeof x!=='object')return;const id=x.g+'|'+x.seed,o=m.get(id);
+      if(!o||(x.stage||0)>(o.stage||0)||((x.stage||0)===(o.stage||0)&&String(x.due)>String(o.due)))m.set(id,x)});out[k]=[...m.values()];return}
+    if(k==='_drill'){const o=mergeVal(a,b);const bs=[a&&a.best,b&&b.best].filter(v=>typeof v==='number');if(bs.length)o.best=Math.min(...bs);out[k]=o;return}
+    if(k==='_me'&&a&&b){const o=mergeVal(a,b);const la=a.last||'',lb=b.last||'';o.streak=(la===lb?Math.max(a.streak||0,b.streak||0):(la>lb?a.streak:b.streak))||0;
+      if(a.badges&&b.badges){o.badges={};new Set([...Object.keys(a.badges),...Object.keys(b.badges)]).forEach(x=>{o.badges[x]=[a.badges[x],b.badges[x]].filter(Boolean).sort()[0]})}
+      out[k]=o;return}
+    if(a&&b&&typeof a==='object'&&typeof b==='object'&&(a.prac||b.prac)){const o=mergeVal(Object.assign({},a,{prac:null}),Object.assign({},b,{prac:null}));
+      o.prac=!a.prac?b.prac:!b.prac?a.prac:((a.prac.solved||0)>=(b.prac.solved||0)?a.prac:b.prac);out[k]=o;return}
+    out[k]=mergeVal(a,b)});
+  return out}
+function schedulePush(ms){clearTimeout(SYNC.timer);SYNC.timer=setTimeout(()=>pushDB(),ms)}
+async function pushDB(keepalive){if(!isStudent()||SYNC.busy||!localDirty())return;SYNC.busy=true;
+  try{if(!keepalive&&Date.now()-SYNC.contact>STALE_MS){if(!await pullDB(true))return;if(!localDirty())return}
+    const snap=JSON.parse(JSON.stringify(DB));
+    await API.call('hg_save_progress',{p_token:AUTH.token,p_data:snap},{keepalive});
+    setBase(snap._ts,snap);SYNC.contact=Date.now();SYNC.last=new Date();SYNC.err=null;flushOutbox()}
   catch(e){SYNC.err=e.message;if(isAuthErr(e))authExpired()}
-  updateWho()}
+  finally{SYNC.busy=false;updateWho();if(isStudent()&&!SYNC.err&&localDirty())schedulePush(1500)}}
+function refreshAfterPull(){updatePill();route(true)}  /* 화면이 예전 기록 객체를 붙잡고 있지 않게 다시 그린다 */
+async function pullDB(fromPush){if(!isStudent())return false;if(!fromPush&&(SYNC.busy||SYNC.pulling))return false;SYNC.pulling=true;
+  try{const r=await API.call('hg_get_progress',{p_token:AUTH.token});const srv=(r&&r.data&&typeof r.data==='object'&&!Array.isArray(r.data))?r.data:{};
+    if(!isStudent())return false;
+    const st=+srv._ts||0;SYNC.contact=Date.now();SYNC.err=null;if(!SYNC.last)SYNC.last=new Date();
+    if(st!==getBase()){
+      if(!localDirty())DB=srv;
+      else{const gained=Math.max(0,((DB._me&&+DB._me.pts)||0)-getBasePts());DB=mergeDB(DB,srv);
+        if(DB._me)DB._me.pts=((srv._me&&+srv._me.pts)||0)+gained;DB._ts=Date.now()}
+      lsSet(storeKey(),DB);setBase(st,srv);refreshAfterPull()}
+    if(!fromPush&&localDirty())schedulePush(300);
+    flushOutbox();return true}
+  catch(e){SYNC.err=e.message;if(isAuthErr(e))authExpired();return false}
+  finally{SYNC.pulling=false;updateWho()}}
+async function settleSync(){for(let i=0;i<60&&(SYNC.busy||SYNC.pulling);i++)await sleep(100);if(localDirty())await pushDB()}
 const obKey=()=>'hangeoreum-outbox:'+(AUTH?AUTH.sid:'');
 function logAttempt(o){if(!isStudent())return;const item={p_lesson:o.lesson,p_kind:o.kind,p_good:!!o.good,p_wrongs:o.wrongs||0,p_mode:o.mode||null,p_gen:o.gen||null,p_seed:o.seed??null,p_ptype:o.ptype||null,p_step_wrongs:o.stepWrongs||null,p_revealed:o.revealed||null};
   const ob=lsGet(obKey(),[]);ob.push(item);lsSet(obKey(),ob.slice(-300));flushOutbox()}
@@ -1722,21 +1783,34 @@ let obBusy=false;
 async function flushOutbox(){if(!isStudent()||obBusy)return;const key=obKey();let ob=lsGet(key,[]);if(!ob.length)return;obBusy=true;
   try{while(ob.length){try{await API.call('hg_log_attempt',Object.assign({p_token:AUTH.token},ob[0]))}catch(e){if(e.net||isAuthErr(e))throw e}ob.shift();lsSet(key,ob)}}
   catch(e){if(isAuthErr(e))authExpired()}finally{obBusy=false}}
-function authExpired(){if(!isStudent())return;AUTH=null;try{localStorage.removeItem(AUTH_KEY)}catch(e){}loadDB();updatePill();updateWho();toast('로그인이 끝났어요. 다시 로그인해 주세요.')}
+function authExpired(){if(!isStudent())return;clearTimeout(SYNC.timer);AUTH=null;try{localStorage.removeItem(AUTH_KEY)}catch(e){}loadDB();updatePill();updateWho();toast('로그인이 끝났어요. 다시 로그인해 주세요.')}
 async function studentLogin(sid,pin){const r=await API.call('hg_login',{p_sid:sid,p_pin:pin});if(!r||!r.ok)return r||{ok:false,msg:'로그인하지 못했어요.'};
-  AUTH={role:'student',token:r.token,sid:r.sid,grade:r.grade,klass:r.klass,num:r.num};lsSet(AUTH_KEY,AUTH);loadDB();SYNC.dirty=false;SYNC.last=null;updatePill();updateWho();await pullDB();return r}
-async function studentLogout(){if(!isStudent())return;clearTimeout(SYNC.timer);if(SYNC.dirty)await pushDB();
-  const key=storeKey(),ok=!SYNC.dirty&&!lsGet(obKey(),[]).length;API.call('hg_logout',{p_token:AUTH.token}).catch(()=>{});
-  if(ok){try{localStorage.removeItem(key)}catch(e){}}  /* 함께 쓰는 기기에 기록을 남기지 않기 (서버에 저장된 경우만) */
-  AUTH=null;try{localStorage.removeItem(AUTH_KEY)}catch(e){}loadDB();updatePill();updateWho()}
-function syncText(){if(!isStudent())return'';if(SYNC.err&&SYNC.dirty)return'저장하지 못했어요. 인터넷이 연결되면 다시 저장해요.';if(SYNC.dirty||SYNC.busy)return'저장하는 중…';
+  AUTH={role:'student',token:r.token,sid:r.sid,grade:r.grade,klass:r.klass,num:r.num};lsSet(AUTH_KEY,AUTH);loadDB();SYNC.last=null;SYNC.err=null;SYNC.contact=0;markActive();updatePill();updateWho();await pullDB();return r}
+async function studentLogout(){if(!isStudent())return true;clearTimeout(SYNC.timer);await settleSync();await flushOutbox();
+  const ok=!localDirty()&&!lsGet(obKey(),[]).length;API.call('hg_logout',{p_token:AUTH.token}).catch(()=>{});
+  if(ok){try{[storeKey(),baseKey(),baseKey()+':pts',obKey()].forEach(k=>localStorage.removeItem(k))}catch(e){}}  /* 함께 쓰는 기기에 기록을 남기지 않기 (서버에 다 저장된 경우만) */
+  AUTH=null;SYNC.err=null;try{localStorage.removeItem(AUTH_KEY)}catch(e){}loadDB();updatePill();updateWho();
+  if(!ok)toast('인터넷이 연결되지 않아 아직 못 올린 기록은 이 기기에 남겨 두었어요. 다음에 이 기기로 로그인하면 올라가요.');return ok}
+function syncText(){if(!isStudent())return'';const d=localDirty();if(SYNC.err&&d)return'저장하지 못했어요. 인터넷이 연결되면 다시 저장해요.';if(d||SYNC.busy)return'저장하는 중…';
   return SYNC.last?`서버에 저장했어요 · ${SYNC.last.toLocaleTimeString('ko-KR',{hour:'numeric',minute:'2-digit'})}`:'서버와 연결하는 중…'}
 function updateWho(){const c=$('#whoChip');if(!c)return;
-  if(isStudent()){const st=SYNC.err&&SYNC.dirty?'bad':(SYNC.dirty||SYNC.busy)?'wait':'ok';c.innerHTML=`<i class="dot ${st}"></i><span class="wl">${whoLabel(AUTH)}</span><span class="ws">${AUTH.klass}반 ${AUTH.num}번</span>`;c.href='#me';c.title=syncText()}
+  if(isStudent()){const d=localDirty(),st=SYNC.err&&d?'bad':(d||SYNC.busy)?'wait':'ok';c.innerHTML=`<i class="dot ${st}"></i><span class="wl">${whoLabel(AUTH)}</span><span class="ws">${AUTH.klass}반 ${AUTH.num}번</span>`;c.href='#me';c.title=syncText()}
   else{c.innerHTML='로그인';c.href='#login';c.title=''}
   const sb=$('.syncNow');if(sb)sb.textContent=syncText()}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.dirty){clearTimeout(SYNC.timer);pushDB(true)}});
-addEventListener('online',()=>{if(SYNC.dirty)pushDB();flushOutbox()});
+document.addEventListener('visibilitychange',()=>{if(!isStudent())return;
+  if(document.visibilityState==='hidden'){if(localDirty()&&Date.now()-SYNC.contact<STALE_MS){clearTimeout(SYNC.timer);pushDB(true)}}  /* 오래 연결이 없었으면 다음에 합쳐서 올린다 */
+  else{maybeConfirmWho();if(Date.now()-SYNC.contact>30000)pullDB()}});
+addEventListener('online',()=>{if(localDirty())pushDB();flushOutbox()});
+setInterval(()=>{if(isStudent()&&document.visibilityState==='visible'&&localDirty()&&!SYNC.busy)pushDB()},60000);
+let actT=0;['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{const n=Date.now();if(n-actT>20000){actT=n;markActive()}},{passive:true,capture:true}));
+/* 함께 쓰는 패드: 한동안 쓰지 않다가 다시 열면 '이 번호가 나 맞나요?' 확인 */
+const IDLE_MS=10*60*1000;let whoOpen=false;
+function maybeConfirmWho(){if(!isStudent()||whoOpen)return;const la=+lsGet('hangeoreum-active',0)||0;if(!la||Date.now()-la<IDLE_MS){markActive();return}
+  whoOpen=true;const ov=el(`<div class="whoov" role="dialog" aria-modal="true" aria-labelledby="whoT"><div class="card panel whocard"><div class="muted">이 기기로 공부하던 사람</div><h2 id="whoT">${whoLabel(AUTH)}</h2>
+    <p>나 맞나요? 내 번호가 아니면 로그아웃하고 내 번호로 다시 로그인해 주세요.</p><div class="whobtns"><button type="button" class="btn primary whoYes">네, 저예요</button><button type="button" class="btn whoNo">아니요, 다른 사람이에요</button></div></div></div>`);
+  document.body.appendChild(ov);setTimeout(()=>{const y=$('.whoYes',ov);if(y)y.focus()},50);
+  $('.whoYes',ov).onclick=()=>{ov.remove();whoOpen=false;markActive()};
+  $('.whoNo',ov).onclick=async e=>{e.currentTarget.disabled=true;e.currentTarget.textContent='로그아웃하는 중…';await studentLogout();ov.remove();whoOpen=false;markActive();toast('로그아웃했어요. 내 번호로 로그인해 주세요.');if(location.hash==='#login')route();else location.hash='#login'}}
 function demoBanner(){return LIVE?'':`<div class="demo"><b>체험 모드</b> · 아직 서버(Supabase)를 연결하지 않아서, 로그인과 교사 화면이 이 기기 안에서만 흉내 내며 동작해요.<br>체험용 학생: <b>1학년 1반 1~20번</b>, 비밀번호 <b class="rm">1234</b> · 선생님 비밀번호 <b class="rm">demo1234</b></div>`}
 
 /* 로그인 화면 */
@@ -1762,7 +1836,7 @@ function viewLogin(){
       <div class="lg-row"><span class="cap">학년</span><div class="seg lgGrade">${[1,2,3].map(g=>`<button type="button" data-g="${g}" class="${g===last.grade?'on':''}">${g}학년</button>`).join('')}</div></div>
       <div class="lg-row"><label class="cap" for="lgK">반</label><select id="lgK" class="inp sel">${range(20).map(i=>`<option value="${i+1}"${i+1===last.klass?' selected':''}>${i+1}반</option>`).join('')}</select>
         <label class="cap" for="lgN">번호</label><select id="lgN" class="inp sel">${range(50).map(i=>`<option value="${i+1}">${i+1}번</option>`).join('')}</select></div>
-      <div class="cap" style="margin-top:14px">비밀번호 4자리</div><div class="lgPin"></div><div class="flmsg lgMsg" role="status"></div>
+      <div class="cap" style="margin-top:14px">비밀번호 4자리 <span class="muted" style="font-weight:400;font-size:14px">· 잊었으면 선생님께 말해 주세요</span></div><div class="lgPin"></div><div class="flmsg lgMsg" role="status"></div>
       <p style="margin:6px 0 0"><a href="#home">로그인 없이 둘러보기</a> <span class="muted" style="font-size:14px">(기록은 이 기기에만 남아요)</span></p>
     </div>
     <div class="logT" hidden><h1 style="font-size:28px;margin-top:14px">선생님 로그인</h1><p class="muted" style="margin-top:4px">교사 화면에서 학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div>
@@ -1789,16 +1863,18 @@ const PTYPE_NM={'poly:prism':'1차시 · 각기둥은 몇 면체?','poly:pyramid
 const KIND_KO={steps:'단계 문제',practice:'연습',review:'복습'};
 function relTime(iso){if(!iso)return'아직 없음';const d=(Date.now()-Date.parse(iso))/1000;if(d<3600)return Math.max(1,Math.round(d/60))+'분 전';if(d<86400)return Math.round(d/3600)+'시간 전';const days=Math.floor(d/86400);return days===1?'어제':days+'일 전'}
 function stripTags(h){const t=document.createElement('div');t.innerHTML=h;return t.textContent.replace(/\s+/g,' ').trim()}
-function dataSummary(d){const me=d._me||{},t=today(),streak=(me.last===t||me.last===addDays(t,-1))?(me.streak||0):0;
-  const les=LESSONS.filter(l=>l.ready).map(l=>{const p=d[l.id];return p?[p.concept,p.explore,p.steps>0,!!(p.prac&&p.prac.solved>=5)]:[false,false,false,false]});
-  const solved=LESSONS.reduce((a,l)=>a+((d[l.id]&&d[l.id].prac&&d[l.id].prac.solved)||0),0),rev=Array.isArray(d._rev)?d._rev:[];
-  return{pts:me.pts||0,streak,les,solved,rev:rev.length,due:rev.filter(x=>x.due<=t).length,badges:Object.keys(me.badges||{}).length}}
+const NUM=v=>{v=Number(v);return Number.isFinite(v)&&v>0?Math.floor(v):0};
+const OBJ=v=>(v&&typeof v==='object'&&!Array.isArray(v))?v:{};
+function dataSummary(d){d=OBJ(d);const me=OBJ(d._me),t=today(),streak=(me.last===t||me.last===addDays(t,-1))?NUM(me.streak):0;
+  const les=LESSONS.filter(l=>l.ready).map(l=>{const p=OBJ(d[l.id]),pr=OBJ(p.prac);return[!!p.concept,!!p.explore,NUM(p.steps)>0,NUM(pr.solved)>=5]});
+  const solved=LESSONS.reduce((a,l)=>a+NUM(OBJ(OBJ(d[l.id]).prac).solved),0),rev=Array.isArray(d._rev)?d._rev:[];
+  return{pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
 function viewTeacher(){
   crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   const ready=LESSONS.filter(l=>l.ready);
   app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
-   <div class="card panel"><div class="t-head"><h2>학급 현황</h2><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label></div><div class="t-tiles"></div>
+   <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div>
     <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시<br><small>개념·탐구·단계·연습</small></th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
     <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요.</p></div>
    <div class="card panel"><div class="t-head"><h2>많이 막히는 단계</h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
@@ -1811,11 +1887,12 @@ function viewTeacher(){
   const fail=e=>{if(isAuthErr(e)){tSet(null);toast('교사 로그인이 끝났어요. 다시 로그인해 주세요.');viewTeacher();return true}toast(e.message);return false};
   async function loadRoster(){try{ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[];renderRoster()}catch(e){fail(e)}}
   async function loadStats(){try{renderStats(await API.call('hg_t_step_stats',{p_token:tTok(),p_days:days})||[])}catch(e){fail(e)}}
+  const curList=()=>ROSTER.filter(s=>klassSel==='all'||`${s.grade}-${s.klass}`===klassSel);
   function classes(){const m=new Map();ROSTER.forEach(s=>m.set(`${s.grade}-${s.klass}`,{g:s.grade,k:s.klass}));return[...m.entries()]}
   function renderRoster(){const sel=$('.tClass',app),C=classes();
     if(klassSel&&!C.some(([k])=>k===klassSel))klassSel=null;if(!klassSel&&C.length)klassSel=C[0][0];
     sel.innerHTML=C.length?C.map(([k,v])=>`<option value="${k}"${k===klassSel?' selected':''}>${v.g}학년 ${v.k}반</option>`).join('')+'<option value="all"'+(klassSel==='all'?' selected':'')+'>전체</option>':'<option>학생 없음</option>';
-    const L=ROSTER.filter(s=>klassSel==='all'||`${s.grade}-${s.klass}`===klassSel);$('.tEmpty',app).hidden=!!ROSTER.length;
+    const L=curList();$('.tEmpty',app).hidden=!!ROSTER.length;
     const S=L.map(s=>Object.assign({s},dataSummary(s.data||{})));const wk=Date.now()-7*864e5;
     const act=L.filter(s=>s.last_seen&&Date.parse(s.last_seen)>wk).length,avg=S.length?Math.round(S.reduce((a,x)=>a+x.pts,0)/S.length):0,tries=L.reduce((a,s)=>a+(s.attempts_7d||0),0);
     $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
@@ -1829,7 +1906,7 @@ function viewTeacher(){
     $('.t-num',tr).onclick=async e=>{const b=e.currentTarget,nx=tr.nextElementSibling;if(nx&&nx.classList.contains('t-detail')){nx.remove();b.setAttribute('aria-expanded','false');return}
       b.setAttribute('aria-expanded','true');const d=el(`<tr class="t-detail"><td colspan="${tr.children.length}"><span class="muted">불러오는 중…</span></td></tr>`);tr.after(d);
       try{const A=await API.call('hg_t_student_attempts',{p_token:tTok(),p_sid:sid,p_limit:30})||[];
-        d.firstElementChild.innerHTML=A.length?`<ul class="t-att">${A.map(a=>`<li><span class="muted">${relTime(a.created_at)}</span> <b>${PTYPE_NM[a.ptype]||esc(a.ptype||a.lesson)}</b> · ${KIND_KO[a.kind]||a.kind} · ${a.good?'<span class="ok">✓ 해냄</span>':'<span class="bad">정답 확인함</span>'}${a.wrongs?` · 틀린 횟수 ${a.wrongs}`:''}${a.step_wrongs&&a.mode==='steps'?` <span class="muted">(단계별 틀림 ${a.step_wrongs.join(' · ')})</span>`:''}</li>`).join('')}</ul>`:'<span class="muted">아직 풀이 기록이 없어요.</span>'}
+        d.firstElementChild.innerHTML=A.length?`<ul class="t-att">${A.map(a=>`<li><span class="muted">${relTime(a.created_at)}</span> <b>${PTYPE_NM[a.ptype]||esc(a.ptype||a.lesson)}</b> · ${KIND_KO[a.kind]||a.kind} · ${a.good?'<span class="ok">'+CHECK+' 해냄</span>':'<span class="bad">정답 확인함</span>'}${a.wrongs?` · 틀린 횟수 ${a.wrongs}`:''}${a.step_wrongs&&a.mode==='steps'?` <span class="muted">(단계별 틀림 ${a.step_wrongs.join(' · ')})</span>`:''}</li>`).join('')}</ul>`:'<span class="muted">아직 풀이 기록이 없어요.</span>'}
       catch(e){d.remove();fail(e)}};
     $('.t-reset',tr).onclick=e=>confirmInline(e.currentTarget,'새 비밀번호를 만들까요?',async()=>{try{const r=await API.call('hg_t_reset_pin',{p_token:tTok(),p_sid:sid});
       const cell=$('.t-act',tr);cell.innerHTML=`<span class="t-newpin">새 비밀번호 <b class="rm">${esc(r.pin)}</b></span>`;toast('새 비밀번호는 지금만 보여요. 학생에게 알려 주세요.')}catch(er){fail(er)}});
@@ -1837,8 +1914,9 @@ function viewTeacher(){
   function confirmInline(btn,q,yes){const cell=btn.parentElement,keep=cell.innerHTML;cell.innerHTML=`<span class="t-confirm">${q} <button type="button" class="t-mini t-yes">네</button><button type="button" class="t-mini t-no">아니요</button></span>`;
     $('.t-yes',cell).onclick=()=>{cell.innerHTML='<span class="muted">처리하는 중…</span>';yes()};$('.t-no',cell).onclick=()=>{cell.innerHTML=keep;wireRow(cell.parentElement)}}
   function renderStats(rows){const host=$('.tStats',app);if(!rows.length){host.innerHTML='<p class="muted">아직 모인 기록이 없어요. 학생들이 단계 문제를 풀면 여기에 쌓여요.</p>';return}
+    rows=rows.filter(x=>Object.prototype.hasOwnProperty.call(PTYPE_NM,x.ptype));if(!rows.length){host.innerHTML='<p class="muted">아직 모인 기록이 없어요. 학생들이 단계 문제를 풀면 여기에 쌓여요.</p>';return}
     const groups={};rows.forEach(x=>{const k=x.lesson+'|'+x.ptype;(groups[k]=groups[k]||{lesson:x.lesson,ptype:x.ptype,gen:x.gen,seed:x.seed,steps:[]}).steps.push(x)});
-    const label=(g,st)=>{try{return stripTags(GEN[g.gen](Number(g.seed)).steps[st.step-1].q)}catch(e){return st.step+'단계'}};
+    const label=(g,st)=>{try{if(!Object.prototype.hasOwnProperty.call(GEN,g.gen))throw 0;const x=GEN[g.gen](Number(g.seed)).steps[st.step-1];return x.tag||stripTags(x.q)}catch(e){return st.step+'단계'}};
     const G=Object.values(groups).map(g=>{g.n=Math.max(...g.steps.map(x=>x.n));g.max=Math.max(...g.steps.map(x=>x.n?x.wrong/x.n:0));return g}).sort((a,b)=>b.max-a.max);
     const all=[];G.forEach(g=>g.steps.forEach(st=>{if(st.n>=3)all.push({g,st,rate:st.wrong/st.n})}));all.sort((a,b)=>b.rate-a.rate);const top=all[0];
     host.innerHTML=(top?`<div class="box" style="margin-top:0"><b>가장 많이 막힌 단계</b> · ${PTYPE_NM[top.g.ptype]||esc(top.g.ptype)}<br>(${top.st.step}) ${esc(label(top.g,top.st))} — ${top.st.n}번 풀이 중 <b>${top.st.wrong}번</b> 틀렸어요 (${Math.round(top.rate*100)}%)</div>`:'')+
@@ -1848,6 +1926,13 @@ function viewTeacher(){
   $('.tClass',app).onchange=e=>{klassSel=e.target.value;lsSet('hangeoreum-t-class',klassSel);renderRoster()};
   $$('.tDays button',app).forEach(b=>b.onclick=()=>{days=+b.dataset.d;$$('.tDays button',app).forEach(x=>x.classList.toggle('on',x===b));loadStats()});
   $('.tRefresh',app).onclick=()=>{loadRoster();loadStats()};
+  $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
+    const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>TABS.map(t=>`${l.no}차시 ${t.t}`)),'연습 푼 문제','복습 대기','오늘 복습','최근 7일 풀이','잠김'];
+    const rows=L.map(s=>{const x=dataSummary(s.data);return[s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.rev,x.due,NUM(s.attempts_7d),s.locked?'잠김':'']});
+    const cell=v=>{v=String(v);return/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+    const csv='﻿'+[head,...rows].map(r=>r.map(cell).join(',')).join('\r\n');
+    const nm=klassSel==='all'?'전체':String(klassSel).replace(/^(\d+)-(\d+)$/,'$1학년_$2반');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`한걸음수학_${nm}_${today()}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)};
   $('.tOut',app).onclick=async()=>{const t=tTok();tSet(null);API.call('hg_logout',{p_token:t}).catch(()=>{});toast('교사 화면에서 로그아웃했어요.');viewTeacher()};
   $('.t-create',app).onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tCMsg',app);const g=+f.g.value,k=+f.k.value,a=+f.a.value,b=+f.b.value;m.textContent='만드는 중…';
     try{const R=await API.call('hg_t_create_students',{p_token:tTok(),p_grade:g,p_klass:k,p_from:a,p_to:b})||[];const made=R.filter(x=>!x.existed),skip=R.filter(x=>x.existed);
@@ -1878,7 +1963,7 @@ function route(soft){
   else{const[id,tab]=h.split('-');const L=LESSONS.find(l=>l.id===id&&l.ready);if(L)viewLesson(id,TABS.some(t=>t.id===tab)?tab:'concept');else viewHome()}
   if(!soft)window.scrollTo(0,0);updateWho();
 }
-addEventListener('hashchange',()=>route());route();updatePill();if(isStudent())pullDB();
+addEventListener('hashchange',()=>route());route();updatePill();if(isStudent()){maybeConfirmWho();pullDB()}
 </script>
 </body>
 </html>
