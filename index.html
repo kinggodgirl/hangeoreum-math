@@ -240,6 +240,7 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .keys .ok{grid-column:4;grid-row:3/span 2;background:var(--ink);color:#fff;border-color:var(--ink);font-family:var(--body);font-size:17px}
 .keys .zero{grid-column:span 2}
 .keys .fn{font-family:var(--body);font-size:16px}
+.keys.sn .ok{grid-row:auto;grid-column:auto}.keys .sg{font-size:28px;font-weight:700;background:var(--paper)}
 .choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .choices button{border:1.5px solid var(--ink);border-radius:10px;background:#fff;padding:9px 18px;cursor:pointer;min-height:48px;font-size:18px}
 .choices button.math{font-family:var(--math);font-style:italic}
@@ -1217,22 +1218,22 @@ function answerUI(step,onTry){
     wrap.appendChild(box);return wrap}
   let val='';
   const field=el(`<div class="field" tabindex="0" role="textbox" aria-label="답 입력"><span class="val"></span><span class="caret"></span>${step.suffix?`<span class="suf">${step.suffix}</span>`:''}</div>`);
-  const keys=el('<div class="keys"></div>');
-  const SN=step.type==='sn',L=SN?['7','8','9','⌫','4','5','6','−','1','2','3','확인','0','.','/']:['7','8','9','⌫','4','5','6',step.type==='pi'?'π':'','1','2','3','확인','0','.'];
+  const keys=el(`<div class="keys${step.type==='sn'?' sn':''}"></div>`);
+  const SN=step.type==='sn',L=SN?['7','8','9','⌫','4','5','6','+','1','2','3','−','0','.','/','확인']:['7','8','9','⌫','4','5','6',step.type==='pi'?'π':'','1','2','3','확인','0','.'];
   const render=()=>{$('.val',field).innerHTML=val?val.replace(/π/g,'<span class="rm">π</span>'):'<span class="ph">?</span>'};
   const press=k=>{if(k==='⌫')val=val.slice(0,-1);else if(k==='확인'){if(!val)return;if(onTry(val)===false){field.classList.add('shake');setTimeout(()=>field.classList.remove('shake'),400)}return}
-    else if(k==='−'){val=val.startsWith('−')?val.slice(1):'−'+val}else if(k==='/'){if(val&&!val.includes('/')&&!val.includes('.')&&/\d$/.test(val))val+='/'}
-    else if(k==='π'){if(!val.includes('π'))val+='π'}else if(k==='.'){const seg=val.split('/').pop();if(!seg.includes('.')&&!val.includes('π'))val+=(/\d$/.test(val)?'':'0')+'.'}else{if(val.includes('π'))return;if(val.length<8)val=(val==='0'?'':val==='−0'?'−':val)+k}render()};
-  L.forEach(k=>{if(k===''){keys.appendChild(el('<span></span>'));return}const b=el(`<button type="button" class="${k==='확인'?'ok':k==='0'&&!SN?'zero':k==='⌫'||k==='−'||k==='/'?'fn':''}">${k==='π'?'<span class="rm">π</span>':k}</button>`);b.onclick=()=>press(k);keys.appendChild(b)});
+    else if(k==='−'||k==='+'){const s0=val[0]==='−'||val[0]==='+'?val[0]:'',rest=s0?val.slice(1):val;val=(s0===k?'':k)+rest}else if(k==='/'){if(val&&!val.includes('/')&&!val.includes('.')&&/\d$/.test(val))val+='/'}
+    else if(k==='π'){if(!val.includes('π'))val+='π'}else if(k==='.'){const seg=val.split('/').pop();if(!seg.includes('.')&&!val.includes('π'))val+=(/\d$/.test(val)?'':'0')+'.'}else{if(val.includes('π'))return;if(val.length<8)val=(val==='0'?'':val==='−0'?'−':val==='+0'?'+':val)+k}render()};
+  L.forEach(k=>{if(k===''){keys.appendChild(el('<span></span>'));return}const b=el(`<button type="button" class="${k==='확인'?'ok':k==='0'&&!SN?'zero':k==='⌫'||k==='/'?'fn':k==='−'||k==='+'?'sg':''}">${k==='π'?'<span class="rm">π</span>':k}</button>`);b.onclick=()=>press(k);keys.appendChild(b)});
   wrap.append(field,keys);render();
   activeBox={press,node:wrap};
   return wrap}
 document.addEventListener('keydown',e=>{if(!activeBox||!activeBox.node.isConnected)return;if(e.target.closest&&e.target.closest('input,textarea'))return;
-  if(/^[0-9]$/.test(e.key))activeBox.press(e.key);else if(e.key==='-')activeBox.press('−');else if(e.key==='/')activeBox.press('/');else if(e.key==='Backspace'){e.preventDefault();activeBox.press('⌫')}else if(e.key==='Enter'){e.preventDefault();activeBox.press('확인')}else if(e.key==='p'||e.key==='P')activeBox.press('π');else if(e.key==='.')activeBox.press('.')});
+  if(/^[0-9]$/.test(e.key))activeBox.press(e.key);else if(e.key==='-')activeBox.press('−');else if(e.key==='+')activeBox.press('+');else if(e.key==='/')activeBox.press('/');else if(e.key==='Backspace'){e.preventDefault();activeBox.press('⌫')}else if(e.key==='Enter'){e.preventDefault();activeBox.press('확인')}else if(e.key==='p'||e.key==='P')activeBox.press('π');else if(e.key==='.')activeBox.press('.')});
 const snVal=v=>{const t=String(v).replace('−','-').replace('+','');if(t.includes('/')){const[a,b]=t.split('/');const x=parseFloat(a),y=parseFloat(b);return y?x/y:NaN}return parseFloat(t)};
 function check(step,v){
   if(step.type==='choice')return v===step.ans;
-  if(step.type==='sn'){const x=snVal(v);return isFinite(x)&&Math.abs(x-step.ans)<1e-9}
+  if(step.type==='sn'){if(step.needSign&&step.ans>0&&!String(v).startsWith('+'))return'nosign';const x=snVal(v);return isFinite(x)&&Math.abs(x-step.ans)<1e-9}
   if(step.type==='pi'){if(!v.includes('π'))return'nopi';const c=v.replace('π','');const k=c===''?1:parseFloat(c);return Math.abs(k-step.ans)<1e-9}
   if(v.includes('π'))return false;return Math.abs(parseFloat(v)-step.ans)<1e-9}
 function fmtAns(step){if(step.type==='sn')return(step.ansText||sgnTxt(step.ans))+(step.suffix?' '+step.suffix:'');if(step.suffix&&/^각/.test(step.suffix))return kn(step.ans)+step.suffix;if(step.type==='pi')return(step.ans===1?'':step.ans)+'π'+(step.suffix?' '+step.suffix:'');return step.ans+(step.suffix?' '+step.suffix:'')}
@@ -1271,7 +1272,7 @@ function renderProblem(host,prob,opt={}){
       if(i===cur){
         const hm=el('<div class="hintmsg" hidden></div>');
         const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
-          tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
+          tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':r==='nosign'?'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
           if(tries>=3&&!$('.reveal',li)){const rb=el('<button type="button" class="btn ghost reveal" style="margin-top:8px">정답 확인하고 넘어가기</button>');rb.onclick=()=>{s._shown=true;revealed=true;rv[i]=1;tries=0;cur++;draw();if(cur>=S.length)finish()};sb.appendChild(rb)}
           return false});
         sb.append(ui,hm);
@@ -3676,9 +3677,9 @@ CONCEPT.sign=body=>{
      <div class="box" style="margin-bottom:0"><b>핵심 낱말</b> · 기준에서 <b>어느 쪽</b>인가? 영상·해발·이익·증가·~후처럼 늘어나는 쪽이 +, 그 반대말이 ${MI}예요.</div>`,true)+
    fold(2,'부호 읽기','+3은 ‘양의 3’',`<div class="readrow"><div><span class="big rm" style="color:${PC}">+3</span><small>양의 3<br>(플러스 3)</small></div><div><span class="big rm" style="color:${NC}">${MI}3</span><small>음의 3<br>(마이너스 3)</small></div></div>
      <p style="margin-bottom:0">+를 ${T('양의 부호')}, ${MI}를 ${T('음의 부호')}라고 해요. 덧셈·뺄셈 기호와 모양은 같지만, 숫자 바로 앞에 붙어서 <b>방향</b>을 알려 줘요.</p>`)+
-   fold(3,'양수 · 음수 · 0','0은 어느 쪽도 아니에요',`<div class="sort3"><div class="bin p"><b>양수</b><small>0보다 큰 수</small><span class="rm">+5, +0.3, +1/2, 7</span></div><div class="bin n"><b>음수</b><small>0보다 작은 수</small><span class="rm">${MI}2, ${MI}0.8, ${MI}3/4</span></div><div class="bin z"><b>둘 다 아님</b><small>기준</small><span class="rm">0</span></div></div>
+   fold(3,'양수 · 음수 · 0','0은 어느 쪽도 아니에요',`<div class="sort3"><div class="bin p"><b>양수</b><small>0보다 큰 수</small><span class="rm">+5, +0.3, +1/2</span></div><div class="bin n"><b>음수</b><small>0보다 작은 수</small><span class="rm">${MI}2, ${MI}0.8, ${MI}3/4</span></div><div class="bin z"><b>둘 다 아님</b><small>기준</small><span class="rm">0</span></div></div>
      <p>양의 부호 +를 붙인 수를 ${T('양수')}, 음의 부호 ${MI}를 붙인 수를 ${T('음수')}라고 해요.</p>
-     <div class="box" style="margin:0">· <b>0은 양수도 음수도 아니에요.</b> 기준이니까요.<br>· 양수는 +를 생략할 수 있어요. <span class="rm">+7 = 7</span><br>· 음수의 ${MI}는 <b>생략할 수 없어요</b>.</div>`));
+     <div class="box" style="margin:0">· <b>0은 양수도 음수도 아니에요.</b> 기준이니까요.<br>· 양수에는 +, 음수에는 ${MI}를 꼭 붙여서 나타내요.</div>`));
   wireFolds(body,'sign')};
 
 CONCEPT.numline=body=>{
@@ -3744,8 +3745,8 @@ function rounds(host,list,show,done,onceKey){let i=0;const log=[];
   function go(){if(i>=list.length){api.q('');api.a('');api.msg(`<span class="ok">${list.length}개를 모두 해냈어요!</span>`);done();if(onceKey)award(3,onceKey);return}
     $('.ixN',host).textContent=`${i+1} / ${list.length}`;api.msg('');show(list[i],api,i)}
   go();return api}
-function snAsk(api,ans,o,onOk){window.__ia={k:'sn',v:ans};const st={type:'sn',ans,suffix:o.suffix||''};let tries=0;
-  api.a(answerUI(st,v=>{if(check(st,v)){onOk(v);return true}tries++;api.msg('✕ '+(typeof o.hint==='function'?o.hint(tries):o.hint||'다시 해 볼까요?'),false);
+function snAsk(api,ans,o,onOk){window.__ia={k:'sn',v:ans};const st={type:'sn',ans,suffix:o.suffix||'',needSign:!!o.needSign};let tries=0;
+  api.a(answerUI(st,v=>{const c=check(st,v);if(c===true){onOk(v);return true}if(c==='nosign'){api.msg('✕ 양수는 + 를 붙여요. + 를 먼저 누르고 숫자를 눌러요.',false);return false}tries++;api.msg('✕ '+(typeof o.hint==='function'?o.hint(tries):o.hint||'다시 해 볼까요?'),false);
     if(tries>=3)api.msg(`✕ 정답은 <b class="rm">${o.ansText||sgnTxt(ans)}</b>이에요. 확인하고 넘어가요.`,false),setTimeout(()=>onOk(null),1600);return false}))}
 function numAsk(api,ans,o,onOk){window.__ia={k:'num',v:ans};const st={type:'num',ans,suffix:o.suffix||''};let tries=0;
   api.a(answerUI(st,v=>{if(check(st,v)){onOk(v);return true}tries++;api.msg('✕ '+(o.hint||'다시 해 볼까요?'),false);if(tries>=3){api.msg(`✕ 정답은 <b class="rm">${ans}</b>이에요.`,false);setTimeout(()=>onOk(null),1600)}return false}))}
@@ -3756,7 +3757,7 @@ const shk=n=>{n.classList.add('shake');setTimeout(()=>n.classList.remove('shake'
 /* 1차시 탐구 */
 function thermoAct(host,done){const r=mulberry(newSeed());const L=shuffle(r,[ri(r,2,9),-ri(r,2,9),-ri(r,1,4),ri(r,1,4),-ri(r,5,10)]);
   rounds(host,L,(t,api)=>{api.fig(`<div class="thermobox">${thermoSVG(t,{wide:true})}</div>`);api.q('온도계가 가리키는 기온을 부호 +, −를 사용하여 나타내면?');
-    snAsk(api,t,{suffix:'°C',hint:n=>n===1?'0 °C보다 위인가요, 아래인가요? 아래면 − 를 먼저 눌러요.':`눈금 한 칸은 1 °C예요. 0에서부터 세어 보세요.`},()=>{api.msg(`<span class="ok">○ ${t>0?'영상':'영하'} ${Math.abs(t)} °C → ${sgnTxt(t)} °C</span>`);api.next(`${t>0?'영상':'영하'} ${Math.abs(t)} °C = ${sgnTxt(t)} °C`)})},done,'i:thermo')}
+    snAsk(api,t,{suffix:'°C',needSign:true,hint:n=>n===1?'0 °C보다 위인가요, 아래인가요? 위면 + 를, 아래면 − 를 먼저 눌러요.':`눈금 한 칸은 1 °C예요. 0에서부터 세어 보세요.`},()=>{api.msg(`<span class="ok">○ ${t>0?'영상':'영하'} ${Math.abs(t)} °C → ${sgnTxt(t)} °C</span>`);api.next(`${t>0?'영상':'영하'} ${Math.abs(t)} °C = ${sgnTxt(t)} °C`)})},done,'i:thermo')}
 function oppAct(host,done){const r=mulberry(newSeed());const L=shuffle(r,SIT.slice()).slice(0,6);
   rounds(host,L,(S,api)=>{const k1=pick(r,S.ks),k2=pick(r,S.ks.filter(k=>k!==k1)),flip=r()<0.35;
     const given=flip?S.n:S.p,giv=flip?-k1:k1,ask=flip?S.p:S.n,av=flip?k2:-k2;
@@ -3765,20 +3766,20 @@ function oppAct(host,done){const r=mulberry(newSeed());const L=shuffle(r,SIT.sli
     const ch=shuffle(r,[sgnTxt(k2)+' '+S.u,sgnTxt(-k2)+' '+S.u]);
     choiceAsk(api,ch,sgnTxt(av)+' '+S.u,{hint:`${josa(given,'이','가')} ${sgnTxt(giv)[0]}이면 반대말 ${josa(ask,'은','는')} 반대 부호예요.`},()=>{api.msg(`<span class="ok">○ ${S.ph(ask,k2)} = ${sgnTxt(av)} ${S.u}</span>`);api.next(`${S.ph(ask,k2)} = ${sgnTxt(av)}`)})},done,'i:opp')}
 function sortAct(host,done){const r=mulberry(newSeed());
-  const pool=[Q(5),Q(-2),Q(0),Q(7),Q(-9),Q(3,10,true),Q(-8,10,true),Q(1,2),Q(-3,4),Q(12),Q(-1)];
+  const pool=[Q(5),Q(-2),Q(0),Q(7),Q(-9),Q(3,10,true),Q(-8,10,true),Q(1,2),Q(-3,4),Q(12),Q(-1)];/* 1차시라 양수도 + 를 붙여 보여 줌 */
   const L=shuffle(r,pool).slice(0,9);if(!L.some(x=>x.p===0))L[ri(r,2,8)]=Q(0);
   const cat=x=>x.p>0?'p':x.p<0?'n':'z';const NM={p:'양수',n:'음수',z:'둘 다 아님'};const placed={p:[],n:[],z:[]};
   host.innerHTML=`<div class="ix"><div class="ixTop"><span class="ixN rm"></span></div><div class="sortcard rm"></div><div class="sortbtns">${['p','n','z'].map(k=>`<button type="button" class="sbtn ${k}" data-k="${k}">${NM[k]}</button>`).join('')}</div><div class="flmsg ixMsg"></div>
     <div class="sort3">${['p','n','z'].map(k=>`<div class="bin ${k}"><b>${NM[k]}</b><div class="binIn" data-b="${k}"></div></div>`).join('')}</div></div>`;
   let i=0,miss=0;const msg=(h,bad)=>{const m=$('.ixMsg',host);m.className='flmsg ixMsg'+(bad?' bad':'');m.innerHTML=h};
-  const show=()=>{if(i>=L.length){$('.sortcard',host).innerHTML='끝!';$('.sortbtns',host).hidden=true;msg(`<span class="ok">모두 분류했어요! ${miss?'':'한 번도 틀리지 않았어요. '}0은 기준이라 양수도 음수도 아니에요. 부호가 없는 7은 +7이라서 양수예요.</span>`);done();award(3,'i:sort');return}
-    $('.ixN',host).textContent=`${i+1} / ${L.length}`;$('.sortcard',host).innerHTML=qH(L[i],false);window.__ia={k:'sort',v:cat(L[i])}};
+  const show=()=>{if(i>=L.length){$('.sortcard',host).innerHTML='끝!';$('.sortbtns',host).hidden=true;msg(`<span class="ok">모두 분류했어요! ${miss?'':'한 번도 틀리지 않았어요. '}0은 기준이라 양수도 음수도 아니에요.</span>`);done();award(3,'i:sort');return}
+    $('.ixN',host).textContent=`${i+1} / ${L.length}`;$('.sortcard',host).innerHTML=qH(L[i]);window.__ia={k:'sort',v:cat(L[i])}};
   $$('.sbtn',host).forEach(b=>b.onclick=()=>{const x=L[i];if(!x)return;const c=cat(x);
-    if(b.dataset.k===c){$(`.binIn[data-b="${c}"]`,host).insertAdjacentHTML('beforeend',`<span class="tok rm">${qH(x,false)} <i class="okm">○</i></span>`);msg(`<span class="ok">○ ${qS(x,false)}은(는) ${NM[c]}</span>`);i++;setTimeout(show,450)}
-    else{miss++;shk(b);msg('✕ '+(x.p===0?'0은 기준이에요. 0보다 큰가요, 작은가요?':x.p>0&&!qS(x,false).startsWith('+')?'부호가 없는 수는 +가 생략된 거예요.':'0보다 큰 수가 양수, 작은 수가 음수예요.'),true)}});
+    if(b.dataset.k===c){$(`.binIn[data-b="${c}"]`,host).insertAdjacentHTML('beforeend',`<span class="tok rm">${qH(x)} <i class="okm">○</i></span>`);msg(`<span class="ok">○ ${qS(x)}은(는) ${NM[c]}</span>`);i++;setTimeout(show,450)}
+    else{miss++;shk(b);msg('✕ '+(x.p===0?'0은 기준이에요. 0보다 큰가요, 작은가요?':'0보다 큰 수가 양수, 작은 수가 음수예요.'),true)}});
   show()}
 EXPLORE.sign=body=>{actNav(body,'sign',[
-  {key:'thermo',t:'온도계 읽기',lead:'영상은 +, 영하는 − 를 붙여요. 키패드의 − 를 먼저 누르고 숫자를 눌러요.',mount:thermoAct},
+  {key:'thermo',t:'온도계 읽기',lead:'영상은 +, 영하는 − 를 붙여요. 키패드의 + 나 − 를 먼저 누르고 숫자를 눌러요.',mount:thermoAct},
   {key:'opp',t:'반대말에 부호 붙이기',lead:'기준을 생각하며, 반대가 되는 말에 반대 부호를 붙여요.',mount:oppAct},
   {key:'sort',t:'양수 · 음수 · 둘 다 아님',lead:'수를 보고 알맞은 상자를 누르세요. 0은 어디에 들어갈까요?',mount:sortAct}])};
 
@@ -3897,19 +3898,19 @@ GEN.signStep=seed=>{const r=mulberry(seed),X=sitPick(r),S=X.S,opp=X.pos?S.n:S.p;
   return{ptype:'sign:sit',title:`다음을 부호 +, −를 사용하여 나타내시오. <span class="muted" style="font-weight:400">(단, ${josa(S.p,'은','는')} +로 나타낸다.)</span><div class="cond">${X.ph}</div>`,fig:null,finalQ:'부호를 사용하여 나타내면?',steps:[
     {tag:'반대가 되는 말 찾기',q:`‘${X.w}’${jong(X.w)?'과':'와'} 반대가 되는 말은?`,type:'choice',choices:shuffle(r,[opp,...others]),ans:opp,hint:`기준(${S.base})을 사이에 두고 반대쪽을 나타내는 말이에요.`},
     {tag:'부호 정하기',q:`${josa(S.p,'이','가')} +이면, ‘${X.w}’에 붙일 부호는?`,type:'choice',choices:['+ (양의 부호)','− (음의 부호)'],ans:X.pos?'+ (양의 부호)':'− (음의 부호)',hint:`${S.p} ↔ ${josa(S.n,'은','는')} 반대예요. 반대쪽은 반대 부호를 붙여요.`},
-    {tag:'부호를 붙여 나타내기',q:'부호를 사용하여 나타내면?',type:'sn',ans:X.v,suffix:S.u,hint:X.pos?'+는 생략해도 돼요. 숫자만 눌러도 맞아요.':'− 를 먼저 누르고 숫자를 눌러요.',ok:`${X.ph} → ${sgnTxt(X.v)} ${S.u}`}]}};
-const SIGN_TF={t:['0은 양수도 음수도 아니다.','+5는 양수이다.',`${MI}0.5는 음수이다.`,'+7과 7은 같은 수이다.',`영하 3 °C는 ${MI}3 °C로 나타낸다.`,'0보다 작은 수를 음수라고 한다.',`${MI}2는 ‘음의 2’라고 읽는다.`,'해발 500 m는 +500 m로 나타낸다.'],
-  f:[['0은 양수이다.','0은 기준이라 양수도 음수도 아니에요.'],[`${MI}1/2은 양수이다.`,'음의 부호가 붙었으니 음수예요.'],['7은 부호가 없으므로 양수가 아니다.','+를 생략한 것이라 양수예요.'],['해저 100 m는 +100 m로 나타낸다.',`해수면보다 아래이므로 ${MI}100 m예요.`],['음수는 0보다 크다.','음수는 0보다 작아요.'],['3일 전은 +3일로 나타낸다.',`‘후’가 +이면 ‘전’은 ${MI}예요.`]]};
+    {tag:'부호를 붙여 나타내기',q:'부호를 사용하여 나타내면?',type:'sn',needSign:true,ans:X.v,suffix:S.u,hint:X.pos?'+ 를 먼저 누르고 숫자를 눌러요.':'− 를 먼저 누르고 숫자를 눌러요.',ok:`${X.ph} → ${sgnTxt(X.v)} ${S.u}`}]}};
+const SIGN_TF={t:['0은 양수도 음수도 아니다.','+5는 양수이다.',`${MI}0.5는 음수이다.`,`영하 3 °C는 ${MI}3 °C로 나타낸다.`,'0보다 작은 수를 음수라고 한다.',`${MI}2는 ‘음의 2’라고 읽는다.`,'해발 500 m는 +500 m로 나타낸다.'],
+  f:[['0은 양수이다.','0은 기준이라 양수도 음수도 아니에요.'],[`${MI}1/2은 양수이다.`,'음의 부호가 붙었으니 음수예요.'],['해저 100 m는 +100 m로 나타낸다.',`해수면보다 아래이므로 ${MI}100 m예요.`],['음수는 0보다 크다.','음수는 0보다 작아요.'],['3일 전은 +3일로 나타낸다.',`‘후’가 +이면 ‘전’은 ${MI}예요.`]]};
 GEN.sign=seed=>{const r=mulberry(seed),k=pick(r,['step','step','table','count','tf','sit']);
   if(k==='step')return GEN.signStep(seed+5);
   if(k==='table'){const S=pick(r,SIT),[k1,k2]=shuffle(r,S.ks).slice(0,2),fl=r()<0.5;const gw=fl?S.n:S.p,aw=fl?S.p:S.n,gv=fl?-k1:k1,av=fl?k2:-k2;
-    return{ptype:'sign:table',title:`다음 표의 빈칸에 알맞은 수를 쓰시오.<div class="tablewrap"><table class="t" style="max-width:420px;margin-top:8px"><tbody><tr><td>${S.ph(gw,k1)}</td><td class="rm">${sgnTxt(gv)} ${S.u}</td></tr><tr><td>${S.ph(aw,k2)}</td><td>(&nbsp;&nbsp;&nbsp;&nbsp;)</td></tr></tbody></table></div>`,fig:null,steps:[{q:'빈칸에 알맞은 수는?',type:'sn',ans:av,suffix:S.u,hint:`${gw}${jong(gw)?'과':'와'} ${josa(aw,'은','는')} 반대예요. 반대 부호를 붙여요.`,ok:`${S.ph(aw,k2)} → ${sgnTxt(av)} ${S.u}`}]}}
+    return{ptype:'sign:table',title:`다음 표의 빈칸에 알맞은 수를 쓰시오.<div class="tablewrap"><table class="t" style="max-width:420px;margin-top:8px"><tbody><tr><td>${S.ph(gw,k1)}</td><td class="rm">${sgnTxt(gv)} ${S.u}</td></tr><tr><td>${S.ph(aw,k2)}</td><td>(&nbsp;&nbsp;&nbsp;&nbsp;)</td></tr></tbody></table></div>`,fig:null,steps:[{q:'빈칸에 알맞은 수는?',type:'sn',needSign:true,ans:av,suffix:S.u,hint:`${gw}${jong(gw)?'과':'와'} ${josa(aw,'은','는')} 반대예요. 반대 부호를 붙여요.`,ok:`${S.ph(aw,k2)} → ${sgnTxt(av)} ${S.u}`}]}}
   if(k==='count'){const pool=shuffle(r,[Q(ri(r,1,9)),Q(-ri(r,1,9)),Q(0),Q(ri(r,1,9)),Q(-ri(r,1,9),10,true),Q(ri(r,1,5),ri(r,6,9)),Q(-ri(r,1,3),4),Q(-ri(r,10,20)),Q(ri(r,1,9),10,true)]).slice(0,7);
     const want=pick(r,['음수','양수']),ans=pool.filter(x=>want==='음수'?x.p<0:x.p>0).length;
-    return{ptype:'sign:count',title:`다음 수 중에서 ${want}의 개수를 구하시오.<div class="cond rm">${pool.map(x=>qH(x,r()<0.6)).join(', &nbsp;')}</div>`,fig:null,steps:[{q:`${want}는 모두 몇 개인가요?`,type:'num',ans,suffix:'개',hint:`0은 양수도 음수도 아니에요. 부호가 없는 수는 양수예요.`}]}}
+    return{ptype:'sign:count',title:`다음 수 중에서 ${want}의 개수를 구하시오.<div class="cond rm">${pool.map(x=>qH(x)).join(', &nbsp;')}</div>`,fig:null,steps:[{q:`${want}는 모두 몇 개인가요?`,type:'num',ans,suffix:'개',hint:`0은 양수도 음수도 아니에요. + 가 붙은 수가 양수, ${MI}가 붙은 수가 음수예요.`}]}}
   if(k==='tf'){const[fs,why]=pick(r,SIGN_TF.f),ts=shuffle(r,SIGN_TF.t.slice()).slice(0,4),all=shuffle(r,[...ts,fs]),lab=all.map((x,i)=>CIRC[i]+' '+x);
-    return{ptype:'sign:tf',title:'다음 중 옳지 않은 것은?',fig:null,steps:[{q:'옳지 않은 것을 고르세요.',type:'choice',choices:lab,ans:lab[all.indexOf(fs)],hint:'0, 부호가 없는 수, 반대말을 하나씩 확인해 보세요.',ok:why}]}}
-  const X=sitPick(r);return{ptype:'sign:sit',title:`다음을 부호 +, −를 사용하여 나타내시오. <span class="muted" style="font-weight:400">(단, ${josa(X.S.p,'은','는')} +로 나타낸다.)</span><div class="cond">${X.ph}</div>`,fig:null,steps:[{q:'부호를 사용하여 나타내면?',type:'sn',ans:X.v,suffix:X.S.u,hint:`기준은 ${X.S.base}. ${josa(X.S.p,'이','가')} +이면 ${josa(X.S.n,'은','는')} ${MI}예요.`}]}};
+    return{ptype:'sign:tf',title:'다음 중 옳지 않은 것은?',fig:null,steps:[{q:'옳지 않은 것을 고르세요.',type:'choice',choices:lab,ans:lab[all.indexOf(fs)],hint:'0, 부호, 반대말을 하나씩 확인해 보세요.',ok:why}]}}
+  const X=sitPick(r);return{ptype:'sign:sit',title:`다음을 부호 +, −를 사용하여 나타내시오. <span class="muted" style="font-weight:400">(단, ${josa(X.S.p,'은','는')} +로 나타낸다.)</span><div class="cond">${X.ph}</div>`,fig:null,steps:[{q:'부호를 사용하여 나타내면?',type:'sn',needSign:true,ans:X.v,suffix:X.S.u,hint:`기준은 ${X.S.base}. ${josa(X.S.p,'이','가')} +이면 ${josa(X.S.n,'은','는')} ${MI}예요.`}]}};
 
 GEN.numlineStep=seed=>{const r=mulberry(seed),half=r()<0.35;const x=half?Q((ri(r,0,3)*2+1)*(r()<0.6?-1:1),2):Q(ri(r,1,5)*(r()<0.6?-1:1));const v=qv(x),sub=half?2:1,n=Math.abs(v*sub);
   const S=[{tag:'원점의 어느 쪽인지 보기',q:'점 P는 원점 O의 어느 쪽에 있나요?',type:'choice',choices:['오른쪽','왼쪽'],ans:v>0?'오른쪽':'왼쪽',hint:'0이 쓰인 곳이 원점이에요.',ok:v>0?'오른쪽에 있는 수는 양수예요.':'왼쪽에 있는 수는 음수예요.'},
@@ -4029,7 +4030,7 @@ Object.assign(PTYPE_NM,{'sign:sit':'1차시 · 상황을 부호로','sign:table'
 Object.assign(TERMS,{
   '양의 부호':{k:'정수와 유리수',b:`<p>수 앞에 붙는 <b class="rm">+</b> 기호예요. 기준(0)보다 크거나 많은 쪽을 나타내요.</p><p>예) 영상 5 °C → <span class="rm">+5 °C</span></p>`},
   '음의 부호':{k:'정수와 유리수',b:`<p>수 앞에 붙는 <b class="rm">${MI}</b> 기호예요. 기준(0)의 반대쪽을 나타내요.</p><p>예) 영하 5 °C → <span class="rm">${MI}5 °C</span></p>`},
-  '양수':{k:'정수와 유리수',b:`<p>양의 부호 +를 붙인 수, 곧 <b>0보다 큰 수</b>예요. +는 생략할 수 있어요.</p><p>예) <span class="rm">+3, 7, +0.5</span></p>`},
+  '양수':{k:'정수와 유리수',b:`<p>양의 부호 +를 붙인 수, 곧 <b>0보다 큰 수</b>예요.</p><p>예) <span class="rm">+3, +7, +0.5</span></p>`},
   '음수':{k:'정수와 유리수',b:`<p>음의 부호 ${MI}를 붙인 수, 곧 <b>0보다 작은 수</b>예요.</p><p>예) <span class="rm">${MI}3, ${MI}0.5, ${MI}${FR(1,2)}</span> · 0은 양수도 음수도 아니에요.</p>`},
   '수직선':{k:'정수와 유리수',b:`<p>직선 위에 원점 O를 정하고 같은 간격으로 눈금을 매겨 수를 나타낸 직선이에요. 오른쪽이 +, 왼쪽이 ${MI}예요.</p>`},
   '원점':{k:'수직선',b:`<p>수직선에서 0을 나타내는 기준점이에요. 보통 O로 나타내요.</p>`},
