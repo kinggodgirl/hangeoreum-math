@@ -600,6 +600,11 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .calc-gh{margin:26px 0 2px;font-size:21px}.calc-gd{margin:0 0 10px;font-size:15px}
 .calc-card{position:relative}.calc-tags{position:absolute;top:10px;right:10px;display:flex;gap:4px}.ctag{font-style:normal;font-size:12px;font-weight:700;border-radius:999px;padding:1px 8px}.ctag.due{background:#fff0cc;color:#8a5a00}.ctag.rec{background:#e3ecfb;color:#1f3c7a}
 .calc-chip.start{border-color:#e0a21e;background:#fff8e6}.calc-chip small{font-size:13px;color:var(--ink-soft)}.calc-chip small.due{color:#8a5a00;font-weight:700}
+.kpanel .kcard{border:1.5px solid #f0d28a;background:#fffaf0;border-radius:14px;padding:12px 14px}.krow{display:flex;gap:10px;align-items:baseline;margin:6px 0;font-size:17px;line-height:1.6}.klab{flex:none;font-size:12px;font-weight:700;color:#8a5a00;background:#fff0cc;border-radius:999px;padding:2px 9px}.kword{font-size:22px}.kfig{margin:6px 0}.kdone{font-size:14px;color:#1f3c7a;font-weight:500}
+.kact{margin-top:12px;border-top:1.5px dashed var(--line);padding-top:12px}.kno{font-size:14px;color:var(--ink-soft)}.kp p{margin:6px 0;font-size:17px}.kp .kbig{font-size:24px;font-weight:700;text-align:center;margin:10px 0}.kc .choices{flex-direction:column;align-items:stretch}.kc .choices button{white-space:normal;text-align:left;line-height:1.45}
+.calc-card .kw{font-size:13px;font-weight:700;color:#8a5a00}
+.dcue{text-align:center;margin:2px 0 4px}.kchip{border:1.5px solid #f0d28a;background:#fff8e6;border-radius:999px;padding:4px 14px;font-size:15px;cursor:pointer;color:var(--ink)}.kchip.ask{border-style:dashed;background:#fff}.kpop{max-width:460px;margin:8px auto 0;padding:8px 12px;border-radius:10px;background:#fffaf0;border:1px solid #f0d28a;font-size:15px;line-height:1.6;text-align:left}
+.kq{font-size:17px;font-weight:700;margin-top:10px;font-family:var(--body)}.dflash .kline{display:inline-block;font-weight:500;font-size:15px;color:#6b4a00;background:#fff3d6;border-radius:8px;padding:4px 10px;margin:2px 0 4px;line-height:1.5}
 .calc-due{margin:-6px 0 14px;padding:8px 12px;border-radius:10px;background:#fff0cc;color:#6b4a00;font-size:15px}
 .drill-due{margin:-6px 0 12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15px}.drill-opt{font-size:14px;margin:10px 0 0}.drill-opt label{cursor:pointer}
 .calm{margin:0;padding-left:20px;line-height:1.9;font-size:16px}
@@ -2912,10 +2917,10 @@ function svgArray(R,C,o={}){const c=Math.min(20,Math.floor(230/C)),r=c*0.32,x0=3
   if(o.cross)g+=`<text x="${x0+C*c/2}" y="${y0+R*c+24}" text-anchor="middle" class="ct sm">${R} × 10 − ${R}</text>`;
   return`<svg class="cfig" viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="한 줄에 ${C}개씩 ${R}줄인 점 배열">${g}</svg>`}
 const svgArray2=(a,b)=>`<div class="figrow">${svgArray(a,b)}<b class="rm">=</b>${svgArray(b,a)}</div>`;
-function svgGroups(T,d,n){const k=T/d,gc=Math.ceil(Math.sqrt(k)),gr=Math.ceil(k/gc),c=14,gw=gc*c+12,gh=gr*c+12,W=d*(gw+8)+12,H=gh+42;let g='';
+function svgGroups(T,d,n,cap){const k=T/d,gc=Math.ceil(Math.sqrt(k)),gr=Math.ceil(k/gc),c=14,gw=gc*c+12,gh=gr*c+12,W=d*(gw+8)+12,H=gh+42;let g='';
   for(let i=0;i<d;i++){const x=10+i*(gw+8),on=i<n;g+=`<rect x="${x}" y="8" width="${gw}" height="${gh}" rx="8" fill="${on?'#fde2b8':'#fff'}" stroke="${on?'#e08a1e':'#1d2640'}" stroke-width="1.6"/>`;
     for(let j=0;j<k;j++)g+=`<circle cx="${x+6+(j%gc)*c+c/2}" cy="${14+Math.floor(j/gc)*c+c/2}" r="4.5" fill="#2a64c8"/>`}
-  g+=`<text x="${W/2}" y="${gh+34}" text-anchor="middle" class="ct sm">${d}묶음 중 ${n}묶음</text>`;
+  g+=`<text x="${W/2}" y="${gh+34}" text-anchor="middle" class="ct sm">${cap||`${d}묶음 중 ${n}묶음`}</text>`;
   return`<svg class="cfig" viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${T}개를 ${d}묶음으로 똑같이 나눈 것 중 ${n}묶음">${g}</svg>`}
 function svgBars(A,B,p,q){const W=280,x0=60,w=W-x0-10,h=26;let g='';const bar=(y,n,d,lab)=>{for(let i=0;i<d;i++)g+=`<rect x="${x0+i*w/d}" y="${y}" width="${w/d}" height="${h}" fill="${i<n?'#fde2b8':'#fff'}" stroke="#1d2640" stroke-width="1.4"/>`;g+=`<text x="${x0-10}" y="${y+h/2+6}" text-anchor="end" class="ct">${lab}</text>`};
   bar(10,A,B,`${A}/${B}`);bar(10+h+18,p,q,`${p}/${q}`);g+=`<line x1="${x0+w*p/q}" y1="4" x2="${x0+w*p/q}" y2="${10+2*h+24}" stroke="#c0504d" stroke-width="1.6" stroke-dasharray="4 3"/>`;
@@ -3278,6 +3283,59 @@ const CALC=[
    if(k===1){const m=ri(r,2,5);return{q:`${M_(m*10000+' cm²')} = ? m²`,ans:m,suffix:'m²',steps:[S_('10000 cm² = 1 m²니까',M_(`${m*10000} ÷ 10000`),m)],errs:[E_(m*100,'1 m² = 10000 cm²예요. 10000으로 나눠요.')]}}
    const x=pick(r,[5,10,20]),y=pick(r,[10,20,25]),z=pick(r,[4,5,8,10]),V=x*y*z;
    return{q:`가로 ${M_(x+' cm')}, 세로 ${M_(y+' cm')}, 높이 ${M_(z+' cm')}인 그릇에 물을 가득 채우면 몇 mL?`,ans:V,suffix:'mL',steps:[S_('밑넓이',M_(`${x} × ${y}`),x*y),S_('× 높이 (cm³)',M_(`${x*y} × ${z}`),V),S_('1 cm³ = 1 mL이니까 몇 mL?','',V)],errs:[E_(V/1000,'1 cm³ = 1 mL라서 cm³의 수가 그대로 mL예요.'),E_(x*y,'높이를 곱하지 않았어요. 부피는 밑넓이 × 높이예요.')]}}}];
+/* ── 핵심 낱말: 계산을 보면 떠올릴 낱말 하나 + 신호 + 그림 + 식 (기초학력 학생은 '무엇을 떠올릴지'부터 어려워해요) ── */
+const KEYS={
+ add:{w:'10 만들기',cue:'더해서 10을 넘을 때',say:'모자란 만큼 채워 <b>10을 만들고</b>, 남은 수를 더해요.',fig:()=>svgTenFrame(8,5),eq:'8 + 5 = 8 + 2 + 3 = 10 + 3 = 13'},
+ facts:{w:'같은 묶음 여러 개',cue:'×를 보면',say:'4 × 3은 <b>4개씩 3묶음</b>이에요. 같은 수를 여러 번 더한 거예요.',fig:()=>svgGroups(12,3,3,'4개씩 3묶음'),eq:'4 × 3 = 4 + 4 + 4 = 12'},
+ div:{w:'똑같이 묶기',cue:'÷를 보면',say:'12 ÷ 3은 12개를 <b>3묶음으로 똑같이</b> 나눈 한 묶음이에요. 곱셈을 거꾸로 생각해요.',fig:()=>svgGroups(12,3,0,'12개를 3묶음으로 똑같이'),eq:'12 ÷ 3 = 4 (3 × 4 = 12)'},
+ order:{w:'곱셈 먼저',cue:'+, −와 ×, ÷가 섞여 있을 때',say:'×, ÷ 부분을 <b>한 묶음</b>으로 보고 먼저 해요. 괄호가 있으면 괄호가 제일 먼저예요.',fig:()=>ordFig(['3 + ',['4 × 2']]),eq:'3 + 4 × 2 = 3 + 8 = 11'},
+ fracbase:{w:'묶음',cue:'"몇의 몇분의 몇"을 보면',say:'<b>분모만큼 똑같이 묶고</b>, 분자만큼 가져가요.',fig:()=>svgGroups(12,4,3),eq:'12의 3/4 = 12 ÷ 4 × 3 = 9'},
+ est:{w:'가까운 몇십',cue:'"약", "어림"을 보거나 답을 확인할 때',say:'계산하기 쉬운 <b>가까운 몇십</b>으로 바꿔서 대충 얼마인지 봐요.',fig:()=>svgRound(29,30),eq:'29 × 4 → 30 × 4 = 120쯤'},
+ mul:{w:'쪼개기',cue:'두 자리 수를 곱할 때',say:'<b>10짜리와 나머지로 쪼개서</b> 곱하고 더해요.',fig:()=>svgSplit(17,6),eq:'17 × 6 = 10 × 6 + 7 × 6 = 60 + 42'},
+ pow:{w:'같은 수 두 번',cue:'작은 ²를 보면',say:'²는 <b>같은 수를 두 번 곱하라</b>는 표시예요. 정사각형의 칸 수예요.',fig:()=>svgGrid(5),eq:'5² = 5 × 5 = 25'},
+ sub:{w:'숨은 ×',cue:'숫자와 문자가 붙어 있으면',say:'2n은 2 × n이에요. 문자 자리에 수를 넣으면 <b>숨어 있던 ×</b>가 보여요.',fig:null,eq:'2n에 n = 5 → 2 × 5 = 10'},
+ eq:{w:'거꾸로',cue:'n의 값을 구하라고 할 때',say:'곱했으면 나누고, 더했으면 빼요. <b>나중에 한 것부터 거꾸로</b>.',fig:null,eq:'3n = 24 → 24 ÷ 3 = 8'},
+ area:{w:'칸 세기',cue:'넓이를 구할 때',say:'넓이는 <b>1 cm² 칸이 몇 개</b>인지예요. 직사각형은 가로 × 세로, 삼각형은 그 절반.',fig:()=>svgGridRect(5,3),eq:'5 × 3 = 15칸 = 15 cm²'},
+ pi:{w:'π는 물건처럼',cue:'π가 보이면',say:'π를 <b>사과 하나</b>처럼 세요. 앞의 수끼리 계산하고 π는 붙여 둬요.',fig:null,eq:'12π + 8π = 20π (사과 12개 + 사과 8개)'},
+ frac:{w:'묶음',cue:'⅓ ×, ½ ×처럼 분수가 곱해져 있으면',say:'⅓ × 12는 12를 <b>3묶음으로 똑같이 나눈 것 중 1묶음</b>이에요. 그래서 12 ÷ 3. 분수를 곱하면 한 묶음만 가져가니까 수가 <b>작아져요</b>.',fig:()=>svgGroups(12,3,1),eq:'⅓ × 12 = 12 ÷ 3 = 4'},
+ surf:{w:'같은 면 2개씩',cue:'직육면체·기둥의 겉넓이를 구할 때',say:'마주 보는 면은 똑같아요. <b>서로 다른 면을 더하고 2배</b> 해요.',fig:null,eq:'2 × (6 + 8 + 12)'},
+ unit:{w:'1 m = 100 cm',cue:'단위가 서로 다를 때',say:'작은 단위로 바꾸면 수가 커지고(× 100), 큰 단위로 바꾸면 작아져요(÷ 100).',fig:()=>svgMeter(),eq:'3 m = 300 cm'}};
+const plainQ=h=>stripTags(String(h).replace(/<span class="frs"><span>([^<]*)<\/span><span>([^<]*)<\/span><\/span>/g,'$1/$2').replace(/<sup>(\d+)<\/sup>⁄<sub>(\d+)<\/sub>/g,'$1/$2').replace(/<br\s*\/?>/g,' ').replace(/<small>.*?<\/small>/g,''));
+const FRC={2:'½',3:'⅓'};
+/* 주제마다 '식 ↔ 그림/말' 잇기 문제 */
+const LINKS={
+ add:r=>{const a=ri(r,6,9),b=ri(r,11-a,9);return[{p:`${svgTenFrame(a,b)}<p>${M_(`${a} + ${b}`)}${J(b,'을','를').slice(String(b).length)} 10 만들기로 바꾸면?</p>`,choices:[`10 + ${a+b-10}`,`10 + ${b}`,`${a} + 10`],ans:`10 + ${a+b-10}`,ok:`${a}에 ${J(10-a,'을','를')} 채워 10, ${b}에서 남은 ${J(a+b-10,'을','를')} 더해요.`}]},
+ facts:r=>{const k=ri(r,3,6);let m=ri(r,2,4);if(m===k)m=2;return[{p:`${svgGroups(k*m,m,m,`${k}개씩 ${m}묶음`)}<p>그림에 맞는 식은?</p>`,choices:[`${k} × ${m}`,`${k} + ${m}`,`${k} + ${k}`],ans:`${k} × ${m}`,ok:`${k}개씩 ${m}묶음은 ${k} × ${m} = ${k*m}${IYs(k*m)}.`}]},
+ div:r=>{const d=ri(r,2,4),q=ri(r,2,4),T=d*q;return[{p:`${svgGroups(T,d,0,`${T}개를 ${d}묶음으로 똑같이`)}<p>한 묶음은 몇 개? 맞는 식은?</p>`,choices:[`${T} ÷ ${d}`,`${T} × ${d}`,`${T} − ${d}`],ans:`${T} ÷ ${d}`,ok:`똑같이 묶는 건 ÷예요. ${T} ÷ ${d} = ${q}.`}]},
+ order:r=>{const[a,b,c]=shuffle(r,[2,3,4,5,6,7,8,9]).slice(0,3);return[{p:`<p class="kbig">${M_(`${a} + ${b} × ${c}`)}</p><p>먼저 한 묶음으로 볼 부분은?</p>`,choices:[`${b} × ${c}`,`${a} + ${b}`,`${a} + ${c}`],ans:`${b} × ${c}`,ok:`×가 있는 ${b} × ${c}를 먼저 해요.`}]},
+ fracbase:r=>{const d=ri(r,3,4),n=ri(r,2,d-1),k=ri(r,2,3),T=d*k;return[{p:`${svgGroups(T,d,n)}<p>색칠한 부분을 분수로 말하면?</p>`,choices:[`${T}의 ${n}/${d}`,`${T}의 ${d}/${n}`,`${T}의 1/${n}`],ans:`${T}의 ${n}/${d}`,ok:`${d}묶음 중 ${n}묶음이니까 ${n}/${d}이에요.`},
+   {p:`<p class="kbig">${M_(T)}의 ${FR(n,d)}</p><p>묶음으로 말하면?</p>`,choices:[`${T}개를 ${d}묶음으로 나눈 것 중 ${n}묶음`,`${T}개를 ${n}묶음으로 나눈 것 중 ${d}묶음`,`${T}개가 ${d}묶음`],ans:`${T}개를 ${d}묶음으로 나눈 것 중 ${n}묶음`,ok:'분모는 나눈 묶음의 수, 분자는 가져가는 묶음의 수예요.'}]},
+ est:r=>{const R=ri(r,3,8)*10,a=R+pick(r,[-2,-1,1,2]),b=ri(r,3,9);return[{p:`${svgRound(a,R)}<p>${M_(`${a} × ${b}`)}${J(b,'을','를').slice(String(b).length)} 어림할 때 쓰는 식은?</p>`,choices:[`${R} × ${b}`,`${R-10} × ${b}`,`${a} × 10`],ans:`${R} × ${b}`,ok:`${a}에 가장 가까운 몇십은 ${R}이에요.`}]},
+ mul:r=>{const a=ri(r,12,19),b=ri(r,3,7),u=a-10;return[{p:`${svgSplit(a,b)}<p>${M_(`${a} × ${b}`)}${J(b,'을','를').slice(String(b).length)} 쪼개면?</p>`,choices:[`10 × ${b} + ${u} × ${b}`,`10 × ${b} + ${u}`,`${a} + ${b}`],ans:`10 × ${b} + ${u} × ${b}`,ok:'쪼갠 두 부분에 모두 곱해요.'}]},
+ pow:r=>{const n=ri(r,3,6);return[{p:`${svgGrid(n)}<p>칸의 수를 나타내는 것은?</p>`,choices:[`${n}²`,`${n} × 2`,`${n} + ${n}`],ans:`${n}²`,ok:`한 변이 ${n}칸인 정사각형 = ${n} × ${n} = ${n}²이에요.`}]},
+ sub:r=>{const n=ri(r,3,9),a=ri(r,2,4);return[{p:`<p class="kbig">${N_} = ${M_(n)}일 때, ${M_(a)}${N_}</p><p>숨은 ×를 찾아 바꾸면?</p>`,choices:[`${a} × ${n}`,`${a}${n}`,`${a} + ${n}`],ans:`${a} × ${n}`,ok:`${a}n = ${a} × n이에요.`}]},
+ eq:r=>{const a=ri(r,2,6),n=ri(r,3,9);return[{p:`<p class="kbig">"${a}에 무엇을 곱하면 ${a*n}?"</p><p>거꾸로 하는 식은?</p>`,choices:[`${a*n} ÷ ${a}`,`${a*n} × ${a}`,`${a*n} − ${a}`],ans:`${a*n} ÷ ${a}`,ok:'곱하기를 거꾸로 하면 나누기예요.'}]},
+ area:r=>{const a=ri(r,3,6),b=ri(r,2,4);return[{p:`${svgGridRect(a,b)}<p>칸의 수(넓이)를 구하는 식은?</p>`,choices:[`${a} × ${b}`,`${a} + ${b}`,`2 × (${a} + ${b})`],ans:`${a} × ${b}`,ok:`한 줄에 ${a}칸씩 ${b}줄이에요. 2 × (${a} + ${b})는 둘레예요.`}]},
+ pi:r=>{const a=ri(r,5,12),b=ri(r,2,6);return[{p:`<p class="kbig">사과 ${a}개 + 사과 ${b}개</p><p>π를 사과처럼 세면?</p>`,choices:[`${a}π + ${b}π = ${a+b}π`,`${a}π + ${b}π = ${a+b}π²`,`${a}π + ${b}π = ${a*b}π`],ans:`${a}π + ${b}π = ${a+b}π`,ok:`사과 ${a+b}개처럼 ${a+b}π예요.`}]},
+ frac:r=>{const d=ri(r,2,3),k=ri(r,2,4),T=d*k,f=FRC[d];return[{p:`${svgGroups(T,d,1)}<p>그림에 맞는 식은?</p>`,choices:[`${f} × ${T}`,`${d} × ${T}`,`${T} − ${d}`],ans:`${f} × ${T}`,ok:`${T}개를 ${d}묶음으로 나눈 것 중 1묶음 = ${f} × ${T} = ${T} ÷ ${d} = ${k}.`},
+   {p:`<p class="kbig">${M_(`${f} × ${T}`)}</p><p>묶음으로 말하면?</p>`,choices:[`${T}개를 ${d}묶음으로 나눈 것 중 1묶음`,`${T}개가 ${d}묶음`,`${T}개에서 ${d}개를 뺀 것`],ans:`${T}개를 ${d}묶음으로 나눈 것 중 1묶음`,ok:`그래서 ${f} × ${T} = ${T} ÷ ${d}. 분수를 곱하면 작아져요.`}]},
+ surf:r=>{const a=ri(r,2,5),b=ri(r,2,5),c=ri(r,2,5);return[{p:`<p class="kbig">가로 ${a}, 세로 ${b}, 높이 ${c}인 직육면체의 겉넓이</p><p>맞는 식은?</p>`,choices:[`2 × (${a*b} + ${a*c} + ${b*c})`,`${a*b} + ${a*c} + ${b*c}`,`${a} × ${b} × ${c}`],ans:`2 × (${a*b} + ${a*c} + ${b*c})`,ok:`같은 면이 2개씩이라 세 면을 더하고 2배. ${a} × ${b} × ${c}는 부피예요.`}]},
+ unit:r=>{const a=ri(r,2,9);return[{p:`${svgMeter()}<p>${M_(a+' m')}는?</p>`,choices:[`${a*100} cm`,`${a*10} cm`,`${a} cm`],ans:`${a*100} cm`,ok:`1 m = 100 cm라서 ${a} m = ${a*100} cm.`}]}};
+/* 잇기 활동: ① 이 낱말을 떠올릴 계산 고르기 ② 이 계산에 떠올릴 낱말 고르기 ③ 그림·말 ↔ 식 */
+function keyOthers(id,r,n){const seen=new Set([KEYS[id].w]),out=[];for(const t of shuffle(r,CALC.filter(t=>KEYS[t.id]))){const w=KEYS[t.id].w;if(seen.has(w))continue;seen.add(w);out.push(t);if(out.length>=n)break}return out}
+function keyRounds(id,r){const T=CALC.find(t=>t.id===id),K=KEYS[id],mine=()=>plainQ(T.gen(1,r).q);
+  const o1=keyOthers(id,r,2),e1=mine(),r1={p:`<p class="kbig">💡 ${K.w}</p><p>이 낱말을 떠올려야 하는 계산은?</p>`,choices:shuffle(r,[e1,...o1.map(t=>plainQ(t.gen(1,r).q))]),ans:e1,ok:`${K.cue} '${K.w}'${josa(K.w,'을','를').slice(K.w.length)} 떠올려요.`};
+  const o2=keyOthers(id,r,2),r2={p:`<p class="kbig">${T.gen(1,r).q}</p><p>이 계산에 떠올릴 낱말은?</p>`,choices:shuffle(r,[K.w,...o2.map(t=>KEYS[t.id].w)]),ans:K.w,ok:`${K.cue} → '${K.w}'.`};
+  return[...(LINKS[id]?LINKS[id](r):[]),r1,r2]}
+function keyCardHTML(id){const K=KEYS[id];return`<div class="kcard"><div class="krow"><span class="klab">신호</span><span>${K.cue}</span></div><div class="krow"><span class="klab">낱말</span><b class="kword">💡 ${K.w}</b></div>${K.fig?`<div class="kfig">${K.fig()}</div>`:''}<div class="krow"><span class="klab">말</span><span>${K.say}</span></div><div class="krow"><span class="klab">식</span>${M_(K.eq)}</div></div>`}
+function keyActivity(host,id,onDone){const r=mulberry(newSeed()),R=keyRounds(id,r);let i=0,miss=0;
+  const show=()=>{const x=R[i];if(!x){host.innerHTML=`<div class="feedback ok">잇기를 마쳤어요! ${miss?'헷갈린 곳은 위의 낱말 카드를 다시 보세요.':'낱말과 그림과 식이 잘 이어졌어요.'}</div><p style="margin:8px 0 0"><button type="button" class="btn kAgain">다른 문제로 한 번 더</button></p>`;$('.kAgain',host).onclick=()=>keyActivity(host,id,onDone);onDone&&onDone(miss);return}
+    host.innerHTML=`<div class="kact"><div class="kno">${i+1} / ${R.length}</div><div class="kp">${x.p}</div><div class="kc"></div><div class="kmsg flmsg" aria-live="polite"></div></div>`;
+    $('.kc',host).appendChild(answerUI({type:'choice',choices:x.choices},v=>{const m=$('.kmsg',host);if(v===x.ans){m.innerHTML=`<span class="ok">맞아요! ${x.ok||''}</span>`;$$('.kc button',host).forEach(b=>b.disabled=true);i++;setTimeout(show,reduced?0:1500);return true}miss++;m.textContent=`다시 골라 봐요. 힌트: ${x.ok||''}`;return false}))};
+  show()}
+/* 오늘의 계산에 끼워 넣는 '낱말 떠올리기' 문제 (점수에는 안 들어가요) */
+function keyQuiz(t,r){const K=KEYS[t.id],o=keyOthers(t.id,r,2),q=t.gen(1,r);const choices=shuffle(r,[K.w,...o.map(x=>KEYS[x.id].w)]),errc={};o.forEach(x=>{errc[KEYS[x.id].w]=`'${KEYS[x.id].w}'${josa(KEYS[x.id].w,'은','는').slice(KEYS[x.id].w.length)} ${KEYS[x.id].cue} 떠올려요. 이 계산은 ${K.cue} → '${K.w}'.`});
+  return{q:`${q.q}<div class="kq">이 계산에 떠올릴 낱말은?</div>`,type:'choice',choices,ans:K.w,errc,extra:true,kw:true,tid:t.id}}
 /* ── 오류별 피드백 ── */
 function diagnose(q,v){if(q.type==='choice')return(q.errc&&q.errc[v])||'';if(!q.errs)return'';const s=String(v),hp=s.includes('π'),c=s.replace('π',''),n=hp?(c===''?1:parseFloat(c)):parseFloat(c);if(!isFinite(n))return'';
   const e=q.errs.find(x=>Math.abs(x.a-n)<1e-9&&(x.pi==null||x.pi===hp)&&!(Math.abs(x.a-q.ans)<1e-9));return e?e.m:''}
@@ -3313,20 +3371,23 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
   const flash=(h,c)=>{const f=$('.dflash',host);f.innerHTML=h;f.className='dflash'+(c?' '+c:'')};
   const again=q=>q.regen?Object.assign(q.regen(),{retry:true,state:null}):Object.assign({},q,{retry:true,state:null,tried:false});
   function ask(){busy=false;bar();const q=queue[0];window.__cq=q;window.__cs=null;if(!q){finish();return}
-    $('.dNo',host).textContent=q.extra?'한 번 더':q.retry?'다시 한 번':`${counted.indexOf(q)+1} / ${counted.length}`;
-    $('.dq',host).innerHTML=q.q;flash('');const io=$('.dIn',host);io.innerHTML='';stopSpeak();const sb=$('.dSay',host);if(sb)sb.onclick=()=>speak(sayText(q.q+(q.suffix?` (단위 ${q.suffix})`:'')),sb);
+    $('.dNo',host).textContent=q.kw?'낱말 떠올리기':q.extra?'한 번 더':q.retry?'다시 한 번':`${counted.indexOf(q)+1} / ${counted.length}`;
+    $('.dq',host).innerHTML=q.q;flash('');keyCue(q);const io=$('.dIn',host);io.innerHTML='';stopSpeak();const sb=$('.dSay',host);if(sb)sb.onclick=()=>speak(sayText(q.q+(q.suffix?` (단위 ${q.suffix})`:'')),sb);
     if(missRun>=2&&q.steps&&q.steps.length&&!q.extra&&!q.retry){missRun=0;
       io.innerHTML=`<div class="offer"><p>두 문제 연속으로 어려웠어요. 괜찮아요! 이번 문제는 <b>쪼개서</b> 같이 풀까요?</p><div class="next-row" style="justify-content:center;margin:8px 0 0"><button type="button" class="btn primary oYes">쪼개서 풀기</button><button type="button" class="btn oNo">혼자 해 볼게요</button></div></div>`;
       $('.oYes',io).onclick=()=>{busy=true;q.state='hint';onAnswer&&onAnswer(q,{ok:false,ms:null,counted:true,help:true});help(q,io,true)};$('.oNo',io).onclick=()=>stage(q,io);return}
     stage(q,io)}
+  function keyCue(q){let c=$('.dcue',host);if(!c){c=el('<div class="dcue"></div>');$('.dq',host).after(c)}const K=!q.kw&&q.tid&&KEYS[q.tid];c.innerHTML='';if(!K)return;
+    const chip=()=>{c.innerHTML=`<button type="button" class="kchip" aria-expanded="false">💡 떠올릴 낱말: <b>${K.w}</b></button><div class="kpop" hidden>${K.say}<br>${M_(K.eq)}</div>`;const b=$('.kchip',c);b.onclick=()=>{const p=$('.kpop',c);p.hidden=!p.hidden;b.setAttribute('aria-expanded',String(!p.hidden))}};
+    if(q.lv===1&&!q.retry&&!q.extra)chip();else{c.innerHTML='<button type="button" class="kchip ask">💡 무엇을 떠올릴까? (눌러서 보기)</button>';$('.kchip',c).onclick=chip}}
   function stage(q,io){io.innerHTML='';const t0=performance.now();
     io.appendChild(answerUI({type:q.type,suffix:q.suffix,choices:q.choices,mathChoices:q.mathChoices},v=>{if(busy)return true;const ms=performance.now()-t0,res=check({type:q.type,ans:q.ans},v);
       if(res==='nopi'){flash('π를 붙여서 답해요. 예) 12π','bad');return false}
       busy=true;const counts=!q.retry&&!q.extra;onAnswer&&onAnswer(q,{ok:res===true,ms,counted:counts});
       if(res===true){if(counts){q.state='ok';first++}missRun=0;streak++;queue.shift();flash(streak>=3&&streak%3===0?`${streak}문제 연속! 집중력이 좋아요.`:pick(Math.random,PRAISE),'ok');setTimeout(ask,reduced?0:450);return true}
-      streak=0;if(counts){q.state='hint';missRun++}const why=diagnose(q,v);if(why)log.push(why);
-      if(q.steps&&q.steps.length){flash(`${why?`<span class="diag">${why}</span><br>`:'아쉬워요. '}<b>쪼개서</b> 같이 풀어 봐요.`,'bad');help(q,io,false)}
-      else{flash(`${why?`<span class="diag">${why}</span><br>`:''}정답은 ${M_(fmtAns(q))}.${counts?' 끝에 한 번 더 나와요.':''}`,'bad');queue.shift();if(counts)queue.push(again(q));setTimeout(ask,reduced?0:2600)}
+      streak=0;if(counts){q.state='hint';missRun++}const why0=diagnose(q,v);if(why0)log.push(why0);const K=!q.kw&&q.tid&&KEYS[q.tid],why=(why0?`<span class="diag">${why0}</span><br>`:'')+(K?`<span class="kline">💡 ${K.w} · ${K.say}</span><br>`:'');
+      if(q.steps&&q.steps.length){flash(`${why||'아쉬워요. '}<b>쪼개서</b> 같이 풀어 봐요.`,'bad');help(q,io,false)}
+      else{flash(`${why}정답은 ${M_(fmtAns(q))}.${counts?' 끝에 한 번 더 나와요.':''}`,'bad');queue.shift();if(counts)queue.push(again(q));setTimeout(ask,reduced?0:2600)}
       return true}));
     if(q.steps&&q.steps.length){const hb=el('<p class="dhelp"><button type="button" class="t-mini">도움: 쪼개서 풀기</button></p>');hb.firstChild.onclick=()=>{if(busy)return;busy=true;const counts=!q.retry&&!q.extra;if(counts)q.state='hint';onAnswer&&onAnswer(q,{ok:false,ms:null,counted:counts,help:true});missRun=0;streak=0;flash('');help(q,io,true)};io.appendChild(hb)}}
   function help(q,io,pre){stepWalk(io,q.steps,{lead:pre?'한 단계씩 계산해요.':'',onDone:()=>{const last=q.steps[q.steps.length-1],same=last.ans===q.ans&&(last.type||'num')===q.type,counts=!q.retry&&!q.extra;
@@ -3340,7 +3401,7 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
 const CALC_GRP=[['base','기초 다지기','모든 계산의 바탕이에요. 여기가 흔들리면 먼저 다져요.'],['solid','입체도형에서 쓰는 계산','넓이, 겉넓이, 부피 문제에 바로 나와요.']];
 const calcPlan=()=>{const d=OBJ(DB._calcDiag);return Array.isArray(d.plan)?d.plan.filter(id=>CALC.some(t=>t.id===id)):[]};
 function calcCard(t,dueIds,plan){const s=calcPeek(t.id),wd=t.ways.filter((w,k)=>OBJ(s.ways)[k]).length,isDue=dueIds.includes(t.id),rec=plan.includes(t.id)&&NUM(s.stars)<1;
-  return`<a class="card calc-card" href="#calc-${t.id}"><span class="calc-tags">${isDue?'<i class="ctag due">복습</i>':''}${rec?'<i class="ctag rec">추천</i>':''}</span><b>${t.nm}</b><small>${t.use}</small><span class="calc-prog">${starRow(Math.min(3,NUM(s.stars)))}<small>생각하는 법 ${wd}/${t.ways.length}</small></span></a>`}
+  return`<a class="card calc-card" href="#calc-${t.id}"><span class="calc-tags">${isDue?'<i class="ctag due">복습</i>':''}${rec?'<i class="ctag rec">추천</i>':''}</span><b>${t.nm}</b>${KEYS[t.id]?`<span class="kw">💡 ${KEYS[t.id].w}</span>`:''}<small>${t.use}</small><span class="calc-prog">${starRow(Math.min(3,NUM(s.stars)))}<small>생각하는 법 ${wd}/${t.ways.length}</small></span></a>`}
 function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 연산</span>`;stopSpeak();
   const dueIds=dueList().map(t=>t.id),dg=OBJ(DB._calcDiag),plan=calcPlan();
   app.innerHTML=`<div class="unit-head"><div><h1>기초 연산</h1><p>짧게, 자주, 정확하게. <b>생각하는 법</b>을 익히고 쉬운 수부터 연습해요.</p></div></div>
@@ -3367,7 +3428,9 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}const T=CALC.
     app.innerHTML=`<div class="unit-head"><div><h1>${T.nm}</h1><p>어디에 쓰여요? <b>${T.use}</b></p></div><div>${starRow(st.stars)}</div></div>
      ${calcDue(id)?'<p class="calc-due">복습할 때예요! 하루 이틀 지나 다시 떠올리면 더 오래 기억해요.</p>':''}
      ${id==='facts'?`<div class="card panel"><h2 style="margin-top:0">내 구구단 표 <small class="muted" style="font-size:15px">익힘 ${factsKnown()}/36</small></h2>${factGridHTML()}<div class="fLearn"></div></div>`:''}
-     <div class="card panel"><h2 style="margin-top:0">생각하는 법 <small class="muted" style="font-size:15px">${wd}/${T.ways.length}</small></h2><p class="muted" style="margin-top:-4px">보기 → 같이 → 혼자 순서로 익혀요.</p>
+     ${KEYS[id]?`<div class="card panel kpanel"><h2 style="margin-top:0">핵심 낱말 ${st.key?`<small class="kdone">${CHECK} 이었어요</small>`:''}</h2><p class="muted" style="margin-top:-4px">이 계산을 보면 무엇을 떠올릴까요? 신호 → 낱말 → 그림 → 식으로 이어 봐요.</p>${keyCardHTML(id)}
+      <p style="margin:12px 0 0">${canSpeak?'<button type="button" class="say kSay">🔊 듣기</button> ':''}<button type="button" class="btn${st.key?'':' primary'} kGo">낱말 잇기 ${keyRounds(id,mulberry(1)).length}문제</button></p><div class="kHost"></div></div>`:''}
+     <div class="card panel"><h2 style="margin-top:0">생각하는 법 <small class="muted" style="font-size:15px">${wd}/${T.ways.length}</small></h2><p class="muted" style="margin-top:-4px">${KEYS[id]&&!st.key?'핵심 낱말을 먼저 이어 보고 시작하면 좋아요. ':''}보기 → 같이 → 혼자 순서로 익혀요.</p>
       <div class="ways">${T.ways.map((w,k)=>`<div class="way ${st.ways[k]?'done':''}" data-k="${k}"><button type="button" class="wayHead" aria-expanded="false"><span class="wn">${k+1}</span><b>${w.t}</b><span class="wst">${st.ways[k]?CHECK:'익히기'}</span></button><div class="wayBody" hidden></div></div>`).join('')}</div></div>
      <div class="card panel"><h2 style="margin-top:0">연습</h2><div class="seg calcLv" role="tablist">${[1,2,3].map(k=>`<button type="button" data-l="${k}" class="${k===L?'on':''}" ${k>st.stars+1?'disabled':''}>${k}단계${k<=st.stars?' ★':''}</button>`).join('')}</div>
       <p class="muted" style="margin:10px 0 0">${LV[L-1]}${st.best[L]!=null?` · 내 최고 ${NUM(st.best[L])}/10`:''}</p>
@@ -3379,6 +3442,8 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}const T=CALC.
         body.hidden=false;head.setAttribute('aria-expanded','true');
         wayFlow(body,T,w,()=>{const S=calcState(id),firstTime=!S.ways[k];S.ways[k]=1;if(!S.due)S.due=addDays(today(),1);save();if(firstTime)award(2,'calcway:'+id+':'+k);wb.classList.add('done');$('.wst',wb).innerHTML=CHECK})}});
     if(id==='facts')$$('.fgrid .fc',app).forEach(c=>c.onclick=()=>factLearn($('.fLearn',app),+c.dataset.a,+c.dataset.b));
+    if(KEYS[id]){const kb=$('.kGo',app);kb.onclick=()=>{kb.hidden=true;keyActivity($('.kHost',app),id,()=>{const S=calcState(id),firstTime=!S.key;S.key=1;save();if(firstTime)award(2,'calckey:'+id);const h=$('.kpanel h2',app);if(h&&!$('.kdone',h))h.insertAdjacentHTML('beforeend',` <small class="kdone">${CHECK} 이었어요</small>`)})};
+      const ks=$('.kSay',app);if(ks)ks.onclick=()=>{const K=KEYS[id];speak(sayText(`${K.cue}, ${josa(K.w,'을','를')} 떠올려요. ${K.say}. 예를 들어 ${K.eq}`),ks)}}
     $$('.calcLv button',app).forEach(b=>b.onclick=()=>{L=+b.dataset.l;draw()});
     $('.calcGo',app).onclick=()=>run()};
   function run(){stopSpeak();const r=mulberry(newSeed());let Q;
@@ -3428,10 +3493,12 @@ function drillPlan(r){const out=[],started=CALC.filter(t=>t.id!=='facts'&&calcSt
   for(const t of shuffle(r,started.filter(t=>!due.includes(t)))){if(out.length>=10)break;add(t,lvOf(t))}
   const basics=['add','div','order','mul'].map(id=>CALC.find(t=>t.id===id));let i=0;while(out.length<10){add(basics[i%basics.length],1);i++}
   const Q=shuffle(r,out);for(let pass=0;pass<4;pass++)for(let j=1;j<Q.length;j++)if(Q[j].tid===Q[j-1].tid){const k=Q.findIndex((x,m)=>m>j&&x.tid!==Q[j].tid&&Q[m-1].tid!==Q[j].tid&&(m+1>=Q.length||Q[m+1].tid!==Q[j].tid));if(k>0)[Q[j],Q[k]]=[Q[k],Q[j]]}
+  const kt=shuffle(r,[...new Set(Q.map(q=>q.tid))].filter(id=>KEYS[id]&&(calcStarted(id)||id==='facts'))).slice(0,2).map(id=>CALC.find(t=>t.id===id));
+  kt.forEach((t,i)=>Q.splice(Math.min(Q.length,i?6:1),0,keyQuiz(t,r)));
   return{Q,due}}
 function viewDrill(){crumbs.innerHTML=`<span class="sep">›</span><span>오늘의 계산</span>`;stopSpeak();
   const D=DB._drill=DB._drill||{},tm=!!lsGet('hangeoreum-drill-timer',false),{Q,due}=drillPlan(mulberry(newSeed()));
-  app.innerHTML=`<div class="unit-head"><div><h1>오늘의 계산</h1><p>섞어서 ${Q.length}문제. 빠르기보다 <b>정확하게</b>가 먼저예요. 막히면 쪼개서 같이 풀어요.</p></div></div>
+  app.innerHTML=`<div class="unit-head"><div><h1>오늘의 계산</h1><p>섞어서 ${Q.filter(q=>!q.extra).length}문제. 빠르기보다 <b>정확하게</b>가 먼저예요. 막히면 쪼개서 같이 풀어요.</p></div></div>
    ${due.length?`<p class="drill-due"><b>오늘 복습</b> ${due.map(t=>`<span class="chip">${t.nm}</span>`).join(' ')}</p>`:''}${!OBJ(DB._calcDiag).d&&!CALC.some(t=>calcStarted(t.id))?'<p class="calc-due">처음이라면 <a href="#calc-start">시작점 찾기</a>를 먼저 해 보세요. 나에게 맞는 문제가 나와요.</p>':''}
    <div class="card panel"><div class="drill"><div class="dbar"></div><div class="dmeta"><span class="dNo"></span><span class="dmr"><span class="dTime"${tm?'':' hidden'}>0:00</span>${canSpeak?'<button type="button" class="say dSay" aria-label="문제 읽어 주기">🔊</button>':''}</span></div><div class="dq"></div><div class="dflash" aria-live="polite"></div><div class="dIn"></div></div></div>
    <p class="drill-opt"><label><input type="checkbox" class="tmT"${tm?' checked':''}> 시간 재기</label> <span class="muted">· 시간은 내 기록과 비교할 때만 써요.</span></p>`;
@@ -3445,7 +3512,7 @@ function viewDrill(){crumbs.innerHTML=`<span class="sep">›</span><span>오늘�
         if(res[tid]==='bad'){s.box=Math.max(1,s.box-1);s.due=addDays(today(),1);again.push(nm)}else if(calcDue(tid)){s.box=Math.min(5,s.box+1);s.due=addDays(today(),BOX_DAYS[s.box]);up.push(nm)}});
       const isBest=timed&&first>=8&&(!D.best||ms<D.best);if(isBest)D.best=ms;
       D.last=today();D.lastScore=first;D.runs=(D.runs||0)+1;save();bump('drill');dayBump('drill');if(first>=8)dayBump('drill8');if(first)award(first);award(5,'drill:'+today());
-      $('.dIn',app).innerHTML=`<div class="feedback ok" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${Q.length}${timed?` · 걸린 시간 <b class="rm">${fmt(ms)}</b>`:''}${isBest?'<br>최고 기록이에요!':''}</div>
+      $('.dIn',app).innerHTML=`<div class="feedback ok" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${info.total}${timed?` · 걸린 시간 <b class="rm">${fmt(ms)}</b>`:''}${isBest?'<br>최고 기록이에요!':''}</div>
         ${up.length?`<p class="sum-space"><b>오래 기억 쪽으로 한 칸</b> ${up.join(', ')} · 다음 복습은 며칠 뒤예요.</p>`:''}${again.length?`<p class="sum-space"><b>내일 한 번 더</b> ${again.join(', ')}</p>`:''}
         ${info.tip?`<p class="sum-tip"><b>자주 나온 실수</b> ${info.tip}</p>`:''}
         <div class="next-row" style="justify-content:center"><a class="btn" href="#calc">기초 연산</a><button type="button" class="btn primary dAgain">한 번 더</button></div>`;
