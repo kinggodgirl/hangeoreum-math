@@ -192,16 +192,20 @@ table.t td.l{text-align:left}
 .feedback.info{background:var(--accent-soft);color:var(--accent)}
 input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+@media(max-width:520px){.cls-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cls{padding:8px}.cls canvas{height:110px}.cls .two{grid-template-columns:1fr}.cls .two button{font-size:15px;padding:6px 2px;white-space:nowrap;min-height:40px}.cls .mk{font-size:24px;right:7px}}
 .cls{padding:10px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
 .cls canvas{width:100%;height:130px;display:block;touch-action:pan-y}
 .cls .nm{text-align:center;font-weight:700}
 .cls .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .cls .two button{border:1.5px solid var(--ink);border-radius:8px;background:#fff;padding:6px 4px;cursor:pointer;font-size:15px;min-height:42px}
 .cls .why{font-size:14px;border-radius:8px;padding:6px 8px}
-.cls.ok{border-color:var(--ok)}
-.cls.ok .why{background:var(--ok-soft);color:var(--ok)}
-.cls.bad{border-color:var(--bad)}
-.cls.bad .why{background:var(--bad-soft);color:var(--bad)}
+.cls{position:relative}
+.cls.isP{border-color:#2a4d9e;background:#eef3fc}.cls.isP .why{background:#dbe6fa;color:#1f3c7a}
+.cls.notP{border-color:#c46a17;background:#fdf3e7}.cls.notP .why{background:#f8e0c2;color:#7a4210}
+.cls .mk{position:absolute;top:4px;right:10px;font-size:30px;line-height:1;font-weight:700;color:var(--ink);font-family:var(--display)}
+.cls .why small{color:var(--ink-soft)}
+.cls-key{display:inline-flex;align-items:center;gap:5px;font-size:14px;color:var(--ink-soft)}.cls-key i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.cls-key .kp{background:#dbe6fa;border:1.5px solid #2a4d9e}.cls-key .kn{background:#f8e0c2;border:1.5px solid #c46a17}
 .ptable td.q{color:var(--line)}
 .ptable tr.cur td{background:var(--hi-soft)}
 
@@ -311,6 +315,7 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .fltask small{display:block;font-size:15px;color:var(--ink-soft);margin-top:4px}
 .fltask .hl{background:var(--hi);padding:0 .25em;border-radius:4px}
 .flmsg{min-height:1.5em;font-size:16px}
+.flSpread{display:flex;flex-direction:column;align-items:flex-start;gap:4px}.flSpread .btn.on{background:var(--ink);color:#fff}.flSpread small{color:var(--ink-soft);font-size:14px}
 .flmsg .ok{color:var(--ok);font-weight:700}
 .fleq{display:flex;flex-direction:column;gap:4px;background:var(--paper);border-radius:10px;padding:10px 14px;font-size:18px}
 .fleq:empty{display:none}
@@ -1605,13 +1610,21 @@ function floorActivity(host,keys,opt={}){
       <div class="fltask" id="flTask"></div>
       <div id="flBody"></div>
       <div class="fleq" id="flEq"></div>
-      <div><label class="cap" for="flGap">층 벌려 보기</label><input type="range" id="flGap" min="0" max="100" value="0"></div>
+      <div class="flSpread"><button type="button" class="btn ghost" id="flGap" aria-pressed="false">층별로 떼어 보기</button><small id="flGapNote"></small></div>
     </div></div>`;
   const PH=['floors','v','e','f','done'];
   const S={key:keys[0],base:null,info:null,ph:'floors',gi:0,found:{v:new Set(),e:new Set(),f:new Set()},doneG:{v:[],e:[],f:[]},gap:0,showFloors:false,msg:''};
   const v=new Viewer($('#flCv',host),{pad:0.34,yaw:-0.5,pitch:0.32,draw:(ctx,vw)=>drawAll(ctx,vw)});
-  const disp=()=>{const g=S.gap*0.45;const V=S.base.V.map((p,i)=>[p[0],p[1],p[2]+S.info.fi[i]*g]);return Object.assign({},S.base,{V})};
-  const setScene=()=>{const m=disp();const zmax=S.info.lv[S.info.n-1]+(S.info.n-1)*0.45,zmin=S.info.lv[0];v.setScene([{mesh:m}],{center:[0,0,(zmax+zmin)/2],R:Math.max(S.base.R,(zmax-zmin)/2)*1.12});v.marks={f:new Set(),e:new Set(),v:new Set()}};
+  /* 층별로 떼어 보기: 층 사이를 같은 간격으로 크게 벌림 (gap 0→1 애니메이션) */
+  const spD=()=>{const I=S.info,R=S.base.R;return I.n<2?0:Math.min(1.5*R,Math.max(1.2*R,2.6*R/(I.n-1)))};
+  const lvZ=f=>{const I=S.info;return(1-S.gap)*I.lv[f]+S.gap*(I.lv[0]+f*spD())};
+  const disp=()=>{const I=S.info;const V=S.base.V.map((p,i)=>[p[0],p[1],p[2]-I.lv[I.fi[i]]+lvZ(I.fi[i])]);return Object.assign({},S.base,{V})};
+  const setScene=()=>{const m=disp(),I=S.info;const zmin=I.lv[0],zmax=Math.max(I.lv[I.n-1],I.lv[0]+(I.n-1)*spD());v.setScene([{mesh:m}],{center:[0,0,(zmax+zmin)/2],R:Math.max(S.base.R,(zmax-zmin)/2+0.2)*1.08});v.marks={f:new Set(),e:new Set(),v:new Set()};v.dirty=true};
+  let spAnim=null;function spreadTo(t){const t0=S.gap,st=performance.now(),ms=reduced?1:480;cancelAnimationFrame(spAnim);
+    const step=now=>{const k=Math.min(1,(now-st)/ms),e=k*k*(3-2*k);S.gap=t0+(t-t0)*e;setScene();if(k<1)spAnim=requestAnimationFrame(step)};spAnim=requestAnimationFrame(step);
+    if(t>0&&v.pitch<0.45)v.flyTo(v.yaw,0.5,480);syncSpread()}
+  function syncSpread(){const b=$('#flGap',host),on=S.spread;b.setAttribute('aria-pressed',on);b.classList.toggle('on',on);b.textContent=on?'원래 모양으로':'층별로 떼어 보기';
+    b.disabled=S.ph==='f';$('#flGapNote',host).textContent=S.ph==='f'?'면은 원래 모양에서 세요.':on?'층 사이를 같은 간격으로 벌렸어요. 점선은 층과 층을 잇는 모서리예요.':''}
   const groupOfId=(kind,id)=>S.info.G[kind].findIndex(g=>g.ids.includes(id));
   v.vcol=i=>{if(S.ph==='floors')return null;if(S.found.v.has(i))return S.ph==='v'&&groupOfId('v',i)===S.gi?HI:DONE_COL.v;return null};
   v.ecol=k=>{if(S.found.e.has(k))return S.ph==='e'&&groupOfId('e',k)===S.gi?'rgba(255,210,40,.95)':DONE_COL.e;return null};
@@ -1628,17 +1641,27 @@ function floorActivity(host,keys,opt={}){
     const act=S.ph!=='floors'&&S.ph!=='done'&&I.G[S.ph][S.gi]?I.G[S.ph][S.gi].floors:[];
     const plates=I.lv.map((z,f)=>{const ids=I.G.v.find(q=>q.key==='v'+f).ids;let cx=0,cy=0;ids.forEach(i=>{cx+=S.base.V[i][0];cy+=S.base.V[i][1]});cx/=ids.length;cy/=ids.length;
       const r=Math.max(0.28,...ids.map(i=>Math.hypot(S.base.V[i][0]-cx,S.base.V[i][1]-cy)))*1.18+0.18;
-      const pts=range(40).map(q=>vw.proj([cx+r*Math.cos(TAU*q/40),cy+r*Math.sin(TAU*q/40),z+f*g]));return{f,pts}});
-    if(S.showFloors)plates.forEach(({f,pts})=>{const on=act.includes(f);ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+      const pts=range(40).map(q=>vw.proj([cx+r*Math.cos(TAU*q/40),cy+r*Math.sin(TAU*q/40),lvZ(f)]));return{f,pts}});
+    const exploded=S.gap>0.02;
+    if(S.showFloors||exploded)plates.forEach(({f,pts})=>{const on=act.includes(f);ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
       ctx.fillStyle=on?'rgba(255,226,102,.45)':'rgba(42,77,158,.07)';ctx.fill();ctx.setLineDash([5,4]);ctx.strokeStyle=on?'rgba(200,150,0,.8)':'rgba(42,77,158,.35)';ctx.lineWidth=1.4;ctx.stroke();ctx.setLineDash([])});
-    vw.drawMesh(m);
-    if(S.showFloors)plates.forEach(({f,pts})=>{const L=pts.reduce((a,p)=>p[0]<a[0]?p:a,pts[0]);ktext(ctx,`${f+1}층`,L[0]-8,L[1],{align:'right',bold:true,size:16,color:act.includes(f)?'#8a6300':'#2a4d9e'})});
+    if(exploded)drawExploded(ctx,vw,m,S.gap);else vw.drawMesh(m);
+    if(S.showFloors||exploded)plates.forEach(({f,pts})=>{const L=pts.reduce((a,p)=>p[0]<a[0]?p:a,pts[0]);ktext(ctx,`${f+1}층`,L[0]-8,L[1],{align:'right',bold:true,size:16,color:act.includes(f)?'#8a6300':'#2a4d9e'})});
   }
+  /* 떼어 본 모양: 면은 옅게, 층 안 모서리는 굵게, 층 사이 모서리는 점선, 꼭짓점은 모두 보이게 */
+  function drawExploded(ctx,vw,m,t){const I=S.info,P=m.V.map(p=>vw.proj(p)),fa=Math.max(0,0.55*(1-t*1.6));
+    if(fa>0){ctx.globalAlpha=fa;vw.drawMesh(m);ctx.globalAlpha=1}
+    const same=e=>I.fi[e.a]===I.fi[e.b];
+    m.E.forEach(e=>{if(same(e))return;const A=P[e.a],B=P[e.b],c=v.ecol(e.k);ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);
+      if(c){ctx.strokeStyle=c;ctx.lineWidth=5;ctx.setLineDash([])}else{ctx.strokeStyle='rgba(29,38,64,.45)';ctx.lineWidth=1.6;ctx.setLineDash([6,5])}ctx.stroke();ctx.setLineDash([])});
+    m.E.forEach(e=>{if(!same(e))return;const A=P[e.a],B=P[e.b],c=v.ecol(e.k);ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.strokeStyle=c||'#1d2640';ctx.lineWidth=c?5:2.4;ctx.stroke()});
+    P.forEach((p,i)=>{const c=v.vcol(i);ctx.beginPath();ctx.arc(p[0],p[1],c?8.5:6,0,TAU);ctx.fillStyle=c||'#1d2640';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke()})}
   function eqLine(kind){const G=S.info.G[kind];const parts=G.map((g,i)=>i<S.doneG[kind].length?S.doneG[kind][i]:'?');const done=S.doneG[kind].length===G.length;
     return `<div class="${kind===S.ph?'cur':''}"><b>${KIND_NM[kind]}</b> = <span class="rm">${parts.join(' + ')}${done?' = '+parts.reduce((a,b)=>a+b,0):''}</span></div>`}
   function renderMsg(){const mb=$('#flMsg',host);if(mb)mb.innerHTML=S.msg}
   function render(){
     v.mode=S.ph==='floors'?'v':S.ph==='done'?null:S.ph;v.dirty=true;
+    if(S.ph==='f'&&S.spread){S.spread=false;spreadTo(0)}syncSpread();
     const idx=PH.indexOf(S.ph);
     $('#flSteps',host).innerHTML=['몇 층?','꼭짓점','모서리','면'].map((t,i)=>`<li class="${i<idx?'done':i===idx?'on':''}">${t}</li>`).join('');
     const I=S.info,body=$('#flBody',host),task=$('#flTask',host);
@@ -1661,11 +1684,11 @@ function floorActivity(host,keys,opt={}){
         body.innerHTML=`<div class="counter">찾은 개수: <b>${n}</b>개</div><div id="flMsg" class="flmsg">${S.msg}</div>`}}
     $('#flEq',host).innerHTML=['v','e','f'].filter(k=>PH.indexOf(k)<=idx).map(eqLine).join('');
   }
-  function load(k){S.key=k;S.reported=false;S.base=SOLIDS[k].mk();S.info=floorInfo(S.base);S.ph='floors';S.gi=0;S.found={v:new Set(),e:new Set(),f:new Set()};S.doneG={v:[],e:[],f:[]};S.showFloors=false;S.msg='';
+  function load(k){S.key=k;S.reported=false;S.base=SOLIDS[k].mk();S.info=floorInfo(S.base);S.ph='floors';S.gi=0;S.found={v:new Set(),e:new Set(),f:new Set()};S.doneG={v:[],e:[],f:[]};S.showFloors=false;S.msg='';S.spread=false;S.gap=0;
     v.userMoved=false;v.yaw=-0.5;v.pitch=k==='dod'||k==='ico'?0.22:0.3;setScene();render()}
   function pickShape(k){$$('#flShapes .chip',host).forEach(x=>x.classList.toggle('on',x.dataset.k===k));load(k)}
   $$('#flShapes .chip',host).forEach(b=>b.onclick=()=>pickShape(b.dataset.k));
-  $('#flGap',host).oninput=e=>{S.gap=e.target.value/100;setScene()};
+  $('#flGap',host).onclick=()=>{S.spread=!S.spread;spreadTo(S.spread?1:0)};
   load(keys[0]);
 }
 
@@ -1822,11 +1845,12 @@ EXPLORE.poly=body=>{
 };
 function clsActivity(host,done){
   const order=shuffle(mulberry(newSeed()),['cube','cyl','p3','y4','sph','p5','cone','f4','oct','y6']);
-  host.innerHTML=`<p style="margin-top:0"><b class="clsScore">0 / ${order.length}</b></p><div class="cls-grid">${order.map(k=>`<div class="card cls" data-k="${k}"><canvas></canvas><div class="nm">${SOLIDS[k].name}</div><div class="two"><button type="button" data-a="1">다면체</button><button type="button" data-a="0">아니에요</button></div></div>`).join('')}</div><div class="clsEnd"></div>`;
+  host.innerHTML=`<p style="margin-top:0;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center"><b class="clsScore">0 / ${order.length}</b><span class="cls-key"><i class="kp"></i>다면체</span><span class="cls-key"><i class="kn"></i>다면체가 아님</span><span class="cls-key">○ 맞힘 · ✕ 틀림</span></p><div class="cls-grid">${order.map(k=>`<div class="card cls" data-k="${k}"><canvas></canvas><div class="nm">${SOLIDS[k].name}</div><div class="two"><button type="button" data-a="1">다면체</button><button type="button" data-a="0">아니에요</button></div></div>`).join('')}</div><div class="clsEnd"></div>`;
   let score=0,answered=0;
   $$('.cls',host).forEach(c=>{const v=new Viewer($('canvas',c),{auto:true,pad:0.38,yaw:Math.random()*6,pitch:0.4});v.setMesh(SOLIDS[c.dataset.k].mk());
-    $$('button',c).forEach(b=>b.onclick=()=>{const S=SOLIDS[c.dataset.k];const ok=(b.dataset.a==='1')===S.poly;c.classList.add(ok?'ok':'bad');if(ok)score++;answered++;
-      $('.two',c).replaceWith(el(`<div class="why">${ok?'맞아요. ':'아쉬워요. '}${S.poly?'모든 면이 다각형이라 다면체예요.':S.why}</div>`));$('.clsScore',host).textContent=`${score} / ${order.length}`;if(answered===order.length)ending()})});
+    $$('button',c).forEach(b=>b.onclick=()=>{const S=SOLIDS[c.dataset.k];const ok=(b.dataset.a==='1')===S.poly;c.classList.add(S.poly?'isP':'notP');c.appendChild(el(`<span class="mk" aria-label="${ok?'맞힘':'틀림'}">${ok?'○':'✕'}</span>`));if(ok)score++;answered++;
+      v.setScene([{mesh:v.scene[0].mesh,st:{tint:S.poly?[201,216,245]:[247,214,176]}}]);
+      $('.two',c).replaceWith(el(`<div class="why"><b>${S.poly?'다면체':'다면체가 아님'}</b> · ${S.poly?'모든 면이 다각형이에요.':S.why}${ok?'':`<br><small>내가 고른 답: ${b.dataset.a==='1'?'다면체':'아니에요'}</small>`}</div>`));$('.clsScore',host).textContent=`${score} / ${order.length}`;if(answered===order.length)ending()})});
   function ending(){const box=$('.clsEnd',host);box.innerHTML=`<div class="box" style="margin-top:18px"><b>생각 정리</b> · 다면체가 아닌 원기둥, 원뿔, 구의 공통점은 무엇일까요?<div class="choices">${shuffle(mulberry(7),['굽은 면(곡면)이 있다','꼭짓점이 많다','크기가 크다']).map(c=>`<button type="button">${c}</button>`).join('')}</div><div class="clsMsg flmsg" style="margin-top:8px"></div></div>`;
     $$('.choices button',box).forEach(b=>b.onclick=()=>{if(b.textContent.startsWith('굽은')){$('.clsMsg',box).innerHTML=`<span class="ok">맞아요! ${T('곡면')}이 하나라도 있으면 다각형으로만 둘러싸인 게 아니니 다면체가 아니에요.</span>`;done();award(5,'cls')}else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('.clsMsg',box).textContent='세 도형의 옆면이나 겉면을 다시 살펴보세요. 평평한가요, 굽었나요?'}})}
 }
