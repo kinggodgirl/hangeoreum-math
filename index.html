@@ -96,6 +96,7 @@ main{padding:28px 0 64px}
 .lesson .n{font-family:var(--math);font-size:30px;text-align:center;color:var(--ink-soft)}
 .lesson b{font-family:var(--display);font-size:21px;display:block}
 .lesson small{color:var(--ink-soft);font-size:15px}
+.tbref{font-family:var(--sans,inherit);font-size:13px!important;color:#6b7690}.lesson small.tbref{display:block;margin-top:2px}
 .lesson.ready{border-left:6px solid var(--ink)}
 .lesson.ready:hover{background:var(--hi-soft)}
 .lesson.soon{opacity:.5}
@@ -1265,14 +1266,17 @@ function cylLabels(ctx,v,r,h,lr,lh){const C=v.proj([0,0,h]);const ang=-0.35;cons
 
 /* ───────── 차시 정보 ───────── */
 const LESSONS=[
-  {id:'poly',no:1,title:'다면체',sub:'다각형으로만 둘러싸인 입체도형',ready:true},
-  {id:'types',no:2,title:'각기둥 · 각뿔 · 각뿔대',sub:'밑면과 옆면으로 이름 짓고 개수의 규칙 찾기',ready:true},
-  {id:'regular',no:3,title:'정다면체',sub:'모든 면이 합동인 정다각형',ready:true},
-  {id:'rotation',no:4,title:'회전체',sub:'평면도형을 한 바퀴 돌리면',ready:false},
-  {id:'area',no:5,title:'기둥의 겉넓이',sub:'전개도를 펼쳐서 넓이 구하기',ready:true},
-  {id:'volume',no:6,title:'기둥의 부피',sub:'밑넓이 × 높이',ready:false},
-  {id:'cone',no:7,title:'뿔의 겉넓이와 부피',sub:'기둥의 1/3',ready:false},
-  {id:'sphere',no:8,title:'구의 겉넓이와 부피',sub:'원기둥과 비교하기',ready:false},
+  {id:'poly',no:1,title:'다면체',sub:'다각형으로만 둘러싸인 입체도형',tb:'01 다면체 · 211쪽',ready:true},
+  {id:'types',no:2,title:'각기둥 · 각뿔 · 각뿔대',sub:'밑면과 옆면으로 이름 짓고 개수의 규칙 찾기',tb:'01 다면체 · 211~212쪽',ready:true},
+  {id:'regular',no:3,title:'정다면체',sub:'모든 면이 합동인 정다각형',tb:'01 다면체 · 213~214쪽',ready:true},
+  {id:'rotation',no:4,title:'회전체',sub:'평면도형을 한 바퀴 돌리면',tb:'02 회전체 · 217~218쪽',ready:false},
+  {id:'rotprop',no:5,title:'회전체의 성질',sub:'회전체를 자른 단면',tb:'02 회전체 · 219쪽',ready:false},
+  {id:'area',no:6,title:'기둥의 겉넓이',sub:'전개도를 펼쳐서 넓이 구하기',tb:'03 기둥의 겉넓이와 부피 · 221~222쪽',ready:true},
+  {id:'volume',no:7,title:'기둥의 부피',sub:'밑넓이 × 높이',tb:'03 기둥의 겉넓이와 부피 · 223~225쪽',ready:false},
+  {id:'conearea',no:8,title:'뿔의 겉넓이',sub:'뿔의 전개도로 넓이 구하기',tb:'04 뿔의 겉넓이와 부피 · 227~228쪽',ready:false},
+  {id:'cone',no:9,title:'뿔의 부피',sub:'기둥의 1/3',tb:'04 뿔의 겉넓이와 부피 · 229~231쪽',ready:false},
+  {id:'spherearea',no:10,title:'구의 겉넓이',sub:'반지름이 같은 원의 넓이 4개',tb:'05 구의 겉넓이와 부피 · 233쪽',ready:false},
+  {id:'sphere',no:11,title:'구의 부피',sub:'원기둥과 비교하기',tb:'05 구의 겉넓이와 부피 · 234~235쪽',ready:false},
 ];
 const TABS=[{id:'concept',t:'개념',s:'핵심 정리'},{id:'explore',t:'탐구',s:'보고 만지기'},{id:'steps',t:'단계 문제',s:'한 걸음씩'},{id:'practice',t:'연습',s:'반복해서 풀기'}];
 const UNITS=[['소인수분해',false],['정수와 유리수',false],['문자의 사용과 식',false],['일차방정식',false],['좌표평면과 그래프',false],['기본 도형',false],['평면도형의 성질',false],['입체도형의 성질',true],['자료의 정리와 해석',false]];
@@ -1381,15 +1385,15 @@ function viewUnit(){
   crumbs.innerHTML=`<span class="sep">›</span><span>입체도형의 성질</span>`;
   app.innerHTML=`<div class="unit-head"><div><h1>입체도형의 성질</h1><p>1학년 2학기 · 시범 단원</p></div>
     <div class="legend"><span><i class="on"></i>개념 → 탐구 → 단계 문제 → 연습 5문제</span></div></div>
-  <div class="lessons">${LESSONS.map(l=>l.ready?`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small></span><span class="pips" aria-label="진행 상황">${pipsOf(l.id)}</span></a>`
-    :`<div class="card lesson soon"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small></span><span class="soon-tag">준비 중</span></div>`).join('')}</div>`;
+  <div class="lessons">${LESSONS.map(l=>l.ready?`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="pips" aria-label="진행 상황">${pipsOf(l.id)}</span></a>`
+    :`<div class="card lesson soon"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="soon-tag">준비 중</span></div>`).join('')}</div>`;
 }
 /* 화면: 차시 */
 function viewLesson(id,tab){
   const L=LESSONS.find(l=>l.id===id);const p=prog(id);
   crumbs.innerHTML=`<span class="sep">›</span><a href="#unit-solid">입체도형의 성질</a><span class="sep">›</span><span>${L.title}</span>`;
   const doneOf={concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac.solved>=5};
-  app.innerHTML=`<div class="lesson-head"><div class="kicker">${L.no}차시</div><h1>${L.title}</h1></div>
+  app.innerHTML=`<div class="lesson-head"><div class="kicker">${L.no}차시${L.tb?` · <span class="tbref">교과서 ${L.tb}</span>`:''}</div><h1>${L.title}</h1></div>
    <div class="tabs" role="tablist">${TABS.map((t,i)=>`<button type="button" role="tab" class="tab ${t.id===tab?'on':''} ${doneOf[t.id]?'done':''}" data-tab="${t.id}" aria-selected="${t.id===tab}"><span class="num">${doneOf[t.id]&&t.id!==tab?CHECK:i+1}</span><span class="tl">${t.t}<small>${t.s}</small></span></button>`).join('')}</div>
    <div id="tabBody"></div>`;
   $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
@@ -2350,6 +2354,7 @@ const PTYPE_NM={'poly:prism':'1차시 · 각기둥은 몇 면체?','poly:pyramid
   'types:prism':'2차시 · 각기둥 개수 문제','types:pyramid':'2차시 · 각뿔 개수 문제','types:frustum':'2차시 · 각뿔대 개수 문제','types:direct':'2차시 · 개수 바로 구하기','types:side':'2차시 · 옆면 모양 고르기','types:name':'2차시 · 몇 면체인지 구하기',
   'area:tri':'5차시 · 삼각기둥의 겉넓이','area:box':'5차시 · 직육면체의 겉넓이','area:cyl':'5차시 · 원기둥의 겉넓이',
   'regular:edge':'3차시 · 겹쳐 세기로 모서리 구하기','regular:vertex':'3차시 · 겹쳐 세기로 꼭짓점 구하기','regular:floor':'3차시 · 몇 층 건물로 꼭짓점 세기','regular:cond':'3차시 · 조건으로 정다면체 찾기','regular:count':'3차시 · 그림 보고 개수 구하기','regular:sum':'3차시 · 두 정다면체의 개수 더하기','regular:tf':'3차시 · 옳지 않은 설명 고르기'};
+for(const k in PTYPE_NM){const L=LESSONS.find(l=>l.id===k.split(':')[0]);if(L)PTYPE_NM[k]=PTYPE_NM[k].replace(/^\d+차시 · /,L.no+'차시 · ')}
 const KIND_KO={steps:'단계 문제',practice:'연습',review:'복습'};
 function relTime(iso){if(!iso)return'아직 없음';const d=(Date.now()-Date.parse(iso))/1000;if(d<3600)return Math.max(1,Math.round(d/60))+'분 전';if(d<86400)return Math.round(d/3600)+'시간 전';const days=Math.floor(d/86400);return days===1?'어제':days+'일 전'}
 function stripTags(h){const t=document.createElement('div');t.innerHTML=h;return t.textContent.replace(/\s+/g,' ').trim()}
