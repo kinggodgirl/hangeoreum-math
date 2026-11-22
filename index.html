@@ -529,6 +529,24 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .bb-reveal b{letter-spacing:.1em}
 .tBB table{margin-top:8px}
 .tBB .t td,.tBB .t th{white-space:nowrap}
+/* 기초 연산 */
+.calc-sum{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.calc-sum .btn{margin-left:auto}
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.calc-card{display:flex;flex-direction:column;gap:4px;padding:16px 18px;text-decoration:none;color:var(--ink)}
+.calc-card:hover,.calc-chip:hover{background:var(--hi-soft)}
+.calc-card b{font-size:19px}.calc-card small{color:var(--ink-soft);font-size:14px}
+.stars{white-space:nowrap}.stars i{font-style:normal;color:#d5d9e2;font-size:20px;margin-right:2px}.stars i.on{color:#f2b33d}
+.calc-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:30px}
+@media (max-width:760px){.calc-strip{grid-template-columns:repeat(2,1fr)}}
+.calc-chip{border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:10px 12px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:2px}
+.calc-chip b{font-size:15px}.calc-chip .stars i{font-size:15px}
+.tipbody .rm,.dflash .rm{white-space:nowrap}
+.calc-tip summary{cursor:pointer}.tipbody{margin-top:8px;font-size:17px;line-height:1.8}.tipbody p{margin:6px 0}
+.tchips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.tchips span{border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;background:#fff}
+.dflash .hint{display:block;margin-top:4px;font-weight:400;color:var(--ink)}
+.fr sup,.fr sub{font-size:.7em}
+.dbar i.hint{background:#f2b33d}
 /* 로그인 */
 .login-wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .demo{background:var(--hi-soft);border:1.5px dashed #c9a400;border-radius:12px;padding:12px 16px;font-size:15px;line-height:1.6}
@@ -709,7 +727,8 @@ const BADGES=[
   {k:'streak3',nm:'꾸준함',d:'3일 연속 공부하기',ok:M=>M.streak>=3},
   {k:'drill5',nm:'계산 근육',d:'오늘의 계산 5번 끝내기',ok:M=>(M.cnt.drill||0)>=5},
   {k:'mission5',nm:'미션 수집가',d:'오늘의 미션 3개를 모두 해낸 날 5일',ok:M=>(M.cnt.misall||0)>=5},
-  {k:'boss3',nm:'보스 사냥꾼',d:'우리 반과 함께 보스 3마리 물리치기',ok:M=>(M.cnt.boss||0)>=3}];
+  {k:'boss3',nm:'보스 사냥꾼',d:'우리 반과 함께 보스 3마리 물리치기',ok:M=>(M.cnt.boss||0)>=3},
+  {k:'calc12',nm:'계산 장인',d:'기초 연산 별 12개 모으기',ok:()=>calcStars()>=12}];
 function checkBadges(){const M=me();BADGES.forEach(b=>{if(!M.badges[b.k]&&b.ok(M)){M.badges[b.k]=today();save();setTimeout(()=>toast(`배지를 받았어요 · ${b.nm}`),400)}})}
 function badgeIcon(i,on){const n=3+(i%4),R=17,c=22;const pts=regPoly(n,R,-Math.PI/2).map(p=>`${(c+p[0]).toFixed(1)},${(c+p[1]).toFixed(1)}`).join(' ');
   return`<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><polygon points="${pts}" fill="${on?FC[i%5]:'#eef0f4'}" stroke="${on?'#1d2640':'#c3c8d2'}" stroke-width="2" stroke-linejoin="round"/>${on?`<text x="22" y="27" text-anchor="middle" font-size="13" font-weight="700" fill="#1d2640" font-family="IBM Plex Sans KR,sans-serif">${n}</text>`:''}</svg>`}
@@ -1237,6 +1256,8 @@ function viewHome(){
     <div class="card todo"><span class="k">${last?'지난번에 여기까지 했어요':'처음이라면'}</span><b class="t">${last?`${last.no}차시 ${last.title}`:'1차시 다면체'}</b>
       <p>${last?`${lastTab.t} 탭 · 진행 ${lessonDone(last.id)}/4`:'개념부터 차근차근 시작해요.'}</p><a class="btn" href="#${last?last.id+(lastTab.id==='concept'?'':'-'+lastTab.id):'poly'}">이어서 하기 →</a></div>
   </div>
+  <div class="sec-title"><h2>기초 연산</h2><span>입체도형에서 자주 나오는 계산 · 별 <b class="rm">${calcStars()}</b>/${CALC.length*3} · <a href="#calc">전체 보기</a></span></div>
+  <div class="calc-strip">${CALC.map(t=>`<a class="calc-chip" href="#calc-${t.id}"><b>${t.nm}</b>${starRow(calcState(t.id).stars)}</a>`).join('')}</div>
   <div class="sec-title"><h2>1학년 단원</h2><span>지금은 입체도형 단원을 시범으로 열어 두었어요 · 진행 ${done}/12</span></div>
   <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="#unit-solid"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · 3개 차시 →</span></a>`:`<div class="card unit soon"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">준비 중</span></div>`).join('')}</div>`;
   const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk());
@@ -2142,14 +2163,15 @@ const OBJ=v=>(v&&typeof v==='object'&&!Array.isArray(v))?v:{};
 function dataSummary(d){d=OBJ(d);const me=OBJ(d._me),t=today(),streak=(me.last===t||me.last===addDays(t,-1))?NUM(me.streak):0;
   const les=LESSONS.filter(l=>l.ready).map(l=>{const p=OBJ(d[l.id]),pr=OBJ(p.prac);return[!!p.concept,!!p.explore,NUM(p.steps)>0,NUM(pr.solved)>=5]});
   const solved=LESSONS.reduce((a,l)=>a+NUM(OBJ(OBJ(d[l.id]).prac).solved),0),rev=Array.isArray(d._rev)?d._rev:[];
-  return{pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
+  const calc=Object.values(OBJ(d._calc)).reduce((a,v)=>a+Math.min(3,NUM(OBJ(v).stars)),0);
+  return{calc,pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
 function viewTeacher(){
   crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   const ready=LESSONS.filter(l=>l.ready);
   app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
    <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div>
-    <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
+    <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
     <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div>
    <div class="card panel tBoss" hidden><div class="t-head"><h2>우리 반 보스전</h2><span class="t-tools tBossTools"><label class="t-sel">학생 1명당 보스 체력 <select class="inp sel tPer" aria-label="학생 1명당 보스 체력">${[20,30,50,80,120,200].map(v=>`<option value="${v}">${v}</option>`).join('')}</select></label><a class="btn ghost tBV" href="#teacher">크게 띄우기</a></span></div><div class="tBossBody"></div></div>
    <div class="card panel tBB" hidden><div class="t-head"><h2>숫자야구</h2><span class="t-tools tBBTools"><label class="t-sel"><input type="checkbox" class="tBBon"> 켜기</label><label class="t-sel">최대 판돈 <select class="inp sel tBBmax" aria-label="최대 판돈">${[0,5,10,20,50].map(v=>`<option value="${v}">${v?v+'포인트':'친선만'}</option>`).join('')}</select></label></span></div><div class="tBBbody"></div></div>
@@ -2172,10 +2194,10 @@ function viewTeacher(){
     const S=L.map(s=>Object.assign({s},dataSummary(s.data||{})));const wk=Date.now()-7*864e5;
     const act=L.filter(s=>s.last_seen&&Date.parse(s.last_seen)>wk).length,avg=S.length?Math.round(S.reduce((a,x)=>a+x.pts,0)/S.length):0,tries=L.reduce((a,s)=>a+(s.attempts_7d||0),0);
     $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
-    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
+    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
       ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}</span></td>`).join('')}
-      <td class="rm">${solved}</td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
+      <td class="rm">${solved}</td><td class="rm">${calc}</td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
       <td class="t-act"><button type="button" class="t-mini t-reset">비밀번호</button><button type="button" class="t-mini t-del">삭제</button></td></tr>`).join('');
     $$('.tRows tr',app).forEach(tr=>wireRow(tr));loadTBoss();loadTBB()}
   async function loadTBoss(){const box=$('.tBoss',app);if(!box)return;if(!klassSel||klassSel==='all'||!/^\d+-\d+$/.test(klassSel)){box.hidden=true;return}
@@ -2227,8 +2249,8 @@ function viewTeacher(){
   $$('.tDays button',app).forEach(b=>b.onclick=()=>{days=+b.dataset.d;$$('.tDays button',app).forEach(x=>x.classList.toggle('on',x===b));loadStats()});
   $('.tRefresh',app).onclick=()=>{loadRoster();loadStats()};
   $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
-    const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>TABS.map(t=>`${l.no}차시 ${t.t}`)),'연습 푼 문제','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
-    const rows=L.map(s=>{const x=dataSummary(s.data);return[s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
+    const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>TABS.map(t=>`${l.no}차시 ${t.t}`)),'연습 푼 문제','기초 연산 별','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
+    const rows=L.map(s=>{const x=dataSummary(s.data);return[s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
     const cell=v=>{v=String(v);return/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
     const csv='﻿'+[head,...rows].map(r=>r.map(cell).join(',')).join('\r\n');
     const nm=klassSel==='all'?'전체':String(klassSel).replace(/^(\d+)-(\d+)$/,'$1학년_$2반');
@@ -2268,9 +2290,10 @@ const MISSIONS={
   explore1:{nm:'탐구 활동 1개 끝내기',k:'explore',n:1},
   clean2:{nm:'연습 문제를 한 번도 안 틀리고 2개 맞히기',k:'clean',n:2},
   drill8:{nm:'오늘의 계산에서 8문제 이상 첫 시도에 맞히기',k:'drill8',n:1},
-  review1:{nm:'복습 노트 문제 1개 풀기',k:'review',n:1}};
+  review1:{nm:'복습 노트 문제 1개 풀기',k:'review',n:1},
+  calc1:{nm:'기초 연산 한 세트 끝내기',k:'calc',n:1}};
 function todayMissions(){const D=dayState();if(Array.isArray(D.m)&&D.m.length===3&&D.m.every(x=>MISSIONS[x]))return D.m;
-  const r=mulberry(hashStr('mission:'+D.d));const A=pick(r,['term3','drill']),B=pick(r,['steps1','prac3']);
+  const r=mulberry(hashStr('mission:'+D.d));const A=pick(r,['term3','drill','calc1']),B=pick(r,['steps1','prac3']);
   let C=['explore1','clean2','drill8','prac5'];if(B==='prac3')C=C.filter(x=>x!=='prac5');if(A==='drill')C=C.filter(x=>x!=='drill8');if(dueReviews().length)C=C.concat(['review1','review1']);
   D.m=[A,B,pick(r,C)];save();return D.m}
 const missionProg=id=>Math.min(MISSIONS[id].n,NUM(dayState().c[MISSIONS[id].k]));
@@ -2282,7 +2305,7 @@ function checkMissions(){const D=dayState(),ms=todayMissions();
   if(ms.every(id=>missionProg(id)>=MISSIONS[id].n)&&award(10,'misall:'+D.d)){const S=DB._mis=OBJ(DB._mis);S.streak=(S.last===addDays(D.d,-1))?NUM(S.streak)+1:1;S.last=D.d;bump('misall');setTimeout(()=>celebrate('오늘의 미션 3개를 모두 해냈어요! 보너스 +10'),700)}
   save();refreshMissionCard()}
 function missionHref(id){const last=(DB._last&&LESSONS.find(l=>l.id===DB._last.id&&l.ready))||LESSONS.find(l=>l.ready);const L=last?last.id:'poly';
-  return{term3:'#'+L,drill:'#drill',drill8:'#drill',steps1:'#'+L+'-steps',prac3:'#'+L+'-practice',prac5:'#'+L+'-practice',clean2:'#'+L+'-practice',explore1:'#'+L+'-explore',review1:'#review'}[id]||'#home'}
+  return{term3:'#'+L,drill:'#drill',drill8:'#drill',steps1:'#'+L+'-steps',prac3:'#'+L+'-practice',prac5:'#'+L+'-practice',clean2:'#'+L+'-practice',explore1:'#'+L+'-explore',review1:'#review',calc1:'#calc'}[id]||'#home'}
 function missionCardHTML(){const ms=todayMissions(),done=ms.filter(id=>missionProg(id)>=MISSIONS[id].n).length,sk=missionStreak();
   return`<div class="g-head"><b class="t">오늘의 미션</b><span class="k">${done}/3${done===3?' · 다 했어요!':' · 셋 다 하면 보너스 +10'}${sk?` · 미션 연속 ${sk}일`:''}</span></div>
   <ol class="mis">${ms.map(id=>{const M=MISSIONS[id],p=missionProg(id),ok=p>=M.n;return`<li class="${ok?'ok':''}"><span class="mchk">${ok?CHECK:''}</span><span class="mnm">${M.nm}${M.n>1?` <small class="rm">${p}/${M.n}</small>`:''}</span>${ok?'<span class="mpt rm">+3</span>':`<a class="mgo" href="${missionHref(id)}">하러 가기</a>`}</li>`}).join('')}</ol>`}
@@ -2625,6 +2648,100 @@ function viewBBCpu(key){crumbs.innerHTML=`<span class="sep">›</span><a href="#
   BB.cpu=C;BB.act=C.act;BB.st=null;BB.shown=null;BB.memo={};
   app.innerHTML='<div id="bbHost"></div>';renderBB(state())}
 
+
+/* ───────── 기초 연산: 입체도형에서 자주 나오는 계산 8가지 ───────── */
+const M_=v=>`<span class="rm">${v}</span>`,N_=`<i class="math">n</i>`;
+const CALC=[
+ {id:'mul',nm:'곱셈 감각',use:'넓이·부피를 구할 때',
+  tip:`<p>큰 수는 <b>나눠서 곱해요.</b> ${M_('17 × 6 = 10 × 6 + 7 × 6 = 60 + 42 = 102')}</p><p>${M_('× 5')}는 ${M_('× 10 ÷ 2')}, ${M_('× 25')}는 ${M_('× 100 ÷ 4')}로 하면 빨라요. ${M_('24 × 25 = 2400 ÷ 4 = 600')}</p>`,
+  gen(L,r){if(L===1){const a=ri(r,2,9),b=ri(r,2,9);return{q:M_(`${a} × ${b}`),ans:a*b,hint:'구구단을 떠올려 보세요.'}}
+    if(L===2){const a=ri(r,11,19),b=ri(r,3,9);return{q:M_(`${a} × ${b}`),ans:a*b,hint:`${M_(`${a} × ${b}`)} = ${M_(`10 × ${b} + ${a-10} × ${b}`)}로 나눠 보세요.`}}
+    const k=ri(r,0,2);if(k===0){const a=ri(r,4,20)*4;return{q:M_(`${a} × 25`),ans:a*25,hint:`${M_('× 25')}는 ${M_('× 100 ÷ 4')}예요.`}}
+    if(k===1){const a=ri(r,12,48)*2;return{q:M_(`${a} × 5`),ans:a*5,hint:`${M_('× 5')}는 ${M_('× 10 ÷ 2')}예요.`}}
+    const a=ri(r,21,49),b=ri(r,3,9);return{q:M_(`${a} × ${b}`),ans:a*b,hint:`${M_(`${Math.floor(a/10)*10} × ${b} + ${a%10} × ${b}`)}로 나눠 보세요.`}}},
+ {id:'pow',nm:'제곱수와 세제곱수',use:'원의 넓이 πr², 정육면체 부피',
+  tip:`<p>${M_('a²')} = ${M_('a × a')}는 <b>정사각형의 넓이</b>, ${M_('a³')} = ${M_('a × a × a')}는 <b>정육면체의 부피</b>예요.</p><div class="tchips">${[11,12,13,14,15].map(n=>`<span>${M_(`${n}² = ${n*n}`)}</span>`).join('')}${[2,3,4,5].map(n=>`<span>${M_(`${n}³ = ${n**3}`)}</span>`).join('')}</div><p class="muted">자주 나오는 수는 외워 두면 편해요. ${M_('2²')}을 ${M_('2 × 2')}가 아니라 ${M_('2 + 2')}로 계산하지 않게 조심!</p>`,
+  gen(L,r){if(L===1){const a=ri(r,2,12);return{q:M_(`${a}²`),ans:a*a,hint:`${M_(`${a}²`)} = ${M_(`${a} × ${a}`)}예요.`}}
+    if(L===2){if(r()<0.6){const a=pick(r,[11,12,13,14,15,16,20,25]);return{q:M_(`${a}²`),ans:a*a,hint:`${M_(`${a} × ${a}`)}를 나눠서 곱해 보세요: ${M_(`${a} × 10 + ${a} × ${a-10}`)}`}}const a=ri(r,2,6);return{q:M_(`${a}³`),ans:a**3,hint:`${M_(`${a}³`)} = ${M_(`${a} × ${a} × ${a}`)}예요.`}}
+    if(r()<0.5){const a=ri(r,6,10);return{q:M_(`${a}³`),ans:a**3,hint:`${M_(`${a} × ${a}`)} = ${a*a}, 여기에 한 번 더 ${M_(`× ${a}`)}`}}
+    const a=ri(r,2,6),b=ri(r,2,5);return{q:M_(`${a}² × ${b}`),ans:a*a*b,hint:`제곱 먼저: ${M_(`${a}²`)} = ${a*a}, 그다음 ${M_(`× ${b}`)}`}}},
+ {id:'sub',nm:'식에 수 넣기',use:'n각기둥·각뿔의 면·모서리·꼭짓점 개수',
+  tip:`<p>${N_} 자리에 수를 넣고, <b>곱하기를 먼저</b> 해요.</p><p>${N_} = 7일 때 ${M_('2')}${N_}${M_(' + 2')} = ${M_('2 × 7 + 2 = 16')}</p><p class="muted">${M_('n각기둥')}: 면 ${M_('n + 2')}, 모서리 ${M_('3n')}, 꼭짓점 ${M_('2n')} / ${M_('n각뿔')}: 면 ${M_('n + 1')}, 모서리 ${M_('2n')}, 꼭짓점 ${M_('n + 1')}</p>`,
+  gen(L,r){const n=ri(r,3,12);
+    if(L===1){const f=pick(r,[['2',2,0],['3',3,0],['',1,2],['',1,1]]),[c,a,b]=f;return{q:`${N_} = ${M_(n)}일 때, ${M_(c)}${N_}${b?M_(` + ${b}`):''}의 값`,ans:a*n+b,hint:c?`${M_(`${c}`)}${N_}는 ${M_(`${c} × ${n}`)}예요.`:`${M_(`${n} + ${b}`)}를 계산해요.`}}
+    if(L===2){const a=ri(r,2,4),b=ri(r,1,6);return{q:`${N_} = ${M_(n)}일 때, ${M_(a)}${N_}${M_(` + ${b}`)}의 값`,ans:a*n+b,hint:`곱하기 먼저: ${M_(`${a} × ${n}`)} = ${a*n}, 그다음 ${M_(`+ ${b}`)}`}}
+    const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],pp=pick(r,['F','E','V']);return{q:`${kn(n)}${Ty.nm}의 ${PART[pp]}의 개수`,ans:Ty[pp](n),suffix:'개',hint:`${Ty.nm}의 ${PART[pp]}는 ${M_(String(Ty['f'+pp]))}개예요. ${N_} = ${n}을 넣어 보세요.`}}},
+ {id:'eq',nm:'거꾸로 풀기',use:'개수를 보고 몇 각기둥인지 찾을 때',
+  tip:`<p>했던 계산을 <b>거꾸로</b> 해요.</p><p>${M_('3')}${N_}${M_(' = 24')} → ${N_}${M_(' = 24 ÷ 3 = 8')}</p><p>${M_('2')}${N_}${M_(' + 2 = 16')} → ${M_('2')}${N_}${M_(' = 14')} → ${N_}${M_(' = 7')} <span class="muted">(더한 것을 먼저 빼요)</span></p>`,
+  gen(L,r){const n=ri(r,3,12);
+    if(L===1){const a=ri(r,2,5);return{q:`${M_(a)}${N_}${M_(` = ${a*n}`)}일 때, ${N_}의 값`,ans:n,hint:`${N_} = ${M_(`${a*n} ÷ ${a}`)}`}}
+    if(L===2){if(r()<0.4){const b=ri(r,1,3);return{q:`${N_}${M_(` + ${b} = ${n+b}`)}일 때, ${N_}의 값`,ans:n,hint:`${M_(`${n+b} − ${b}`)}`}}const a=ri(r,2,3),b=ri(r,1,4);return{q:`${M_(a)}${N_}${M_(` + ${b} = ${a*n+b}`)}일 때, ${N_}의 값`,ans:n,hint:`먼저 ${M_(`${b}`)}를 빼면 ${M_(a)}${N_}${M_(` = ${a*n}`)}`}}
+    const a=ri(r,2,3),c=ri(r,2,3);return{q:`${M_(a)}${N_}${M_(` = ${a*n}`)}일 때, ${M_(c)}${N_}의 값`,ans:c*n,hint:`먼저 ${N_} = ${M_(`${a*n} ÷ ${a}`)} = ${n}을 구한 뒤 ${M_(`× ${c}`)}`}}},
+ {id:'area',nm:'넓이 공식',use:'겉넓이를 구할 때 면마다',
+  tip:`<div class="tchips"><span>직사각형 = 가로 × 세로</span><span>평행사변형 = 밑변 × 높이</span><span>삼각형 = 밑변 × 높이 ÷ 2</span><span>사다리꼴 = (윗변 + 아랫변) × 높이 ÷ 2</span></div><p class="muted">삼각형과 사다리꼴은 <b>÷ 2</b>를 잊지 않기!</p>`,
+  gen(L,r){if(L===1){if(r()<0.5){const a=ri(r,3,12),b=ri(r,2,9);return{q:`가로 ${M_(a+' cm')}, 세로 ${M_(b+' cm')}인<br>직사각형의 넓이`,ans:a*b,suffix:'cm²',hint:'가로 × 세로'}}const a=ri(r,3,12);return{q:`한 변이 ${M_(a+' cm')}인<br>정사각형의 넓이`,ans:a*a,suffix:'cm²',hint:`${M_(`${a} × ${a}`)}`}}
+    if(L===2){if(r()<0.6){let a=ri(r,3,14),b=ri(r,2,10);if((a*b)%2)a++;return{q:`밑변 ${M_(a+' cm')}, 높이 ${M_(b+' cm')}인<br>삼각형의 넓이`,ans:a*b/2,suffix:'cm²',hint:`${M_(`${a} × ${b} ÷ 2`)} (÷ 2를 잊지 않았나요?)`}}const a=ri(r,3,12),b=ri(r,2,9);return{q:`밑변 ${M_(a+' cm')}, 높이 ${M_(b+' cm')}인<br>평행사변형의 넓이`,ans:a*b,suffix:'cm²',hint:'밑변 × 높이 (평행사변형은 ÷ 2가 없어요)'}}
+    let a=ri(r,2,9),b=ri(r,a+1,14),h=ri(r,2,8);if(((a+b)*h)%2)h++;return{q:`윗변 ${M_(a+' cm')}, 아랫변 ${M_(b+' cm')}, 높이 ${M_(h+' cm')}인<br>사다리꼴의 넓이`,ans:(a+b)*h/2,suffix:'cm²',hint:`${M_(`(${a} + ${b}) × ${h} ÷ 2`)}`}}},
+ {id:'pi',nm:'π가 있는 계산',use:'원기둥·원뿔·구',
+  tip:`<p><b>π는 문자처럼</b> 남겨 둬요. ${M_('12π + 8π = 20π')}, ${M_('3 × 4π = 12π')}</p><p>원의 둘레 ${M_('2πr')}, 원의 넓이 ${M_('πr²')}. ${M_('π × 3²')} = ${M_('9π')} <span class="muted">(3을 먼저 제곱)</span></p><p class="muted">답은 ${M_('12π')}처럼 수 뒤에 π를 붙여서 써요. 입력판의 π 단추를 누르세요.</p>`,
+  gen(L,r){if(L===1){const k=ri(r,0,2);if(k===0){const a=ri(r,2,20),b=ri(r,2,20);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',hint:'π 앞의 수끼리 더해요.'}}if(k===1){const a=ri(r,12,30),b=ri(r,2,11);return{q:M_(`${a}π − ${b}π`),ans:a-b,type:'pi',hint:'π 앞의 수끼리 빼요.'}}const a=ri(r,2,9),b=ri(r,2,9);return{q:M_(`${a} × ${b}π`),ans:a*b,type:'pi',hint:`${M_(`${a} × ${b}`)}에 π를 붙여요.`}}
+    if(L===2){const rr=ri(r,2,9);if(r()<0.5)return{q:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`,ans:2*rr,type:'pi',suffix:'cm',hint:`${M_(`2 × ${rr}`)} = ${2*rr}에 π를 붙여요.`};return{q:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`,ans:rr*rr,type:'pi',suffix:'cm²',hint:`${M_(`${rr}²`)} = ${rr*rr} (${M_(`2 × ${rr}`)}가 아니에요!)`}}
+    const rr=ri(r,2,5),h=ri(r,2,9);if(r()<0.5)return{q:`원기둥의 부피<br>${M_(`π × ${rr}² × ${h}`)}`,ans:rr*rr*h,type:'pi',suffix:'cm³',hint:`${M_(`${rr}² × ${h}`)} = ${M_(`${rr*rr} × ${h}`)}`};return{q:`원기둥의 옆넓이<br>${M_(`2 × π × ${rr} × ${h}`)}`,ans:2*rr*h,type:'pi',suffix:'cm²',hint:`${M_(`2 × ${rr} × ${h}`)}에 π를 붙여요.`}}},
+ {id:'frac',nm:'분수 곱하기',use:'뿔의 부피 ⅓, 삼각형 ½',
+  tip:`<p>${M_('⅓ ×')}는 <b>÷ 3</b>, ${M_('½ ×')}는 <b>÷ 2</b>예요. ${M_('⅓ × 12 = 4')}</p><p>곱하는 순서를 바꿔서 <b>나누어떨어지는 수부터</b> 나눠요. ${M_('⅓ × 5 × 9 = 5 × (9 ÷ 3) = 15')}</p>`,
+  gen(L,r){if(L===1){if(r()<0.5){const a=ri(r,2,15)*2;return{q:M_(`½ × ${a}`),ans:a/2,hint:`${M_(`${a} ÷ 2`)}`}}const a=ri(r,2,12)*3;return{q:M_(`⅓ × ${a}`),ans:a/3,hint:`${M_(`${a} ÷ 3`)}`}}
+    if(L===2){if(r()<0.4){let a=ri(r,3,12),b=ri(r,2,9);if((a*b)%2)b++;return{q:M_(`½ × ${a} × ${b}`),ans:a*b/2,hint:'짝수부터 2로 나눠 보세요.'}}const a=ri(r,2,9),b=ri(r,1,6)*3;const[x,y]=r()<0.5?[a,b]:[b,a];return{q:M_(`⅓ × ${x} × ${y}`),ans:a*b/3,hint:`3으로 나누어떨어지는 ${b}부터: ${M_(`${b} ÷ 3 = ${b/3}`)}`}}
+    if(r()<0.6){const a=ri(r,2,6),b=ri(r,2,6),h=ri(r,1,4)*3;return{q:`각뿔의 부피<br>${M_(`⅓ × ${a} × ${b} × ${h}`)}`,ans:a*b*h/3,suffix:'cm³',hint:`높이 ${h}부터 3으로 나누면 ${h/3}, 그다음 ${M_(`${a} × ${b} × ${h/3}`)}`}}
+    const rr=pick(r,[3,6]);return{q:`구의 부피<br>${M_(`<span class="fr"><sup>4</sup>⁄<sub>3</sub></span> × π × ${rr}³`)}`,ans:4*rr**3/3,type:'pi',suffix:'cm³',hint:`${M_(`${rr}³ = ${rr**3}`)}, ${M_(`${rr**3} ÷ 3 = ${rr**3/3}`)}, ${M_(`× 4`)}`}}},
+ {id:'surf',nm:'겉넓이 더하기',use:'기둥의 겉넓이 = 밑넓이 × 2 + 옆넓이',
+  tip:`<p>직육면체는 <b>같은 면이 2개씩</b> 있어요.</p><p>겉넓이 = ${M_('2 × (가로 × 세로 + 세로 × 높이 + 높이 × 가로)')}</p><p>기둥의 겉넓이 = ${M_('밑넓이 × 2 + 옆넓이')}</p>`,
+  gen(L,r){if(L===1){const a=ri(r,6,30),b=ri(r,6,30),c=ri(r,6,30);return{q:M_(`2 × ${a} + ${b}`),ans:2*a+b,hint:`곱하기 먼저: ${M_(`2 × ${a}`)} = ${2*a}`,_:c}}
+    if(L===2){const a=ri(r,4,25),b=ri(r,4,25),c=ri(r,4,25);return{q:M_(`2 × (${a} + ${b} + ${c})`),ans:2*(a+b+c),hint:`괄호 안 먼저: ${M_(`${a} + ${b} + ${c}`)} = ${a+b+c}`}}
+    const a=ri(r,2,6),b=ri(r,2,6),c=ri(r,2,7);return{q:`가로 ${M_(a+' cm')}, 세로 ${M_(b+' cm')}, 높이 ${M_(c+' cm')}인<br>직육면체의 겉넓이`,ans:2*(a*b+b*c+c*a),suffix:'cm²',hint:`${M_(`2 × (${a}×${b} + ${b}×${c} + ${c}×${a})`)} = ${M_(`2 × (${a*b} + ${b*c} + ${c*a})`)}`}}}];
+const CALC_LV=['1단계 · 쉬운 수','2단계 · 조금 큰 수','3단계 · 입체도형 문제처럼'];
+function calcState(id){const C=DB._calc=OBJ(DB._calc);const s=C[id]=OBJ(C[id]);s.stars=Math.min(3,NUM(s.stars));s.best=OBJ(s.best);s.n=NUM(s.n);return s}
+const calcStars=()=>CALC.reduce((a,t)=>a+Math.min(3,NUM(OBJ(OBJ(DB._calc)[t.id]).stars)),0);
+const starRow=n=>`<span class="stars" aria-label="별 ${n}개">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}">★</i>`).join('')}</span>`;
+function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 연산</span>`;
+  app.innerHTML=`<div class="unit-head"><div><h1>기초 연산</h1><p>입체도형 문제에서 자주 나오는 계산을 따로 연습해요. 계산이 손에 붙으면, 문제를 풀 때 <b>생각하는 데</b> 힘을 쓸 수 있어요.</p></div></div>
+   <div class="card panel calc-sum"><div class="stat"><small>모은 별</small><b class="rm">${calcStars()} / ${CALC.length*3}</b></div><p class="muted" style="margin:0">한 단계에서 10문제 중 8문제 이상을 처음에 맞히면 별을 받고, 다음 단계가 열려요.</p><a class="btn" href="#drill">섞어서 10문제 (오늘의 계산)</a></div>
+   <div class="calc-grid">${CALC.map(t=>{const s=calcState(t.id);return`<a class="card calc-card" href="#calc-${t.id}"><b>${t.nm}</b><small>${t.use}</small>${starRow(s.stars)}</a>`}).join('')}</div>`}
+function viewCalcTopic(id){const T=CALC.find(t=>t.id===id);if(!T){location.hash='#calc';return}
+  crumbs.innerHTML=`<span class="sep">›</span><a href="#calc">기초 연산</a><span class="sep">›</span><span>${T.nm}</span>`;
+  const s=calcState(id);let L=Math.min(3,s.stars+1);
+  const draw=()=>{const st=calcState(id);app.innerHTML=`<div class="unit-head"><div><h1>${T.nm}</h1><p>어디에 쓰여요? <b>${T.use}</b></p></div><div>${starRow(st.stars)}</div></div>
+    <details class="card panel calc-tip" ${st.n?'':'open'}><summary><b>원리 한 장</b> <span class="muted">눌러서 ${st.n?'펼치기':'접기'}</span></summary><div class="tipbody">${T.tip}</div></details>
+    <div class="card panel"><div class="seg calcLv" role="tablist">${[1,2,3].map(k=>`<button type="button" data-l="${k}" class="${k===L?'on':''}" ${k>st.stars+1?'disabled':''}>${k}단계${k<=st.stars?' ★':''}</button>`).join('')}</div>
+     <p class="muted" style="margin:10px 0 0">${CALC_LV[L-1]}${L>st.stars+1?'':st.best[L]!=null?` · 내 최고 ${NUM(st.best[L])}/10`:''}</p>
+     <p style="margin:14px 0 0"><button type="button" class="btn primary calcGo">10문제 시작</button></p></div>
+    <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`;
+    $$('.calcLv button',app).forEach(b=>b.onclick=()=>{L=+b.dataset.l;draw()});
+    $('.calcGo',app).onclick=()=>run()};
+  function run(){const seed=newSeed(),r=mulberry(seed),Q=[];const seen=new Set();for(let i=0;i<40&&Q.length<10;i++){const q=T.gen(L,r);const k=q.q;if(seen.has(k))continue;seen.add(k);Q.push(Object.assign({type:'num'},q,{state:null}))}
+    app.innerHTML=`<div class="unit-head"><div><h1>${T.nm} <small class="muted" style="font-size:18px">${L}단계</small></h1></div></div>
+     <div class="card panel"><div class="drill"><div class="dbar"></div><div class="dmeta"><span class="dNo"></span><button type="button" class="t-mini calcStop">그만하기</button></div><div class="dq"></div><div class="dIn"></div><div class="dflash"></div></div></div>`;
+    $('.calcStop',app).onclick=()=>draw();
+    const queue=Q.slice();let first=0,busy=false;
+    const bar=()=>{$('.dbar',app).innerHTML=Q.map(q=>`<i class="${q.state||(q===queue[0]?'cur':'')}"></i>`).join('')};
+    function ask(){busy=false;bar();const q=queue[0];if(!q)return finish();
+      $('.dNo',app).textContent=q.retry?'다시 한 번':`${Q.indexOf(q)+1} / ${Q.length}`;$('.dq',app).innerHTML=q.q;const fl=$('.dflash',app);fl.textContent='';fl.className='dflash';
+      const host=$('.dIn',app);host.innerHTML='';
+      host.appendChild(answerUI({type:q.type,suffix:q.suffix},v=>{if(busy)return true;const res=check({type:q.type,ans:q.ans},v);
+        if(res===true){busy=true;if(!q.retry){if(q.tried)q.state='hint';else{q.state='ok';first++}}queue.shift();fl.textContent=q.tried?'맞았어요! 힌트를 보고 맞힌 문제는 별 계산에서 빠져요.':'정답!';fl.className='dflash ok';setTimeout(ask,reduced?0:(q.tried?900:350));return true}
+        if(res==='nopi'){fl.textContent='π를 붙여서 답해요. 예) 12π';fl.className='dflash bad';return false}
+        if(!q.tried){q.tried=true;fl.innerHTML=`다시 생각해 봐요. <span class="hint">${q.hint||''}</span>`;fl.className='dflash bad';return false}
+        busy=true;if(!q.retry)q.state='bad';fl.innerHTML=`정답은 ${M_(fmtAns({type:q.type,ans:q.ans,suffix:q.suffix}))}. 끝에 한 번 더 나와요.`;fl.className='dflash bad';
+        queue.shift();if(!q.retry)queue.push(Object.assign({},q,{retry:true,tried:false}));setTimeout(ask,reduced?0:1600);return true}))}
+    function finish(){const st=calcState(id);st.n++;st.last=today();const prevBest=NUM(st.best[L]);if(first>prevBest||st.best[L]==null)st.best[L]=first;
+      const need=Math.ceil(Q.length*0.8),star=first>=need&&L>st.stars;if(star)st.stars=L;save();dayBump('calc');if(first)award(first);if(star)award(5,'calc:'+id+':'+L);
+      bar();$('.dq',app).innerHTML='';$('.dNo',app).textContent='끝!';$('.dflash',app).textContent='';
+      $('.dIn',app).innerHTML=`<div class="feedback ${first>=8?'ok':''}" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${Q.length}<br>${star?`${L}단계 별을 받았어요!${L<3?' 다음 단계가 열렸어요.':' 이 계산은 다 익혔어요!'}`:first>=need?'잘했어요! 이미 받은 별이에요.':'8문제 이상 맞히면 별을 받아요. 원리 한 장을 다시 보고 도전해요.'}</div>
+        <div class="next-row" style="justify-content:center"><button type="button" class="btn calcBack">${T.nm}</button><button type="button" class="btn primary calcAgain">${star&&L<3?'다음 단계':'한 번 더'}</button></div>`;
+      if(star)celebrate('');
+      $('.calcBack',app).onclick=()=>draw();$('.calcAgain',app).onclick=()=>{if(star&&L<3)L++;run()}}
+    ask()}
+  draw()}
+
 /* ───────── 길찾기 ───────── */
 function route(soft){
   hideTerm();activeBox=null;pinKeyHandler=null;themePreview=null;applyTheme();if(!$('#labov').hidden)closeLab();
@@ -2637,6 +2754,8 @@ function route(soft){
   else if(h==='login')viewLogin();
   else if(h==='teacher')viewTeacher();
   else if(h==='shop')viewShop();
+  else if(h==='calc')viewCalc();
+  else if(/^calc-[a-z]+$/.test(h))viewCalcTopic(h.slice(5));
   else if(h==='baseball')viewBaseball();
   else if(/^bb-\d+$/.test(h))viewBBGame(+h.slice(3));
   else if(/^bb-cpu-(easy|hard|easy4)$/.test(h))viewBBCpu(h.slice(7));
