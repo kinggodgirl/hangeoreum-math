@@ -547,6 +547,23 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .dflash .hint{display:block;margin-top:4px;font-weight:400;color:var(--ink)}
 .fr sup,.fr sub{font-size:.7em}
 .dbar i.hint{background:#f2b33d}
+/* 오늘의 길잡이 */
+.guide{padding:16px 18px;margin-bottom:24px}
+.gsteps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gsteps li{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.gsteps li.cur{border-color:var(--ink);background:var(--hi-soft)}
+.gsteps li.done .gt{opacity:.6}
+.gn{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none;background:#fff}
+.gsteps li.done .gn{background:var(--hi)}
+.gt{flex:1;display:flex;flex-direction:column;min-width:0}.gt b{font-size:17px}.gt small{color:var(--ink-soft);font-size:14px}
+.gsteps .btn{flex:none;min-height:42px}
+.units-soon{color:var(--ink-soft);font-size:14px;margin:10px 0 30px;line-height:1.7}
+.hero.compact p,.hero.compact .hero-note,.hero.compact .btn{display:none}
+.hero.compact{margin-bottom:18px}
+@media (max-width:760px){.hero.compact>div:last-child{display:none}.hero.compact h1{font-size:26px;margin:0}.hero-fig{max-height:240px}}
+.t-watch{display:flex;flex-direction:column;gap:6px;margin:0 0 14px}
+.t-watch div{border:1.5px solid var(--line);border-left:5px solid #d23b3b;border-radius:0;padding:8px 12px;background:#fff;font-size:15px}
+.t-watch div.mid{border-left-color:#f2b33d}
 /* 로그인 */
 .login-wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .demo{background:var(--hi-soft);border:1.5px dashed #c9a400;border-radius:12px;padding:12px 16px;font-size:15px;line-height:1.6}
@@ -1235,9 +1252,9 @@ function viewHome(){
   const done=LESSONS.filter(l=>l.ready).reduce((a,l)=>a+lessonDone(l.id),0);
   const D=DB._drill||{},drillToday=D.last===today(),due=dueReviews().length,wait=(DB._rev||[]).length-due;
   const last=DB._last&&LESSONS.find(l=>l.id===DB._last.id&&l.ready);const lastTab=last?TABS.find(t=>t.id===DB._last.tab)||TABS[0]:null;
-  const M=me(),nb=Object.keys(M.badges).length;
+  const M=me(),nb=Object.keys(M.badges).length,back=M.pts>0||LESSONS.some(l=>lessonDone(l.id));
   app.innerHTML=`
-  <section class="hero">
+  <section class="hero ${back?'compact':''}">
     <div>
       <h1>수업에서 배운 것을<br><span class="mark">한 걸음씩</span> 다시.</h1>
       <p>모르는 낱말은 눌러서 바로 확인하고, 그림은 직접 돌려 보고, 어려운 문제는 단계로 나누어 풀어요.</p>
@@ -1245,21 +1262,15 @@ function viewHome(){
     </div>
     <div><div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div></div>
   </section>
-  <div class="sec-title"><h2>오늘 할 일</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
+  <div class="card guide" id="guide">${guideHTML()}</div>
+  <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
   <div class="game-row"><div class="card mis-card" id="misCard">${missionCardHTML()}</div><div class="card boss-card" id="bossCard">${bossCardHTML()}</div></div>
   <a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>
-  <div class="today">
-    <div class="card todo ${drillToday?'doneday':''}"><span class="k">계산이 빨라지면 문제에 집중할 수 있어요</span><b class="t">오늘의 계산</b>
-      <p>${drillToday?`오늘 끝냈어요 ${CHECK} ${D.lastScore!=null?`(첫 시도 ${D.lastScore}/10)`:''}`:'10문제 · 3분쯤 · 곱셈, 넓이, π 계산'}</p><a class="btn ${drillToday?'':'primary'}" href="#drill">${drillToday?'한 번 더 하기':'시작하기'}</a></div>
-    <div class="card todo ${!due&&wait?'doneday':''}"><span class="k">틀린 문제를 1일·3일·7일 뒤에 다시</span><b class="t">복습 노트</b>
-      <p>${due?`오늘 복습할 문제 <b class="rm">${due}</b>개`:(wait?`오늘은 없어요 ${CHECK} · 기다리는 문제 ${wait}개`:'아직 없어요. 연습에서 틀린 문제가 여기로 와요.')}</p>${due?'<a class="btn primary" href="#review">복습하기</a>':''}</div>
-    <div class="card todo"><span class="k">${last?'지난번에 여기까지 했어요':'처음이라면'}</span><b class="t">${last?`${last.no}차시 ${last.title}`:'1차시 다면체'}</b>
-      <p>${last?`${lastTab.t} 탭 · 진행 ${lessonDone(last.id)}/4`:'개념부터 차근차근 시작해요.'}</p><a class="btn" href="#${last?last.id+(lastTab.id==='concept'?'':'-'+lastTab.id):'poly'}">이어서 하기 →</a></div>
-  </div>
   <div class="sec-title"><h2>기초 연산</h2><span>입체도형에서 자주 나오는 계산 · 별 <b class="rm">${calcStars()}</b>/${CALC.length*3} · <a href="#calc">전체 보기</a></span></div>
   <div class="calc-strip">${CALC.map(t=>`<a class="calc-chip" href="#calc-${t.id}"><b>${t.nm}</b>${starRow(calcState(t.id).stars)}</a>`).join('')}</div>
   <div class="sec-title"><h2>1학년 단원</h2><span>지금은 입체도형 단원을 시범으로 열어 두었어요 · 진행 ${done}/12</span></div>
-  <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="#unit-solid"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · 3개 차시 →</span></a>`:`<div class="card unit soon"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">준비 중</span></div>`).join('')}</div>`;
+  <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="#unit-solid"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · ${LESSONS.filter(l=>l.ready).length}개 차시 →</span></a>`:'').join('')}</div>
+  <p class="units-soon">준비 중인 단원: ${UNITS.filter(x=>!x[1]).map(x=>x[0]).join(' · ')}</p>`;
   const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk());
   if(isStudent())loadClass();
 }
@@ -2170,7 +2181,7 @@ function viewTeacher(){
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   const ready=LESSONS.filter(l=>l.ready);
   app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
-   <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div>
+   <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
     <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
     <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div>
    <div class="card panel tBoss" hidden><div class="t-head"><h2>우리 반 보스전</h2><span class="t-tools tBossTools"><label class="t-sel">학생 1명당 보스 체력 <select class="inp sel tPer" aria-label="학생 1명당 보스 체력">${[20,30,50,80,120,200].map(v=>`<option value="${v}">${v}</option>`).join('')}</select></label><a class="btn ghost tBV" href="#teacher">크게 띄우기</a></span></div><div class="tBossBody"></div></div>
@@ -2193,6 +2204,9 @@ function viewTeacher(){
     const L=curList();$('.tEmpty',app).hidden=!!ROSTER.length;
     const S=L.map(s=>Object.assign({s},dataSummary(s.data||{})));const wk=Date.now()-7*864e5;
     const act=L.filter(s=>s.last_seen&&Date.parse(s.last_seen)>wk).length,avg=S.length?Math.round(S.reduce((a,x)=>a+x.pts,0)/S.length):0,tries=L.reduce((a,s)=>a+(s.attempts_7d||0),0);
+    {const nm=s=>`${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번`,lst=a=>a.length>15?a.slice(0,15).join(', ')+` 외 ${a.length-15}명`:a.join(', ');
+      const away=S.filter(x=>!x.s.last_seen||Date.parse(x.s.last_seen)<wk).map(x=>nm(x.s)),back=S.filter(x=>x.due>=5).map(x=>`${nm(x.s)}(${x.due})`),noc=S.filter(x=>x.s.last_seen&&Date.parse(x.s.last_seen)>=wk&&!x.calc).map(x=>nm(x.s));
+      $('.t-watch',app).innerHTML=(away.length?`<div><b>7일 넘게 들어오지 않았어요</b> (${away.length}명) · ${lst(away)}</div>`:'')+(back.length?`<div class="mid"><b>복습이 5문제 넘게 밀렸어요</b> · ${lst(back)}</div>`:'')+(noc.length?`<div class="mid"><b>기초 연산을 아직 시작하지 않았어요</b> · ${lst(noc)}</div>`:'')}
     $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
     $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
@@ -2741,6 +2755,24 @@ function viewCalcTopic(id){const T=CALC.find(t=>t.id===id);if(!T){location.hash=
       $('.calcBack',app).onclick=()=>draw();$('.calcAgain',app).onclick=()=>{if(star&&L<3)L++;run()}}
     ask()}
   draw()}
+
+
+/* ───────── 오늘의 길잡이: 집에서 혼자 해도 순서를 잃지 않게 ───────── */
+const CALC_FOR={poly:['sub','mul'],types:['sub','eq'],area:['area','pi','surf','frac']};
+const TAB_DO={concept:'개념 읽기',explore:'탐구 활동 해 보기',steps:'단계 문제 1개 풀기',practice:'연습 문제 5개 풀기'};
+function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
+  if(due||NUM(D.c.review))S.push({done:!due,t:due?`복습 노트 ${due}문제`:'복습 노트',s:due?'틀렸던 문제를 다시 풀어요':'오늘 복습을 끝냈어요',href:'#review'});
+  const L=LESSONS.filter(l=>l.ready),cur=L.find(l=>lessonDone(l.id)<4),moved=NUM(D.c.steps)+NUM(D.c.prac)+NUM(D.c.explore)>0;
+  if(cur){const p=OBJ(DB[cur.id]),tab=!p.concept?'concept':!p.explore?'explore':!(NUM(p.steps)>0)?'steps':'practice';
+    S.push({done:moved,more:true,t:`${cur.no}차시 ${cur.title}`,s:TAB_DO[tab]+(tab==='practice'?` (지금 ${NUM(OBJ(p.prac).solved)}개)`:''),href:'#'+cur.id+(tab==='concept'?'':'-'+tab)})}
+  else S.push({done:moved,more:true,t:'열린 차시를 모두 마쳤어요',s:'연습 문제로 실력을 다져요',href:'#'+L[L.length-1].id+'-practice'});
+  const ids=CALC_FOR[cur?cur.id:'area']||[];const tp=ids.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&calcState(t.id).stars<3)||CALC.slice().sort((a,b)=>calcState(a.id).stars-calcState(b.id).stars)[0];
+  const cdone=NUM(D.c.calc)>0;S.push({done:cdone,more:true,t:`기초 연산 · ${tp.nm}`,s:cdone?'오늘 한 세트 했어요':`${Math.min(3,calcState(tp.id).stars+1)}단계 10문제`,href:'#calc-'+tp.id});
+  const dd=OBJ(DB._drill).last===today();S.push({done:dd,t:'오늘의 계산',s:dd?'오늘 끝냈어요':'섞어서 10문제 · 3분쯤',href:'#drill'});
+  return S}
+function guideHTML(){const S=guideSteps(),ci=S.findIndex(x=>!x.done),n=S.filter(x=>x.done).length;
+  return`<div class="g-head"><b class="t">오늘의 길잡이</b><span class="k">${n===S.length?'오늘 할 일을 다 했어요!':'위에서부터 하나씩 해 봐요'} · ${n}/${S.length}</span></div>
+  <ol class="gsteps">${S.map((x,i)=>`<li class="${x.done?'done':i===ci?'cur':''}"><span class="gn">${x.done?CHECK:i+1}</span><span class="gt"><b>${x.t}</b><small>${x.s}</small></span>${x.done&&!x.more?'':`<a class="btn ${i===ci?'primary':'ghost'}" href="${x.href}">${x.done?'더 하기':i===ci?'시작':'하기'}</a>`}</li>`).join('')}</ol>`}
 
 /* ───────── 길찾기 ───────── */
 function route(soft){
