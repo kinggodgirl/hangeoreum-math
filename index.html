@@ -836,6 +836,37 @@ footer{color:var(--ink-soft);font-size:14px;border-top:1px solid var(--line);pad
   .lesson .pips,.lesson .soon-tag{grid-column:2}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── 패드 · 휴대폰 가독성 ── */
+.step.more{border-style:dashed;background:transparent;color:#5a6377;font-size:15px;text-align:center;padding:8px}
+.step.lock{opacity:1;background:#f6f7fa;color:#5a6377}.step.lock .sn{color:#5a6377}
+.fighint{font-size:14px;color:#4a5263}
+.mstep{display:none;background:#f3faf6;border:1.5px solid #3f9e6e;border-radius:10px;padding:6px 10px;margin-bottom:8px}.mstep summary{cursor:pointer;font-weight:800;color:#2b7a52;min-height:36px;display:flex;align-items:center}.mstep .mq{font-size:15px;color:#3c4458;margin:4px 0}
+.exShow{display:none}
+.mini,.t-mini,.tykey summary,.fold-x,.tyback,.exAll,.exShow{min-height:44px}
+.tykey summary{display:flex;align-items:center}
+body.has-help main,body.has-help #app{padding-bottom:84px}
+@media (max-width:900px){
+  .pair .pl{display:none}.pair.showex .pl{display:block;order:2}.pair{display:flex;flex-direction:column;align-items:stretch}
+  .tabs{grid-template-columns:repeat(4,1fr);gap:6px}.tab{padding:8px 8px}.tab .tl small{display:none}
+  .mstep{display:block}.exShow{display:inline-flex;margin-left:auto}
+  .pair .ph .mini{margin-left:auto}
+}
+@media (max-width:760px){
+  .lesson-head{margin-bottom:10px}.lesson-head .kicker{font-size:14px}.lesson-head h1{font-size:26px}
+  .tabs{grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px}
+  .tab{flex-direction:column;justify-content:center;gap:2px;padding:6px 4px;min-height:52px;text-align:center}
+  .tab .num{width:22px;height:22px;font-size:13px}.tab .tl{font-size:14px}.tab .tl small{display:none}
+  .statbar.stS{display:none}.statbar{gap:10px;margin-bottom:8px}.card.panel{padding:14px}
+  .tybar{flex-wrap:nowrap;font-size:16px;margin:4px 0 8px}.tybar b{flex:1;min-width:0;line-height:1.25}.tybar .tytb{display:none}.tybar .tyback{padding:6px 10px;font-size:14px;white-space:nowrap}
+  .tykey{font-size:15px}.prob-q{font-size:17px}.prob-fig canvas,.pair .prob-fig canvas{height:200px}
+  .tp-h span{font-size:14px}.tpc .d{font-size:15px}.tpc .s{font-size:14px}
+  .pvfigs{flex-wrap:wrap;justify-content:center}.pvfigs figure{flex:0 0 46%}.pvfigs canvas{height:130px}.pvfigs figcaption{font-size:15px}.pvfigs figcaption small{font-size:13px}.pvt{font-size:16px}
+  .pv-h span{font-size:14px}
+  .zoom-card{padding:18px}.zoom-in{font-size:20px}.pvz .pvfigs canvas{height:200px}.pvz .pvfigs figcaption{font-size:17px}.pvz .pvt{font-size:18px}
+  .helpbtn{right:12px;bottom:12px;width:58px;height:58px;padding:0;border-radius:50%;display:grid;place-items:center}.helpbtn .ht{display:none}.helpbtn .hi{font-size:26px}
+}
+@media (min-width:761px){.helpbtn .hi{margin-right:4px}}
 </style>
 </head>
 <body>
@@ -1336,7 +1367,7 @@ function renderProblem(host,prob,opt={}){
   function draw(){
     syncHl();revealAfter();if(opt.onStep)opt.onStep(cur);
     ol.innerHTML='';const S=list();
-    S.forEach((s,i)=>{const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):i===cur?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
+    S.forEach((s,i)=>{if(i>cur+1)return;const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):i===cur?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
       const sb=$('.sb',li);
       if(i<cur){if(opt.worked){const w=s.why||s.hint||s.ok;sb.appendChild(el(`<div class="wk"><span class="wka">${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</span>${w?`<span class="wkw">${w}</span>`:''}</div>`))}else{sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}}
       if(i===cur&&opt.worked){const b=el(`<button type="button" class="btn primary wkbtn">풀이 보기 ▶</button>`);b.onclick=()=>{cur++;draw();if(cur>=S.length&&opt.onWorked){tail.innerHTML='';opt.onWorked(tail)}};sb.appendChild(b)}
@@ -1350,6 +1381,7 @@ function renderProblem(host,prob,opt={}){
         if(mode==='final'){const swb=el('<button type="button" class="btn ghost" style="margin-top:10px">단계로 나누어 풀기</button>');swb.onclick=()=>{mode='steps';usedSteps=true;cur=0;tries=0;sw=[];rv=[];draw()};sb.appendChild(swb)}
       }
       ol.appendChild(li)});
+    if(S.length>cur+2)ol.appendChild(el(`<li class="step more">남은 단계 ${S.length-cur-2}개 더 있어요</li>`));
   }
   function finish(){const good=!revealed;tail.innerHTML='';const r=el(`<div class="result ${good?'ok':'bad'}"><span>${good?(mode==='final'?'단계 없이 혼자 풀었어요!':'모든 단계를 해냈어요!'):'정답을 확인한 단계가 있어요. 비슷한 문제를 다시 풀어 봐요.'}</span></div>`);tail.appendChild(r);
     const n=list().length,stepWrongs=range(n).map(k=>sw[k]||0),revealedArr=range(n).map(k=>rv[k]||0);
@@ -1593,7 +1625,7 @@ function tyPicker(host,{TL,head,mix,stat,rec,onPick}){
 const tyBar=(T_,label)=>`<div class="tybar"><span class="tyn">${T_?'유형 '+T_.no:'섞어서'}</span><b>${T_?T_.nm:'유형 섞어 풀기'}</b>${T_?`<span class="tytb">${/쪽/.test(T_.tb)?'교과서 ':''}${T_.tb}</span>`:''}<button type="button" class="btn ghost tyback">← ${label}</button></div>`;
 function viewSteps(body,id){
   const p=prog(id),TL=PTYPES[id];p.tyS=p.tyS||{};
-  const wrap=el(`<div><div class="card panel"><div class="statbar"><div class="stat"><small>단계 문제를 끝까지 푼 횟수</small><b>${p.steps}</b></div>
+  const wrap=el(`<div><div class="card panel"><div class="statbar stS"><div class="stat"><small>단계 문제를 끝까지 푼 횟수</small><b>${p.steps}</b></div>
     <span class="muted" style="font-size:15px">왼쪽은 선생님 풀이, 오른쪽은 내가 푸는 같은 유형 문제예요. 막히면 왼쪽의 같은 단계를 보세요.</span></div><div id="tyHost"></div><div id="probHost"></div></div></div>`);
   body.appendChild(wrap);
   const SG0=GEN[id+'Step2']?id+'Step2':({poly:'polyStep',types:'typesStep',area:'areaStep',regular:'regularStep'}[id]||(GEN[id+'Step']?id+'Step':id));
@@ -1607,11 +1639,14 @@ function viewSteps(body,id){
     $('#tyHost',wrap).innerHTML=tyBar(T_,'유형 고르기');$('.tyback',wrap).onclick=pickScreen;liveSub(`유형 ${T_.no} · ${T_.nm}`);
     const host=$('#probHost',wrap);host.innerHTML=`<div class="tykey"><span>핵심</span>${T_.key}</div><div class="pair">
       <section class="pl"><div class="ph"><span class="wktag">선생님 풀이</span><span>「풀이 보기 ▶」로 한 단계씩</span><button type="button" class="btn ghost mini exAll">모두 펼치기</button></div><div class="exHost"></div></section>
-      <section class="pr"><div class="ph"><span class="trytag">내가 풀기</span><span>같은 유형 · 숫자만 달라요</span></div><div class="tryHost"></div></section></div>`;
+      <section class="pr"><div class="ph"><span class="trytag">내가 풀기</span><span>같은 유형 · 숫자만 달라요</span><button type="button" class="btn ghost mini exShow">선생님 풀이 전체 보기</button></div><div class="tryHost"></div></section></div>`;
     ex.title=stripTB(ex.title);prob.title=stripTB(prob.title);
     let rc=0;renderProblem($('.exHost',host),ex,{mode:'steps',visual:true,worked:true,onStep:()=>setTimeout(()=>sync(rc))});
+    $('.exShow',host).onclick=e=>{const pr=$('.pair',host),on=pr.classList.toggle('showex');e.target.textContent=on?'선생님 풀이 접기':'선생님 풀이 전체 보기';if(on){let g=0;while($('.exHost .wkbtn',host)&&g++<20)$('.exHost .wkbtn',host).click();$('.pl',host).scrollIntoView({behavior:'smooth',block:'start'})}};
     $('.exAll',host).onclick=()=>{let g=0;while($('.exHost .wkbtn',host)&&g++<20)$('.exHost .wkbtn',host).click()};
-    const sync=i=>{rc=i;$$('.exHost .step',host).forEach((li,k)=>li.classList.toggle('sync',k===i))};
+    const sync=i=>{rc=i;$$('.exHost .step',host).forEach((li,k)=>li.classList.toggle('sync',k===i));
+      const cl=$('.tryHost .step.cur',host),es=ex.steps[i];if(!cl||!es||$('.mstep',cl))return;
+      cl.insertBefore(el(`<details class="mstep"><summary>선생님 풀이 · 같은 단계 보기</summary><div class="mq">${es.q}</div><div class="wk"><span class="wka">${fmtAns(es)}</span>${(es.why||es.hint||es.ok)?`<span class="wkw">${es.why||es.hint||es.ok}</span>`:''}</div></details>`),cl.firstChild)};
     renderProblem($('.tryHost',host),prob,{mode:'steps',visual:true,onStep:i=>setTimeout(()=>sync(i)),onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{sync(-1);logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:key,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
       if(good){p.steps++;p.tyS[cur]=(p.tyS[cur]||0)+1;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(key,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요.</span>')}
       const nx=TL.find(t=>t.no>cur);
@@ -2779,10 +2814,10 @@ function livePing(prog,force){if(!isStudent()||LIVEX.missing)return;const now=Da
   API.call('hg_ping',{p_token:AUTH.token,p_loc:loc,p_prog:!!prog}).then(r=>{if(r&&LIVEX.help!==!!r.help){LIVEX.help=!!r.help;helpBtn()}}).catch(e=>{if(isMissingFn(e)){LIVEX.missing=true;helpBtn()}})}
 function liveSub(t){LIVEX.sub=t||'';livePing(false)}
 function helpBtn(){let b=$('#helpBtn');const show=isStudent()&&!LIVEX.missing&&!/^(login|teacher|bossview)/.test((location.hash||'').slice(1));
-  if(!show){if(b)b.remove();return}
+  if(!show){if(b)b.remove();document.body.classList.remove('has-help');return}
   if(!b){b=el('<button type="button" id="helpBtn" class="helpbtn"></button>');document.body.appendChild(b);
     b.onclick=async()=>{const on=!LIVEX.help;b.disabled=true;try{await API.call('hg_help',{p_token:AUTH.token,p_on:on,p_loc:liveLoc()});LIVEX.help=on;toast(on?'선생님 화면에 손든 것을 알렸어요. 잠깐 기다려 주세요.':'손을 내렸어요.')}catch(e){if(isMissingFn(e)){LIVEX.missing=true}else toast(e.message)}b.disabled=false;helpBtn()}}
-  b.classList.toggle('on',LIVEX.help);b.innerHTML=LIVEX.help?'✋ 손 들었어요 <small>누르면 내려요</small>':'✋ 선생님 도와주세요'}
+  b.classList.toggle('on',LIVEX.help);b.innerHTML=LIVEX.help?'<span class="hi">✋</span><span class="ht">손 들었어요 <small>누르면 내려요</small></span>':'<span class="hi">✋</span><span class="ht">선생님 도와주세요</span>';b.setAttribute('aria-label',LIVEX.help?'손 들었어요, 누르면 내려요':'선생님 도와주세요');document.body.classList.add('has-help')}
 setInterval(()=>{if(document.visibilityState==='visible')livePing(false,true)},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')livePing(false,true)});
 
