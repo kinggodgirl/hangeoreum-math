@@ -2802,7 +2802,7 @@ const lowVertex=m=>{let b=0;m.V.forEach((p,i)=>{if(p[2]<m.V[b][2]-1e-9)b=i});ret
 const RG_NON={
   cuboid:{nm:'직육면체',mk:cuboid,c1:false,why1:'면이 <b>직사각형</b>이에요. 직사각형은 네 변의 길이가 같지 않아서 정다각형이 아니에요.'},
   tprism:{nm:'삼각기둥',mk:triPrism,c1:false,why1:'정삼각형과 정사각형이 섞여 있어요. 모양이 다르니 면이 모두 <b>합동</b>은 아니에요.'},
-  bip:{nm:'삼각쌍뿔',mk:()=>bipyramid(),c1:true,top:3,other:0,pitch:0.15}};
+  bip:{nm:'삼각쌍뿔',mk:()=>bipyramid(),c1:true,top:3,other:0,pitch:0.3}};
 const RG_FACE_WHY={tet:'정삼각형 4개',cube:'정사각형 6개',oct:'정삼각형 8개',dod:'정오각형 12개',ico:'정삼각형 20개'};
 /* ① 정다면체인지 가려내기 */
 GEN.rgIs=seed=>{const r=mulberry(seed),u=r();
