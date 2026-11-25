@@ -867,6 +867,117 @@ body.has-help main,body.has-help #app{padding-bottom:84px}
   .helpbtn{right:12px;bottom:12px;width:58px;height:58px;padding:0;border-radius:50%;display:grid;place-items:center}.helpbtn .ht{display:none}.helpbtn .hi{font-size:26px}
 }
 @media (min-width:761px){.helpbtn .hi{margin-right:4px}}
+
+/* ───── 교사 화면 (넓은 화면 · 반 고르기 · 학생 목록 · 탭) ───── */
+body.t-wide .wrap{max-width:1400px}
+body.t-wide main{padding-top:18px}
+.t-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px 20px;flex-wrap:wrap;margin-bottom:14px}
+.t-top h1{font-size:clamp(26px,3.4vw,34px);margin:0}
+.t-top p{margin:4px 0 0;font-size:14.5px}
+.t-topb{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.t-topb .btn{min-height:40px;padding:7px 14px;font-size:15px}
+.t-at{font-size:13px}.t-auto{font-weight:500;font-size:14px}
+.t-scope{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.t-scg{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.t-scl{font-size:12.5px;font-weight:700;color:var(--ink-soft);width:64px;flex:none;letter-spacing:.3px}
+.t-sc{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;min-height:38px;color:var(--ink)}
+.t-sc:hover{border-color:var(--ink)}
+.t-sc.grp{border-color:#b9c8ea;background:var(--accent-soft)}
+.t-sc.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.t-sc.add{border-style:dashed;color:var(--accent);font-weight:500;background:#fff}
+.t-scn{display:inline-block;min-width:22px;border-radius:999px;background:rgba(29,38,64,.08);font-size:12px;padding:1px 6px;margin-left:2px;font-weight:700}
+.t-sc.on .t-scn{background:rgba(255,255,255,.22)}
+.t-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
+.t-side{position:sticky;top:12px;padding:12px 10px;max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+.t-side-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:0 6px 8px;border-bottom:1px solid var(--line)}
+.t-side-h b{font-size:16px}.t-side-h span{font-size:13px}
+.t-stu{list-style:none;margin:0;padding:4px 0;overflow:auto;flex:1}
+.t-stu li button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;text-align:left;padding:7px 6px;border-radius:8px;cursor:pointer;color:var(--ink)}
+.t-stu li button:hover{background:var(--paper)}
+.t-stu .dot{width:9px;height:9px;border-radius:50%;background:#c9ced8;flex:none}
+.t-stu li.on .dot{background:#3f9e6e;box-shadow:0 0 0 3px #dff1e7}
+.t-stu .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.t-stu .nm small,.t-code{font-size:12px;color:var(--ink-soft);font-weight:500}
+.t-stu .t-cnt{font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.t-stu li.help button{background:#fff1ef}
+.t-stu .hand{font-size:15px}
+.t-stu li:not(.on) .nm b{font-weight:600;color:#4a5263}
+.t-stu li.empty{padding:14px 6px;font-size:14px;line-height:1.6}
+.t-side-f{font-size:12px;line-height:1.5;margin:8px 6px 0;padding-top:8px;border-top:1px solid var(--line)}
+.t-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.t-tabs button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;min-height:42px;color:var(--ink)}
+.t-tabs button:hover{border-color:var(--ink)}
+.t-tabs button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.t-tabs .cntb{font-size:12px;padding:0 7px;margin-left:2px}
+.t-pane .panel{padding:18px 20px}
+.t-pane .panel h2{font-size:21px}
+.t-pane .panel+.panel{margin-top:12px}
+.t-lead{margin:0 0 10px;font-size:14px;line-height:1.6}
+.t-empty{text-align:center;padding:18px}
+.t-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:4px 0 14px}
+.t-tile{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--paper);display:flex;flex-direction:column;gap:2px}
+.t-tile small{font-size:13px;color:var(--ink-soft)}.t-tile b{font-family:var(--math);font-size:28px;line-height:1.1}
+.t-roster td.l{text-align:left}
+.t-num{text-decoration:none}.t-num b{text-decoration:underline;text-underline-offset:3px}
+.t-nmb{border:0;background:none;font:inherit;padding:0;cursor:pointer;text-align:left;color:var(--ink)}.t-nmb b{font-size:19px}
+.lv[data-sid]{cursor:pointer}.lv[data-sid]:hover{border-color:var(--ink)}
+.lvh b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.t-gcard{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1.5px solid var(--line);border-radius:12px;background:var(--accent-soft);padding:12px 14px;font:inherit;cursor:pointer;text-align:left;color:var(--ink)}
+.t-gcard b{font-size:17px}.t-gcard span{font-size:13px;color:var(--ink-soft)}
+.t-gcard.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.t-gcard.new{background:#fff;border-style:dashed;cursor:default;gap:8px}
+.t-gcard.new .inp{width:100%;min-height:40px}.t-gcard.new .btn{min-height:38px;padding:6px 14px}
+.t-mbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:8px 12px;background:var(--paper);border-radius:10px}
+.t-mbar .btn{min-height:38px;padding:6px 12px;font-size:14.5px}.t-mbar .inp{min-height:38px}
+.t-mem td,.t-mem th{padding:6px 8px;white-space:nowrap}.t-mem .t-nmi{min-height:38px;width:150px;padding:6px 10px;border-color:var(--line)}
+.t-mem .t-nmi:focus{border-color:var(--ink)}
+.t-mem th small{font-weight:400;color:var(--ink-soft);font-size:11.5px}
+.t-tag{display:inline-block;background:var(--accent-soft);border-radius:999px;padding:1px 9px;font-size:13px;margin:1px 4px 1px 0}
+.t-pick{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.t-pick .chip{min-height:36px;padding:5px 12px}
+.t-cc summary{cursor:pointer}.t-cc .t-create{margin-top:10px}
+.t-gsel{padding:12px 18px!important}
+.pc-nm{font-size:18px;font-weight:700}
+/* 학생 자세히 */
+.t-drawer{position:fixed;inset:0;z-index:60}
+.t-dback{position:absolute;inset:0;background:rgba(20,26,44,.35)}
+.t-dpanel{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);border-radius:16px 0 0 16px;overflow:auto;padding:20px 22px 30px;box-shadow:-10px 0 30px rgba(0,0,0,.12)}
+.t-dh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.t-dcode{font-size:13px;color:var(--ink-soft);font-weight:700;margin-bottom:4px}
+.t-dname{font-size:22px;font-weight:700;width:100%;max-width:300px;border-color:var(--line)}
+.t-dx{border:0;background:var(--paper);width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer}
+.t-dstat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 8px}
+.t-dstat div{background:var(--paper);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}
+.t-dstat small{font-size:12px;color:var(--ink-soft)}.t-dstat b{font-size:17px}
+.t-dloc{margin:6px 0;font-size:14px}
+.t-dles{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0}
+.t-dles div{display:flex;align-items:center;gap:6px;font-size:13px}
+.t-dpanel h3{font-size:16px;margin:16px 0 8px}
+.t-dg .chip{min-height:36px;padding:5px 12px}
+.t-dact{display:flex;gap:8px;flex-wrap:wrap}.t-dact .btn{min-height:40px;padding:7px 14px;font-size:14.5px}
+.t-datt .t-att{margin:0;padding-left:18px;font-size:14px;line-height:1.7}
+body.t-dopen{overflow:hidden}
+@media (max-width:900px){
+  .t-cols{grid-template-columns:1fr}
+  .t-side{position:static;max-height:none}
+  .t-stu{display:flex;flex-wrap:wrap;gap:4px;max-height:200px}
+  .t-stu li{flex:0 0 auto}.t-stu li button{padding:5px 9px;border:1px solid var(--line);border-radius:999px}
+  .t-stu .nm{max-width:150px}
+  .t-side-f{display:none}
+}
+@media (max-width:560px){
+  body.t-wide .wrap{padding:0 12px}
+  .t-scl{width:100%}
+  .t-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -12px 12px;padding:0 12px}
+  .t-tabs button{flex:none;font-size:14px;padding:7px 11px}
+  .t-pane .panel{padding:14px}
+  .t-topb .t-auto{display:none}
+  .t-dpanel{border-radius:0;padding:16px}
+  .t-dstat{grid-template-columns:repeat(2,1fr)}
+  .t-mem .t-nmi{width:104px}
+  .lvgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
@@ -2343,6 +2454,9 @@ const MOCK=(()=>{
     const weeks=[];for(let w=1;w<=8;w++){const a=addDays(ws,-7*w),v=mem.reduce((x,s)=>x+psum(s.sid,a,addDays(a,6)),0);if(v>0)weeks.push({w:a,damage:v})}
     return{grade:g,klass:k,today:t,week_start:ws,members:mem.length,active:act,damage:dmg,my:sid?psum(sid,ws,t):null,per_student:S.settings[g+'-'+k]||50,days,weeks,
       students:teacher?mem.map(s=>({num:s.num,pts:psum(s.sid,ws,t)})):null}}
+  /* 방과후 반 (체험 모드: 다른 반 학생 몇 명과 예시 반 하나) */
+  function GR(){if(!S.groups){const r=mulberry(7);[['1-2-4'],['1-3-11'],['1-4-7'],['2-1-3']].forEach(([sid])=>{if(!S.students[sid]){const[g,k,n]=sid.split('-').map(Number);S.students[sid]={sid,grade:g,klass:k,num:n,pin:'1234',failed:0,lock:0,last_seen:new Date(Date.now()-ri(r,0,3)*864e5).toISOString()}}});
+    S.groups={seq:2,list:[{id:1,name:'화목 방과후',sids:['1-1-3','1-1-5','1-1-12','1-2-4','1-3-11','1-4-7','2-1-3']}]}}return S.groups}
   const dropSessions=sid=>Object.keys(S.sessions).forEach(k=>{if(S.sessions[k].sid===sid)delete S.sessions[k]});
   const F={
     hg_login({p_sid,p_pin}){const s=S.students[p_sid];if(!s)return{ok:false,msg:'등록되지 않은 번호예요. 학년, 반, 번호를 확인해 주세요.'};
@@ -2362,8 +2476,8 @@ const MOCK=(()=>{
     hg_t_create_students({p_token,p_grade,p_klass,p_from,p_to}){needT(p_token);if(!(p_grade>=1&&p_grade<=3&&p_klass>=1&&p_klass<=20&&p_from>=1&&p_to<=50&&p_from<=p_to))fail('학년은 1~3, 반은 1~20, 번호는 1~50 사이로 정해 주세요.');
       const out=[];for(let i=p_from;i<=p_to;i++){const sid=`${p_grade}-${p_klass}-${i}`;if(S.students[sid])out.push({sid,num:i,pin:null,existed:true});else{const pn=newPin();S.students[sid]={sid,grade:p_grade,klass:p_klass,num:i,pin:pn,failed:0,lock:0,last_seen:null};out.push({sid,num:i,pin:pn,existed:false})}}return out},
     hg_t_reset_pin({p_token,p_sid}){needT(p_token);const s=S.students[p_sid];if(!s)fail('그 학생을 찾을 수 없어요.');s.pin=newPin();s.failed=0;s.lock=0;dropSessions(p_sid);return{sid:p_sid,pin:s.pin}},
-    hg_t_delete_student({p_token,p_sid}){needT(p_token);delete S.students[p_sid];delete S.progress[p_sid];delete S.points[p_sid];S.attempts=S.attempts.filter(a=>a.sid!==p_sid);dropSessions(p_sid);return{ok:true}},
-    hg_t_overview({p_token}){needT(p_token);const wk=Date.now()-7*864e5;return Object.values(S.students).sort((a,b)=>a.grade-b.grade||a.klass-b.klass||a.num-b.num).map(s=>({sid:s.sid,grade:s.grade,klass:s.klass,num:s.num,last_seen:s.last_seen,locked:s.lock>Date.now(),
+    hg_t_delete_student({p_token,p_sid}){needT(p_token);delete S.students[p_sid];delete S.progress[p_sid];delete S.points[p_sid];S.attempts=S.attempts.filter(a=>a.sid!==p_sid);dropSessions(p_sid);GR().list.forEach(g=>g.sids=g.sids.filter(x=>x!==p_sid));return{ok:true}},
+    hg_t_overview({p_token}){needT(p_token);GR();const wk=Date.now()-7*864e5;return Object.values(S.students).sort((a,b)=>a.grade-b.grade||a.klass-b.klass||a.num-b.num).map(s=>({sid:s.sid,grade:s.grade,klass:s.klass,num:s.num,last_seen:s.last_seen,locked:s.lock>Date.now(),
       data:(S.progress[s.sid]||{}).data||{},updated_at:(S.progress[s.sid]||{}).updated_at||null,attempts_7d:S.attempts.filter(a=>a.sid===s.sid&&Date.parse(a.created_at)>wk).length,week_pts:psum(s.sid,wkStart(today()),'9999')}))},
     hg_add_points({p_token,p_pts,p_day}){const sid=sidOf(p_token),t=today();let d=p_day||t;if(d>t||d<addDays(t,-3))d=t;const P=S.points[sid]=S.points[sid]||{};
       const add=Math.min(Math.min(Math.max(+p_pts||0,0),200),Math.max(0,500-(P[d]||0)));if(add>0)P[d]=(P[d]||0)+add;return{ok:true,added:add}},
@@ -2381,6 +2495,18 @@ const MOCK=(()=>{
       return{now:nowISO(),students:Object.values(S.students).filter(s=>s.grade===p_grade&&s.klass===p_klass).sort((a,b)=>a.num-b.num).map(s=>{const L=lv[s.sid]||{};
         return{sid:s.sid,num:s.num,last_seen:s.last_seen,loc:L.loc||null,loc_at:L.loc_at||null,prog_at:L.prog_at||null,help_at:L.help_at||null,help_loc:L.help_loc||null,ack_at:L.ack_at||null,
           att:S.attempts.filter(a=>a.sid===s.sid&&Date.parse(a.created_at)>=d0.getTime()).slice(-60)}})}},
+    hg_t_groups({p_token}){needT(p_token);return GR().list.map(g=>({id:g.id,name:g.name,sids:g.sids.filter(x=>S.students[x]).sort()}))},
+    hg_t_group_save({p_token,p_id,p_name}){needT(p_token);const nm=String(p_name||'').trim();if(nm.length<1||nm.length>30)fail('반 이름은 1~30자로 정해 주세요.');const G=GR();
+      if(p_id==null){if(G.list.length>=30)fail('방과후 반은 30개까지 만들 수 있어요.');const g={id:G.seq++,name:nm,sids:[]};G.list.push(g);return{ok:true,id:g.id}}
+      const g=G.list.find(x=>x.id===p_id);if(!g)fail('그 방과후 반을 찾을 수 없어요.');g.name=nm;return{ok:true,id:g.id}},
+    hg_t_group_del({p_token,p_id}){needT(p_token);const G=GR();G.list=G.list.filter(x=>x.id!==p_id);return{ok:true}},
+    hg_t_group_members({p_token,p_id,p_sids,p_on}){needT(p_token);const g=GR().list.find(x=>x.id===p_id);if(!g)fail('그 방과후 반을 찾을 수 없어요.');const before=g.sids.length;
+      if(p_on)(p_sids||[]).forEach(x=>{if(S.students[x]&&!g.sids.includes(x))g.sids.push(x)});else g.sids=g.sids.filter(x=>!(p_sids||[]).includes(x));return{ok:true,n:Math.abs(g.sids.length-before)}},
+    hg_t_live_sids({p_token,p_sids}){needT(p_token);const d0=new Date();d0.setHours(0,0,0,0);const lv=S.live||{},want=new Set(p_sids||[]);
+      return{now:nowISO(),students:Object.values(S.students).filter(s=>want.has(s.sid)).sort((a,b)=>a.grade-b.grade||a.klass-b.klass||a.num-b.num).map(s=>{const L=lv[s.sid]||{};
+        return{sid:s.sid,grade:s.grade,klass:s.klass,num:s.num,last_seen:s.last_seen,loc:L.loc||null,loc_at:L.loc_at||null,prog_at:L.prog_at||null,help_at:L.help_at||null,help_loc:L.help_loc||null,ack_at:L.ack_at||null,
+          att:S.attempts.filter(a=>a.sid===s.sid&&Date.parse(a.created_at)>=d0.getTime()).slice(-60)}})}},
+    hg_t_step_stats_sids({p_token,p_days,p_sids}){const keep=S.attempts,want=new Set(p_sids||[]);S.attempts=keep.filter(a=>want.has(a.sid));try{return F.hg_t_step_stats({p_token,p_days})}finally{S.attempts=keep}},
     hg_t_ack({p_token,p_sid}){needT(p_token);const L=(S.live=S.live||{})[p_sid]=(S.live||{})[p_sid]||{};L.ack_at=nowISO();L.help_at=null;L.help_loc=null;return{ok:true}}};
 
   /* 숫자야구 (체험 모드: 방을 만들면 3초 뒤 체험용 친구가 들어와 같이 해요) */
@@ -2838,109 +2964,160 @@ function liveFlags(s,now){const ack=s.ack_at?Date.parse(s.ack_at):0,A=(s.att||[]
   return f}
 function liveCard(s,now,f){const online=s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000,A=s.att||[],ok1=A.filter(a=>a.good&&!a.wrongs).length;
   const dots=A.slice(-12).map(a=>`<i class="${(a.revealed||[]).some(x=>x>0)||!a.good?'x':a.wrongs?'t':'o'}" title="${esc(attName(a))}"></i>`).join('');
-  return`<div class="lv ${online?'on':''} ${f&&f.some(x=>x.w>=3)?'hot':''}"><div class="lvh"><span class="dot"></span><b>${s.num}번</b><span class="lvt">${online?'접속 중':s.loc_at?relTime(s.loc_at):'오늘 안 들어옴'}</span></div>
+  return`<div class="lv ${online?'on':''} ${f&&f.some(x=>x.w>=3)?'hot':''}"><div class="lvh"><span class="dot"></span>${s.labH||`<b>${s.num}번</b>`}<span class="lvt">${online?'접속 중':s.loc_at?relTime(s.loc_at):'오늘 안 들어옴'}</span></div>
     <div class="lvloc">${s.loc?esc(s.loc):'<span class="muted">-</span>'}</div><div class="lvs">오늘 <b>${A.length}</b>문제 · 처음에 맞힘 <b>${ok1}</b>${s.prog_at?` · 마지막 답 ${relTime(s.prog_at)}`:''}</div>${dots?`<div class="lvd">${dots}</div>`:''}</div>`}
 function togetherLive(S,now){const on=S.filter(s=>s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000).length,need=Math.max(3,Math.ceil(on*0.3)),m={};
-  S.forEach(s=>{const ack=s.ack_at?Date.parse(s.ack_at):0;(s.att||[]).filter(a=>Date.parse(a.created_at)>ack&&now-Date.parse(a.created_at)<40*60000).forEach(a=>{(a.step_wrongs||[]).forEach((w,i)=>{if(w>0||((a.revealed||[])[i]>0)){const k=attName(a)+'|'+i;(m[k]=m[k]||{a,i,ns:new Set()}).ns.add(s.num)}})})});
+  S.forEach(s=>{const ack=s.ack_at?Date.parse(s.ack_at):0;(s.att||[]).filter(a=>Date.parse(a.created_at)>ack&&now-Date.parse(a.created_at)<40*60000).forEach(a=>{(a.step_wrongs||[]).forEach((w,i)=>{if(w>0||((a.revealed||[])[i]>0)){const k=attName(a)+'|'+i;(m[k]=m[k]||{a,i,ns:new Set()}).ns.add(s.lab||s.num+'번')}})})});
   const seen=new Set(),out=Object.values(m).filter(x=>x.ns.size>=need).sort((x,y)=>y.ns.size-x.ns.size||x.i-y.i).filter(x=>{const k=attName(x.a);if(seen.has(k))return false;seen.add(k);return true}).slice(0,3);
-  return out.map(x=>{const q=attStepQ(x.a,x.i);return`<div class="tg"><b>${esc(attName(x.a))} · (${x.i+1})단계</b>${q?` <span class="muted">“${esc(q)}”</span>`:''} — <b>${x.ns.size}명</b>이 같은 곳에서 막혔어요. 함께 볼까요?<div class="muted" style="font-size:13px">${[...x.ns].sort((a,b)=>a-b).map(n=>n+'번').join(', ')}</div></div>`}).join('')}
+  return out.map(x=>{const q=attStepQ(x.a,x.i);return`<div class="tg"><b>${esc(attName(x.a))} · (${x.i+1})단계</b>${q?` <span class="muted">“${esc(q)}”</span>`:''} — <b>${x.ns.size}명</b>이 같은 곳에서 막혔어요. 함께 볼까요?<div class="muted" style="font-size:13px">${esc([...x.ns].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).join(', '))}</div></div>`}).join('')}
 
 function viewTeacher(){
-  crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();
+  crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();document.body.classList.remove('t-wide');
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
+  document.body.classList.add('t-wide');
   const ready=LESSONS.filter(l=>l.ready);
-  app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
-   <div class="card panel tLive"><div class="t-head"><h2>🙋 지금 도울 학생 <span class="cntb tHelpN" hidden></span></h2><span class="t-tools"><label class="t-sel"><input type="checkbox" class="tAuto" checked> 10초마다 새로 고침</label><span class="muted tLiveAt" style="font-size:13px"></span></span></div>
-    <p class="muted" style="margin-top:0;font-size:14px">손든 학생, 단계 정답을 보고 넘어간 학생, 같은 유형을 3번 연속 틀린 학생, ${STALL_MIN}분 넘게 답을 내지 않은 학생이 모여요. 도와준 뒤 [✓ 도왔어요]를 누르면 정리되고, 새로 막히면 다시 나타나요.</p><div class="together tTogether"></div><div class="tHelp"></div></div>
-   <div class="card panel tNow"><div class="t-head"><h2>학생 현황 · 오늘</h2><span class="muted tNowSum" style="font-size:14px"></span></div><div class="lvgrid tNowGrid"></div>
-    <p class="muted" style="font-size:13px;margin-bottom:0">점: <i class="lvk o"></i>처음에 맞힘 <i class="lvk t"></i>틀린 뒤 맞힘 <i class="lvk x"></i>틀림·정답 확인 (최근 12문제)</p></div>
-   <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
-    <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
-    <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div>
-   <div class="card panel tBoss" hidden><div class="t-head"><h2>우리 반 보스전</h2><span class="t-tools tBossTools"><label class="t-sel">학생 1명당 보스 체력 <select class="inp sel tPer" aria-label="학생 1명당 보스 체력">${[20,30,50,80,120,200].map(v=>`<option value="${v}">${v}</option>`).join('')}</select></label><a class="btn ghost tBV" href="#teacher">크게 띄우기</a></span></div><div class="tBossBody"></div></div>
-   <div class="card panel tBB" hidden><div class="t-head"><h2>숫자야구</h2><span class="t-tools tBBTools"><label class="t-sel"><input type="checkbox" class="tBBon"> 켜기</label><label class="t-sel">최대 판돈 <select class="inp sel tBBmax" aria-label="최대 판돈">${[0,5,10,20,50].map(v=>`<option value="${v}">${v?v+'포인트':'친선만'}</option>`).join('')}</select></label></span></div><div class="tBBbody"></div></div>
-   <div class="card panel"><div class="t-head"><h2>많이 막히는 단계</h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
-    <p class="muted" style="margin-top:0">단계 문제와 ‘단계 따라 풀기’ 연습에서 단계마다 틀린 비율이에요. 다음 수업에서 다시 짚을 곳을 찾을 때 써 보세요.</p><div class="tStats"></div></div>
-   <div class="card panel"><h2>학생 만들기</h2><p class="muted" style="margin-top:0">번호마다 4자리 비밀번호를 만들어요. 이미 있는 번호는 건너뛰어요. 비밀번호는 이 화면에서 <b>한 번만</b> 보여 주니 꼭 복사하거나 인쇄해 두세요.</p>
-    <form class="t-create"><label>학년 <select class="inp sel" name="g">${[1,2,3].map(g=>`<option>${g}</option>`).join('')}</select></label><label>반 <select class="inp sel" name="k">${range(20).map(i=>`<option>${i+1}</option>`).join('')}</select></label>
-     <label>번호 <input class="inp num" name="a" type="number" min="1" max="50" value="1"> ~ <input class="inp num" name="b" type="number" min="1" max="50" value="30"></label><button class="btn primary">만들기</button></form><div class="flmsg tCMsg" role="status"></div><div class="tNew"></div></div>
-   <details class="card panel tPwBox"><summary><b>교사 비밀번호 바꾸기</b></summary><form class="t-pw"><label>지금 비밀번호 <input class="inp" type="password" name="o" autocomplete="current-password" required></label><label>새 비밀번호 (6자 이상) <input class="inp" type="password" name="n" autocomplete="new-password" minlength="6" required></label><button class="btn">바꾸기</button></form><div class="flmsg tPMsg" role="status"></div></details>`;
-  let ROSTER=[],days=30,klassSel=lsGet('hangeoreum-t-class',null);
+  const TABS_T=[['now','🙋 지금 도울 학생'],['stat','📊 학습 현황'],['steps','🧩 많이 막히는 단계'],['people','👥 학생 관리'],['game','🎮 게임'],['set','⚙ 설정']];
+  app.innerHTML=`<div class="t-top"><div><h1>교사 화면</h1><p class="muted">방과후 반을 만들어 학년·반이 다른 학생들을 한 화면에서 봐요. 이름은 이 기기에만 저장돼요.</p></div>
+     <div class="t-topb"><span class="t-at muted tLiveAt"></span><label class="t-sel t-auto"><input type="checkbox" class="tAuto" checked> 10초마다 새로 고침</label><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
+   <div class="t-scope" role="tablist" aria-label="볼 학생 고르기"></div>
+   <div class="t-cols">
+    <aside class="card t-side"><div class="t-side-h"><b class="tSideT">학생</b><span class="muted tSideN"></span></div><ul class="t-stu tStu"></ul>
+     <p class="muted t-side-f">● 접속 중 · ✋ 손듦 · 숫자는 오늘 푼 문제<br>이름을 누르면 자세히 볼 수 있어요.</p></aside>
+    <section class="t-main">
+     <nav class="t-tabs" role="tablist">${TABS_T.map(([k,t])=>`<button type="button" role="tab" data-t="${k}">${t}${k==='now'?' <span class="cntb tHelpN" hidden></span>':''}</button>`).join('')}</nav>
+     <div class="t-pane" data-p="now">
+      <div class="card panel tLive"><div class="t-head"><h2>🙋 지금 도울 학생</h2></div>
+       <p class="muted t-lead">손든 학생, 단계 정답을 보고 넘어간 학생, 같은 유형을 3번 연속 틀린 학생, ${STALL_MIN}분 넘게 답을 내지 않은 학생이 모여요. 도와준 뒤 [✓ 도왔어요]를 누르면 정리돼요.</p><div class="together tTogether"></div><div class="tHelp"></div></div>
+      <div class="card panel tNow"><div class="t-head"><h2>오늘 학생 현황</h2><span class="muted tNowSum"></span></div><div class="lvgrid tNowGrid"></div>
+       <p class="muted t-lead" style="margin:10px 0 0">점: <i class="lvk o"></i>처음에 맞힘 <i class="lvk t"></i>틀린 뒤 맞힘 <i class="lvk x"></i>틀림·정답 확인 (최근 12문제)</p></div></div>
+     <div class="t-pane" data-p="stat">
+      <div class="card panel"><div class="t-head"><h2>학습 현황 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tCsv">엑셀로 받기</button></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
+       <div class="tablewrap"><table class="t t-roster"><thead><tr><th>학생</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th></tr></thead><tbody class="tRows"></tbody></table></div>
+       <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div></div>
+     <div class="t-pane" data-p="steps">
+      <div class="card panel"><div class="t-head"><h2>많이 막히는 단계 <span class="muted tScopeNm" style="font-size:17px"></span></h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
+       <p class="muted t-lead">단계 문제와 ‘단계 따라 풀기’ 연습에서 단계마다 틀린 비율이에요. 다음 시간에 다시 짚을 곳을 찾을 때 써 보세요.</p><div class="tStatsNote"></div><div class="tStats"></div></div></div>
+     <div class="t-pane" data-p="people"><div class="tPeople"></div></div>
+     <div class="t-pane" data-p="game">
+      <div class="card panel t-gsel"><label class="t-sel">보스전과 숫자야구는 정규 반 단위예요. 반 <select class="inp sel tGClass" aria-label="게임을 볼 반"></select></label></div>
+      <div class="card panel tBoss" hidden><div class="t-head"><h2>우리 반 보스전</h2><span class="t-tools tBossTools"><label class="t-sel">학생 1명당 보스 체력 <select class="inp sel tPer" aria-label="학생 1명당 보스 체력">${[20,30,50,80,120,200].map(v=>`<option value="${v}">${v}</option>`).join('')}</select></label><a class="btn ghost tBV" href="#teacher">크게 띄우기</a></span></div><div class="tBossBody"></div></div>
+      <div class="card panel tBB" hidden><div class="t-head"><h2>숫자야구</h2><span class="t-tools tBBTools"><label class="t-sel"><input type="checkbox" class="tBBon"> 켜기</label><label class="t-sel">최대 판돈 <select class="inp sel tBBmax" aria-label="최대 판돈">${[0,5,10,20,50].map(v=>`<option value="${v}">${v?v+'포인트':'친선만'}</option>`).join('')}</select></label></span></div><div class="tBBbody"></div></div></div>
+     <div class="t-pane" data-p="set">
+      <div class="card panel"><h2>교사 비밀번호 바꾸기</h2><form class="t-pw"><label>지금 비밀번호 <input class="inp" type="password" name="o" autocomplete="current-password" required></label><label>새 비밀번호 (6자 이상) <input class="inp" type="password" name="n" autocomplete="new-password" minlength="6" required></label><button class="btn">바꾸기</button></form><div class="flmsg tPMsg" role="status"></div></div>
+      <div class="card panel"><h2>학생 이름표</h2><p class="muted t-lead">학생 이름은 서버에 저장하지 않고 <b>이 기기(브라우저)</b>에만 저장해요. 다른 컴퓨터에서 보려면 여기서 목록을 복사해, 그 컴퓨터의 같은 칸에 붙여 넣으세요.</p>
+       <textarea class="inp tNames" rows="5" style="width:100%" placeholder="1-3-5 김민수&#10;1-4-12 이서연"></textarea>
+       <div class="next-row" style="margin:10px 0 0"><button type="button" class="btn ghost tNmCopy">지금 이름표 복사</button><button type="button" class="btn primary tNmLoad">붙여 넣은 이름 불러오기</button></div><div class="flmsg tNmMsg" role="status"></div></div></div>
+    </section></div>
+   <div class="t-drawer" hidden><div class="t-dback"></div><div class="t-dpanel card" role="dialog" aria-modal="true" aria-label="학생 자세히"><div class="t-dbody"></div></div></div>`;
+
+  /* ── 상태 ── */
+  let ROSTER=[],GROUPS=[],groupsOff=false,days=30,LVS={},liveMissing=false,sidsMissing=false,statsSidsMissing=false,lastStats=null;
+  let SC=lsGet('hangeoreum-t-scope',null),TAB=lsGet('hangeoreum-t-tab','now'),GK=lsGet('hangeoreum-t-class',null);
+  let NAMES=OBJ(lsGet('hangeoreum-t-names',{}));
+  const saveNames=()=>lsSet('hangeoreum-t-names',NAMES);
   const fail=e=>{if(isAuthErr(e)){tSet(null);toast('교사 로그인이 끝났어요. 다시 로그인해 주세요.');viewTeacher();return true}toast(e.message);return false};
-  async function loadRoster(){try{ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[];renderRoster()}catch(e){fail(e)}}
-  async function loadStats(){try{renderStats(await API.call('hg_t_step_stats',{p_token:tTok(),p_days:days})||[])}catch(e){fail(e)}}
-  const curList=()=>ROSTER.filter(s=>klassSel==='all'||`${s.grade}-${s.klass}`===klassSel);
-  function classes(){const m=new Map();ROSTER.forEach(s=>m.set(`${s.grade}-${s.klass}`,{g:s.grade,k:s.klass}));return[...m.entries()]}
-  function renderRoster(){const sel=$('.tClass',app),C=classes();
-    if(klassSel&&!C.some(([k])=>k===klassSel))klassSel=null;if(!klassSel&&C.length)klassSel=C[0][0];
-    sel.innerHTML=C.length?C.map(([k,v])=>`<option value="${k}"${k===klassSel?' selected':''}>${v.g}학년 ${v.k}반</option>`).join('')+'<option value="all"'+(klassSel==='all'?' selected':'')+'>전체</option>':'<option>학생 없음</option>';
-    const L=curList();$('.tEmpty',app).hidden=!!ROSTER.length;
-    const S=L.map(s=>Object.assign({s},dataSummary(s.data||{})));const wk=Date.now()-7*864e5;
-    const act=L.filter(s=>s.last_seen&&Date.parse(s.last_seen)>wk).length,avg=S.length?Math.round(S.reduce((a,x)=>a+x.pts,0)/S.length):0,tries=L.reduce((a,s)=>a+(s.attempts_7d||0),0);
-    {const nm=s=>`${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번`,lst=a=>a.length>15?a.slice(0,15).join(', ')+` 외 ${a.length-15}명`:a.join(', ');
-      const away=S.filter(x=>!x.s.last_seen||Date.parse(x.s.last_seen)<wk).map(x=>nm(x.s)),back=S.filter(x=>x.due>=5).map(x=>`${nm(x.s)}(${x.due})`),noc=S.filter(x=>x.s.last_seen&&Date.parse(x.s.last_seen)>=wk&&!x.calc&&!x.diag).map(x=>nm(x.s)),base=S.filter(x=>x.plan.includes('facts')||x.plan.includes('add')).map(x=>`${nm(x.s)}(${x.plan.slice(0,2).map(id=>({add:'덧뺄',facts:'구구단',div:'나눗',order:'순서',fracbase:'분수'})[id]||id).join('·')})`);
-      $('.t-watch',app).innerHTML=(away.length?`<div><b>7일 넘게 들어오지 않았어요</b> (${away.length}명) · ${lst(away)}</div>`:'')+(back.length?`<div class="mid"><b>복습이 5문제 넘게 밀렸어요</b> · ${lst(back)}</div>`:'')+(noc.length?`<div class="mid"><b>기초 연산을 아직 시작하지 않았어요</b> · ${lst(noc)}</div>`:'')+(base.length?`<div class="mid"><b>시작점 찾기에서 덧셈·뺄셈이나 곱셈구구부터 다지기로 나왔어요</b> · ${lst(base)}</div>`:'')}
-    $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
-    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
-      <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
-      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
-      <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
-      <td class="t-act"><button type="button" class="t-mini t-reset">비밀번호</button><button type="button" class="t-mini t-del">삭제</button></td></tr>`).join('');
-    $$('.tRows tr',app).forEach(tr=>wireRow(tr));loadTBoss();loadTBB();loadLive()}
-  let liveT=null,liveMissing=false;
+  const classes=()=>{const m=new Map();ROSTER.forEach(s=>m.set(`${s.grade}-${s.klass}`,{g:s.grade,k:s.klass,n:(m.get(`${s.grade}-${s.klass}`)||{n:0}).n+1}));return[...m.entries()]};
+  const grp=()=>SC&&SC.startsWith('g:')?GROUPS.find(g=>String(g.id)===SC.slice(2)):null;
+  const isClass=()=>!!(SC&&SC.startsWith('c:'));
+  const sidSet=()=>{const g=grp();if(g)return new Set(g.sids);if(isClass())return new Set(ROSTER.filter(s=>`c:${s.grade}-${s.klass}`===SC).map(s=>s.sid));return new Set(ROSTER.map(s=>s.sid))};
+  const curList=()=>{const S=sidSet();return ROSTER.filter(s=>S.has(s.sid))};
+  const scopeNm=()=>{const g=grp();if(g)return g.name;if(isClass()){const[a,b]=SC.slice(2).split('-');return`${a}학년 ${b}반`}return'전체 학생'};
+  const code=s=>`${s.grade}-${s.klass}-${s.num}`;
+  const base=s=>isClass()?`${s.num}번`:code(s);
+  const nameT=s=>NAMES[s.sid]?`${NAMES[s.sid]} (${base(s)})`:base(s);
+  const nameH=s=>NAMES[s.sid]?`<b>${esc(NAMES[s.sid])}</b> <small class="t-code">${base(s)}</small>`:`<b>${base(s)}</b>`;
+  const bySid=sid=>ROSTER.find(s=>s.sid===sid);
+
+  /* ── 범위 고르기: 방과후 반 · 정규 반 · 전체 ── */
+  function fixScope(){const C=classes();
+    if(SC&&SC.startsWith('g:')&&!grp())SC=null;if(SC&&SC.startsWith('c:')&&!C.some(([k])=>'c:'+k===SC))SC=null;
+    if(!SC)SC=GROUPS.length?'g:'+GROUPS[0].id:C.length?'c:'+C[0][0]:'all';
+    if(!GK||!C.some(([k])=>k===GK))GK=isClass()?SC.slice(2):C.length?C[0][0]:null}
+  function renderScope(){const C=classes(),box=$('.t-scope',app);
+    const b=(v,t,n,cls='')=>`<button type="button" role="tab" class="t-sc ${cls} ${SC===v?'on':''}" data-v="${v}" aria-selected="${SC===v}">${t}${n!=null?` <span class="t-scn">${n}</span>`:''}</button>`;
+    box.innerHTML=`<div class="t-scg"><span class="t-scl">방과후 반</span>${GROUPS.map(g=>b('g:'+g.id,esc(g.name),g.sids.length,'grp')).join('')}<button type="button" class="t-sc add tScAdd">＋ 방과후 반 만들기</button></div>
+      <div class="t-scg"><span class="t-scl">정규 반</span>${C.map(([k,v])=>b('c:'+k,`${v.g}-${v.k}`,v.n)).join('')}${b('all','전체',ROSTER.length)}</div>`;
+    $$('.t-sc[data-v]',box).forEach(x=>x.onclick=()=>{SC=x.dataset.v;lsSet('hangeoreum-t-scope',SC);LVS={};render();loadLive();loadStats()});
+    $('.tScAdd',box).onclick=()=>{setTab('people');setTimeout(()=>{const i=$('.tGNew input',app);if(i)i.focus()},50)}}
+  function setTab(t){TAB=TABS_T.some(x=>x[0]===t)?t:'now';lsSet('hangeoreum-t-tab',TAB);
+    $$('.t-tabs button',app).forEach(b=>{const on=b.dataset.t===TAB;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+    $$('.t-pane',app).forEach(p=>p.hidden=p.dataset.p!==TAB);if(TAB==='game')loadGames()}
+  $$('.t-tabs button',app).forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+
+  async function loadAll(){try{ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[]}catch(e){fail(e);return}
+    try{GROUPS=(await API.call('hg_t_groups',{p_token:tTok()})||[]).map(g=>({id:g.id,name:g.name,sids:g.sids||[]}));groupsOff=false}
+    catch(e){if(isMissingFn(e)){groupsOff=true;GROUPS=[]}else{fail(e);return}}
+    render();loadLive();loadStats()}
+  function render(){fixScope();renderScope();renderSide();renderRoster();renderPeople();$$('.tScopeNm',app).forEach(x=>x.textContent='· '+scopeNm());if(TAB==='game')loadGames()}
+
+  /* ── 왼쪽 학생 목록 ── */
+  function renderSide(){const L=curList(),now=Date.now(),ul=$('.tStu',app);
+    $('.tSideT',app).textContent=scopeNm();
+    const on=L.filter(s=>{const x=LVS[s.sid];return x&&x.loc_at&&now-Date.parse(x.loc_at)<ONLINE_SEC*1000}).length;
+    $('.tSideN',app).textContent=`${on?`접속 ${on} · `:''}${L.length}명`;
+    ul.innerHTML=L.length?L.map(s=>{const x=LVS[s.sid]||{},online=x.loc_at&&now-Date.parse(x.loc_at)<ONLINE_SEC*1000,n=(x.att||[]).length;
+      return`<li class="${online?'on':''} ${x.help_at?'help':''}"><button type="button" data-sid="${esc(s.sid)}"><span class="dot"></span><span class="nm">${nameH(s)}</span>${x.help_at?'<span class="hand" title="손들었어요">✋</span>':''}<span class="t-cnt">${n||''}</span></button></li>`}).join('')
+      :`<li class="empty muted">${grp()?'아직 학생이 없어요.<br>‘👥 학생 관리’에서 넣어 주세요.':'학생이 없어요.'}</li>`;
+    $$('button[data-sid]',ul).forEach(b=>b.onclick=()=>openStu(b.dataset.sid))}
+
+  /* ── 지금 도울 학생 (10초마다) ── */
+  async function fetchLive(L){
+    if(isClass()){const[g,k]=SC.slice(2).split('-').map(Number);const R=await API.call('hg_t_live',{p_token:tTok(),p_grade:g,p_klass:k});(R.students||[]).forEach(s=>{s.grade=g;s.klass=k});return R}
+    const sids=L.map(s=>s.sid);if(!sids.length)return{now:new Date().toISOString(),students:[]};
+    if(!sidsMissing){try{return await API.call('hg_t_live_sids',{p_token:tTok(),p_sids:sids})}catch(e){if(!isMissingFn(e))throw e;sidsMissing=true}}
+    /* group.sql 실행 전: 정규 반별로 받아서 골라요 */
+    const want=new Set(sids),C=[...new Set(L.map(s=>`${s.grade}-${s.klass}`))];let now=null;const out=[];
+    for(const c of C){const[g,k]=c.split('-').map(Number);const R=await API.call('hg_t_live',{p_token:tTok(),p_grade:g,p_klass:k});now=R.now;(R.students||[]).forEach(s=>{if(want.has(s.sid)){s.grade=g;s.klass=k;out.push(s)}})}
+    return{now:now||new Date().toISOString(),students:out}}
   async function loadLive(){const hb=$('.tHelp',app),grid=$('.tNowGrid',app);if(!hb)return;
-    if(!klassSel||klassSel==='all'||!/^\d+-\d+$/.test(klassSel)){hb.innerHTML='<p class="muted">반을 하나 고르면 보여요.</p>';grid.innerHTML='';$('.tTogether',app).innerHTML='';return}
     if(liveMissing){hb.innerHTML=liveSqlHelp();return}
-    const[g,k]=klassSel.split('-').map(Number);
-    try{const R=await API.call('hg_t_live',{p_token:tTok(),p_grade:g,p_klass:k});if(!R||location.hash!=='#teacher')return;
-      const S=R.students||[],now=Date.parse(R.now)||Date.now();
+    const L=curList();if(!L.length){hb.innerHTML='<div class="muted t-empty">이 반에는 아직 학생이 없어요.</div>';grid.innerHTML='';$('.tTogether',app).innerHTML='';$('.tNowSum',app).textContent='';renderSide();return}
+    const sc=SC;
+    try{const R=await fetchLive(L);if(!R||location.hash!=='#teacher'||sc!==SC)return;
+      const S=(R.students||[]).map(s=>Object.assign(s,{lab:nameT(s),labH:nameH(s)})),now=Date.parse(R.now)||Date.now();LVS={};S.forEach(s=>LVS[s.sid]=s);
       const rows=S.map(s=>({s,f:liveFlags(s,now)})).filter(x=>x.f.length).sort((a,b)=>b.f.reduce((t,x)=>t+x.w,0)-a.f.reduce((t,x)=>t+x.w,0));
       const hot=rows.filter(x=>x.f.some(y=>y.w>=3)).length,nb=$('.tHelpN',app);nb.hidden=!hot;nb.textContent=hot;
       $('.tTogether',app).innerHTML=togetherLive(S,now);
-      hb.innerHTML=rows.length?`<div class="helpl">${rows.map(({s,f})=>`<div class="hc ${f.some(x=>x.w>=3)?'hot':''}"><div class="hn"><b>${s.num}번</b><span class="muted">지금: ${s.loc?esc(s.loc):'-'}</span></div>${f.map(x=>`<span class="chip ${x.c}">${x.t}</span>`).join('')}
-        <div style="margin-top:8px;display:flex;gap:6px"><button type="button" class="btn ghost t-mini tAck" data-sid="${esc(s.sid)}">✓ 도왔어요</button></div></div>`).join('')}</div>`:'<div class="muted" style="text-align:center;padding:18px">지금은 도움이 필요한 학생이 없어요 🙂</div>';
+      hb.innerHTML=rows.length?`<div class="helpl">${rows.map(({s,f})=>`<div class="hc ${f.some(x=>x.w>=3)?'hot':''}"><div class="hn"><button type="button" class="t-nmb" data-sid="${esc(s.sid)}">${s.labH}</button><span class="muted">지금: ${s.loc?esc(s.loc):'-'}</span></div>${f.map(x=>`<span class="chip ${x.c}">${x.t}</span>`).join('')}
+        <div style="margin-top:8px"><button type="button" class="btn ghost t-mini tAck" data-sid="${esc(s.sid)}">✓ 도왔어요</button></div></div>`).join('')}</div>`:'<div class="muted t-empty">지금은 도움이 필요한 학생이 없어요 🙂</div>';
       $$('.tAck',hb).forEach(b=>b.onclick=async()=>{b.disabled=true;try{await API.call('hg_t_ack',{p_token:tTok(),p_sid:b.dataset.sid});loadLive()}catch(e){fail(e)}});
       const fl=Object.fromEntries(rows.map(x=>[x.s.sid,x.f]));
-      grid.innerHTML=S.map(s=>liveCard(s,now,fl[s.sid])).join('');
+      grid.innerHTML=S.map(s=>liveCard(s,now,fl[s.sid]).replace('<div class="lv ',`<div data-sid="${esc(s.sid)}" class="lv `)).join('');
+      $$('.lv[data-sid]',grid).forEach(c=>c.onclick=()=>openStu(c.dataset.sid));$$('.t-nmb',hb).forEach(b=>b.onclick=()=>openStu(b.dataset.sid));
       const on=S.filter(s=>s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000).length;$('.tNowSum',app).textContent=`접속 중 ${on}명 / ${S.length}명 · 오늘 푼 문제 ${S.reduce((t,s)=>t+(s.att||[]).length,0)}개`;
-      $('.tLiveAt',app).textContent=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+      $('.tLiveAt',app).textContent=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' 기준';renderSide()}
     catch(e){if(isMissingFn(e)){liveMissing=true;hb.innerHTML=liveSqlHelp();grid.innerHTML=''}else fail(e)}}
   clearInterval(window._liveT);window._liveT=setInterval(()=>{if(location.hash!=='#teacher'){clearInterval(window._liveT);return}if($('.tAuto',app)&&$('.tAuto',app).checked&&document.visibilityState==='visible')loadLive()},10000);
-  async function loadTBoss(){const box=$('.tBoss',app);if(!box)return;if(!klassSel||klassSel==='all'||!/^\d+-\d+$/.test(klassSel)){box.hidden=true;return}
-    const[g,k]=klassSel.split('-').map(Number),body=$('.tBossBody',box);box.hidden=false;$('.tBossTools',box).hidden=false;
-    try{const st=await API.call('hg_t_class_status',{p_token:tTok(),p_grade:g,p_klass:k});if(!st)return;const pl=bossPlan(st),c=pl.cur,zero=(st.students||[]).filter(x=>!NUM(x.pts)).map(x=>x.num);
-      const sel=$('.tPer',box);if(![...sel.options].some(o=>+o.value===st.per_student))sel.insertAdjacentHTML('beforeend',`<option value="${NUM(st.per_student)}">${NUM(st.per_student)}</option>`);sel.value=String(st.per_student);
-      $('.tBV',box).href=`#bossview-${g}-${k}`;
-      body.innerHTML=`<div class="boss-mini"><div class="bm-pic">${c?bossSVG(c.boss,90,0.5):winSVG().replace('width="220" height="220"','width="84" height="84"')}</div><div class="bm-info"><b>${c?`${c.k+1}단계 · ${c.boss.nm}`:'이번 주 보스를 모두 물리쳤어요'}</b>${c?`<div class="hpbar"><i style="width:${Math.max(0,Math.min(100,(c.end-pl.dmg)/c.hp*100)).toFixed(1)}%"></i></div><small>체력 ${c.end-pl.dmg} / ${c.hp} · 이번 주 데미지 ${pl.dmg} · 물리친 보스 ${pl.defeated.length}마리</small>`:''}</div></div>
-        <p style="margin:0">이번 주 참여 <b>${NUM(st.active)}/${NUM(st.members)}명</b>${st.members?(zero.length?` · 아직 데미지를 주지 않은 번호: ${zero.join(', ')}`:' · 모두 참여했어요!'):''}</p>
-        <p class="muted" style="margin:6px 0 0;font-size:14px">1단계 보스 체력 = 학생 1명당 체력 × 학생 수(최소 5명). 단계가 오를수록 1.5배, 2배…로 늘어나요. 주 중간에 바꾸면 이번 주 보스 체력도 바로 바뀌어요. 학생 화면에는 개인 순위가 보이지 않아요.</p>`}
-    catch(e){if(isMissingFn(e)){$('.tBossTools',box).hidden=true;body.innerHTML=gameSqlHelp()}else fail(e)}}
-  async function loadTBB(){const box=$('.tBB',app);if(!box)return;if(!klassSel||klassSel==='all'||!/^\d+-\d+$/.test(klassSel)){box.hidden=true;return}
-    const[g,k]=klassSel.split('-').map(Number),body=$('.tBBbody',box);box.hidden=false;$('.tBBTools',box).hidden=false;
-    try{const R=await API.call('hg_t_bb',{p_token:tTok(),p_grade:g,p_klass:k});if(!R)return;
-      $('.tBBon',box).checked=!!R.on;$('.tBBmax',box).value=String(NUM(R.max));
-      const lab=p=>!p?'–':(p.grade===g&&p.klass===k?`${NUM(p.num)}번`:`${NUM(p.grade)}-${NUM(p.klass)}-${NUM(p.num)}`);
-      const res=x=>x.status==='done'?(x.winner==='draw'?'무승부':`${lab(x.winner==='host'?x.host:x.guest)} 승${x.reason==='forfeit'?' (기권)':x.reason==='timeout'?' (시간 초과)':''}`):({waiting:'기다리는 중',setup:'준비 중',playing:'경기 중',cancelled:'취소'})[x.status]||'';
-      const G=(R.games||[]).filter(x=>x.status!=='cancelled').slice(0,15),S=R.students||[];
-      body.innerHTML=`<p style="margin:0 0 8px">${R.on?'켜져 있어요.':'<b>꺼져 있어요.</b> 학생들은 새 경기를 열 수 없고, 진행 중인 경기는 멈춰요.'} · 지금 경기 중 <b>${NUM(R.active)}</b>판 · 오늘 <b>${NUM(R.today)}</b>판</p>
-        ${S.length?`<div class="tablewrap"><table class="t"><thead><tr><th>번호</th><th>경기</th><th>승</th><th>패</th><th>무</th><th>포인트 손익</th></tr></thead><tbody>${S.map(x=>`<tr><td>${NUM(x.num)}번</td><td class="rm">${NUM(x.games)}</td><td class="rm">${NUM(x.w)}</td><td class="rm">${NUM(x.l)}</td><td class="rm">${NUM(x.d)}</td><td class="rm ${Number(x.net)<0?'t-due':''}">${Number(x.net)>0?'+':''}${Number(x.net)||0}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted" style="margin:0">아직 끝난 경기가 없어요.</p>'}
-        ${G.length?`<h3 style="margin:14px 0 4px;font-size:16px">최근 경기</h3><div class="tablewrap"><table class="t"><thead><tr><th>시각</th><th>방장</th><th>상대</th><th>판돈</th><th>자리</th><th>결과</th></tr></thead><tbody>${G.map(x=>`<tr><td>${relTime(x.at)}</td><td>${lab(x.host)}</td><td>${lab(x.guest)}</td><td class="rm">${NUM(x.stake)||'친선'}</td><td class="rm">${NUM(x.digits)}</td><td>${res(x)}</td></tr>`).join('')}</tbody></table></div>`:''}
-        <p class="muted" style="margin:8px 0 0;font-size:14px">판돈은 학생의 ‘쓸 수 있는 포인트’에서만 오가요. 학급 현황의 포인트(모은 포인트)와 보스 데미지는 바뀌지 않아요. 한 학생당 하루 10판까지.</p>`}
-    catch(e){if(isMissingFn(e)){$('.tBBTools',box).hidden=true;body.innerHTML=gameSqlHelp().replace('보스전을 열려면','숫자야구 대결과 보스전을 열려면')}else fail(e)}}
-  const setBB=async()=>{const[g,k]=String(klassSel).split('-').map(Number);try{await API.call('hg_t_bb_set',{p_token:tTok(),p_grade:g,p_klass:k,p_on:$('.tBBon',app).checked,p_max:+$('.tBBmax',app).value});toast('숫자야구 설정을 바꿨어요.');loadTBB()}catch(er){fail(er)}};
-  $('.tBBon',app).onchange=setBB;$('.tBBmax',app).onchange=setBB;
-  $('.tPer',app).onchange=async e=>{const[g,k]=String(klassSel).split('-').map(Number);try{await API.call('hg_t_set_boss',{p_token:tTok(),p_grade:g,p_klass:k,p_per_student:+e.target.value});toast('보스 체력을 바꿨어요.');loadTBoss()}catch(er){fail(er)}};
-  function wireRow(tr){const sid=tr.dataset.sid;
-    $('.t-num',tr).onclick=async e=>{const b=e.currentTarget,nx=tr.nextElementSibling;if(nx&&nx.classList.contains('t-detail')){nx.remove();b.setAttribute('aria-expanded','false');return}
-      b.setAttribute('aria-expanded','true');const d=el(`<tr class="t-detail"><td colspan="${tr.children.length}"><span class="muted">불러오는 중…</span></td></tr>`);tr.after(d);
-      try{const A=await API.call('hg_t_student_attempts',{p_token:tTok(),p_sid:sid,p_limit:30})||[];
-        d.firstElementChild.innerHTML=A.length?`<ul class="t-att">${A.map(a=>`<li><span class="muted">${relTime(a.created_at)}</span> <b>${PTYPE_NM[a.ptype]||esc(a.ptype||a.lesson)}</b> · ${KIND_KO[a.kind]||a.kind} · ${a.good?'<span class="ok">'+CHECK+' 해냄</span>':'<span class="bad">정답 확인함</span>'}${a.wrongs?` · 틀린 횟수 ${a.wrongs}`:''}${a.step_wrongs&&a.mode==='steps'?` <span class="muted">(단계별 틀림 ${a.step_wrongs.join(' · ')})</span>`:''}</li>`).join('')}</ul>`:'<span class="muted">아직 풀이 기록이 없어요.</span>'}
-      catch(e){d.remove();fail(e)}};
-    $('.t-reset',tr).onclick=e=>confirmInline(e.currentTarget,'새 비밀번호를 만들까요?',async()=>{try{const r=await API.call('hg_t_reset_pin',{p_token:tTok(),p_sid:sid});
-      const cell=$('.t-act',tr);cell.innerHTML=`<span class="t-newpin">새 비밀번호 <b class="rm">${esc(r.pin)}</b></span>`;toast('새 비밀번호는 지금만 보여요. 학생에게 알려 주세요.')}catch(er){fail(er)}});
-    $('.t-del',tr).onclick=e=>confirmInline(e.currentTarget,'이 학생의 기록을 모두 지울까요? 되돌릴 수 없어요.',async()=>{try{await API.call('hg_t_delete_student',{p_token:tTok(),p_sid:sid});toast('학생을 지웠어요.');loadRoster()}catch(er){fail(er)}})}
-  function confirmInline(btn,q,yes){const cell=btn.parentElement,keep=cell.innerHTML;cell.innerHTML=`<span class="t-confirm">${q} <button type="button" class="t-mini t-yes">네</button><button type="button" class="t-mini t-no">아니요</button></span>`;
-    $('.t-yes',cell).onclick=()=>{cell.innerHTML='<span class="muted">처리하는 중…</span>';yes()};$('.t-no',cell).onclick=()=>{cell.innerHTML=keep;wireRow(cell.parentElement)}}
+
+  /* ── 학습 현황 ── */
+  function renderRoster(){const L=curList();$('.tEmpty',app).hidden=!!L.length;
+    const S=L.map(s=>Object.assign({s},dataSummary(s.data||{})));const wk=Date.now()-7*864e5;
+    const act=L.filter(s=>s.last_seen&&Date.parse(s.last_seen)>wk).length,avg=S.length?Math.round(S.reduce((a,x)=>a+x.pts,0)/S.length):0,tries=L.reduce((a,s)=>a+(s.attempts_7d||0),0);
+    {const nm=nameT,lst=a=>a.length>15?a.slice(0,15).join(', ')+` 외 ${a.length-15}명`:a.join(', ');
+      const away=S.filter(x=>!x.s.last_seen||Date.parse(x.s.last_seen)<wk).map(x=>nm(x.s)),back=S.filter(x=>x.due>=5).map(x=>`${nm(x.s)}(${x.due})`),noc=S.filter(x=>x.s.last_seen&&Date.parse(x.s.last_seen)>=wk&&!x.calc&&!x.diag).map(x=>nm(x.s)),base0=S.filter(x=>x.plan.includes('facts')||x.plan.includes('add')).map(x=>`${nm(x.s)}(${x.plan.slice(0,2).map(id=>({add:'덧뺄',facts:'구구단',div:'나눗',order:'순서',fracbase:'분수'})[id]||id).join('·')})`);
+      $('.t-watch',app).innerHTML=(away.length?`<div><b>7일 넘게 들어오지 않았어요</b> (${away.length}명) · ${esc(lst(away))}</div>`:'')+(back.length?`<div class="mid"><b>복습이 5문제 넘게 밀렸어요</b> · ${esc(lst(back))}</div>`:'')+(noc.length?`<div class="mid"><b>기초 연산을 아직 시작하지 않았어요</b> · ${esc(lst(noc))}</div>`:'')+(base0.length?`<div class="mid"><b>시작점 찾기에서 덧셈·뺄셈이나 곱셈구구부터 다지기로 나왔어요</b> · ${esc(lst(base0))}</div>`:'')}
+    $('.t-tiles',app).innerHTML=`<div class="t-tile"><small>학생</small><b>${L.length}</b></div><div class="t-tile"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="t-tile"><small>평균 포인트</small><b>${avg}</b></div><div class="t-tile"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
+    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td class="l"><button type="button" class="t-num">${nameH(s)}</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
+      <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
+      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
+      <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td></tr>`).join('');
+    $$('.tRows .t-num',app).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid))}
+  $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
+    const head=['이름(이 기기)','학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>DATA_TABS.map(k=>`${l.no}차시 ${TAB_NM[k]}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
+    const rows=L.map(s=>{const x=dataSummary(s.data);return[NAMES[s.sid]||'',s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.facts,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
+    const cell=v=>{v=String(v);return/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+    const csv='﻿'+[head,...rows].map(r=>r.map(cell).join(',')).join('\r\n');
+    const nm=scopeNm().replace(/\s+/g,'_').replace(/[\\/:*?"<>|]/g,'');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`한걸음수학_${nm}_${today()}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)};
+
+  /* ── 많이 막히는 단계 ── */
+  async function loadStats(){const note=$('.tStatsNote',app);note.innerHTML='';
+    try{let rows;const L=curList();
+      if(SC==='all'||statsSidsMissing)rows=await API.call('hg_t_step_stats',{p_token:tTok(),p_days:days});
+      else{try{rows=await API.call('hg_t_step_stats_sids',{p_token:tTok(),p_days:days,p_sids:L.map(s=>s.sid)})}
+        catch(e){if(!isMissingFn(e))throw e;statsSidsMissing=true;rows=await API.call('hg_t_step_stats',{p_token:tTok(),p_days:days})}}
+      if(statsSidsMissing&&SC!=='all')note.innerHTML='<p class="muted t-lead">지금은 <b>모든 학생</b> 기준이에요. 반별로 보려면 <code>supabase/group.sql</code>을 한 번 실행해 주세요.</p>';
+      renderStats(rows||[])}catch(e){fail(e)}}
   function renderStats(rows){const host=$('.tStats',app);if(!rows.length){host.innerHTML='<p class="muted">아직 모인 기록이 없어요. 학생들이 단계 문제를 풀면 여기에 쌓여요.</p>';return}
     rows=rows.filter(x=>Object.prototype.hasOwnProperty.call(PTYPE_NM,x.ptype));if(!rows.length){host.innerHTML='<p class="muted">아직 모인 기록이 없어요. 학생들이 단계 문제를 풀면 여기에 쌓여요.</p>';return}
     const groups={};rows.forEach(x=>{const k=x.lesson+'|'+x.ptype;(groups[k]=groups[k]||{lesson:x.lesson,ptype:x.ptype,gen:x.gen,seed:x.seed,steps:[]}).steps.push(x)});
@@ -2951,31 +3128,148 @@ function viewTeacher(){
       `<div class="t-stats">${G.map(g=>`<div class="t-stat"><div class="t-stat-h"><b>${PTYPE_NM[g.ptype]||esc(g.ptype)}</b><span class="muted">${g.n}번 풀었어요</span></div><ol>${g.steps.map(st=>{const w=st.n?Math.round(st.wrong/st.n*100):0,rv=st.n?Math.round(st.revealed/st.n*100):0;
         return`<li><span class="sl">(${st.step}) ${esc(label(g,st))}</span><span class="bar" role="img" aria-label="틀림 ${w}%, 정답 확인 ${rv}%"><i class="w" style="width:${w}%"></i><i class="r" style="width:${rv}%"></i></span><span class="pc rm">${w}%</span></li>`}).join('')}</ol></div>`).join('')}</div>
       <p class="muted t-legend"><i class="lw"></i>한 번이라도 틀린 비율 <i class="lr"></i>세 번 틀려서 정답을 확인한 비율</p>`}
-  $('.tClass',app).onchange=e=>{klassSel=e.target.value;lsSet('hangeoreum-t-class',klassSel);renderRoster()};
   $$('.tDays button',app).forEach(b=>b.onclick=()=>{days=+b.dataset.d;$$('.tDays button',app).forEach(x=>x.classList.toggle('on',x===b));loadStats()});
-  $('.tRefresh',app).onclick=()=>{loadRoster();loadStats()};
-  $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
-    const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>DATA_TABS.map(k=>`${l.no}차시 ${TAB_NM[k]}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
-    const rows=L.map(s=>{const x=dataSummary(s.data);return[s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.facts,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
-    const cell=v=>{v=String(v);return/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-    const csv='﻿'+[head,...rows].map(r=>r.map(cell).join(',')).join('\r\n');
-    const nm=klassSel==='all'?'전체':String(klassSel).replace(/^(\d+)-(\d+)$/,'$1학년_$2반');
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`한걸음수학_${nm}_${today()}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)};
-  $('.tOut',app).onclick=async()=>{const t=tTok();tSet(null);API.call('hg_logout',{p_token:t}).catch(()=>{});toast('교사 화면에서 로그아웃했어요.');viewTeacher()};
-  $('.t-create',app).onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tCMsg',app);const g=+f.g.value,k=+f.k.value,a=+f.a.value,b=+f.b.value;m.textContent='만드는 중…';
+
+  /* ── 학생 관리 ── */
+  const parseLines=t=>String(t||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(\d)\s*(?:학년|[-.\/\s,\t])\s*(\d{1,2})\s*(?:반|[-.\/\s,\t])\s*(\d{1,2})\s*번?\s*[,\t]?\s*(.*)$/);
+    if(!m)return{bad:x};const g=+m[1],k=+m[2],n=+m[3];if(!(g>=1&&g<=3&&k>=1&&k<=20&&n>=1&&n<=50))return{bad:x};return{g,k,n,sid:`${g}-${k}-${n}`,name:m[4].replace(/^[-:·\s]+/,'').trim().slice(0,20)}});
+  async function setMembers(gid,sids,on){const r=await API.call('hg_t_group_members',{p_token:tTok(),p_id:gid,p_sids:sids,p_on:on});const g=GROUPS.find(x=>x.id===gid);
+    if(g){const S=new Set(g.sids);sids.forEach(s=>on?ROSTER.some(x=>x.sid===s)&&S.add(s):S.delete(s));g.sids=[...S].sort()}return r}
+  function renderPeople(){const host=$('.tPeople',app),g=grp(),L=curList();
+    if(groupsOff){host.innerHTML=`<div class="card panel"><h2>방과후 반 만들기</h2><p style="margin:0">방과후 반을 쓰려면 Supabase 대시보드의 <b>SQL Editor</b>에서 <code>supabase/group.sql</code> 내용을 붙여 넣고 한 번 <b>Run</b> 해 주세요. 실행한 뒤 [새로 고침]을 누르면 나타나요.</p></div>`+createClassCard();wireCreate(host);return}
+    const others=GROUPS.filter(x=>!g||x.id!==g.id);
+    host.innerHTML=`<div class="card panel"><div class="t-head"><h2>방과후 반</h2></div>
+        <div class="t-groups">${GROUPS.map(x=>`<button type="button" class="t-gcard ${g&&g.id===x.id?'on':''}" data-v="g:${x.id}"><b>${esc(x.name)}</b><span>${x.sids.length}명</span></button>`).join('')}
+         <form class="t-gcard new tGNew"><input class="inp" maxlength="30" placeholder="새 반 이름 (예: 화목 방과후)" aria-label="새 방과후 반 이름" required><button class="btn primary">만들기</button></form></div></div>
+      <div class="card panel"><div class="t-head"><h2>${esc(scopeNm())} 학생 <span class="muted" style="font-size:17px">${L.length}명</span></h2>
+         ${g?`<span class="t-tools"><button type="button" class="btn ghost tGRen">이름 바꾸기</button><button type="button" class="btn ghost tGDel">반 지우기</button></span>`:''}</div>
+        ${L.length?`<div class="t-mbar"><label class="t-sel"><input type="checkbox" class="tAllChk"> 모두 고르기</label><span class="muted tChkN">0명 골랐어요</span>
+          ${g?'<button type="button" class="btn ghost tOut1" disabled>반에서 빼기</button>':''}
+          ${others.length?`<span class="t-sel">고른 학생을 <select class="inp sel tToG">${others.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><button type="button" class="btn ghost tInto" disabled>에 넣기</button></span>`:''}</div>
+         <div class="tablewrap"><table class="t t-mem"><thead><tr><th></th><th>이름 <small>(이 기기에만 저장)</small></th><th>학년-반-번호</th><th>최근 접속</th><th>다른 방과후 반</th></tr></thead><tbody>${L.map(s=>`<tr data-sid="${esc(s.sid)}"><td><input type="checkbox" class="tChk" aria-label="${code(s)} 고르기"></td>
+           <td class="l"><input class="inp t-nmi" value="${esc(NAMES[s.sid]||'')}" placeholder="이름" maxlength="20" aria-label="${code(s)} 이름"></td><td><button type="button" class="t-num">${code(s)}</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td><td class="${!s.last_seen||Date.parse(s.last_seen)<Date.now()-7*864e5?'t-old':''}">${relTime(s.last_seen)}</td>
+           <td class="l t-gtags">${GROUPS.filter(x=>x.sids.includes(s.sid)&&(!g||x.id!==g.id)).map(x=>`<span class="t-tag">${esc(x.name)}</span>`).join('')||'<span class="muted">–</span>'}</td></tr>`).join('')}</tbody></table></div>`
+         :`<p class="muted">${g?'아직 이 반에 학생이 없어요. 아래에서 넣어 주세요.':'학생이 없어요.'}</p>`}</div>
+      ${g?`<div class="card panel"><h2>학생 넣기</h2><p class="muted t-lead">한 줄에 한 명씩 <b>학년-반-번호 이름</b>을 적어요. 아직 계정이 없는 학생은 바로 만들고 비밀번호를 보여 줘요. 이름은 빼도 돼요.</p>
+         <textarea class="inp tAddTxt" rows="5" style="width:100%" placeholder="1-3-5 김민수&#10;1-4-12 이서연&#10;2학년 1반 7번 박지호"></textarea>
+         <div class="next-row" style="margin:10px 0 0"><button type="button" class="btn primary tAddGo">${esc(g.name)}에 넣기</button></div><div class="flmsg tAddMsg" role="status"></div><div class="tNew"></div>
+         ${classes().length?`<h3>정규 반에서 골라 넣기</h3><div class="t-pick"><label class="t-sel">반 <select class="inp sel tPickC">${classes().map(([k,v])=>`<option value="${k}">${v.g}학년 ${v.k}반</option>`).join('')}</select></label><div class="chips tPickL"></div><button type="button" class="btn ghost tPickGo" disabled>고른 학생 넣기</button></div>`:''}</div>`:''}
+      ${createClassCard()}`;
+    $$('.t-gcard[data-v]',host).forEach(b=>b.onclick=()=>{SC=b.dataset.v;lsSet('hangeoreum-t-scope',SC);LVS={};render();loadLive();loadStats()});
+    $('.tGNew',host).onsubmit=async e=>{e.preventDefault();const i=$('input',e.target),nm=i.value.trim();if(!nm)return;
+      try{const r=await API.call('hg_t_group_save',{p_token:tTok(),p_id:null,p_name:nm});GROUPS.push({id:r.id,name:nm,sids:[]});SC='g:'+r.id;lsSet('hangeoreum-t-scope',SC);toast(`‘${nm}’ 반을 만들었어요. 이제 학생을 넣어 주세요.`);render();loadLive();loadStats();setTimeout(()=>{const t=$('.tAddTxt',app);if(t)t.focus()},50)}catch(er){fail(er)}};
+    if(g){$('.tGRen',host).onclick=async()=>{const nm=(window.prompt('새 반 이름',g.name)||'').trim();if(!nm||nm===g.name)return;try{await API.call('hg_t_group_save',{p_token:tTok(),p_id:g.id,p_name:nm});g.name=nm;render()}catch(er){fail(er)}};
+      $('.tGDel',host).onclick=e=>{const b=e.currentTarget,keep=b.parentElement.innerHTML,box=b.parentElement;box.innerHTML=`<span class="t-confirm">‘${esc(g.name)}’ 반을 지울까요? 학생 계정과 기록은 그대로예요. <button type="button" class="t-mini t-yes">지우기</button><button type="button" class="t-mini t-no">아니요</button></span>`;
+        $('.t-no',box).onclick=()=>{box.innerHTML=keep;renderPeople()};$('.t-yes',box).onclick=async()=>{try{await API.call('hg_t_group_del',{p_token:tTok(),p_id:g.id});GROUPS=GROUPS.filter(x=>x.id!==g.id);SC=null;toast('방과후 반을 지웠어요.');render();loadLive();loadStats()}catch(er){fail(er)}}}}
+    /* 이름 칸: 고치면 바로 저장 (이 기기) */
+    $$('.t-nmi',host).forEach(i=>i.onchange=()=>{const sid=i.closest('tr').dataset.sid,v=i.value.trim().slice(0,20);if(v)NAMES[sid]=v;else delete NAMES[sid];saveNames();renderSide();renderRoster();toast('이름을 저장했어요 (이 기기).')});
+    $$('.t-mem .t-num',host).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid));
+    const chks=$$('.tChk',host),upd=()=>{const n=chks.filter(c=>c.checked).length;const cn=$('.tChkN',host);if(cn)cn.textContent=`${n}명 골랐어요`;[$('.tOut1',host),$('.tInto',host)].forEach(b=>{if(b)b.disabled=!n})};
+    chks.forEach(c=>c.onchange=upd);const all=$('.tAllChk',host);if(all)all.onchange=()=>{chks.forEach(c=>c.checked=all.checked);upd()};
+    const picked=()=>chks.filter(c=>c.checked).map(c=>c.closest('tr').dataset.sid);
+    if($('.tOut1',host))$('.tOut1',host).onclick=async()=>{const S=picked();try{await setMembers(g.id,S,false);toast(`${S.length}명을 ‘${g.name}’에서 뺐어요. 계정과 기록은 그대로예요.`);render();loadLive();loadStats()}catch(er){fail(er)}};
+    if($('.tInto',host))$('.tInto',host).onclick=async()=>{const S=picked(),gid=+$('.tToG',host).value,G=GROUPS.find(x=>x.id===gid);try{await setMembers(gid,S,true);toast(`${S.length}명을 ‘${G.name}’에 넣었어요.`);render()}catch(er){fail(er)}};
+    if(g){$('.tAddGo',host).onclick=()=>addLines(g);
+      const pc=$('.tPickC',host);if(pc){const draw=()=>{const k=pc.value,L2=ROSTER.filter(s=>`${s.grade}-${s.klass}`===k);
+        $('.tPickL',host).innerHTML=L2.map(s=>{const inG=g.sids.includes(s.sid);return`<button type="button" class="chip t-pk ${inG?'off':''}" data-sid="${esc(s.sid)}" ${inG?'disabled title="이미 들어 있어요"':''}>${s.num}${NAMES[s.sid]?` ${esc(NAMES[s.sid])}`:'번'}</button>`}).join('');
+        $$('.t-pk:not([disabled])',host).forEach(b=>b.onclick=()=>{b.classList.toggle('on');$('.tPickGo',host).disabled=!$$('.t-pk.on',host).length})};
+        pc.onchange=draw;draw();
+        $('.tPickGo',host).onclick=async()=>{const S=$$('.t-pk.on',host).map(b=>b.dataset.sid);try{await setMembers(g.id,S,true);toast(`${S.length}명을 넣었어요.`);render();loadLive();loadStats()}catch(er){fail(er)}}}}
+    wireCreate(host)}
+  async function addLines(g){const P=parseLines($('.tAddTxt',app).value),m=$('.tAddMsg',app),bad=P.filter(x=>x.bad),ok=P.filter(x=>!x.bad);
+    if(!ok.length){m.className='flmsg bad';m.textContent=bad.length?`이렇게 적어 주세요: 1-3-5 김민수 (알아보지 못한 줄: ${bad.slice(0,3).map(x=>x.bad).join(' / ')})`:'넣을 학생을 적어 주세요.';return}
+    m.className='flmsg';m.textContent='넣는 중…';const made=[];
+    try{for(const x of ok){if(!ROSTER.some(s=>s.sid===x.sid)){const R=await API.call('hg_t_create_students',{p_token:tTok(),p_grade:x.g,p_klass:x.k,p_from:x.n,p_to:x.n})||[];R.filter(r=>!r.existed).forEach(r=>made.push({sid:x.sid,g:x.g,k:x.k,num:x.n,pin:r.pin}))}
+        if(x.name)NAMES[x.sid]=x.name}
+      saveNames();ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[];
+      const sids=[...new Set(ok.map(x=>x.sid))],before=new Set(g.sids);await setMembers(g.id,sids,true);const added=sids.filter(s=>!before.has(s)).length;
+      $('.tAddTxt',app).value='';render();loadLive();loadStats();
+      const m2=$('.tAddMsg',app);m2.innerHTML=`<span class="ok">${CHECK} ‘${esc(g.name)}’에 ${added}명을 넣었어요.</span>${made.length?` 그중 ${made.length}명은 새 계정이에요. 비밀번호는 지금만 보여요.`:''}${bad.length?` <span class="t-due">알아보지 못한 줄 ${bad.length}개는 건너뛰었어요.</span>`:''}`;
+      showNew($('.tNew',app),made)}
+    catch(er){m.textContent='';fail(er)}}
+  function createClassCard(){return`<details class="card panel t-cc"><summary><b>정규 반 번호 한꺼번에 만들기</b> <span class="muted">· 한 반 전체 계정을 만들 때</span></summary>
+     <p class="muted t-lead">번호마다 4자리 비밀번호를 만들어요. 이미 있는 번호는 건너뛰어요. 비밀번호는 <b>한 번만</b> 보여 주니 꼭 복사하거나 인쇄해 두세요.</p>
+     <form class="t-create"><label>학년 <select class="inp sel" name="g">${[1,2,3].map(g=>`<option>${g}</option>`).join('')}</select></label><label>반 <select class="inp sel" name="k">${range(20).map(i=>`<option>${i+1}</option>`).join('')}</select></label>
+      <label>번호 <input class="inp num" name="a" type="number" min="1" max="50" value="1"> ~ <input class="inp num" name="b" type="number" min="1" max="50" value="30"></label><button class="btn primary">만들기</button></form><div class="flmsg tCMsg" role="status"></div><div class="tNew2"></div></details>`}
+  function wireCreate(host){const f0=$('.t-create',host);if(!f0)return;f0.onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tCMsg',host);const g=+f.g.value,k=+f.k.value,a=+f.a.value,b=+f.b.value;m.textContent='만드는 중…';
     try{const R=await API.call('hg_t_create_students',{p_token:tTok(),p_grade:g,p_klass:k,p_from:a,p_to:b})||[];const made=R.filter(x=>!x.existed),skip=R.filter(x=>x.existed);
-      m.textContent=`${g}학년 ${k}반: 새로 ${made.length}명${skip.length?`, 이미 있던 ${skip.length}명은 건너뛰었어요`:''}.`;showNew(g,k,made);klassSel=`${g}-${k}`;lsSet('hangeoreum-t-class',klassSel);loadRoster()}
-    catch(er){m.textContent='';fail(er)}};
-  function showNew(g,k,list){const host=$('.tNew',app);if(!list.length){host.innerHTML='';return}
-    const text=list.map(x=>`${g}학년 ${k}반 ${x.num}번\t${x.pin}`).join('\n');
+      ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[];renderScope();renderSide();renderRoster();
+      m.textContent=`${g}학년 ${k}반: 새로 ${made.length}명${skip.length?`, 이미 있던 ${skip.length}명은 건너뛰었어요`:''}.`;showNew($('.tNew2',host),made.map(x=>({sid:x.sid||`${g}-${k}-${x.num}`,g,k,num:x.num,pin:x.pin})))}
+    catch(er){m.textContent='';fail(er)}}}
+  function showNew(host,list){if(!host)return;if(!list.length){host.innerHTML='';return}
+    const who=x=>`${x.g}학년 ${x.k}반 ${x.num}번${NAMES[x.sid]?' '+NAMES[x.sid]:''}`,text=list.map(x=>`${who(x)}\t${x.pin}`).join('\n');
     host.innerHTML=`<div class="t-newbox"><div class="t-head"><b>새로 만든 비밀번호 (${list.length}명)</b><span><button type="button" class="btn ghost t-copy">목록 복사</button> <button type="button" class="btn ghost t-cards">카드로 보기</button></span></div>
-      <div class="t-pinlist">${list.map(x=>`<span><b>${x.num}번</b> <span class="rm">${x.pin}</span></span>`).join('')}</div><div class="t-cardhost"></div></div>`;
+      <div class="t-pinlist">${list.map(x=>`<span><b>${x.g}-${x.k}-${x.num}${NAMES[x.sid]?' '+esc(NAMES[x.sid]):''}</b> <span class="rm">${x.pin}</span></span>`).join('')}</div><div class="t-cardhost"></div></div>`;
     $('.t-copy',host).onclick=async()=>{try{await navigator.clipboard.writeText(text);toast('복사했어요. 엑셀이나 메모장에 붙여 넣으세요.')}catch(er){const ta=el(`<textarea class="inp" rows="6" style="width:100%;margin-top:8px"></textarea>`);ta.value=text;host.appendChild(ta);ta.select();toast('복사가 막혀 있어요. 아래 칸을 직접 복사해 주세요.')}};
-    $('.t-cards',host).onclick=()=>{$('.t-cardhost',host).innerHTML=`<div class="pincards">${list.map(x=>`<div class="pincard"><span class="pc-brand">한 걸음 수학</span><b>${g}학년 ${k}반 ${x.num}번</b><span>비밀번호</span><span class="pc-pin rm">${x.pin}</span><small>학년·반·번호를 고르고 비밀번호를 누르세요</small></div>`).join('')}</div><p><button type="button" class="btn t-print">인쇄하기</button> <span class="muted" style="font-size:14px">인쇄가 안 되면 화면을 캡처해서 나눠 주세요.</span></p>`;
+    $('.t-cards',host).onclick=()=>{$('.t-cardhost',host).innerHTML=`<div class="pincards">${list.map(x=>`<div class="pincard"><span class="pc-brand">한 걸음 수학</span><b>${x.g}학년 ${x.k}반 ${x.num}번</b>${NAMES[x.sid]?`<span class="pc-nm">${esc(NAMES[x.sid])}</span>`:''}<span>비밀번호</span><span class="pc-pin rm">${x.pin}</span><small>학년·반·번호를 고르고 비밀번호를 누르세요</small></div>`).join('')}</div><p><button type="button" class="btn t-print">인쇄하기</button> <span class="muted" style="font-size:14px">인쇄가 안 되면 화면을 캡처해서 나눠 주세요.</span></p>`;
       $('.t-print',host).onclick=()=>{document.body.classList.add('printing-cards');try{window.print()}catch(er){}setTimeout(()=>document.body.classList.remove('printing-cards'),500)}}}
+
+  /* ── 학생 자세히 (옆에서 열리는 창) ── */
+  const dr=$('.t-drawer',app);
+  const closeStu=()=>{dr.hidden=true;document.body.classList.remove('t-dopen')};
+  $('.t-dback',dr).onclick=closeStu;document.addEventListener('keydown',function k(e){if(!document.body.contains(dr)){document.removeEventListener('keydown',k);return}if(e.key==='Escape'&&!dr.hidden)closeStu()});
+  async function openStu(sid){const s=bySid(sid);if(!s)return;const x=dataSummary(s.data||{}),lv=LVS[sid]||{},body=$('.t-dbody',dr);
+    dr.hidden=false;document.body.classList.add('t-dopen');
+    body.innerHTML=`<div class="t-dh"><div><div class="t-dcode">${code(s)}</div><input class="inp t-dname" value="${esc(NAMES[sid]||'')}" placeholder="이름 적기 (이 기기에만 저장)" maxlength="20" aria-label="이름"></div><button type="button" class="t-dx" aria-label="닫기">✕</button></div>
+      <div class="t-dstat"><div><small>최근 접속</small><b>${relTime(s.last_seen)}</b></div><div><small>포인트</small><b class="rm">${x.pts}</b></div><div><small>연속</small><b class="rm">${x.streak}일</b></div><div><small>7일 풀이</small><b class="rm">${s.attempts_7d||0}</b></div></div>
+      ${lv.loc?`<p class="t-dloc">지금: ${esc(lv.loc)}${lv.help_at?' · <b class="t-due">✋ 손들었어요</b>':''}</p>`:''}
+      <div class="t-dles">${ready.map((l,i)=>`<div><span>${l.no}차시</span><span class="pips">${x.les[i].map((v,j)=>`<span class="pip ${v?'on':''}" title="${TAB_NM[DATA_TABS[j]]}"></span>`).join('')}</span></div>`).join('')}</div>
+      ${groupsOff?'':`<h3>방과후 반</h3><div class="chips t-dg">${GROUPS.map(g=>`<button type="button" class="chip ${g.sids.includes(sid)?'on':''}" data-g="${g.id}">${g.sids.includes(sid)?CHECK+' ':''}${esc(g.name)}</button>`).join('')||'<span class="muted">아직 방과후 반이 없어요.</span>'}</div>`}
+      <h3>최근 풀이</h3><div class="t-datt"><span class="muted">불러오는 중…</span></div>
+      <h3>계정</h3><div class="t-dact"><button type="button" class="btn ghost t-reset">비밀번호 새로 만들기</button><button type="button" class="btn ghost t-del">기록 모두 지우기</button></div>${s.locked?'<p class="t-due" style="margin:6px 0 0">비밀번호를 여러 번 틀려 잠겨 있어요. 새 비밀번호를 만들면 풀려요.</p>':''}`;
+    $('.t-dx',body).onclick=closeStu;$('.t-dx',body).focus({preventScroll:true});
+    $('.t-dname',body).onchange=e=>{const v=e.target.value.trim().slice(0,20);if(v)NAMES[sid]=v;else delete NAMES[sid];saveNames();renderSide();renderRoster();renderPeople();toast('이름을 저장했어요 (이 기기).')};
+    $$('.t-dg .chip',body).forEach(b=>b.onclick=async()=>{const gid=+b.dataset.g,G=GROUPS.find(g=>g.id===gid),on=!G.sids.includes(sid);b.disabled=true;
+      try{await setMembers(gid,[sid],on);toast(on?`‘${G.name}’에 넣었어요.`:`‘${G.name}’에서 뺐어요.`);render();openStu(sid)}catch(er){fail(er);b.disabled=false}});
+    const act=$('.t-dact',body),conf=(q,yes)=>{const keep=act.innerHTML;act.innerHTML=`<span class="t-confirm">${q} <button type="button" class="t-mini t-yes">네</button><button type="button" class="t-mini t-no">아니요</button></span>`;
+      $('.t-no',act).onclick=()=>openStu(sid);$('.t-yes',act).onclick=()=>{act.innerHTML='<span class="muted">처리하는 중…</span>';yes()}};
+    $('.t-reset',act).onclick=()=>conf('새 비밀번호를 만들까요? 지금 로그인된 기기에서는 다시 로그인해야 해요.',async()=>{try{const r=await API.call('hg_t_reset_pin',{p_token:tTok(),p_sid:sid});act.innerHTML=`<div class="t-newpin">새 비밀번호 <b class="rm">${esc(r.pin)}</b> <span class="muted">· 지금만 보여요. 학생에게 알려 주세요.</span></div>`;s.locked=false}catch(er){fail(er)}});
+    $('.t-del',act).onclick=()=>conf('이 학생의 계정과 기록을 모두 지울까요? 되돌릴 수 없어요.',async()=>{try{await API.call('hg_t_delete_student',{p_token:tTok(),p_sid:sid});delete NAMES[sid];saveNames();toast('학생을 지웠어요.');closeStu();loadAll()}catch(er){fail(er)}});
+    try{const A=await API.call('hg_t_student_attempts',{p_token:tTok(),p_sid:sid,p_limit:30})||[];const box=$('.t-datt',body);if(!box)return;
+      box.innerHTML=A.length?`<ul class="t-att">${A.map(a=>`<li><span class="muted">${relTime(a.created_at)}</span> <b>${esc(attName(a))}</b> · ${KIND_KO[a.kind]||a.kind} · ${a.good?'<span class="ok">'+CHECK+' 해냄</span>':'<span class="bad">정답 확인함</span>'}${a.wrongs?` · 틀린 횟수 ${a.wrongs}`:''}${a.step_wrongs&&a.mode==='steps'?` <span class="muted">(단계별 틀림 ${a.step_wrongs.join(' · ')})</span>`:''}</li>`).join('')}</ul>`:'<span class="muted">아직 풀이 기록이 없어요.</span>'}
+    catch(e){fail(e)}}
+
+  /* ── 게임 (정규 반 단위) ── */
+  function loadGames(){const sel=$('.tGClass',app),C=classes();if(!sel)return;
+    sel.innerHTML=C.length?C.map(([k,v])=>`<option value="${k}"${k===GK?' selected':''}>${v.g}학년 ${v.k}반</option>`).join(''):'<option>학생 없음</option>';loadTBoss();loadTBB()}
+  $('.tGClass',app).onchange=e=>{GK=e.target.value;lsSet('hangeoreum-t-class',GK);loadTBoss();loadTBB()};
+  const gk=()=>GK&&/^\d+-\d+$/.test(GK)?GK.split('-').map(Number):null;
+  async function loadTBoss(){const box=$('.tBoss',app);if(!box)return;const G=gk();if(!G){box.hidden=true;return}
+    const[g,k]=G,body=$('.tBossBody',box);box.hidden=false;$('.tBossTools',box).hidden=false;
+    try{const st=await API.call('hg_t_class_status',{p_token:tTok(),p_grade:g,p_klass:k});if(!st)return;const pl=bossPlan(st),c=pl.cur,zero=(st.students||[]).filter(x=>!NUM(x.pts)).map(x=>x.num);
+      const sel=$('.tPer',box);if(![...sel.options].some(o=>+o.value===st.per_student))sel.insertAdjacentHTML('beforeend',`<option value="${NUM(st.per_student)}">${NUM(st.per_student)}</option>`);sel.value=String(st.per_student);
+      $('.tBV',box).href=`#bossview-${g}-${k}`;
+      body.innerHTML=`<div class="boss-mini"><div class="bm-pic">${c?bossSVG(c.boss,90,0.5):winSVG().replace('width="220" height="220"','width="84" height="84"')}</div><div class="bm-info"><b>${c?`${c.k+1}단계 · ${c.boss.nm}`:'이번 주 보스를 모두 물리쳤어요'}</b>${c?`<div class="hpbar"><i style="width:${Math.max(0,Math.min(100,(c.end-pl.dmg)/c.hp*100)).toFixed(1)}%"></i></div><small>체력 ${c.end-pl.dmg} / ${c.hp} · 이번 주 데미지 ${pl.dmg} · 물리친 보스 ${pl.defeated.length}마리</small>`:''}</div></div>
+        <p style="margin:0">이번 주 참여 <b>${NUM(st.active)}/${NUM(st.members)}명</b>${st.members?(zero.length?` · 아직 데미지를 주지 않은 번호: ${zero.join(', ')}`:' · 모두 참여했어요!'):''}</p>
+        <p class="muted" style="margin:6px 0 0;font-size:14px">1단계 보스 체력 = 학생 1명당 체력 × 학생 수(최소 5명). 단계가 오를수록 1.5배, 2배…로 늘어나요. 주 중간에 바꾸면 이번 주 보스 체력도 바로 바뀌어요. 학생 화면에는 개인 순위가 보이지 않아요.</p>`}
+    catch(e){if(isMissingFn(e)){$('.tBossTools',box).hidden=true;body.innerHTML=gameSqlHelp()}else fail(e)}}
+  async function loadTBB(){const box=$('.tBB',app);if(!box)return;const G0=gk();if(!G0){box.hidden=true;return}
+    const[g,k]=G0,body=$('.tBBbody',box);box.hidden=false;$('.tBBTools',box).hidden=false;
+    try{const R=await API.call('hg_t_bb',{p_token:tTok(),p_grade:g,p_klass:k});if(!R)return;
+      $('.tBBon',box).checked=!!R.on;$('.tBBmax',box).value=String(NUM(R.max));
+      const lab=p=>!p?'–':(p.grade===g&&p.klass===k?`${NUM(p.num)}번`:`${NUM(p.grade)}-${NUM(p.klass)}-${NUM(p.num)}`);
+      const res=x=>x.status==='done'?(x.winner==='draw'?'무승부':`${lab(x.winner==='host'?x.host:x.guest)} 승${x.reason==='forfeit'?' (기권)':x.reason==='timeout'?' (시간 초과)':''}`):({waiting:'기다리는 중',setup:'준비 중',playing:'경기 중',cancelled:'취소'})[x.status]||'';
+      const G=(R.games||[]).filter(x=>x.status!=='cancelled').slice(0,15),S=R.students||[];
+      body.innerHTML=`<p style="margin:0 0 8px">${R.on?'켜져 있어요.':'<b>꺼져 있어요.</b> 학생들은 새 경기를 열 수 없고, 진행 중인 경기는 멈춰요.'} · 지금 경기 중 <b>${NUM(R.active)}</b>판 · 오늘 <b>${NUM(R.today)}</b>판</p>
+        ${S.length?`<div class="tablewrap"><table class="t"><thead><tr><th>번호</th><th>경기</th><th>승</th><th>패</th><th>무</th><th>포인트 손익</th></tr></thead><tbody>${S.map(x=>`<tr><td>${NUM(x.num)}번</td><td class="rm">${NUM(x.games)}</td><td class="rm">${NUM(x.w)}</td><td class="rm">${NUM(x.l)}</td><td class="rm">${NUM(x.d)}</td><td class="rm ${Number(x.net)<0?'t-due':''}">${Number(x.net)>0?'+':''}${Number(x.net)||0}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted" style="margin:0">아직 끝난 경기가 없어요.</p>'}
+        ${G.length?`<h3 style="margin:14px 0 4px;font-size:16px">최근 경기</h3><div class="tablewrap"><table class="t"><thead><tr><th>시각</th><th>방장</th><th>상대</th><th>판돈</th><th>자리</th><th>결과</th></tr></thead><tbody>${G.map(x=>`<tr><td>${relTime(x.at)}</td><td>${lab(x.host)}</td><td>${lab(x.guest)}</td><td class="rm">${NUM(x.stake)||'친선'}</td><td class="rm">${NUM(x.digits)}</td><td>${res(x)}</td></tr>`).join('')}</tbody></table></div>`:''}
+        <p class="muted" style="margin:8px 0 0;font-size:14px">판돈은 학생의 ‘쓸 수 있는 포인트’에서만 오가요. 학습 현황의 포인트(모은 포인트)와 보스 데미지는 바뀌지 않아요. 한 학생당 하루 10판까지.</p>`}
+    catch(e){if(isMissingFn(e)){$('.tBBTools',box).hidden=true;body.innerHTML=gameSqlHelp().replace('보스전을 열려면','숫자야구 대결과 보스전을 열려면')}else fail(e)}}
+  const setBB=async()=>{const G=gk();if(!G)return;try{await API.call('hg_t_bb_set',{p_token:tTok(),p_grade:G[0],p_klass:G[1],p_on:$('.tBBon',app).checked,p_max:+$('.tBBmax',app).value});toast('숫자야구 설정을 바꿨어요.');loadTBB()}catch(er){fail(er)}};
+  $('.tBBon',app).onchange=setBB;$('.tBBmax',app).onchange=setBB;
+  $('.tPer',app).onchange=async e=>{const G=gk();if(!G)return;try{await API.call('hg_t_set_boss',{p_token:tTok(),p_grade:G[0],p_klass:G[1],p_per_student:+e.target.value});toast('보스 체력을 바꿨어요.');loadTBoss()}catch(er){fail(er)}};
+
+  /* ── 설정: 비밀번호 · 이름표 ── */
   $('.t-pw',app).onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tPMsg',app);try{const r=await API.call('hg_t_change_password',{p_token:tTok(),p_old:f.o.value,p_new:f.n.value});m.textContent=r&&r.ok?'비밀번호를 바꿨어요.':(r&&r.msg)||'바꾸지 못했어요.';if(r&&r.ok)f.reset()}catch(er){fail(er)}};
-  loadRoster();loadStats();
+  $('.tNmCopy',app).onclick=async()=>{const t=Object.entries(NAMES).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([k,v])=>`${k} ${v}`).join('\n');const m=$('.tNmMsg',app);
+    if(!t){m.textContent='아직 적어 둔 이름이 없어요.';return}$('.tNames',app).value=t;try{await navigator.clipboard.writeText(t);m.textContent=`이름 ${Object.keys(NAMES).length}개를 복사했어요.`}catch(er){$('.tNames',app).select();m.textContent='위 칸을 직접 복사해 주세요.'}};
+  $('.tNmLoad',app).onclick=()=>{const P=parseLines($('.tNames',app).value).filter(x=>!x.bad&&x.name);P.forEach(x=>NAMES[x.sid]=x.name);saveNames();$('.tNmMsg',app).textContent=P.length?`이름 ${P.length}개를 불러왔어요.`:'불러올 이름이 없어요. 1-3-5 김민수처럼 적어 주세요.';render()};
+
+  $('.tRefresh',app).onclick=()=>loadAll();
+  $('.tOut',app).onclick=async()=>{const t=tTok();tSet(null);API.call('hg_logout',{p_token:t}).catch(()=>{});toast('교사 화면에서 로그아웃했어요.');viewTeacher()};
+  setTab(TAB);loadAll();
 }
+window.addEventListener('hashchange',()=>{if(location.hash!=='#teacher'){document.body.classList.remove('t-wide','t-dopen')}});
 
 
 /* ───────── 게임: 오늘의 미션 · 꾸미기 상점 · 우리 반 보스전 ───────── */
