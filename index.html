@@ -1167,7 +1167,7 @@ class Viewer{
     return[this.w/2+(this.o.dx||0)+s*x1,this.h/2+(this.o.dy||0)-s*(y1*sb+z*cb),-y1*cb+z*sb]}
   facing(n){const y1=n[0]*Math.sin(this.yaw)+n[1]*Math.cos(this.yaw);return -y1*Math.cos(this.pitch)+n[2]*Math.sin(this.pitch)}
   _bind(){
-    const cv=this.cv;let st=null;
+    const cv=this.cv;let st=null;cv.style.touchAction='none';  /* 폰: 그림 위에서는 스크롤 대신 회전 */
     cv.addEventListener('pointerdown',e=>{this.touch=e.pointerType==='touch';st={x:e.clientX,y:e.clientY,yaw:this.yaw,pitch:this.pitch,moved:false};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
     cv.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.moved&&Math.hypot(dx,dy)>6){st.moved=true;this.dragging=true}
       if(st.moved){this.yaw=st.yaw+dx*0.011;this.pitch=Math.max(-1.57,Math.min(1.57,st.pitch+dy*0.011));this.anim=null;this.userMoved=true;this.dirty=true}});
