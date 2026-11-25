@@ -280,6 +280,7 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .pvcard{display:flex;flex-direction:column;text-align:left;font:inherit;color:inherit;background:#fff;border:2.5px solid #151a28;border-radius:16px;padding:12px 14px;box-shadow:4px 4px 0 #151a28;cursor:zoom-in;transition:transform .15s}.pvcard:hover{transform:translate(-1px,-2px)}
 .pvcard canvas{pointer-events:none}
 .pvh2{display:flex;align-items:center;gap:8px}.pvh2 b{font-size:20px}
+.pvsvg{height:120px;display:flex;align-items:center;justify-content:center}.pvsvg svg{max-height:100%;max-width:100%}.pvz .pvsvg{height:300px}
 .pvfigs{display:flex;gap:6px;margin:6px 0}.pvfigs figure{flex:1;margin:0;text-align:center;min-width:0}.pvfigs canvas{width:100%;height:120px;display:block}.pvfigs figcaption{font-size:14px;font-weight:700;line-height:1.35}.pvfigs figcaption small{font-weight:400;color:#5a6377;font-size:12px}
 .pvt{font-size:16px;line-height:1.55}.pvt b{background:linear-gradient(transparent 58%,#ffe07a 58%)}.pvt small{color:#5a6377}
 .sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin:0 3px 0 6px;border:1px solid #0003}.sw.b{background:#9fbcf2}.sw.o{background:#f7c97f}
@@ -1691,7 +1692,14 @@ const PV_CARDS={poly:[
   {h:'각기둥 · 각뿔대 · 각뿔',t:'<span class="sw b"></span>밑면 <span class="sw o"></span>옆면 — <b>밑면 개수 · 크기</b>와 <b>옆면 모양</b>으로 구별',figs:()=>[[TYPE.prism.mk(5),'all','각기둥<br><small>밑면 2개 같음 · 직사각형</small>'],[TYPE.frustum.mk(5),'all','각뿔대<br><small>밑면 2개 크기 다름 · 사다리꼴</small>'],[TYPE.pyramid.mk(5),'all','각뿔<br><small>밑면 1개 · 삼각형</small>']]},
   {h:'이름은 두 가지',t:'면의 개수로 <b>칠면체</b> · 모양으로 <b>오각뿔대</b><br><small>이름의 앞부분이 밑면의 모양</small>',figs:()=>[[TYPE.frustum.mk(5),'all','면 7개 → 칠면체<br>밑면 오각형 → 오각뿔대']]},
   {h:'층으로 보기',t:'같은 높이의 꼭짓점끼리 한 층 — <b>1층 · 2층 · 층 사이</b>',figs:()=>[[TYPE.prism.mk(5),'Fv','오각기둥<br><small>1층 5 · 2층 5</small>'],[TYPE.pyramid.mk(5),'Fv','오각뿔<br><small>1층 5 · 2층 1(꼭대기)</small>']]}]};
-function pvCardHTML(c,i){return`<div class="pvh2"><span class="pvn">${i+1}</span><b>${c.h}</b></div><div class="pvfigs">${c.figs().map((f,k)=>`<figure><canvas data-k="${k}"></canvas><figcaption>${f[2]}</figcaption></figure>`).join('')}</div><div class="pvt">${c.t}</div>`}
+const pgSVG=(pts,ok)=>`<svg viewBox="0 0 100 100" width="96" height="96" role="img"><polygon points="${pts}" fill="${ok?'#c9d6f2':'#efe3c4'}" stroke="#1d2640" stroke-width="3" stroke-linejoin="round"/></svg>`;
+PV_CARDS.regular=[
+  {h:'정다각형',t:'<b>변의 길이</b>와 <b>각의 크기</b>가 모두 같은 다각형<br><small>직사각형은 변이, 마름모는 각이 달라서 정다각형이 아니에요.</small>',figs:()=>[[pgSVG('50,12 92,84 8,84',1),null,'정삼각형 ○'],[pgSVG('15,15 85,15 85,85 15,85',1),null,'정사각형 ○'],[pgSVG('5,28 95,28 95,72 5,72',0),null,'직사각형 ✕'],[pgSVG('50,8 80,50 50,92 20,50',0),null,'마름모 ✕']]},
+  {h:'정다면체의 두 조건',t:'① 모든 면이 <b>합동인 정다각형</b> ② <b>꼭짓점마다</b> 모인 면의 개수가 같다<br><small>둘 중 하나라도 아니면 정다면체가 아니에요.</small>',figs:()=>[[SOLIDS.cube.mk(),'A','정육면체 ○<br><small>정사각형 · 모두 3개</small>'],[cuboid(),'A','직육면체 ✕<br><small>면이 직사각형</small>'],[bipyramid(),'V:3','삼각쌍뿔 ✕<br><small>3개인 곳, 4개인 곳</small>']]},
+  {h:'정다면체는 다섯 가지',t:'면의 모양은 <b>정삼각형 · 정사각형 · 정오각형</b> 세 가지뿐<br><small>정삼각형으로 된 것이 세 가지예요.</small>',figs:()=>REG.map(R=>[SOLIDS[R.k].mk(),null,`${R.nm}<br><small>${R.face.slice(1)} · ${R.deg}개</small>`])},
+  {h:'이름은 면의 개수로',t:'면이 <b>8개</b>면 정<b>팔</b>면체, <b>12개</b>면 정<b>십이</b>면체<br><small>이름만 보면 면의 개수를 알 수 있어요.</small>',figs:()=>[[SOLIDS.oct.mk(),'A','정팔면체<br><small>면 8개</small>'],[SOLIDS.dod.mk(),'A','정십이면체<br><small>면 12개</small>']]},
+  {h:'층으로 세기',t:'같은 높이의 꼭짓점끼리 한 층 — <b>층마다 세어 더해요</b>',figs:()=>[[SOLIDS.oct.mk(),'Fv','정팔면체<br><small>1 + 4 + 1 = 6</small>'],[SOLIDS.ico.mk(),'Fv','정이십면체<br><small>1 + 5 + 5 + 1 = 12</small>']]}];
+function pvCardHTML(c,i){return`<div class="pvh2"><span class="pvn">${i+1}</span><b>${c.h}</b></div><div class="pvfigs">${c.figs().map((f,k)=>`<figure>${typeof f[0]==='string'?`<div class="pvsvg">${f[0]}</div>`:`<canvas data-k="${k}"></canvas>`}<figcaption>${f[2]}</figcaption></figure>`).join('')}</div><div class="pvt">${c.t}</div>`}
 function pvMount(host,c){const F=c.figs();$$('canvas',host).forEach(cv=>{const f=F[+cv.dataset.k],v=figure(cv,Object.assign(solidFig(f[0]),{visual:true}));
   if(f[1]==='one'){const b=f[0].base||[0],t=b.length>1?b[1]:b[0];v.fcol=i=>i===t?HL_SIDE:null;v.dirty=true}else if(f[1]==='allV'){v.mode='v';v.vcol=()=>'#e08a1e';v.dirty=true}else if(f[1])applyHl(v,f[0],f[1])})}
 function pvWire(body,id){const C=PV_CARDS[id];if(!C)return;$$('.pvcard',body).forEach(b=>{const c=C[+b.dataset.i];pvMount(b,c);
@@ -2302,11 +2310,11 @@ function bipyramid(R=1.15){const B=regPoly(3,R),h=R*Math.SQRT2;const V=[...B.map
   const F=[];for(let i=0;i<3;i++){const j=(i+1)%3;F.push([i,j,3],[j,i,4])}return makeMesh(V,F)}
 function topVertex(m){let b=0;m.V.forEach((p,i)=>{const s=p[2]-0.001*p[1],t=m.V[b][2]-0.001*m.V[b][1];if(s>t+1e-9)b=i});return b}
 /* 한 꼭짓점에 정다각형 k개를 모은 그림 */
-function fanSVG(n,k,size=240){const O=size/2,a=inAng(n)*Math.PI/180,s=size*(n>=5?0.24:0.29),Rc=s/(2*Math.sin(Math.PI/n)),f=v=>v.toFixed(1),sum=inAng(n)*k;
+function fanSVG(n,k,size=240,opt={}){const O=size/2,a=inAng(n)*Math.PI/180,s=size*(n>=5?0.24:0.29),Rc=s/(2*Math.sin(Math.PI/n)),f=v=>v.toFixed(1),sum=inAng(n)*k;
   let g='';for(let j=0;j<k;j++){const th=-Math.PI/2+j*a,cx=O+Rc*Math.cos(th+a/2),cy=O+Rc*Math.sin(th+a/2),p0=th+a/2+Math.PI;
     const pts=range(n).map(i=>[cx+Rc*Math.cos(p0+2*Math.PI*i/n),cy+Rc*Math.sin(p0+2*Math.PI*i/n)]);
     g+=`<polygon points="${pts.map(p=>f(p[0])+','+f(p[1])).join(' ')}" fill="${FC[j%5]}" fill-opacity="${sum>360?0.62:0.9}" stroke="#1d2640" stroke-width="2" stroke-linejoin="round"/>`}
-  if(sum<360){const r=s*0.75,t0=-Math.PI/2+k*a,t1=1.5*Math.PI,large=(t1-t0)>Math.PI?1:0;
+  if(sum<360&&!opt.plain){const r=s*0.75,t0=-Math.PI/2+k*a,t1=1.5*Math.PI,large=(t1-t0)>Math.PI?1:0;
     g+=`<path d="M${O} ${O} L${f(O+r*Math.cos(t0))} ${f(O+r*Math.sin(t0))} A${r} ${r} 0 ${large} 1 ${f(O+r*Math.cos(t1))} ${f(O+r*Math.sin(t1))} Z" fill="rgba(210,59,59,.14)" stroke="#d23b3b" stroke-width="1.6" stroke-dasharray="5 4"/>`;
     const tm=(t0+t1)/2;g+=`<text x="${f(O+r*0.62*Math.cos(tm))}" y="${f(O+r*0.62*Math.sin(tm)+5)}" text-anchor="middle" font-family="Times New Roman,serif" font-size="${size>150?17:13}" font-weight="700" fill="#b02a2a">${360-sum}°</text>`}
   g+=`<circle cx="${O}" cy="${O}" r="${size>150?5:3.5}" fill="#1d2640"/>`;
@@ -2315,10 +2323,11 @@ function vtxFig(cv,mesh,marks,o={}){const v=new Viewer(cv,{auto:o.auto!==false,p
   v.vcol=i=>{const q=marks.find(x=>x.i===i);return q?q.c:null};if(marks[0]&&marks[0].f)v.fcol=i=>mesh.F[i].includes(marks[0].i)?marks[0].f:null;v.setMesh(mesh);return v}
 CONCEPT.regular=body=>{
   body.innerHTML=foldPanel('정다면체',`<p class="lead">${T('정다면체')}가 되려면 무엇이 같아야 할까요? 정규 수업에서 ${T('정다각형')}을 떠올리며 함께 찾아요. <span class="muted">(수업 뒤에 1번을 펼쳐 확인하세요)</span></p>`,
-   fold(1,'정다면체의 두 조건 (정규 수업 뒤에 펼쳐 보기)','수업에서 찾은 조건을 예시와 비예시로 확인해요',`<div class="duo">
+   fold(1,'정다면체의 두 조건 (정규 수업 뒤에 펼쳐 보기)','수업에서 찾은 조건을 예시와 비예시로 확인해요',`<div class="trio">
       <div class="figbox"><canvas id="rgEx" style="height:230px"></canvas><div class="figcap"><b>정팔면체</b> · 정다면체예요<br>면: 모두 합동인 정삼각형<br>꼭짓점마다 면이 <b>4개</b>씩</div></div>
-      <div class="figbox"><canvas id="rgNon" style="height:230px"></canvas><div class="figcap"><b>삼각쌍뿔</b> · 정다면체가 <b>아니에요</b><br>면: 모두 합동인 정삼각형<br>꼭짓점에 면이 <b style="color:#c0504d">3개</b>인 곳, <b style="color:#2a4d9e">4개</b>인 곳이 섞여 있어요</div></div></div>
-     <p style="margin-bottom:0">면이 모두 합동인 정다각형이어도, <b>꼭짓점마다 모인 면의 개수가 다르면</b> 정다면체가 아니에요. 두 조건을 모두 확인해야 해요.</p>`)+
+      <div class="figbox"><canvas id="rgNon" style="height:230px"></canvas><div class="figcap"><b>삼각쌍뿔</b> · 정다면체가 <b>아니에요</b><br>면: 모두 합동인 정삼각형<br>꼭짓점에 면이 <b style="color:#c0504d">3개</b>인 곳, <b style="color:#2a4d9e">4개</b>인 곳이 섞여 있어요</div></div>
+      <div class="figbox"><canvas id="rgCub" style="height:230px"></canvas><div class="figcap"><b>직육면체</b> · 정다면체가 <b>아니에요</b><br>꼭짓점마다 면이 3개씩이지만<br>면이 <b style="color:#c0504d">직사각형</b> (정다각형 ✕)</div></div></div>
+     <div class="box" style="margin-bottom:0"><b>정다면체</b>: ① 모든 면이 <b>합동인 정다각형</b>이고 ② <b>각 꼭짓점에 모인 면의 개수가 같은</b> 다면체<br><small>직육면체는 ①을, 삼각쌍뿔은 ②를 만족하지 않아요. 두 조건을 모두 확인해야 해요.</small></div>`)+
    fold(2,'정다면체는 다섯 가지','이름은 면의 개수로 지어요',`<div class="reg5">${REG.map(R=>`<div class="figbox"><canvas data-rg="${R.k}" style="height:170px"></canvas><div class="figcap"><b>${R.nm}</b><br>${R.face} · 꼭짓점마다 ${R.deg}개</div></div>`).join('')}</div>
      <p style="margin-bottom:0">면의 모양은 ${T('정삼각형')}, ${T('정사각형')}, 정오각형 세 가지뿐이에요. 정삼각형으로 된 것이 세 가지(정사면체, 정팔면체, 정이십면체)예요.</p>`)+
    fold(3,'왜 다섯 가지뿐일까?','한 꼭짓점에 모인 각의 합',`<p style="margin-top:0">입체가 되려면 한 꼭짓점에 면이 <b>3개 이상</b> 모이고, 그 각의 합이 <b>360°보다 작아야</b> 해요. 빨간 틈을 접어 올리면 입체가 돼요. 합이 360°이면 평평하게 깔리고, 넘으면 겹쳐요. 정다각형의 ${T('한 내각')}을 떠올려 보세요.</p>
@@ -2333,7 +2342,7 @@ CONCEPT.regular=body=>{
      <div class="box" style="margin-top:0">정십이면체: 면 ${M_('12')}개, 한 면의 변 ${M_('5')}개<br>모서리 = ${M_('12 × 5 ÷ 2 = 30')} · 꼭짓점 = ${M_('12 × 5 ÷ 3 = 20')} <span class="muted">(꼭짓점마다 면 3개)</span></div>`));
   wireFolds(body,'regular');
   const oc=SOLIDS.oct.mk();vtxFig($('#rgEx',body),oc,[{i:4,c:'#e08a1e',f:'#f6d9b0'},{i:0,c:'#e08a1e'}]);
-  const bp=bipyramid();vtxFig($('#rgNon',body),bp,[{i:3,c:'#c0504d',f:'#efc6c4'},{i:0,c:'#2a4d9e'}]);
+  figure($('#rgCub',body),{visual:true,mesh:cuboid(),pitch:0.36,pad:0.40});const bp=bipyramid();vtxFig($('#rgNon',body),bp,[{i:3,c:'#c0504d',f:'#efc6c4'},{i:0,c:'#2a4d9e'}]);
   $$('canvas[data-rg]',body).forEach(cv=>figure(cv,{visual:true,mesh:SOLIDS[cv.dataset.rg].mk(),pitch:0.36,pad:0.40}));
   $$('canvas[data-rf]',body).forEach(cv=>{const k=cv.dataset.rf,I=floorFig(cv,SOLIDS[k].mk(),'v');$(`[data-rfc="${k}"]`,body).innerHTML=`${I.lv.length}층 · `+floorCap(I,'v')});
 };
@@ -2784,6 +2793,63 @@ PTYPES.poly=[
   {no:5,nm:'거꾸로 찾기',tb:'개수 → 도형',key:'개수를 <span class="math">n</span>으로 나타낸 식 = 주어진 수 → <span class="math">n</span>을 구하면 <b>밑면이 <span class="math">n</span>각형</b>',pt:['types:prism','types:pyramid','types:frustum','types:diff','poly:findall'],src:['typesStep','typesDiff','p5findAll']}];
 PTYPES.poly.forEach(T_=>{const g=tyKey('poly',T_.no);
   GEN[g]=seed=>{const src=T_.src[seed%T_.src.length];for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}return GEN[T_.src[0]](seed)};LESSON_OF[g]='poly'});
+/* ───────── 2차시 「정다면체」 유형 5가지 (풀이 절차로 나눔) ─────────
+   ① 정다면체인지 가려내기 ② 그림 · 조건으로 이름 찾기 ③ 개수 구하기(층 · 겹쳐 세기) ④ 한 꼭짓점에 모을 수 있을까 ⑤ 성질 ○×
+   수업 시연(정다면체 2차시)과 같은 흐름: 정다각형 → 두 조건(직육면체 ✕ · 삼각쌍뿔 ✕) → 다섯 가지 → 층으로 세기 → 각의 합 */
+const cuboid=()=>prism([[-1.25,-0.7],[1.25,-0.7],[1.25,0.7],[-1.25,0.7]],1.0);
+const triPrism=()=>prism(regPoly(3,1.05),1.05*Math.sqrt(3));
+const lowVertex=m=>{let b=0;m.V.forEach((p,i)=>{if(p[2]<m.V[b][2]-1e-9)b=i});return b};
+const RG_NON={
+  cuboid:{nm:'직육면체',mk:cuboid,c1:false,why1:'면이 <b>직사각형</b>이에요. 직사각형은 네 변의 길이가 같지 않아서 정다각형이 아니에요.'},
+  tprism:{nm:'삼각기둥',mk:triPrism,c1:false,why1:'정삼각형과 정사각형이 섞여 있어요. 모양이 다르니 면이 모두 <b>합동</b>은 아니에요.'},
+  bip:{nm:'삼각쌍뿔',mk:()=>bipyramid(),c1:true,top:3,other:0,pitch:0.15}};
+const RG_FACE_WHY={tet:'정삼각형 4개',cube:'정사각형 6개',oct:'정삼각형 8개',dod:'정오각형 12개',ico:'정삼각형 20개'};
+/* ① 정다면체인지 가려내기 */
+GEN.rgIs=seed=>{const r=mulberry(seed),u=r();
+  const isReg=u<0.5,key=isReg?pick(r,['tet','cube','oct','dod','ico']):pick(r,['cuboid','bip','bip','tprism']);
+  const N=isReg?null:RG_NON[key],R=isReg?REG.find(x=>x.k===key):null,m=isReg?SOLIDS[key].mk():N.mk(),nm=isReg?R.nm:N.nm;
+  const title='다음 다면체가 정다면체인지 O, X로 답하시오.<div class="cond">정다면체의 조건 ① 모든 면이 합동인 정다각형 ② 각 꼭짓점에 모인 면의 개수가 같다</div>';
+  const fin=ans=>({q:'이 다면체는 정다면체인가요?',type:'choice',choices:['O','X'],ans});
+  const c1=isReg||N.c1;
+  const steps=[{tag:'조건 ① 면 보기',gate:true,hl:'A',q:'조건 ① 면이 모두 <b>합동인 정다각형</b>인가요?',type:'choice',choices:['예','아니요'],ans:c1?'예':'아니요',
+    hint:'면 하나하나의 모양을 보세요. 변의 길이가 모두 같은 정다각형인지, 모든 면이 똑같은지 확인해요.',why:isReg?`면이 모두 ${RG_FACE_WHY[key]}예요.`:N.c1?'면이 모두 똑같은 정삼각형이에요.':N.why1}];
+  if(!c1){steps.push({tag:'판단',q:'이 다면체는 정다면체인가요?',type:'choice',choices:['O','X'],ans:'X',why:'조건 ①을 만족하지 않으면 정다면체가 아니에요.',ok:`${josa(nm,'은','는')} 정다면체가 아니에요.`});
+    return{ptype:'regular:is',sig:'c1',title,fig:solidFig(m),final:fin('X'),steps}}
+  const t=isReg?topVertex(m):N.top,o=isReg?lowVertex(m):N.other,dt=isReg?R.deg:3,dob=isReg?R.deg:4;
+  steps.push({tag:'조건 ② 위 꼭짓점',hl:'V:'+t,q:'주황색 꼭짓점에 모인 면은 몇 개인가요?',type:'num',ans:dt,suffix:'개',hint:'주황색 점 둘레의 칠한 면을 하나씩 세어 보세요. 그림을 돌리면 뒤쪽도 보여요.'},
+    {tag:'조건 ② 다른 꼭짓점',hl:'V:'+o,q:`이번에는 ${isReg?'아래쪽':'가운데'} 꼭짓점이에요. 모인 면은 몇 개인가요?`,type:'num',ans:dob,suffix:'개',hint:isReg?'아래쪽 주황색 점 둘레를 세어 보세요.':'위에 2개, 아래에 2개가 붙어 있어요. 그림을 돌려 보세요.',why:dt===dob?`두 꼭짓점 모두 ${dt}개로 같아요.`:`위는 ${dt}개, 가운데는 ${dob}개로 달라요.`},
+    {tag:'판단',q:'이 다면체는 정다면체인가요?',type:'choice',choices:['O','X'],ans:isReg?'O':'X',why:isReg?'조건 ①, ②를 모두 만족해요.':'면이 모두 합동인 정삼각형이어도 꼭짓점마다 모인 면의 개수가 다르면 정다면체가 아니에요.',ok:isReg?`${R.nm}, 정다면체예요.`:`${josa(nm,'은','는')} 정다면체가 아니에요.`});
+  return{ptype:'regular:is',sig:'c2',title,fig:solidFig(m,{pitch:N&&N.pitch!=null?N.pitch:0.33}),final:fin(isReg?'O':'X'),steps}};
+/* ② 그림 보고 이름 찾기 (면의 모양 → 모인 면 → 이름) */
+GEN.rgName=seed=>{const r=mulberry(seed),R=pick(r,REG.filter(x=>x.k!=='tet'&&x.k!=='cube').concat(REG)),m=SOLIDS[R.k].mk(),t=topVertex(m);
+  return{ptype:'regular:name',title:'다음 정다면체의 이름을 구하시오.',fig:solidFig(m),finalQ:'이 정다면체의 이름은?',steps:[
+    {tag:'면의 모양',hl:'A',q:'면은 어떤 정다각형인가요?',type:'choice',choices:['정삼각형','정사각형','정오각형'],ans:R.face,hint:'면 하나의 변을 세어 보세요. 3개면 정삼각형, 4개면 정사각형, 5개면 정오각형이에요.'},
+    {tag:'모인 면 세기',hl:'V:'+t,q:'주황색 꼭짓점에 모인 면은 몇 개인가요?',type:'num',ans:R.deg,suffix:'개',hint:'주황색 점 둘레의 칠한 면을 세어 보세요.'},
+    {tag:'이름 찾기',q:'이 정다면체의 이름은?',type:'choice',choices:REG.map(x=>x.nm),ans:R.nm,hint:'정삼각형: 3개 → 정사면체, 4개 → 정팔면체, 5개 → 정이십면체 / 정사각형 → 정육면체 / 정오각형 → 정십이면체',why:`${R.face} · 모인 면 ${R.deg}개 → ${R.nm}`,ok:`${R.nm}예요. 면이 ${R.F}개라서 ${kn(R.F)}면체예요.`}]}};
+/* ④ 한 꼭짓점에 모을 수 있을까? (각의 합 < 360°) */
+const RG_FAN=[[3,3],[3,4],[3,5],[3,6],[4,3],[4,4],[5,3],[5,4],[6,3],[3,3],[3,4],[3,5],[4,3],[5,3]];  /* 만들 수 있는 경우를 두 번씩 */
+GEN.rgFan=seed=>{const r=mulberry(seed),[n,k]=pick(r,RG_FAN),a=inAng(n),s=a*k,key=REG_OF[n+','+k],R=key?REG.find(x=>x.k===key):null;
+  const cmp=s<360?'360°보다 작다':s===360?'360°와 같다':'360°보다 크다';
+  const steps=[{tag:'한 내각',q:`${POLY_NM[n]}의 한 내각은 몇 도인가요?`,type:'choice',choices:['60°','90°','108°','120°'],ans:a+'°',hint:'정삼각형 60° · 정사각형 90° · 정오각형 108° · 정육각형 120°'},
+    {tag:'각의 합',q:`${k}개를 한 꼭짓점에 모으면 각의 합은 몇 도인가요?`,type:'num',ans:s,suffix:'°',hint:`${a}° × ${k} = ${Array(k).fill(a+'°').join(' + ')}`},
+    {tag:'360°와 비교',gate:true,q:'각의 합을 360°와 비교하면?',type:'choice',choices:['360°보다 작다','360°와 같다','360°보다 크다'],ans:cmp,hint:`${s}°와 360°를 비교해 보세요.`,why:s<360?`틈이 ${360-s}° 남아요. 틈을 접어 올리면 뾰족한 꼭짓점이 돼요.`:s===360?'틈이 없어서 평평하게 깔려요.':'360°를 넘어서 면끼리 겹쳐요.'}];
+  if(R)steps.push({tag:'정다면체 찾기',q:'접어 올리면 어떤 정다면체의 꼭짓점이 되나요?',type:'choice',choices:REG.map(x=>x.nm),ans:R.nm,hint:`면이 ${R.face}이고 한 꼭짓점에 ${k}개가 모이는 정다면체`,ok:`${R.nm}예요.`});
+  else steps.push({tag:'입체가 될까',q:'한 꼭짓점에 모아 입체를 만들 수 있나요?',type:'choice',choices:['만들 수 있다','만들 수 없다'],ans:'만들 수 없다',why:s===360?'360°이면 평평해서 입체의 꼭짓점이 될 수 없어요.':'360°를 넘으면 겹쳐서 모을 수 없어요.',ok:'입체를 만들 수 없어요.'});
+  return{ptype:'regular:fan',title:`${POLY_NM[n]} ${k}개를 한 꼭짓점에 모았어요. 접어 올려 입체를 만들 수 있는지 알아보시오.<div class="cond" style="text-align:center">${fanSVG(n,k,170,{plain:true})}</div>`,fig:null,
+    final:{q:'입체를 만들 수 있나요? 있다면 어떤 정다면체인가요?',type:'choice',choices:['만들 수 없다',...REG.map(x=>x.nm)],ans:R?R.nm:'만들 수 없다'},steps}};
+/* ⑤ 성질 ○×: 설명을 하나씩 ○ ×로 확인한 뒤 옳지 않은 것 고르기 (215쪽 1번) */
+GEN.rgTF=seed=>{const r=mulberry(seed),[fs,why]=pick(r,REG_TF.f),ts=shuffle(r,REG_TF.t.slice()).slice(0,3),all=shuffle(r,[...ts,fs]),bad=all.indexOf(fs);
+  const steps=all.map((x,i)=>({tag:`${CIRC[i]} 확인`,q:`${CIRC[i]} ${x}`,type:'choice',choices:['○','×'],ans:x===fs?'×':'○',hint:'면의 모양 · 한 꼭짓점에 모인 면 · 면, 모서리, 꼭짓점의 개수 표를 떠올려 보세요.',why:x===fs?why:'맞는 설명이에요.'}));
+  steps.push({tag:'옳지 않은 것',q:'옳지 않은 것은?',type:'choice',choices:CIRC.slice(0,4),ans:CIRC[bad],why:`${CIRC[bad]}만 ×예요.`,ok:why});
+  return{ptype:'regular:tf',title:`${TBP(215)}다음 중 정다면체에 대한 설명으로 <u>옳지 않은</u> 것은?<div class="cond">${all.map((x,i)=>CIRC[i]+' '+x).join('<br>')}</div>`,fig:null,finalQ:'옳지 않은 것은?',steps}};
+PTYPES.regular=[
+  {no:1,nm:'정다면체인지 가려내기',tb:'213쪽 · 214쪽 4번',key:'① 면이 모두 <b>합동인 정다각형</b>인가? ② <b>꼭짓점마다</b> 모인 면의 개수가 같은가? 둘 다 예 → 정다면체 O',pt:['regular:is','regular:why'],src:['rgIs','rgIs','regularWhy']},
+  {no:2,nm:'이름 찾기',tb:'213쪽 · 240쪽 2번',key:'<b>면의 모양</b>으로 후보를 줄이고, <b>한 꼭짓점에 모인 면의 개수</b>로 하나를 골라요.',pt:['regular:name','regular:cond'],src:['rgName','rgName','regular']},
+  {no:3,nm:'꼭짓점 · 모서리 · 면의 개수',tb:'214쪽 3번',key:'면: 이름에 있어요 · 꼭짓점: <b>층마다</b> 세어 더하기 · 모서리 = 면 × 변 ÷ <b>2</b>',pt:['regular:floor','regular:edge','regular:vertex','regular:count','regular:condcount','regular:sum'],src:['regularStep','regularStep','regularCondCount','regular']},
+  {no:4,nm:'한 꼭짓점에 모을 수 있을까?',tb:'왜 다섯 가지뿐일까',key:'한 꼭짓점에 모인 각의 합이 <b>360°보다 작아야</b> 접어 올려 입체가 돼요.',pt:['regular:fan'],src:['rgFan']},
+  {no:5,nm:'성질 ○× · 옳지 않은 것',tb:'215쪽 1번',key:'설명을 <b>하나씩 ○ ×</b>로 확인하고, ×인 것을 골라요. 면 모양 · 모인 면 · 개수 표를 떠올려요.',pt:['regular:tf'],src:['rgTF']}];
+PTYPES.regular.forEach(T_=>{const g=tyKey('regular',T_.no);
+  GEN[g]=seed=>{const src=T_.src[seed%T_.src.length];for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}return GEN[T_.src[0]](seed)};LESSON_OF[g]='regular'});
 
 const stripTB=s=>s.replace(/<span class="tbtag">[^<]*<\/span>/g,'');
 
@@ -2925,7 +2991,7 @@ const tSet=t=>{try{t?sessionStorage.setItem(TKEY,t):sessionStorage.removeItem(TK
 const PTYPE_NM={'poly:prism':'1차시 · 각기둥은 몇 면체?','poly:pyramid':'1차시 · 각뿔은 몇 면체?','poly:is':'1차시 · 다면체인지 고르기','poly:count':'1차시 · 면·모서리·꼭짓점 세기',
   'types:prism':'2차시 · 각기둥 개수 문제','types:pyramid':'2차시 · 각뿔 개수 문제','types:frustum':'2차시 · 각뿔대 개수 문제','types:direct':'2차시 · 개수 바로 구하기','types:side':'2차시 · 옆면 모양 고르기','types:name':'2차시 · 몇 면체인지 구하기',
   'area:tri':'5차시 · 삼각기둥의 겉넓이','area:box':'5차시 · 직육면체의 겉넓이','area:cyl':'5차시 · 원기둥의 겉넓이',
-  'regular:edge':'3차시 · 겹쳐 세기로 모서리 구하기','regular:vertex':'3차시 · 겹쳐 세기로 꼭짓점 구하기','regular:floor':'3차시 · 몇 층 건물로 꼭짓점 세기','regular:cond':'3차시 · 조건으로 정다면체 찾기','regular:count':'3차시 · 그림 보고 개수 구하기','regular:sum':'3차시 · 두 정다면체의 개수 더하기','regular:tf':'3차시 · 옳지 않은 설명 고르기'};
+  'regular:is':'3차시 · 정다면체인지 가려내기','regular:why':'3차시 · 정다면체가 아닌 이유','regular:name':'3차시 · 그림 보고 이름 찾기','regular:fan':'3차시 · 한 꼭짓점에 모을 수 있을까','regular:condcount':'3차시 · 조건으로 찾고 개수 구하기','regular:edge':'3차시 · 겹쳐 세기로 모서리 구하기','regular:vertex':'3차시 · 겹쳐 세기로 꼭짓점 구하기','regular:floor':'3차시 · 몇 층 건물로 꼭짓점 세기','regular:cond':'3차시 · 조건으로 정다면체 찾기','regular:count':'3차시 · 그림 보고 개수 구하기','regular:sum':'3차시 · 두 정다면체의 개수 더하기','regular:tf':'3차시 · 옳지 않은 설명 고르기'};
 for(const k in PTYPE_NM){const L=LESSONS.find(l=>l.id===k.split(':')[0]);if(L)PTYPE_NM[k]=PTYPE_NM[k].replace(/^\d+차시 · /,L.no+'차시 · ')}
 const KIND_KO={steps:'단계 문제',practice:'연습',review:'복습'};
 function relTime(iso){if(!iso)return'아직 없음';const d=(Date.now()-Date.parse(iso))/1000;if(d<3600)return Math.max(1,Math.round(d/60))+'분 전';if(d<86400)return Math.round(d/3600)+'시간 전';const days=Math.floor(d/86400);return days===1?'어제':days+'일 전'}
