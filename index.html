@@ -294,6 +294,18 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .wkhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px;color:#5a6377;margin-bottom:8px}.wktag{background:#3f9e6e;color:#fff;font-weight:800;border-radius:8px;padding:2px 10px;font-size:15px}
 .wk{display:flex;flex-direction:column;gap:2px;margin-top:6px}.wka{font-weight:800;color:#2b7a52;font-size:18px}.wkw{background:#eef7f1;border-left:4px solid #3f9e6e;border-radius:6px;padding:6px 10px;font-size:16px;line-height:1.55}
 .wkbtn{margin-top:8px}
+.helpbtn{position:fixed;right:16px;bottom:16px;z-index:55;background:#fff;border:2.5px solid #c0504d;color:#c0504d;font:inherit;font-weight:800;font-size:17px;border-radius:999px;padding:10px 18px;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer}
+.helpbtn small{display:block;font-size:12px;font-weight:600}.helpbtn.on{background:#c0504d;color:#fff;animation:hbp 1.6s ease-in-out infinite}@keyframes hbp{50%{transform:scale(1.05)}}
+.cntb{display:inline-block;background:#c0504d;color:#fff;border-radius:999px;font-size:14px;padding:0 9px;vertical-align:middle}
+.helpl{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}.hc{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff}.hc.hot{border-color:#c0504d;background:#fff6f5}
+.hc .hn{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}.hc .hn b{font-size:20px}.hc .hn .muted{font-size:13px}
+.chip{display:inline-block;border-radius:8px;padding:3px 8px;margin:2px 4px 2px 0;font-size:14px;line-height:1.4}.chip.r{background:#fde2e0;color:#8f2d26}.chip.p{background:#efe4fa;color:#5b3a8c}.chip.y{background:#fff1c9;color:#7a5b00}.chip.g{background:#eceff4;color:#4a5263}
+.together .tg{background:#fff4d6;border:1.5px solid #f0c96b;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:15px}
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.lv{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:#fafbfd;opacity:.75}.lv.on{background:#fff;opacity:1}.lv.hot{border-color:#c0504d;border-width:2px}
+.lvh{display:flex;align-items:center;gap:6px}.lvh b{font-size:17px}.lvt{margin-left:auto;font-size:12px;color:#7a8296}.lv .dot{width:10px;height:10px;border-radius:50%;background:#c3c8d2}.lv.on .dot{background:#3f9e6e}
+.lvloc{font-size:13px;margin:4px 0 2px;line-height:1.4;min-height:18px}.lvs{font-size:12px;color:#5a6377}.lvs b{color:#151a28}
+.lvd{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}.lvd i,.lvk{display:inline-block;width:10px;height:10px;border-radius:50%}.lvd i.o,.lvk.o{background:#3f9e6e}.lvd i.t,.lvk.t{background:#f2b705}.lvd i.x,.lvk.x{background:#c0504d}.lvk{margin:0 3px 0 10px;vertical-align:-1px}
 .tp-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:14px 0 10px}.tp-h b{font-size:20px}.tp-h span{color:#5a6377;font-size:15px}
 .tpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 .tpc{position:relative;display:flex;flex-direction:column;align-items:flex-start;text-align:left;font:inherit;color:inherit;background:#fff;border:2px solid #d6dbe6;border-radius:16px;padding:14px;cursor:pointer;transition:transform .12s,border-color .12s}
@@ -1330,7 +1342,7 @@ function renderProblem(host,prob,opt={}){
       if(i===cur&&opt.worked){const b=el(`<button type="button" class="btn primary wkbtn">풀이 보기 ▶</button>`);b.onclick=()=>{cur++;draw();if(cur>=S.length&&opt.onWorked){tail.innerHTML='';opt.onWorked(tail)}};sb.appendChild(b)}
       else if(i===cur){
         const hm=el('<div class="hintmsg" hidden></div>');
-        const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
+        const ui=answerUI(s,v=>{const r=check(s,v);livePing(true);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
           tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':r==='nosign'?'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
           if(tries>=3&&!$('.reveal',li)){const rb=el('<button type="button" class="btn ghost reveal" style="margin-top:8px">정답 확인하고 넘어가기</button>');rb.onclick=()=>{s._shown=true;revealed=true;rv[i]=1;tries=0;cur++;draw();if(cur>=S.length)finish()};sb.appendChild(rb)}
           return false});
@@ -1588,11 +1600,11 @@ function viewSteps(body,id){
   const nextUndone=()=>TL.find(t=>!p.tyS[t.no]);
   const pickScreen=()=>{$('#probHost',wrap).innerHTML='';tyPicker($('#tyHost',wrap),{TL,head:'<b>유형 고르기</b><span>왼쪽에서 선생님이 풀어 주는 <b>풀이 예시</b>를 보고, 오른쪽에서 같은 유형 문제를 직접 풀어요. 유형 1부터 차례로 하면 좋아요.</span>',
     stat:t=>p.tyS[t.no]?`✓ ${p.tyS[t.no]}번 풀었어요`:'아직 안 풀었어요',rec:t=>t===nextUndone(),onPick:no=>pair(no)})};
-  const sigOf=P=>P.ptype+'|'+(P.sig||'')+'|'+P.steps.map(st=>(st.tag||'')+st.type).join(',');
+  const ansOf=P=>P.title+JSON.stringify(P.steps.map(st=>st.ans)),sigOf=P=>P.ptype+'|'+(P.sig||'')+'|'+P.steps.map(st=>(st.tag||'')+st.type).join(',');
   /* 한 쌍: 왼쪽 풀이 예시(교사) + 오른쪽 같은 모양의 문제(학생) */
   const pair=(cur,exSeed)=>{const T_=TL.find(t=>t.no===cur),key=tyKey(id,cur);exSeed=exSeed||newSeed();
-    const ex=GEN[key](exSeed);let seed,prob;for(let t=0;t<300;t++){seed=newSeed();prob=GEN[key](seed);if(sigOf(prob)===sigOf(ex)&&prob.title!==ex.title)break}
-    $('#tyHost',wrap).innerHTML=tyBar(T_,'유형 고르기');$('.tyback',wrap).onclick=pickScreen;
+    const ex=GEN[key](exSeed);let seed,prob;for(let t=0;t<300;t++){seed=newSeed();prob=GEN[key](seed);if(sigOf(prob)===sigOf(ex)&&ansOf(prob)!==ansOf(ex))break}
+    $('#tyHost',wrap).innerHTML=tyBar(T_,'유형 고르기');$('.tyback',wrap).onclick=pickScreen;liveSub(`유형 ${T_.no} · ${T_.nm}`);
     const host=$('#probHost',wrap);host.innerHTML=`<div class="tykey"><span>핵심</span>${T_.key}</div><div class="pair">
       <section class="pl"><div class="ph"><span class="wktag">선생님 풀이</span><span>「풀이 보기 ▶」로 한 단계씩</span><button type="button" class="btn ghost mini exAll">모두 펼치기</button></div><div class="exHost"></div></section>
       <section class="pr"><div class="ph"><span class="trytag">내가 풀기</span><span>같은 유형 · 숫자만 달라요</span></div><div class="tryHost"></div></section></div>`;
@@ -1629,7 +1641,7 @@ function viewPractice(body,id){
     P.retry.forEach(x=>x.due--);const ri_=P.retry.findIndex(x=>x.due<=0);
     let rg=null;if(ri_>=0){seed=P.retry[ri_].seed;rg=P.retry[ri_].g||null;P.retry.splice(ri_,1);isRetry=true}else seed=newSeed();
     const TM=TL&&P.mode?TL.find(t=>t.no===P.mode):null;
-    if(TL){$('#tyHost',wrap).innerHTML=tyBar(TM,'유형 고르기');$('.tyback',wrap).onclick=pickScreen}
+    if(TL){$('#tyHost',wrap).innerHTML=tyBar(TM,'유형 고르기');$('.tyback',wrap).onclick=pickScreen;liveSub(TM?`유형 ${TM.no} · ${TM.nm}`:'섞어서')}
     // 섞어 풀기: 지난 차시(이미 공부를 시작한 차시) 문제를 열에 셋쯤 섞어요. 다시 도전 문제는 섞지 않아요.
     const mk=x=>GEN['mix_'+x]?'mix_'+x:GEN[x+'2']?x+'2':x;
     const prevL=LESSONS.filter(l=>l.ready&&l.unit===curL.unit&&l.no<curL.no&&GEN[l.id]&&OBJ(DB[l.id]).concept);
@@ -2327,7 +2339,14 @@ const MOCK=(()=>{
       S.attempts.forEach(a=>{if(a.mode!=='steps'||!a.step_wrongs||Date.parse(a.created_at)<=since)return;a.step_wrongs.forEach((w,i)=>{const k=a.lesson+'|'+a.ptype+'|'+(i+1);
         const x=g[k]=g[k]||{lesson:a.lesson,ptype:a.ptype,gen:a.gen,seed:a.seed,step:i+1,n:0,wrong:0,revealed:0};x.n++;if(w>0)x.wrong++;if(a.revealed&&a.revealed[i]>0)x.revealed++})});
       return Object.values(g).sort((a,b)=>a.lesson.localeCompare(b.lesson)||String(a.ptype).localeCompare(String(b.ptype))||a.step-b.step)},
-    hg_t_student_attempts({p_token,p_sid,p_limit}){needT(p_token);return S.attempts.filter(a=>a.sid===p_sid).slice(-(p_limit||40)).reverse()}};
+    hg_t_student_attempts({p_token,p_sid,p_limit}){needT(p_token);return S.attempts.filter(a=>a.sid===p_sid).slice(-(p_limit||40)).reverse()},
+    hg_ping({p_token,p_loc,p_prog}){const sid=sidOf(p_token),L=(S.live=S.live||{})[sid]=(S.live||{})[sid]||{};L.loc=String(p_loc||L.loc||'').slice(0,80);L.loc_at=nowISO();if(p_prog)L.prog_at=nowISO();S.students[sid].last_seen=nowISO();return{ok:true,help:!!L.help_at}},
+    hg_help({p_token,p_on,p_loc}){const sid=sidOf(p_token),L=(S.live=S.live||{})[sid]=(S.live||{})[sid]||{};L.loc_at=nowISO();if(p_loc)L.loc=String(p_loc).slice(0,80);L.help_at=p_on?(L.help_at||nowISO()):null;L.help_loc=p_on?(p_loc||L.help_loc):null;return{ok:true,help:!!p_on}},
+    hg_t_live({p_token,p_grade,p_klass}){needT(p_token);const d0=new Date();d0.setHours(0,0,0,0);const lv=S.live||{};
+      return{now:nowISO(),students:Object.values(S.students).filter(s=>s.grade===p_grade&&s.klass===p_klass).sort((a,b)=>a.num-b.num).map(s=>{const L=lv[s.sid]||{};
+        return{sid:s.sid,num:s.num,last_seen:s.last_seen,loc:L.loc||null,loc_at:L.loc_at||null,prog_at:L.prog_at||null,help_at:L.help_at||null,help_loc:L.help_loc||null,ack_at:L.ack_at||null,
+          att:S.attempts.filter(a=>a.sid===s.sid&&Date.parse(a.created_at)>=d0.getTime()).slice(-60)}})}},
+    hg_t_ack({p_token,p_sid}){needT(p_token);const L=(S.live=S.live||{})[p_sid]=(S.live||{})[p_sid]||{};L.ack_at=nowISO();L.help_at=null;L.help_loc=null;return{ok:true}}};
 
   /* 숫자야구 (체험 모드: 방을 만들면 3초 뒤 체험용 친구가 들어와 같이 해요) */
   const BBX=()=>{S.bb=S.bb||{games:[],guesses:[],ledger:[],seq:1};S.bbconf=S.bbconf||{};return S.bb};
@@ -2744,11 +2763,62 @@ function dataSummary(d){d=OBJ(d);const me=OBJ(d._me),t=today(),streak=(me.last==
   const solved=LESSONS.reduce((a,l)=>a+NUM(OBJ(OBJ(d[l.id]).prac).solved),0),rev=Array.isArray(d._rev)?d._rev:[];
   const calc=Object.values(OBJ(d._calc)).reduce((a,v)=>a+Math.min(3,NUM(OBJ(v).stars)),0),facts=Object.values(OBJ(d._facts)).filter(v=>NUM(OBJ(v).lv)>=3).length,dg=OBJ(d._calcDiag),plan=Array.isArray(dg.plan)?dg.plan:[];
   return{calc,facts,diag:!!dg.d,plan,pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
+/* ───────── 수업 중 실시간: 지금 위치 알리기 · 손들기 (학생) ─────────
+   서버 함수: supabase/live.sql (hg_ping · hg_help · hg_t_live · hg_t_ack) */
+const LIVEX={sub:'',help:false,missing:false,last:0,lastProg:0,sent:''};
+const LOC_NM={home:'처음 화면',review:'복습 노트',drill:'기초 연산',calc:'오늘의 계산',boss:'보스전',baseball:'숫자야구',me:'내 기록',shop:'상점',login:'로그인'};
+function liveLoc(){const h=(location.hash||'#home').slice(1)||'home';
+  if(LOC_NM[h])return LOC_NM[h];if(/^bb-/.test(h))return'숫자야구';if(/^calc-/.test(h))return'오늘의 계산';
+  let[id,tab]=h.split('-');if(id==='types')id='poly';const L=LESSONS.find(l=>l.id===id);
+  if(L)return`${L.no}차시 ${L.title} · ${TAB_NM[TABS.some(t=>t.id===tab)?tab:'concept']}${LIVEX.sub?' · '+LIVEX.sub:''}`;
+  return h}
+function livePing(prog,force){if(!isStudent()||LIVEX.missing)return;const now=Date.now(),loc=liveLoc();
+  if(prog){if(now-LIVEX.lastProg<15000&&loc===LIVEX.sent)return;LIVEX.lastProg=now}
+  else if(!force&&loc===LIVEX.sent&&now-LIVEX.last<20000)return;
+  LIVEX.last=now;LIVEX.sent=loc;
+  API.call('hg_ping',{p_token:AUTH.token,p_loc:loc,p_prog:!!prog}).then(r=>{if(r&&LIVEX.help!==!!r.help){LIVEX.help=!!r.help;helpBtn()}}).catch(e=>{if(isMissingFn(e)){LIVEX.missing=true;helpBtn()}})}
+function liveSub(t){LIVEX.sub=t||'';livePing(false)}
+function helpBtn(){let b=$('#helpBtn');const show=isStudent()&&!LIVEX.missing&&!/^(login|teacher|bossview)/.test((location.hash||'').slice(1));
+  if(!show){if(b)b.remove();return}
+  if(!b){b=el('<button type="button" id="helpBtn" class="helpbtn"></button>');document.body.appendChild(b);
+    b.onclick=async()=>{const on=!LIVEX.help;b.disabled=true;try{await API.call('hg_help',{p_token:AUTH.token,p_on:on,p_loc:liveLoc()});LIVEX.help=on;toast(on?'선생님 화면에 손든 것을 알렸어요. 잠깐 기다려 주세요.':'손을 내렸어요.')}catch(e){if(isMissingFn(e)){LIVEX.missing=true}else toast(e.message)}b.disabled=false;helpBtn()}}
+  b.classList.toggle('on',LIVEX.help);b.innerHTML=LIVEX.help?'✋ 손 들었어요 <small>누르면 내려요</small>':'✋ 선생님 도와주세요'}
+setInterval(()=>{if(document.visibilityState==='visible')livePing(false,true)},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')livePing(false,true)});
+
+/* ───────── 교사: 지금 도울 학생 · 학생 현황 ───────── */
+const STALL_MIN=5,ONLINE_SEC=150;
+function attName(a){const t=typeOf(a.ptype);if(t){const L=LESSONS.find(l=>l.id===t.lid)||{};return`${L.no||''}차시 유형 ${t.T.no} · ${t.T.nm}`}return PTYPE_NM[a.ptype]||a.ptype||a.lesson}
+function attStepQ(a,i){try{const P=GEN[a.gen]&&a.seed!=null?GEN[a.gen](a.seed):null;const st=P&&P.steps[i];return st?String(st.q).replace(/<[^>]+>/g,''):''}catch(e){return''}}
+function liveFlags(s,now){const ack=s.ack_at?Date.parse(s.ack_at):0,A=(s.att||[]).filter(a=>Date.parse(a.created_at)>ack),f=[];
+  const mins=iso=>Math.max(0,Math.round((now-Date.parse(iso))/60000));
+  if(s.help_at)f.push({c:'r',w:4,t:`✋ 손들었어요 · ${mins(s.help_at)}분 전${s.help_loc?' · '+esc(s.help_loc):''}`});
+  A.filter(a=>(a.revealed||[]).some(x=>x>0)).slice(-2).forEach(a=>{const i=a.revealed.findIndex(x=>x>0);f.push({c:'r',w:3,t:`${esc(attName(a))} · (${i+1})단계 정답을 보고 넘어감`})});
+  let run=0,runN='';for(const a of A){const n=attName(a);if(!a.good&&n===runN)run++;else if(!a.good){run=1;runN=n}else{run=0;runN=''}}
+  if(run>=3)f.push({c:'p',w:3,t:`${esc(runN)} · ${run}번 연속 틀림`});
+  A.filter(a=>a.good&&a.wrongs>=3).slice(-1).forEach(a=>f.push({c:'y',w:2,t:`${esc(attName(a))} · ${a.wrongs}번 틀린 끝에 맞힘`}));
+  const online=s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000,inProb=/같이 풀기|혼자 풀기|복습/.test(s.loc||'');
+  const lastP=Math.max(s.prog_at?Date.parse(s.prog_at):0,ack);
+  if(online&&inProb&&lastP&&now-lastP>STALL_MIN*60000)f.push({c:'g',w:1,t:`${Math.floor((now-lastP)/60000)}분째 답을 내지 않았어요`});
+  return f}
+function liveCard(s,now,f){const online=s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000,A=s.att||[],ok1=A.filter(a=>a.good&&!a.wrongs).length;
+  const dots=A.slice(-12).map(a=>`<i class="${(a.revealed||[]).some(x=>x>0)||!a.good?'x':a.wrongs?'t':'o'}" title="${esc(attName(a))}"></i>`).join('');
+  return`<div class="lv ${online?'on':''} ${f&&f.some(x=>x.w>=3)?'hot':''}"><div class="lvh"><span class="dot"></span><b>${s.num}번</b><span class="lvt">${online?'접속 중':s.loc_at?relTime(s.loc_at):'오늘 안 들어옴'}</span></div>
+    <div class="lvloc">${s.loc?esc(s.loc):'<span class="muted">-</span>'}</div><div class="lvs">오늘 <b>${A.length}</b>문제 · 처음에 맞힘 <b>${ok1}</b>${s.prog_at?` · 마지막 답 ${relTime(s.prog_at)}`:''}</div>${dots?`<div class="lvd">${dots}</div>`:''}</div>`}
+function togetherLive(S,now){const on=S.filter(s=>s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000).length,need=Math.max(3,Math.ceil(on*0.3)),m={};
+  S.forEach(s=>{const ack=s.ack_at?Date.parse(s.ack_at):0;(s.att||[]).filter(a=>Date.parse(a.created_at)>ack&&now-Date.parse(a.created_at)<40*60000).forEach(a=>{(a.step_wrongs||[]).forEach((w,i)=>{if(w>0||((a.revealed||[])[i]>0)){const k=attName(a)+'|'+i;(m[k]=m[k]||{a,i,ns:new Set()}).ns.add(s.num)}})})});
+  const seen=new Set(),out=Object.values(m).filter(x=>x.ns.size>=need).sort((x,y)=>y.ns.size-x.ns.size||x.i-y.i).filter(x=>{const k=attName(x.a);if(seen.has(k))return false;seen.add(k);return true}).slice(0,3);
+  return out.map(x=>{const q=attStepQ(x.a,x.i);return`<div class="tg"><b>${esc(attName(x.a))} · (${x.i+1})단계</b>${q?` <span class="muted">“${esc(q)}”</span>`:''} — <b>${x.ns.size}명</b>이 같은 곳에서 막혔어요. 함께 볼까요?<div class="muted" style="font-size:13px">${[...x.ns].sort((a,b)=>a-b).map(n=>n+'번').join(', ')}</div></div>`}).join('')}
+
 function viewTeacher(){
   crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   const ready=LESSONS.filter(l=>l.ready);
   app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
+   <div class="card panel tLive"><div class="t-head"><h2>🙋 지금 도울 학생 <span class="cntb tHelpN" hidden></span></h2><span class="t-tools"><label class="t-sel"><input type="checkbox" class="tAuto" checked> 10초마다 새로 고침</label><span class="muted tLiveAt" style="font-size:13px"></span></span></div>
+    <p class="muted" style="margin-top:0;font-size:14px">손든 학생, 단계 정답을 보고 넘어간 학생, 같은 유형을 3번 연속 틀린 학생, ${STALL_MIN}분 넘게 답을 내지 않은 학생이 모여요. 도와준 뒤 [✓ 도왔어요]를 누르면 정리되고, 새로 막히면 다시 나타나요.</p><div class="together tTogether"></div><div class="tHelp"></div></div>
+   <div class="card panel tNow"><div class="t-head"><h2>학생 현황 · 오늘</h2><span class="muted tNowSum" style="font-size:14px"></span></div><div class="lvgrid tNowGrid"></div>
+    <p class="muted" style="font-size:13px;margin-bottom:0">점: <i class="lvk o"></i>처음에 맞힘 <i class="lvk t"></i>틀린 뒤 맞힘 <i class="lvk x"></i>틀림·정답 확인 (최근 12문제)</p></div>
    <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
     <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
     <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div>
@@ -2781,7 +2851,26 @@ function viewTeacher(){
       ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
       <td class="t-act"><button type="button" class="t-mini t-reset">비밀번호</button><button type="button" class="t-mini t-del">삭제</button></td></tr>`).join('');
-    $$('.tRows tr',app).forEach(tr=>wireRow(tr));loadTBoss();loadTBB()}
+    $$('.tRows tr',app).forEach(tr=>wireRow(tr));loadTBoss();loadTBB();loadLive()}
+  let liveT=null,liveMissing=false;
+  async function loadLive(){const hb=$('.tHelp',app),grid=$('.tNowGrid',app);if(!hb)return;
+    if(!klassSel||klassSel==='all'||!/^\d+-\d+$/.test(klassSel)){hb.innerHTML='<p class="muted">반을 하나 고르면 보여요.</p>';grid.innerHTML='';$('.tTogether',app).innerHTML='';return}
+    if(liveMissing){hb.innerHTML=liveSqlHelp();return}
+    const[g,k]=klassSel.split('-').map(Number);
+    try{const R=await API.call('hg_t_live',{p_token:tTok(),p_grade:g,p_klass:k});if(!R||location.hash!=='#teacher')return;
+      const S=R.students||[],now=Date.parse(R.now)||Date.now();
+      const rows=S.map(s=>({s,f:liveFlags(s,now)})).filter(x=>x.f.length).sort((a,b)=>b.f.reduce((t,x)=>t+x.w,0)-a.f.reduce((t,x)=>t+x.w,0));
+      const hot=rows.filter(x=>x.f.some(y=>y.w>=3)).length,nb=$('.tHelpN',app);nb.hidden=!hot;nb.textContent=hot;
+      $('.tTogether',app).innerHTML=togetherLive(S,now);
+      hb.innerHTML=rows.length?`<div class="helpl">${rows.map(({s,f})=>`<div class="hc ${f.some(x=>x.w>=3)?'hot':''}"><div class="hn"><b>${s.num}번</b><span class="muted">지금: ${s.loc?esc(s.loc):'-'}</span></div>${f.map(x=>`<span class="chip ${x.c}">${x.t}</span>`).join('')}
+        <div style="margin-top:8px;display:flex;gap:6px"><button type="button" class="btn ghost t-mini tAck" data-sid="${esc(s.sid)}">✓ 도왔어요</button></div></div>`).join('')}</div>`:'<div class="muted" style="text-align:center;padding:18px">지금은 도움이 필요한 학생이 없어요 🙂</div>';
+      $$('.tAck',hb).forEach(b=>b.onclick=async()=>{b.disabled=true;try{await API.call('hg_t_ack',{p_token:tTok(),p_sid:b.dataset.sid});loadLive()}catch(e){fail(e)}});
+      const fl=Object.fromEntries(rows.map(x=>[x.s.sid,x.f]));
+      grid.innerHTML=S.map(s=>liveCard(s,now,fl[s.sid])).join('');
+      const on=S.filter(s=>s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000).length;$('.tNowSum',app).textContent=`접속 중 ${on}명 / ${S.length}명 · 오늘 푼 문제 ${S.reduce((t,s)=>t+(s.att||[]).length,0)}개`;
+      $('.tLiveAt',app).textContent=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+    catch(e){if(isMissingFn(e)){liveMissing=true;hb.innerHTML=liveSqlHelp();grid.innerHTML=''}else fail(e)}}
+  clearInterval(window._liveT);window._liveT=setInterval(()=>{if(location.hash!=='#teacher'){clearInterval(window._liveT);return}if($('.tAuto',app)&&$('.tAuto',app).checked&&document.visibilityState==='visible')loadLive()},10000);
   async function loadTBoss(){const box=$('.tBoss',app);if(!box)return;if(!klassSel||klassSel==='all'||!/^\d+-\d+$/.test(klassSel)){box.hidden=true;return}
     const[g,k]=klassSel.split('-').map(Number),body=$('.tBossBody',box);box.hidden=false;$('.tBossTools',box).hidden=false;
     try{const st=await API.call('hg_t_class_status',{p_token:tTok(),p_grade:g,p_klass:k});if(!st)return;const pl=bossPlan(st),c=pl.cur,zero=(st.students||[]).filter(x=>!NUM(x.pts)).map(x=>x.num);
@@ -3067,6 +3156,7 @@ function viewBossView(g,k){crumbs.innerHTML=`<span class="sep">›</span><a href
   const fetcher=()=>API.call('hg_t_class_status',{p_token:tTok(),p_grade:g,p_klass:k}).catch(e=>{if(isAuthErr(e)){tSet(null);viewBossView(g,k)}else if(isMissingFn(e))host.innerHTML=`<div class="card panel">${gameSqlHelp()}</div>`;else toast(e.message);return null});
   (async()=>{const st=await fetcher();if(!st||!host.isConnected)return;renderBossPage(host,st,{teacher:true,big:true});
     const timer=setInterval(async()=>{if(!host.isConnected){clearInterval(timer);return}if(document.visibilityState!=='visible')return;const s2=await fetcher();if(s2&&host.isConnected)updateBossPage(host,s2,{teacher:true,big:true})},8000)})()}
+const liveSqlHelp=()=>`<p style="margin:0">도움 요청과 학생 현황을 쓰려면 Supabase 대시보드의 <b>SQL Editor</b>에서 <code>supabase/live.sql</code> 내용을 붙여 넣고 한 번 실행해 주세요. (학생 기록은 지워지지 않아요)</p>`;
 const gameSqlHelp=()=>`<p style="margin:0">보스전을 열려면 Supabase 대시보드의 <b>SQL Editor</b>에서 <code>supabase/game.sql</code> 내용을 붙여 넣고 한 번 실행해 주세요. 학생 기록은 그대로 남아요.</p>`;
 
 
@@ -4400,7 +4490,7 @@ function route(soft){
   else{let[id,tab]=h.split('-');if(id==='types')id='poly';const L=LESSONS.find(l=>l.id===id&&l.ready);if(L)viewLesson(id,TABS.some(t=>t.id===tab)?tab:'concept');else viewHome()}
   if(!soft)window.scrollTo(0,0);updateWho();
 }
-addEventListener('hashchange',()=>route());route();updatePill();if(isStudent()){maybeConfirmWho();pullDB();flushPts()}
+addEventListener('hashchange',()=>{LIVEX.sub='';route();livePing(false);helpBtn()});route();livePing(false,true);helpBtn();updatePill();if(isStudent()){maybeConfirmWho();pullDB();flushPts()}
 </script>
 </body>
 </html>
