@@ -781,6 +781,7 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .omr-score{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:6px 0}.omr-big{font-size:44px;font-weight:800;line-height:1}.omr-big small{font-size:20px;color:var(--muted,#666)}
 .omr-legend{font-size:13px;margin:6px 0}.omr-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
 .omr-q{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}.omr-q.ok{background:#f0fdf4}.omr-q.no{background:#fef2f2}.omr-why{font-size:13px;margin-top:4px}
+.t-omr{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}.t-omr summary{cursor:pointer}.omr-why summary{cursor:pointer;color:var(--muted,#666)}.omrGo,.omr-q .t-mini{margin-top:6px}
 .omr-tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}.omr-tbl td,.omr-tbl th{border-bottom:1px solid var(--line);padding:6px;text-align:left}
 .pw-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0}.pw-l{font-weight:700;min-width:56px}
 .pw-sheet{margin-top:16px}
@@ -1854,7 +1855,7 @@ function viewPractice(body,id){
       else{P.streak=0;P.fails++;if(!mixL)P.retry.push({seed,due:2,g:gid});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
       upd();const nb=el('<button type="button" class="btn primary">다음 문제 →</button>');nb.onclick=next;box.appendChild(nb);nb.focus()}});
   }
-  upd();if(TL)pickScreen();else next();
+  upd();if(TL&&PW_GO&&PW_GO.lid===id&&TL.some(t=>t.no===PW_GO.no)){P.mode=PW_GO.no;PW_GO=null;save();next()}else if(TL)pickScreen();else next();
 }
 
 /* ───────── 개념 카드 ───────── */
@@ -3109,7 +3110,7 @@ function viewTeacher(){
        <p class="muted t-lead" style="margin:10px 0 0">점: <i class="lvk o"></i>처음에 맞힘 <i class="lvk t"></i>틀린 뒤 맞힘 <i class="lvk x"></i>틀림·정답 확인 (최근 12문제)</p></div></div>
      <div class="t-pane" data-p="stat">
       <div class="card panel"><div class="t-head"><h2>학습 현황 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tCsv">엑셀로 받기</button></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
-       <div class="tablewrap"><table class="t t-roster"><thead><tr><th>학생</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th></tr></thead><tbody class="tRows"></tbody></table></div>
+       <div class="tablewrap"><table class="t t-roster"><thead><tr><th>학생</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th></tr></thead><tbody class="tRows"></tbody></table></div><div class="tOmr"></div>
        <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div></div>
      <div class="t-pane" data-p="steps">
       <div class="card panel"><div class="t-head"><h2>많이 막히는 단계 <span class="muted tScopeNm" style="font-size:17px"></span></h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
@@ -3218,7 +3219,18 @@ function viewTeacher(){
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
       ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td></tr>`).join('');
-    $$('.tRows .t-num',app).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid))}
+    $$('.tRows .t-num',app).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid));renderOmr(L)}
+  /* ── 점검 학습지: 학생이 직접 찍어 채점한 점수 ── */
+  function renderOmr(L){const box=$('.tOmr',app);if(!box)return;const by={};
+    L.forEach(s=>{const O=OBJ(OBJ(s.data)._omr);Object.keys(O).forEach(k=>{if(O[k]&&typeof O[k]==='object')(by[k]=by[k]||[]).push({s,x:O[k]})})});
+    const last=k=>Math.max(...by[k].map(r=>+r.x.at||0)),ks=Object.keys(by).sort((a,b)=>last(b)-last(a));
+    if(!ks.length){box.innerHTML='';return}
+    const one=k=>{const R=by[k].sort((a,b)=>(a.s.num||0)-(b.s.num||0)),t=NUM(R[0].x.t),avg=(R.reduce((a,r)=>a+NUM(r.x.f),0)/R.length).toFixed(1),cnt={};
+      R.forEach(r=>(Array.isArray(r.x.w)?r.x.w:[]).forEach(i=>cnt[i]=(cnt[i]||0)+1));const hard=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([i,c])=>`${NUM(i)}번(${c}명)`).join(', ');
+      return`<details class="t-omr" ${k===ks[0]?'open':''}><summary><b>문제지 ${esc(k)}</b> · ${R.length}명 · 처음 점수 평균 <b>${avg}</b>/${t}${hard?` · 많이 틀린 문제 ${hard}`:''}</summary>
+        <div class="tablewrap"><table class="omr-tbl"><tr><th>학생</th><th>처음 점수</th><th>다시 찍은 점수</th><th>틀린 문제</th><th>찍은 때</th></tr>${R.map(({s,x})=>`<tr><td>${nameH(s)}</td><td><b>${NUM(x.f)}</b>/${NUM(x.t)}</td><td>${NUM(x.n)>1?`${NUM(x.s)}/${NUM(x.t)}`:'-'}</td><td>${(Array.isArray(x.w)?x.w:[]).map(NUM).join(', ')||'다 맞음'}</td><td>${x.at?relTime(new Date(+x.at).toISOString()):''}</td></tr>`).join('')}</table></div></details>`};
+    box.innerHTML=`<h3 style="margin:16px 0 6px">📷 점검 학습지 · 학생이 직접 채점한 점수</h3><p class="muted t-lead" style="margin:0 0 6px">학생이 처음 찍은 점수가 남아요. 틀린 문제를 고쳐 다시 찍으면 그 점수도 함께 보여요.</p>${ks.slice(0,6).map(one).join('')}`}
+
   $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
     const head=['이름(이 기기)','학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>DATA_TABS.map(k=>`${l.no}차시 ${TAB_NM[k]}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
     const rows=L.map(s=>{const x=dataSummary(s.data);return[NAMES[s.sid]||'',s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.facts,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
@@ -4926,15 +4938,16 @@ function heroArt(){return`<div class="heroint">${nlSVG({min:-4,max:4,arrows:[{a:
 /* ───────── 점검 학습지 (인쇄용 섞어 풀기) ─────────
    열린 차시의 유형을 골고루 섞어 시험지처럼 만들어요. 단계 없이 최종 질문만, 선택지는 ①②③, 답 칸은 빈칸.
    같은 '문제지 번호'면 같은 문제가 나와요(다시 인쇄용). 정답지는 다음 쪽에 단계 흐름과 함께. */
+let PW_GO=null;   /* 점검 채점에서 '이 유형 다시 풀기'로 왔을 때 고를 유형 */
 const PW_CIRC=['①','②','③','④','⑤','⑥','⑦','⑧'];
 const PW_LESSONS=()=>LESSONS.filter(l=>l.ready&&(PTYPES[l.id]||GEN[l.id]));
 function pwFinal(P){return P.final||Object.assign({},P.steps[P.steps.length-1],{q:P.finalQ||P.steps[P.steps.length-1].q})}
 function pwMake(lids,n,seed){const r=mulberry(seed),slots=[];
-  lids.forEach(lid=>{const T=PTYPES[lid];if(T)T.forEach(t=>slots.push({lid,key:tyKey(lid,t.no),nm:`${t.nm}`}));else slots.push({lid,key:lid,nm:''})});
+  lids.forEach(lid=>{const T=PTYPES[lid];if(T)T.forEach(t=>slots.push({lid,key:tyKey(lid,t.no),nm:`${t.nm}`,no:t.no}));else slots.push({lid,key:lid,nm:'',no:null})});
   const order=[];while(order.length<n){shuffle(r,slots.slice()).forEach(s=>{if(order.length<n)order.push(s)})}
   const seen=new Set(),out=[];
   order.forEach((s,i)=>{let P=null;for(let t=0;t<30;t++){const q=GEN[s.key](ri(r,1,1e6));const sig=q.title+JSON.stringify(q.steps.map(x=>x.ans));if(!seen.has(sig)){seen.add(sig);P=q;break}}
-    if(P)out.push({P,lid:s.lid,nm:s.nm})});
+    if(P)out.push({P,lid:s.lid,nm:s.nm,no:s.no})});
   /* 쉬운 것부터: 차시 순서 → 같은 차시는 섞인 그대로 */
   const no=lid=>LESSONS.findIndex(l=>l.id===lid);return out.sort((a,b)=>no(a.lid)-no(b.lid))}
 const pwAll3=P=>{const f=re=>P.steps.find(s=>re.test(s.tag||''));return[['몇 면체',f(/면체/)],['모서리',f(/모서리/)],['꼭짓점',f(/꼭짓점/)]].filter(x=>x[1])};
@@ -5100,7 +5113,7 @@ function omrLoad(file){return new Promise((res,rej)=>{const u=URL.createObjectUR
 const OMR_KEY='hg_omr_v1';
 function omrStore(){try{return JSON.parse(localStorage.getItem(OMR_KEY)||'{}')}catch(e){return{}}}
 function omrSave(o){try{localStorage.setItem(OMR_KEY,JSON.stringify(o))}catch(e){}}
-function viewScan(){document.body.classList.remove('pw-mode');crumbs.innerHTML=`<span class="sep">›</span><a href="#print">점검 학습지</a><span class="sep">›</span><span>사진 채점</span>`;
+function viewScan(){if(!tTok())return viewScanStu();document.body.classList.remove('pw-mode');crumbs.innerHTML=`<span class="sep">›</span><a href="#print">점검 학습지</a><span class="sep">›</span><span>사진 채점</span>`;
   let cur=null,seed=null;
   app.innerHTML=`<div class="card panel"><h1 style="margin:0 0 6px">📷 OMR 사진 채점</h1>
     <p class="muted" style="margin:0 0 10px">점검 학습지의 <b>OMR 답안지</b>를 찍으면 바로 채점해요. 네 모서리의 검은 네모가 모두 보이게, 종이를 평평한 곳에 놓고 위에서 찍어 주세요. 사진은 이 기기 안에서만 읽고 어디에도 올리지 않아요.</p>
@@ -5141,6 +5154,41 @@ function viewScan(){document.body.classList.remove('pw-mode');crumbs.innerHTML=`
   const onFile=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;out.innerHTML='<p class="muted">읽는 중…</p>';
     try{const cv=await omrLoad(f);await new Promise(r=>setTimeout(r,30));show(cv,omrScan(cv))}catch(err){out.innerHTML='<div class="omr-err">사진을 열지 못했어요. 다시 찍어 주세요.</div>'}};
   $('.omrFile',app).onchange=onFile;$('.omrFile2',app).onchange=onFile;drawList()}
+function omrRecord(R){/* 학생 기록(DB._omr): 처음 점수 f는 그대로 두고, 다시 찍으면 s만 바뀌어요. 진도와 함께 서버로 올라가 선생님 화면에 보여요 */
+  const O=OBJ(DB._omr),k=String(R.meta.seed),old=O[k],wrong=R.res.filter(q=>!q.ok);
+  O[k]={f:old&&old.f!=null?old.f:R.score,s:R.score,t:R.items.length,w:wrong.map(q=>q.i+1),l:R.meta.lids,n:(old&&old.n||0)+1,at:Date.now()};
+  const keep={};Object.keys(O).sort((a,b)=>(O[b].at||0)-(O[a].at||0)).slice(0,20).forEach(x=>keep[x]=O[x]);DB._omr=keep;save();return keep[k]}
+function viewScanStu(){document.body.classList.remove('pw-mode');crumbs.innerHTML=`<span class="sep">›</span><span>점검 학습지 채점</span>`;
+  const me=isStudent();
+  app.innerHTML=`<div class="card panel"><h1 style="margin:0 0 6px">📷 내 점검 학습지 채점</h1>
+    <p class="muted" style="margin:0 0 10px">다 푼 <b>OMR 답안지</b>를 찍으면 바로 채점해요. 네 모서리의 검은 네모가 모두 보이게, 평평한 곳에 놓고 위에서 찍어요.
+    ${me?'점수는 선생님께도 전달돼요. <b>처음 찍은 점수</b>가 기록되니 다 풀고 찍어요.':'<b>로그인하면</b> 점수가 선생님께 전달돼요.'}</p>
+    <label class="btn primary omr-shot">📷 답안지 찍기<input type="file" accept="image/*" capture="environment" class="omrFile" hidden></label>
+    <label class="btn ghost omr-shot">🖼 사진 고르기<input type="file" accept="image/*" class="omrFile2" hidden></label>
+    <div class="omr-out"></div></div><div class="card panel omr-mine"></div>`;
+  const out=$('.omr-out',app),mine=$('.omr-mine',app);
+  const drawMine=()=>{const O=OBJ(DB._omr),ks=Object.keys(O).sort((a,b)=>(O[b].at||0)-(O[a].at||0));
+    mine.innerHTML=ks.length?`<b>내 점검 기록</b><table class="omr-tbl"><tr><th>문제지</th><th>처음 점수</th><th>다시 찍은 점수</th><th>틀린 문제</th></tr>${ks.map(k=>{const x=O[k];return`<tr><td>${esc_(k)}</td><td><b>${NUM(x.f)}</b>/${NUM(x.t)}</td><td>${x.n>1?`${NUM(x.s)}/${NUM(x.t)}`:'-'}</td><td>${(x.w||[]).map(NUM).join(', ')||'다 맞음 🎉'}</td></tr>`}).join('')}</table>`
+      :'<p class="muted" style="margin:0">채점한 점검 학습지가 여기에 모여요.</p>'};
+  const show=(cv,R)=>{
+    if(R.err){out.innerHTML=`<div class="omr-err"><b>답안지를 읽지 못했어요.</b> ${R.err==='markers'?'네 모서리의 검은 네모가 모두 보이게':'답안지 전체가 화면에 들어오게'} 찍어 주세요. 그림자가 지지 않게, 종이를 평평하게 펴고 위에서 바로 찍으면 잘 돼요.</div>`;return}
+    const rec=me?omrRecord(R):null,tot=R.items.length;
+    const disp=document.createElement('canvas'),k=Math.min(1,900/cv.width);disp.width=cv.width*k;disp.height=cv.height*k;disp.className='omr-photo';const g=disp.getContext('2d');g.drawImage(cv,0,0,disp.width,disp.height);
+    const pr=(X,Y)=>R.H(X,Y).map(v=>v*k),rad=(()=>{const a=pr(90,125),b=pr(90+R.r,125);return Math.hypot(a[0]-b[0],a[1]-b[1])})();
+    R.res.forEach(q=>{const bl=R.L.blocks[q.i],[x,y]=pr(bl.x0+3.2,bl.rows[0].y);g.font=`bold ${Math.round(rad*3.2)}px sans-serif`;g.fillStyle=q.ok?'#16a34a':'#dc2626';g.fillText(q.ok?'○':'✕',x-rad*4.6,y+rad*1.1)});
+    const wrong=R.res.filter(q=>!q.ok),again=rec&&rec.n>1;
+    out.innerHTML=`<div class="omr-score"><span class="omr-big">${R.score}<small>/${tot}</small></span><div>${R.score===tot?'다 맞았어요! 🎉':wrong.length<=2?'거의 다 왔어요. 틀린 것만 다시 봐요.':'틀린 유형을 다시 연습하고 한 번 더 풀어 봐요.'}
+      ${again?`<br><span class="muted">처음 점수 ${rec.f}/${tot}는 그대로 두고, 이번 점수도 함께 선생님께 보여요.</span>`:me?'<br><span class="muted">선생님께 점수를 보냈어요.</span>':''}</div></div>
+      ${wrong.length?`<p class="muted" style="margin:6px 0">틀린 문제를 학습지에서 <b>먼저 다시 풀어 보고</b>, 그다음에 정답을 확인해요.</p>`:''}
+      <div class="omr-res">${R.res.map(q=>`<div class="omr-q ${q.ok?'ok':'no'}"><b class="pw-n">${q.i+1}</b> <span>${q.ok?'맞음':'틀림'}</span> <span class="pw-ty">${q.it.nm||''}</span>
+        ${q.ok?'':`<details class="omr-why"><summary>정답 보기</summary>${q.parts.map(p=>`${p.pt.lab?p.pt.lab+' ':''}칠한 답 <b>${omrAnsTxt(p)}</b> · 정답 <b>${omrWantTxt(p)}</b>`).join('<br>')}</details>
+        ${q.it.no!=null?`<button type="button" class="btn ghost t-mini omrGo" data-l="${q.it.lid}" data-no="${q.it.no}">이 유형 다시 풀기 →</button>`:`<a class="btn ghost t-mini" href="#${q.it.lid}-practice">혼자 풀기 →</a>`}`}</div>`).join('')}</div>`;
+    out.prepend(disp);
+    $$('.omrGo',out).forEach(b=>b.onclick=()=>{PW_GO={lid:b.dataset.l,no:+b.dataset.no};location.hash=`#${b.dataset.l}-practice`});
+    drawMine()};
+  const onFile=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;out.innerHTML='<p class="muted">읽는 중…</p>';
+    try{const cv=await omrLoad(f);await new Promise(r=>setTimeout(r,30));show(cv,omrScan(cv))}catch(err){out.innerHTML='<div class="omr-err">사진을 열지 못했어요. 다시 찍어 주세요.</div>'}};
+  $('.omrFile',app).onchange=onFile;$('.omrFile2',app).onchange=onFile;drawMine()}
 const esc_=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function route(soft){
   document.body.classList.remove('pw-mode');hideTerm();stopSpeak();activeBox=null;pinKeyHandler=null;themePreview=null;applyTheme();if(!$('#labov').hidden)closeLab();
