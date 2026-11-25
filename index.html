@@ -772,6 +772,7 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .t-mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;font-size:13px;cursor:pointer;min-height:32px;margin:0 2px}
 .t-mini:hover{background:var(--hi-soft)}
 .t-confirm{font-size:13px;white-space:normal}
+.t-bulkbox{margin:8px 0;padding:10px 12px;border:1px solid #e5a3a3;border-radius:10px;background:#fff5f5}
 .t-newpin{font-size:14px;background:var(--hi-soft);border-radius:8px;padding:3px 8px}
 .t-detail td{background:var(--paper);text-align:left;white-space:normal}
 .t-att{margin:0;padding-left:18px;font-size:14px;line-height:1.8}
@@ -3135,6 +3136,14 @@ function viewTeacher(){
     if(!m)return{bad:x};const g=+m[1],k=+m[2],n=+m[3];if(!(g>=1&&g<=3&&k>=1&&k<=20&&n>=1&&n<=50))return{bad:x};return{g,k,n,sid:`${g}-${k}-${n}`,name:m[4].replace(/^[-:·\s]+/,'').trim().slice(0,20)}});
   async function setMembers(gid,sids,on){const r=await API.call('hg_t_group_members',{p_token:tTok(),p_id:gid,p_sids:sids,p_on:on});const g=GROUPS.find(x=>x.id===gid);
     if(g){const S=new Set(g.sids);sids.forEach(s=>on?ROSTER.some(x=>x.sid===s)&&S.add(s):S.delete(s));g.sids=[...S].sort()}return r}
+  function bulkDel(host){const L=curList(),box=$('.t-bulkbox',host);if(!L.length){toast('지울 학생이 없어요.');return}
+    const nm=scopeNm();box.hidden=false;box.innerHTML=`<span class="t-confirm"><b>${esc(nm)}</b> 학생 <b>${L.length}명</b>의 계정과 풀이 기록·포인트를 모두 지울까요? 되돌릴 수 없어요.${grp()?' (반에서 빼기가 아니라 학생 계정 자체를 지워요)':''}<br>계속하려면 <b>삭제</b>라고 적어 주세요. <input class="tBulkIn" style="width:70px" autocomplete="off"> <button type="button" class="t-mini t-yes" disabled>${L.length}명 지우기</button><button type="button" class="t-mini t-no">아니요</button></span>`;
+    const inp=$('.tBulkIn',box),yes=$('.t-yes',box);inp.oninput=()=>{yes.disabled=inp.value.trim()!=='삭제'};inp.focus();
+    $('.t-no',box).onclick=()=>{box.hidden=true;box.innerHTML=''};
+    yes.onclick=async()=>{yes.disabled=true;$('.t-no',box).disabled=true;inp.disabled=true;let n=0;
+      try{for(const s of L){await API.call('hg_t_delete_student',{p_token:tTok(),p_sid:s.sid});delete NAMES[s.sid];n++;yes.textContent=`지우는 중 ${n}/${L.length}`}}
+      catch(er){saveNames();box.hidden=true;box.innerHTML='';if(!fail(er))toast(`${n}명을 지우고 멈췄어요.`);loadAll();return}
+      saveNames();box.hidden=true;box.innerHTML='';toast(`학생 ${n}명을 지웠어요.`);loadAll()}}
   function renderPeople(){const host=$('.tPeople',app),g=grp(),L=curList();
     if(groupsOff){host.innerHTML=`<div class="card panel"><h2>방과후 반 만들기</h2><p style="margin:0">방과후 반을 쓰려면 Supabase 대시보드의 <b>SQL Editor</b>에서 <code>supabase/group.sql</code> 내용을 붙여 넣고 한 번 <b>Run</b> 해 주세요. 실행한 뒤 [새로 고침]을 누르면 나타나요.</p></div>`+createClassCard();wireCreate(host);return}
     const others=GROUPS.filter(x=>!g||x.id!==g.id);
@@ -3142,7 +3151,7 @@ function viewTeacher(){
         <div class="t-groups">${GROUPS.map(x=>`<button type="button" class="t-gcard ${g&&g.id===x.id?'on':''}" data-v="g:${x.id}"><b>${esc(x.name)}</b><span>${x.sids.length}명</span></button>`).join('')}
          <form class="t-gcard new tGNew"><input class="inp" maxlength="30" placeholder="새 반 이름 (예: 화목 방과후)" aria-label="새 방과후 반 이름" required><button class="btn primary">만들기</button></form></div></div>
       <div class="card panel"><div class="t-head"><h2>${esc(scopeNm())} 학생 <span class="muted" style="font-size:17px">${L.length}명</span></h2>
-         ${g?`<span class="t-tools"><button type="button" class="btn ghost tGRen">이름 바꾸기</button><button type="button" class="btn ghost tGDel">반 지우기</button></span>`:''}</div>
+         <span class="t-tools">${g?`<button type="button" class="btn ghost tGRen">이름 바꾸기</button><button type="button" class="btn ghost tGDel">반 지우기</button>`:''}${L.length?`<button type="button" class="btn ghost tBulkDel">학생 ${L.length}명 모두 지우기</button>`:''}</span></div><div class="t-bulkbox" hidden></div>
         ${L.length?`<div class="t-mbar"><label class="t-sel"><input type="checkbox" class="tAllChk"> 모두 고르기</label><span class="muted tChkN">0명 골랐어요</span>
           ${g?'<button type="button" class="btn ghost tOut1" disabled>반에서 빼기</button>':''}
           ${others.length?`<span class="t-sel">고른 학생을 <select class="inp sel tToG">${others.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><button type="button" class="btn ghost tInto" disabled>에 넣기</button></span>`:''}</div>
@@ -3158,6 +3167,7 @@ function viewTeacher(){
     $$('.t-gcard[data-v]',host).forEach(b=>b.onclick=()=>{SC=b.dataset.v;lsSet('hangeoreum-t-scope',SC);LVS={};render();loadLive();loadStats()});
     $('.tGNew',host).onsubmit=async e=>{e.preventDefault();const i=$('input',e.target),nm=i.value.trim();if(!nm)return;
       try{const r=await API.call('hg_t_group_save',{p_token:tTok(),p_id:null,p_name:nm});GROUPS.push({id:r.id,name:nm,sids:[]});SC='g:'+r.id;lsSet('hangeoreum-t-scope',SC);toast(`‘${nm}’ 반을 만들었어요. 이제 학생을 넣어 주세요.`);render();loadLive();loadStats();setTimeout(()=>{const t=$('.tAddTxt',app);if(t)t.focus()},50)}catch(er){fail(er)}};
+    {const bd=$('.tBulkDel',host);if(bd)bd.onclick=()=>bulkDel(host)}
     if(g){$('.tGRen',host).onclick=async()=>{const nm=(window.prompt('새 반 이름',g.name)||'').trim();if(!nm||nm===g.name)return;try{await API.call('hg_t_group_save',{p_token:tTok(),p_id:g.id,p_name:nm});g.name=nm;render()}catch(er){fail(er)}};
       $('.tGDel',host).onclick=e=>{const b=e.currentTarget,keep=b.parentElement.innerHTML,box=b.parentElement;box.innerHTML=`<span class="t-confirm">‘${esc(g.name)}’ 반을 지울까요? 학생 계정과 기록은 그대로예요. <button type="button" class="t-mini t-yes">지우기</button><button type="button" class="t-mini t-no">아니요</button></span>`;
         $('.t-no',box).onclick=()=>{box.innerHTML=keep;renderPeople()};$('.t-yes',box).onclick=async()=>{try{await API.call('hg_t_group_del',{p_token:tTok(),p_id:g.id});GROUPS=GROUPS.filter(x=>x.id!==g.id);SC=null;toast('방과후 반을 지웠어요.');render();loadLive();loadStats()}catch(er){fail(er)}}}}
