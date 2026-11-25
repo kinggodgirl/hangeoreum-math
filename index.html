@@ -276,6 +276,17 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .pv-tag{display:inline-block;font-size:12px;background:#151a28;color:#fff;border-radius:999px;padding:0 8px;margin-right:8px}
 .pv-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}.pv-l{font-size:13px;color:#7a5b00;font-weight:700;margin-right:4px}.pv-w{background:#fff;border:1px solid #f2e2a6;border-radius:999px;padding:1px 10px;font-size:14px}.pv-ty{background:#eef2fb;border:1px solid #c9d6f2;border-radius:8px;padding:1px 8px;font-size:14px;color:#2a4d9e}
 .pv-n{font-size:14px;margin:8px 0 0}
+.pv-cards2{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:10px}
+.pvcard{display:flex;flex-direction:column;text-align:left;font:inherit;color:inherit;background:#fff;border:2.5px solid #151a28;border-radius:16px;padding:12px 14px;box-shadow:4px 4px 0 #151a28;cursor:zoom-in;transition:transform .15s}.pvcard:hover{transform:translate(-1px,-2px)}
+.pvcard canvas{pointer-events:none}
+.pvh2{display:flex;align-items:center;gap:8px}.pvh2 b{font-size:20px}
+.pvfigs{display:flex;gap:6px;margin:6px 0}.pvfigs figure{flex:1;margin:0;text-align:center;min-width:0}.pvfigs canvas{width:100%;height:120px;display:block}.pvfigs figcaption{font-size:14px;font-weight:700;line-height:1.35}.pvfigs figcaption small{font-weight:400;color:#5a6377;font-size:12px}
+.pvt{font-size:16px;line-height:1.55}.pvt b{background:linear-gradient(transparent 58%,#ffe07a 58%)}.pvt small{color:#5a6377}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin:0 3px 0 6px;border:1px solid #0003}.sw.b{background:#9fbcf2}.sw.o{background:#f7c97f}
+.pvz{width:min(94vw,1000px)}.pvz .pvh2 b{font-size:30px}.pvz .pvn{width:40px;height:40px;font-size:20px}.pvz .pvfigs canvas{height:300px}.pvz .pvfigs figcaption{font-size:22px}.pvz .pvfigs figcaption small{font-size:17px}.pvz .pvt{font-size:24px;margin-top:6px}
+.wkhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px;color:#5a6377;margin-bottom:8px}.wktag{background:#3f9e6e;color:#fff;font-weight:800;border-radius:8px;padding:2px 10px;font-size:15px}
+.wk{display:flex;flex-direction:column;gap:2px;margin-top:6px}.wka{font-weight:800;color:#2b7a52;font-size:18px}.wkw{background:#eef7f1;border-left:4px solid #3f9e6e;border-radius:6px;padding:6px 10px;font-size:16px;line-height:1.55}
+.wkbtn{margin-top:8px}
 .tp-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:14px 0 10px}.tp-h b{font-size:20px}.tp-h span{color:#5a6377;font-size:15px}
 .tpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 .tpc{position:relative;display:flex;flex-direction:column;align-items:flex-start;text-align:left;font:inherit;color:inherit;background:#fff;border:2px solid #d6dbe6;border-radius:16px;padding:14px;cursor:pointer;transition:transform .12s,border-color .12s}
@@ -1308,8 +1319,9 @@ function renderProblem(host,prob,opt={}){
     ol.innerHTML='';const S=list();
     S.forEach((s,i)=>{const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):i===cur?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
       const sb=$('.sb',li);
-      if(i<cur){sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
-      if(i===cur){
+      if(i<cur){if(opt.worked){const w=s.why||s.hint||s.ok;sb.appendChild(el(`<div class="wk"><span class="wka">${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</span>${w?`<span class="wkw">${w}</span>`:''}</div>`))}else{sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}}
+      if(i===cur&&opt.worked){const b=el(`<button type="button" class="btn primary wkbtn">풀이 보기 ▶</button>`);b.onclick=()=>{cur++;draw();if(cur>=S.length&&opt.onWorked){tail.innerHTML='';opt.onWorked(tail)}};sb.appendChild(b)}
+      else if(i===cur){
         const hm=el('<div class="hintmsg" hidden></div>');
         const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
           tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':r==='nosign'?'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
@@ -1506,7 +1518,25 @@ const PREVIEW={
        <tr><th>정오각형</th><td>정십이면체</td><td>—</td><td>—</td></tr></table>`}],
     words:['정다각형','합동','한 꼭짓점에 모인 면','정다면체'],
     ex:'<b>정육면체</b> → 면은 모두 <b>정사각형</b>, 어느 꼭짓점에서나 모인 면은 <b>3개</b>'}};
-function previewBox(id){const P=PREVIEW[id];if(!P)return'';const TL=PTYPES[id]||[];return`<div class="card panel pv"><div class="pv-h"><b>미리 보기</b><span>정규 수업 전에 · 교과서 ${P.tb} · 카드를 누르면 크게 보여요</span></div>
+const PV_FIG={
+  ok:(m,hl,cap,o={})=>({m,hl,cap,o}),
+};
+const PV_CARDS={poly:[
+  {h:'다면체일까?',t:'면이 모두 <b>다각형</b>이면 다면체 ○<br><b>굽은 면</b>이 있으면 ✕',figs:()=>[[TYPE.prism.mk(3),null,'삼각기둥 ○'],[TYPE.frustum.mk(4),null,'사각뿔대 ○'],[SOLIDS.cyl.mk(),null,'원기둥 ✕'],[SOLIDS.cone.mk(),null,'원뿔 ✕']]},
+  {h:'면 · 모서리 · 꼭짓점',t:'<b>면</b>: 둘러싼 다각형 · <b>모서리</b>: 다각형의 변 · <b>꼭짓점</b>: 다각형의 꼭짓점',figs:()=>{const c=()=>SOLIDS.cube.mk();return[[c(),'one','면'],[c(),'E','모서리'],[c(),'allV','꼭짓점']]}},
+  {h:'각기둥 · 각뿔대 · 각뿔',t:'<span class="sw b"></span>밑면 <span class="sw o"></span>옆면 — <b>밑면 개수 · 크기</b>와 <b>옆면 모양</b>으로 구별',figs:()=>[[TYPE.prism.mk(5),'all','각기둥<br><small>밑면 2개 같음 · 직사각형</small>'],[TYPE.frustum.mk(5),'all','각뿔대<br><small>밑면 2개 크기 다름 · 사다리꼴</small>'],[TYPE.pyramid.mk(5),'all','각뿔<br><small>밑면 1개 · 삼각형</small>']]},
+  {h:'이름은 두 가지',t:'면의 개수로 <b>칠면체</b> · 모양으로 <b>오각뿔대</b><br><small>이름의 앞부분이 밑면의 모양</small>',figs:()=>[[TYPE.frustum.mk(5),'all','면 7개 → 칠면체<br>밑면 오각형 → 오각뿔대']]},
+  {h:'층으로 보기',t:'같은 높이의 꼭짓점끼리 한 층 — <b>1층 · 2층 · 층 사이</b>',figs:()=>[[TYPE.prism.mk(5),'Fv','오각기둥<br><small>1층 5 · 2층 5</small>'],[TYPE.pyramid.mk(5),'Fv','오각뿔<br><small>1층 5 · 2층 1(꼭대기)</small>']]}]};
+function pvCardHTML(c,i){return`<div class="pvh2"><span class="pvn">${i+1}</span><b>${c.h}</b></div><div class="pvfigs">${c.figs().map((f,k)=>`<figure><canvas data-k="${k}"></canvas><figcaption>${f[2]}</figcaption></figure>`).join('')}</div><div class="pvt">${c.t}</div>`}
+function pvMount(host,c){const F=c.figs();$$('canvas',host).forEach(cv=>{const f=F[+cv.dataset.k],v=figure(cv,Object.assign(solidFig(f[0]),{visual:true}));
+  if(f[1]==='one'){const b=f[0].base||[0],t=b.length>1?b[1]:b[0];v.fcol=i=>i===t?HL_SIDE:null;v.dirty=true}else if(f[1]==='allV'){v.mode='v';v.vcol=()=>'#e08a1e';v.dirty=true}else if(f[1])applyHl(v,f[0],f[1])})}
+function pvWire(body,id){const C=PV_CARDS[id];if(!C)return;$$('.pvcard',body).forEach(b=>{const c=C[+b.dataset.i];pvMount(b,c);
+  b.onclick=()=>{const bg=el('<div class="zoom-bg"></div>'),cd=el(`<div class="zoom-card pvz" role="dialog" aria-modal="true"><button type="button" class="zoom-x" aria-label="닫기">✕</button>${pvCardHTML(c,+b.dataset.i)}<p class="muted" style="margin:8px 0 0;font-size:15px">그림을 끌어서 돌려 볼 수 있어요.</p></div>`);
+    const close=()=>{bg.remove();cd.remove();document.removeEventListener('keydown',esc)},esc=e=>{if(e.key==='Escape')close()};bg.onclick=close;$('.zoom-x',cd).onclick=close;document.addEventListener('keydown',esc);document.body.append(bg,cd);pvMount(cd,c)}})}
+function previewBox(id){const P=PREVIEW[id];if(!P)return'';
+  if(PV_CARDS[id]){const TL=PTYPES[id]||[];return`<div class="card panel pv"><div class="pv-h"><b>미리 보기</b><span>정규 수업 전에 · 그림으로 먼저 만나요 · 카드를 누르면 크게 보여요</span></div>
+    <div class="pv-cards2">${PV_CARDS[id].map((c,i)=>`<button type="button" class="pvcard" data-i="${i}">${pvCardHTML(c,i)}</button>`).join('')}</div>
+    ${TL.length?`<div class="pv-row"><span class="pv-l">수업 뒤 연습할 유형</span>${TL.map(t=>`<span class="pv-ty">유형 ${t.no} · ${t.nm}</span>`).join('')}</div>`:''}</div>`}const TL=PTYPES[id]||[];return`<div class="card panel pv"><div class="pv-h"><b>미리 보기</b><span>정규 수업 전에 · 교과서 ${P.tb} · 카드를 누르면 크게 보여요</span></div>
   <div class="pv-ct">오늘의 핵심 <small>이것만은 꼭!</small></div>
   <div class="pv-cards">${P.core.map((c,i)=>`<button type="button" class="pvc zc"><span class="pvn">${i+1}</span><b class="pvh">${c.h}</b><div class="pvb">${c.b}</div></button>`).join('')}
    <button type="button" class="pvc ex zc"><span class="pvn">예</span><b class="pvh">예시로 확인</b><div class="pvb">${P.ex}</div></button></div>
@@ -1529,7 +1559,7 @@ function viewLesson(id,tab){
   $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
   const body=$('#tabBody');
   const nextBtn=(label,to)=>`<div class="next-row"><a class="btn primary" href="#${id}-${to}">${label} →</a></div>`;
-  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('afterbegin',previewBox(id));body.insertAdjacentHTML('beforeend',nextBtn('같이 풀기 (정규 수업 뒤에)','steps'));p.concept=true;save();award(5,'concept:'+id)}
+  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('afterbegin',previewBox(id));pvWire(body,id);body.insertAdjacentHTML('beforeend',nextBtn('같이 풀기 (정규 수업 뒤에)','steps'));p.concept=true;save();award(5,'concept:'+id)}
   if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('혼자 풀기','practice'));p.explore=true;save()}
   DB._last={id,tab};save();
   if(tab==='steps')viewSteps(body,id);
@@ -1538,10 +1568,10 @@ function viewLesson(id,tab){
 const STEPGEN={poly:GEN.polyStep,types:GEN.typesStep,area:GEN.areaStep};
 /* 유형 고르기 화면 (대청 수학 「기초 연습」처럼 카드에서 유형을 골라 들어가요) */
 function tyPicker(host,{TL,head,mix,stat,rec,onPick}){
-  host.innerHTML=`<div class="tp-h">${head}</div><div class="tpick">${mix?`<button type="button" class="tpc mix" data-no="0"><span class="tpn">섞어서</span><b>유형 섞어 풀기</b><div class="d">${mix}</div></button>`:''}${TL.map(t=>`<button type="button" class="tpc${rec(t)?' rec':''}" data-no="${t.no}"><span class="tpn">유형 ${t.no}</span>${rec(t)?'<span class="tprec">추천</span>':''}<b>${t.nm}</b><div class="d">${t.key}</div><div class="s"><span>교과서 ${t.tb}</span><span>${stat(t)}</span></div></button>`).join('')}</div>`;
+  host.innerHTML=`<div class="tp-h">${head}</div><div class="tpick">${mix?`<button type="button" class="tpc mix" data-no="0"><span class="tpn">섞어서</span><b>유형 섞어 풀기</b><div class="d">${mix}</div></button>`:''}${TL.map(t=>`<button type="button" class="tpc${rec(t)?' rec':''}" data-no="${t.no}"><span class="tpn">유형 ${t.no}</span>${rec(t)?'<span class="tprec">추천</span>':''}<b>${t.nm}</b><div class="d">${t.key}</div><div class="s"><span>${/쪽/.test(t.tb)?'교과서 ':''}${t.tb}</span><span>${stat(t)}</span></div></button>`).join('')}</div>`;
   $$('.tpc',host).forEach(b=>b.onclick=()=>onPick(+b.dataset.no));
 }
-const tyBar=(T_,label)=>`<div class="tybar"><span class="tyn">${T_?'유형 '+T_.no:'섞어서'}</span><b>${T_?T_.nm:'유형 섞어 풀기'}</b>${T_?`<span class="tytb">교과서 ${T_.tb}</span>`:''}<button type="button" class="btn ghost tyback">← ${label}</button></div>`;
+const tyBar=(T_,label)=>`<div class="tybar"><span class="tyn">${T_?'유형 '+T_.no:'섞어서'}</span><b>${T_?T_.nm:'유형 섞어 풀기'}</b>${T_?`<span class="tytb">${/쪽/.test(T_.tb)?'교과서 ':''}${T_.tb}</span>`:''}<button type="button" class="btn ghost tyback">← ${label}</button></div>`;
 function viewSteps(body,id){
   const p=prog(id),TL=PTYPES[id];p.tyS=p.tyS||{};
   const wrap=el(`<div><div class="card panel"><div class="statbar"><div class="stat"><small>단계 문제를 끝까지 푼 횟수</small><b>${p.steps}</b></div>
@@ -1549,15 +1579,19 @@ function viewSteps(body,id){
   body.appendChild(wrap);
   const SG0=GEN[id+'Step2']?id+'Step2':({poly:'polyStep',types:'typesStep',area:'areaStep',regular:'regularStep'}[id]||(GEN[id+'Step']?id+'Step':id));
   const nextUndone=()=>TL.find(t=>!p.tyS[t.no]);
-  const pickScreen=()=>{$('#probHost',wrap).innerHTML='';tyPicker($('#tyHost',wrap),{TL,head:'<b>유형 고르기</b><span>유형 1부터 차례로 풀면 좋아요. 문제 위에 그 유형의 <b>핵심</b>이 나와요.</span>',
-    stat:t=>p.tyS[t.no]?`✓ ${p.tyS[t.no]}번 풀었어요`:'아직 안 풀었어요',rec:t=>t===nextUndone(),onPick:no=>go(no)})};
+  const pickScreen=()=>{$('#probHost',wrap).innerHTML='';tyPicker($('#tyHost',wrap),{TL,head:'<b>유형 고르기</b><span>유형마다 <b>풀이 예시</b>를 먼저 보고, 비슷한 문제를 한 단계씩 직접 풀어요. 유형 1부터 차례로 하면 좋아요.</span>',
+    stat:t=>p.tyS[t.no]?`✓ ${p.tyS[t.no]}번 풀었어요`:'아직 안 풀었어요',rec:t=>t===nextUndone(),onPick:no=>example(no)})};
+  const example=cur=>{const T_=TL.find(t=>t.no===cur),prob=GEN[tyKey(id,cur)](newSeed());
+    $('#tyHost',wrap).innerHTML=tyBar(T_,'유형 고르기');$('.tyback',wrap).onclick=pickScreen;
+    prob.title=`<div class="wkhead"><span class="wktag">풀이 예시</span>먼저 풀이를 한 단계씩 펼쳐 보세요. 그림도 단계마다 바뀌어요.</div><div class="tykey"><span>핵심</span>${T_.key}</div>`+stripTB(prob.title);
+    renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,worked:true,onWorked:tl=>{const b=el(`<div class="result ok"><span>풀이를 다 봤어요. 이제 비슷한 문제를 직접 풀어 봐요.</span><button type="button" class="btn primary">직접 풀기 →</button></div>`);$('button',b).onclick=()=>go(cur);tl.appendChild(b);$('button',b).focus()}})};
   const go=cur=>{const T_=TL&&TL.find(t=>t.no===cur),SG=T_?tyKey(id,cur):SG0,seed=newSeed(),prob=GEN[SG](seed);
     if(T_){$('#tyHost',wrap).innerHTML=tyBar(T_,'유형 고르기');$('.tyback',wrap).onclick=pickScreen;prob.title=`<div class="tykey"><span>핵심</span>${T_.key}</div>`+stripTB(prob.title)}
     renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
       if(good){p.steps++;if(T_)p.tyS[cur]=(p.tyS[cur]||0)+1;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요.</span>')}
       const nx=T_&&TL.find(t=>t.no>cur);
-      const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-k="same">${T_?'같은 유형 하나 더':'하나 더'}</button>${nx?`<button type="button" class="btn primary" data-k="next">유형 ${nx.no} · ${nx.nm} →</button>`:`<a class="btn primary" href="#${id}-practice">혼자 풀러 가기 →</a>`}</span>`);
-      $('[data-k=same]',nb).onclick=()=>go(cur);if(nx)$('[data-k=next]',nb).onclick=()=>go(nx.no);box.appendChild(nb)}})};
+      const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-k="same">${T_?'같은 유형 하나 더':'하나 더'}</button>${T_?'<button type="button" class="btn ghost" data-k="ex">풀이 예시 다시 보기</button>':''}${nx?`<button type="button" class="btn primary" data-k="next">유형 ${nx.no} · ${nx.nm} →</button>`:`<a class="btn primary" href="#${id}-practice">혼자 풀러 가기 →</a>`}</span>`);
+      $('[data-k=same]',nb).onclick=()=>go(cur);if(T_)$('[data-k=ex]',nb).onclick=()=>example(cur);if(nx)$('[data-k=next]',nb).onclick=()=>example(nx.no);box.appendChild(nb)}})};
   if(TL)pickScreen();else go(0);
 }
 function viewPractice(body,id){
@@ -2482,13 +2516,65 @@ const PTYPES={
     {no:3,nm:'꼭짓점 · 모서리 · 면의 개수',tb:'214쪽 3번',key:'모서리 = 면 × 변 ÷ <b>2</b> · 꼭짓점 = 면 × 꼭짓점 ÷ <b>모인 면의 개수</b> (층으로 세어도 돼요)',pt:['regular:count','regular:edge','regular:vertex','regular:floor','regular:sum'],src:['regularStep','regular']},
     {no:4,nm:'성질 ○× · 옳지 않은 것',tb:'215쪽 1번',key:'다섯 가지의 <b>면 모양</b>과 <b>한 꼭짓점에 모인 면의 개수</b>를 표로 떠올려 하나씩 확인해요.',pt:['regular:tf'],src:['regular']}]};
 const tyKey=(lid,no)=>`ty_${lid}_${no}`;
-const tyBanner=(T_,open)=>`<div class="tyb"><span class="tyn">유형 ${T_.no}</span><b>${T_.nm}</b><span class="tytb">교과서 ${T_.tb}</span></div>`+
+const tyBanner=(T_,open)=>`<div class="tyb"><span class="tyn">유형 ${T_.no}</span><b>${T_.nm}</b><span class="tytb">${/쪽/.test(T_.tb)?'교과서 ':''}${T_.tb}</span></div>`+
   (open?`<div class="tykey"><span>핵심</span>${T_.key}</div>`:`<details class="tykey"><summary>핵심 보기</summary>${T_.key}</details>`);
 Object.entries(PTYPES).forEach(([lid,list])=>list.forEach(T_=>{const g=tyKey(lid,T_.no);
   GEN[g]=seed=>{const src=T_.src[seed%T_.src.length];for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}return GEN[T_.src[0]](seed)};
   LESSON_OF[g]=lid}));
 Object.keys(PTYPES).forEach(lid=>{GEN['mix_'+lid]=seed=>{const L=PTYPES[lid];return GEN[tyKey(lid,L[seed%L.length].no)](Math.floor(seed/L.length)+1)};LESSON_OF['mix_'+lid]=lid});
 function typeOf(ptype){for(const[lid,list]of Object.entries(PTYPES))for(const T_ of list)if(T_.pt.includes(ptype))return{lid,T:T_};return null}
+/* ───────── 1차시 「다면체 · 각뿔대」 유형 5가지 (풀이 절차로 나눔) ─────────
+   ① 무엇인지 가려내기 ② 이름 짓기(2가지) ③ 그림 보고 개수 세기 ④ 이름만 보고 개수 구하기 ⑤ 거꾸로 찾기 */
+const FAM={prism:{nm:'각기둥',bases:2,cong:true},frustum:{nm:'각뿔대',bases:2,cong:false},pyramid:{nm:'각뿔',bases:1}};
+const LAYER={ // 층 구조: [1층, 2층, 층 사이]
+  V:(tp,n)=>[n,tp==='pyramid'?1:n,0],E:(tp,n)=>[n,tp==='pyramid'?0:n,n],F:(tp,n)=>[1,tp==='pyramid'?0:1,n]};
+const PART_HL={V:'Fv',E:'Fe',F:'Ff'};
+/* ① 가려내기: 다면체인가 / 어느 가족인가 */
+GEN.p5family=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid','frustum']),n=ri(r,3,6),Ty=TYPE[tp],m=Ty.mk(n),F_=FAM[tp];
+  const steps=[{tag:'밑면 개수',hl:'base',q:`${T('밑면')}은 몇 개인가요?`,type:'num',ans:F_.bases,suffix:'개',why:F_.bases===2?'위와 아래에 서로 평행한 면이 2개 있어요.':'밑면은 아래에 1개, 위는 뾰족한 꼭짓점이에요.'}];
+  if(F_.bases===2)steps.push({tag:'두 밑면 비교',hl:'base',q:'두 밑면의 크기가 같은가요?',type:'choice',choices:['같다 (합동)','다르다'],ans:F_.cong?'같다 (합동)':'다르다',why:F_.cong?'위아래 밑면이 똑같아요(합동).':'모양은 같지만 위 밑면이 더 작아요.'});
+  steps.push({tag:'옆면 모양',hl:'side',q:`${T('옆면')}은 어떤 모양인가요?`,type:'choice',choices:['직사각형','삼각형','사다리꼴'],ans:Ty.side,why:`옆면은 모두 ${Ty.side}이에요.`},
+    {tag:'가족 이름',q:'이 입체도형은 무엇인가요?',type:'choice',choices:['각기둥','각뿔','각뿔대'],ans:F_.nm,why:F_.bases===1?'밑면 1개 + 옆면 삼각형 → 각뿔':F_.cong?'밑면 2개가 합동 + 옆면 직사각형 → 각기둥':'밑면 2개가 크기가 다름 + 옆면 사다리꼴 → 각뿔대',ok:`${F_.nm}이에요.`});
+  return{ptype:'poly:family',title:'다음 입체도형은 각기둥, 각뿔, 각뿔대 중 무엇인지 고르시오.',fig:solidFig(m),finalQ:'이 입체도형은 무엇인가요?',steps}};
+/* ② 이름 짓기 2가지: 면의 개수로 · 모양으로 */
+GEN.p5name2=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid','frustum']),n=ri(r,3,7),Ty=TYPE[tp],m=Ty.mk(n),F=Ty.F(n),fam=FAM[tp].nm,nm=kn(n)+fam;
+  const famCh=['각기둥','각뿔','각뿔대'];
+  return{ptype:'poly:name2',title:'다음 다면체의 이름을 두 가지로 말하시오.<div class="cond">(1) 면의 개수로 짓는 이름&emsp;(2) 모양으로 짓는 이름</div>',fig:solidFig(m),finalQ:'모양으로 짓는 이름은?',steps:[
+    {tag:'면 세기',hl:'all',q:'면은 모두 몇 개인가요?',type:'num',ans:F,suffix:'개',why:`밑면 ${FAM[tp].bases}개 + 옆면 ${n}개 = ${F}개`},
+    {tag:'(1) 면의 개수로',q:'면의 개수로 짓는 이름은?',type:'num',ans:F,suffix:'면체',why:`면이 ${F}개 → ${kn(F)}면체`},
+    {tag:'밑면 모양',hl:'base',q:`${T('밑면')}의 모양은?`,type:'choice',choices:shuffle(r,[n-1,n,n+1].filter(k=>k>=3).concat(n===3?[6]:[]).map(k=>kn(k)+'각형')),ans:kn(n)+'각형',why:`밑면의 변을 세면 ${n}개 → ${kn(n)}각형`},
+    {tag:'가족 찾기',hl:'side',q:'각기둥, 각뿔, 각뿔대 중 무엇인가요?',type:'choice',choices:famCh,ans:fam,why:`옆면이 ${Ty.side} → ${fam}`},
+    {tag:'(2) 모양으로',q:'모양으로 짓는 이름은?',type:'choice',choices:shuffle(r,[...new Set([nm,kn(n)+famCh.find(x=>x!==fam),kn(F)+fam,kn(n+1)+fam,kn(n)+famCh.filter(x=>x!==fam)[1]])].slice(0,4)),ans:nm,why:`밑면 ${kn(n)}각형 + ${fam} → ${nm}`,ok:`${kn(F)}면체이고, ${nm}${fam==='각뿔대'?'예요':'이에요'}.`}]}};
+/* ④ 이름만 보고 개수 구하기 (그림 없이 층을 떠올려요) */
+GEN.p5byname=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid','frustum']),n=ri(r,3,9),Ty=TYPE[tp],part=pick(r,['V','E','E','F']),L=LAYER[part](tp,n),tot=L[0]+L[1]+L[2],nm=kn(n)+FAM[tp].nm,P_=PART[part];
+  const unitOf={V:'꼭짓점',E:'모서리',F:'면'}[part];
+  const st=[{tag:'밑면 찾기',q:`${nm}의 밑면은 몇 각형인가요?`,type:'num',ans:n,suffix:'각형',why:`이름의 앞부분 "${kn(n)}"이 밑면의 모양이에요.`},
+    {tag:'1층 세기',q:`1층(아래 밑면)의 ${josa(unitOf,'은','는')} 몇 개인가요?`,type:'num',ans:L[0],suffix:'개',why:part==='F'?'1층은 밑면 1개예요.':`밑면이 ${kn(n)}각형이라 ${unitOf} ${n}개`},
+    {tag:'2층 세기',q:`2층(위)의 ${josa(unitOf,'은','는')} 몇 개인가요?`,type:'num',ans:L[1],suffix:'개',why:tp==='pyramid'?(part==='V'?'각뿔의 2층은 꼭대기 점 1개뿐이에요.':'각뿔의 2층은 점 하나라서 '+unitOf+'이 없어요.'):(part==='F'?'2층도 밑면 1개예요.':`2층도 ${kn(n)}각형이라 ${n}개`)}];
+  if(part!=='V')st.push({tag:'층 사이 세기',q:`1층과 2층 사이의 ${josa(unitOf,'은','는')} 몇 개인가요?`,type:'num',ans:L[2],suffix:'개',why:part==='E'?`밑면의 꼭짓점마다 위로 올라가는 모서리가 1개씩 → ${n}개`:`밑면의 변마다 옆면이 1개씩 → ${n}개`});
+  st.push({tag:'더하기',q:`${josa(P_,'은','는')} 모두 몇 개인가요?`,type:'num',ans:tot,suffix:'개',why:part==='V'?`${L[0]} + ${L[1]} = ${tot}`:`${L[0]} + ${L[1]} + ${L[2]} = ${tot}`,ok:`${nm}의 ${josa(P_,'은','는')} ${tot}개예요.`});
+  return{ptype:'poly:byname',title:`${nm}의 ${P_}의 개수를 구하시오.`,fig:null,figAfter:{at:1,fig:solidFig(Ty.mk(n)),hl:PART_HL[part],cap:`${nm} · ${josa(P_,'을','를')} 층별로 칠했어요`},finalQ:`${josa(P_,'은','는')} 모두 몇 개인가요?`,steps:st}};
+/* ⑤ 거꾸로: 개수가 ○인 다면체를 모두 찾기 (각기둥·각뿔·각뿔대) */
+GEN.p5findAll=seed=>{const r=mulberry(seed);const part=pick(r,['E','E','V','F']);
+  const val=part==='E'?pick(r,[12,18,24]):part==='V'?pick(r,[8,10,12]):pick(r,[6,7,8]);
+  const f={E:{prism:'3n',frustum:'3n',pyramid:'2n'},V:{prism:'2n',frustum:'2n',pyramid:'n + 1'},F:{prism:'n + 2',frustum:'n + 2',pyramid:'n + 1'}}[part];
+  const solve=e=>e==='3n'?val/3:e==='2n'?val/2:e==='n + 1'?val-1:val-2;
+  const res=['prism','frustum','pyramid'].map(tp=>({tp,n:solve(f[tp])})),names=res.map(x=>kn(x.n)+FAM[x.tp].nm),ans=names.join(', ');
+  const wrong=[[res[0].n+1,'각기둥'],[res[2].n+1,'각뿔']].map(([k,fm])=>kn(k)+fm);
+  const choices=shuffle(r,[ans,`${names[0]}, ${names[1]}`,`${names[0]}, ${names[1]}, ${wrong[1]}`,`${wrong[0]}, ${names[1]}, ${names[2]}`]);
+  const nI=x=>x.replace('n','<i class="math">n</i>'),P_=PART[part];
+  const steps=res.map((x,i)=>({tag:`${FAM[x.tp].nm}이라면`,q:`<i class="math">n</i>${FAM[x.tp].nm}의 ${josa(P_,'은','는')} ${nI(f[x.tp])}개예요. ${nI(f[x.tp])} = ${val}이면 <i class="math">n</i>은?`,type:'num',ans:x.n,why:`${f[x.tp]} = ${val} → n = ${x.n} → ${names[i]}`,ok:`${names[i]}`}));
+  steps.push({tag:'모두 고르기',q:`${josa(P_,'이','가')} ${val}개인 다면체를 모두 고르면?`,type:'choice',choices,ans,why:'위에서 찾은 세 가지를 모두 골라요.'});
+  return{ptype:'poly:findall',title:`${P_}의 개수가 ${val}인 다면체를 각기둥, 각뿔, 각뿔대 중에서 모두 찾으시오.`,fig:null,finalQ:'모두 고르면?',steps}};
+PTYPES.poly=[
+  {no:1,nm:'무엇인지 가려내기',tb:'다면체 · 각기둥 · 각뿔 · 각뿔대',key:'굽은 면·뚫린 곳이 있으면 다면체 ✕ → 밑면 <b>개수</b>와 <b>크기</b>, 옆면 <b>모양</b>으로 각기둥 · 각뿔 · 각뿔대',pt:['poly:is','poly:family','poly:faces','types:tf'],src:['p5family','p5family','poly','polyFaces','typesTF']},
+  {no:2,nm:'이름 짓기 (2가지)',tb:'○면체 · ○각뿔대',key:'① 면을 세어 <b>○면체</b> ② 밑면 모양 + 가족 이름 → <b>○각뿔대</b>',pt:['poly:name2'],src:['p5name2']},
+  {no:3,nm:'그림 보고 개수 세기',tb:'꼭짓점 · 모서리 · 면',key:'<b>1층 · 2층 · 층 사이</b>로 나누어 세고 더해요.',pt:['poly:count','poly:all3'],src:['polyAll3','poly']},
+  {no:4,nm:'이름만 보고 개수 구하기',tb:'그림 없이',key:'이름에서 <b>밑면</b>과 <b>가족</b>을 찾고, 머릿속에 층을 그려 <b>1층 + 2층 + 층 사이</b>',pt:['poly:byname'],src:['p5byname']},
+  {no:5,nm:'거꾸로 찾기',tb:'개수 → 도형',key:'개수를 <i class="math">n</i>으로 나타낸 식 = 주어진 수 → <i class="math">n</i>을 구하면 <b>밑면이 <i class="math">n</i>각형</b>',pt:['types:prism','types:pyramid','types:frustum','types:diff','poly:findall'],src:['typesStep','typesDiff','p5findAll']}];
+PTYPES.poly.forEach(T_=>{const g=tyKey('poly',T_.no);
+  GEN[g]=seed=>{const src=T_.src[seed%T_.src.length];for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}return GEN[T_.src[0]](seed)};LESSON_OF[g]='poly'});
+
 const stripTB=s=>s.replace(/<span class="tbtag">[^<]*<\/span>/g,'');
 
 
