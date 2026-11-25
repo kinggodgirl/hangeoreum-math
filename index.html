@@ -849,6 +849,37 @@ footer{color:var(--ink-soft);font-size:14px;border-top:1px solid var(--line);pad
 .today p{margin:0 0 16px;color:var(--ink-soft)}
 .today-go{font-size:20px;padding:14px 28px;min-height:56px}
 .today.done{box-shadow:6px 6px 0 var(--ok-soft)}
+
+/* 단원 마무리에서 가져온 것 */
+.chk-tag{display:inline-block;background:#1d2640;color:#fff;border-radius:8px;padding:2px 10px;font-size:15px;font-weight:700;margin-bottom:4px}
+.where,.keyidea{margin-top:10px;display:grid;gap:8px;flex-basis:100%}
+.where-l{display:grid;gap:6px}
+.where-l button{text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;font:inherit;color:var(--ink);min-height:44px}
+.where-l button:hover{border-color:var(--accent)}
+.rulebox{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink)}
+.rulebox.ok{border-color:var(--ok)}
+.next-acts{display:flex;gap:8px;flex-wrap:wrap;flex-basis:100%}
+.spath{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;margin:8px 0 2px;color:var(--ink-soft)}
+.spath span{border-radius:999px;padding:2px 10px;background:#f1f3f7}
+.spath span.got{background:var(--ok-soft);color:var(--ok)}
+.spath span.cur{background:var(--ink);color:#fff;font-weight:700}
+.spath em{font-style:normal;opacity:.5}
+.spath small{flex-basis:100%;font-size:13px}
+.dayg{margin:10px 0 4px}
+.dayg .dl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:15px}
+.dayg .dl span{color:var(--ink-soft);font-size:14px}
+.dayg .db{position:relative;height:12px;border-radius:6px;background:#eceff4;margin:12px 0 10px}
+.dayg .db>div{height:100%;border-radius:6px;background:linear-gradient(90deg,#69db7c,#ffcf4a)}
+.dayg .db i{position:absolute;top:50%;transform:translate(-50%,-50%);font-style:normal;font-size:18px;filter:grayscale(1);opacity:.45}
+.dayg .db i.on{filter:none;opacity:1}
+.celeb{position:fixed;inset:0;pointer-events:none;z-index:60;display:none}.celeb.on{display:block}
+.celeb .cel-box{min-width:min(300px,86vw);position:absolute;left:50%;top:22%;transform:translateX(-50%);background:#fff;border:3px solid #ffcf4a;border-radius:22px;padding:18px 28px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.18);animation:celPop .45s cubic-bezier(.2,1.6,.4,1);max-width:90vw}
+.celeb .cel-b{font-size:28px;font-weight:900}.celeb .cel-s{font-size:16px;margin-top:6px;color:#555}
+.celeb .cel-conf i{position:absolute;top:-20px;width:10px;height:16px;border-radius:3px;animation:celFall 2.4s linear forwards}
+@keyframes celPop{from{transform:translateX(-50%) scale(.5);opacity:0}}
+@keyframes celFall{to{transform:translateY(110vh) rotate(720deg)}}
+.together{background:#fff1e0;border:2px solid #e08a1e;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.t-gst{margin-left:4px;font-size:13px}
 </style>
 </head>
 <body>
@@ -1357,10 +1388,13 @@ function renderProblem(host,prob,opt={}){
       if(!netU){const N=prob.fig.net;netU=unfoldViewer(cv,{shape:N,t:0});netU.v.tick=()=>{if(netU.t<1){netU.t=Math.min(1,netU.t+(reduced?1:0.015));netU.v.dirty=true}};nb.textContent='입체도형으로 보기'}
       else{netU=null;mkFig(cv);syncHl();nb.textContent='전개도로 펼쳐 보기'}}}
   const ol=$('.steps',root),tail=$('.tail',root);
-  let cur=0,tries=0,wrongs=0,sw=[],rv=[],ho=[];
+  let cur=0,tries=0,wrongs=0,sw=[],rv=[],ho=[],onceWhy='',onceGot='';
   /* 0단계: 구할 것 · 아는 것 칠하기 */
-  let gaDone=!(prob.ga&&opt.ga!==false&&mode==='steps');
-  if(!gaDone)gaBox($('.ga',root),prob.ga,()=>{gaDone=true;draw()});
+  /* 0단계: opt.gaStage 0 배우기(채점) · 1 익히기(칠하기만) · 2 스스로(안내 없음, 🖍 형광펜은 골라서) */
+  const gaOn=!!(prob.ga&&opt.ga!==false&&mode==='steps'),gst=opt.gaStage||0;let gaDone=!gaOn||gst>=2,gaFails=0,gaSelf=false;
+  if(gaOn&&gst<2)gaBox($('.ga',root),prob.ga,f=>{gaFails=f;gaDone=true;draw()},{nocheck:gst===1});
+  else if(gaOn){const gb=$('.ga',root);gb.hidden=false;gb.classList.add('fin');gb.innerHTML='<button type="button" class="btn ghost ga-self">🖍 형광펜 켜기</button> <span class="muted" style="font-size:14px">🌳 스스로 단계 · 구할 것과 아는 것을 먼저 칠해 보고 싶으면 켜요</span>';
+    $('.ga-self',gb).onclick=()=>{gaSelf=true;gb.classList.remove('fin');gaBox(gb,prob.ga,()=>{},{nocheck:true})}}
   function syncHl(){if(svgFig){if(vis&&prob.fig.step){const box=$('.prob-fig',root);if(box)box.innerHTML=prob.fig.svg(vis,cur)}return}if(!vis||!fv||netU)return;const S=list();const st=S[Math.min(cur,S.length-1)];applyHl(fv,prob.fig.mesh,cur>=S.length?(prob.endHl||st.hl):st.hl)}
   function revealAfter(){if(!vis||!prob.figAfter||cur<prob.figAfter.at||$('.prob-fig',root))return;
     const box=el(`<div class="prob-fig"><canvas aria-label="찾은 입체도형"></canvas><div class="fighint">${prob.figAfter.cap}</div></div>`);$('.prob-body',root).prepend(box);$('.prob-body',root).classList.remove('nofig');
@@ -1381,28 +1415,35 @@ function renderProblem(host,prob,opt={}){
     ol.innerHTML='';const S=list();
     S.forEach((s,i)=>{const now=gaDone&&i===cur;const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):now?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
       const sb=$('.sb',li);
-      if(i<cur){sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
+      if(i<cur){sb.appendChild(el(`<div class="ans">${s._pre?'아는 단계 · ':(s._shown||rv[i])?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
       if(now){
         const hm=el('<div class="hintmsg" hidden></div>');let last='';
         const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
+          if(opt.once&&r!=='nopi'&&r!=='nosign'){wrongs++;sw[i]=1;rv[i]=1;revealed=true;onceWhy=mistakeMsg(s,v,S,i);onceGot=String(v);s._shown=true;cur++;draw();finish();return false}
           if(r==='nopi'||r==='nosign'){hm.hidden=false;hm.innerHTML=`<div class="hl-why soft">${r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.'}</div>`;return false}
           if(String(v)===last&&tries)return false;last=String(v);
           tries++;wrongs++;sw[i]=(sw[i]||0)+1;ladder(li,hm,s,i,mistakeMsg(s,v,S,i));
           return false});
         sb.append(ui,hm);
-        if(mode==='final'){const swb=el('<button type="button" class="btn ghost" style="margin-top:10px">단계로 나누어 풀기</button>');swb.onclick=()=>{mode='steps';usedSteps=true;cur=0;tries=0;sw=[];rv=[];ho=[];draw()};sb.appendChild(swb)}
+        if(mode==='final'&&!opt.once){const swb=el('<button type="button" class="btn ghost" style="margin-top:10px">단계로 나누어 풀기</button>');
+          /* 🔎 어디서부터 모르겠나: 아는 단계는 채워 두고 그다음부터 풀어요 */
+          swb.onclick=()=>{const W=el(`<div class="where"><b>🔎 어디서부터 자신이 없나요?</b><div class="where-l">${prob.steps.map((t,k)=>`<button type="button" data-k="${k}"><span class="sn">(${k+1})</span> ${stepQText(t.q)}</button>`).join('')}</div><small class="muted">고른 단계 앞은 아는 단계라 답을 채워 둘게요.</small></div>`);
+            swb.replaceWith(W);$$('button',W).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;mode='steps';usedSteps=true;sw=[];rv=[];ho=[];tries=0;prob.steps.forEach((t,j)=>{t._pre=j<k});cur=k;draw()})};
+          sb.appendChild(swb)}
       }
       ol.appendChild(li)});
   }
-  function finish(){const good=!revealed;tail.innerHTML='';const r=el(`<div class="result ${good?'ok':'bad'}"><span>${good?(mode==='final'?'단계 없이 혼자 풀었어요!':'모든 단계를 해냈어요!'):'정답을 확인한 단계가 있어요. 비슷한 문제로 한 번 더 해 봐요.'}</span></div>`);tail.appendChild(r);
+  function finish(){const good=!revealed;tail.innerHTML='';
+    const msg=opt.once?(good?'정답! 책 덮고 혼자서 한 번에 풀었어요.':`아쉬워요. 내 답은 ${esc(onceGot)}${onceWhy?`<br>🔎 ${onceWhy}`:''}`):good?(mode==='final'?'단계 없이 혼자 풀었어요!':'모든 단계를 해냈어요!'):'정답을 확인한 단계가 있어요. 비슷한 문제로 한 번 더 해 봐요.';
+    const r=el(`<div class="result ${good?'ok':'bad'}"><span>${msg}</span></div>`);tail.appendChild(r);
     const n=list().length,stepWrongs=range(n).map(k=>sw[k]||0),revealedArr=range(n).map(k=>rv[k]||0);
-    if(opt.onDone)opt.onDone({good,usedSteps,mode,wrongs,stepWrongs,revealed:revealedArr,box:r})}
-  prob.steps.forEach(s=>delete s._shown);
+    if(opt.onDone)opt.onDone({good,usedSteps,mode,wrongs,stepWrongs,revealed:revealedArr,box:r,gaFails,gaSelf,gaOn})}
+  prob.steps.forEach(s=>{delete s._shown;delete s._pre});
   draw();
 }
 /* 0단계 · 구·아: 문제 문장에서 🎯 구할 것(빨강)과 📌 아는 것(파랑)을 칠해요
    ga={parts:[[글, 'f'|'k'|null], ...], fig:[[그림에서 아는 것, 'k'|null], ...]} */
-function gaBox(box,ga,onDone){
+function gaBox(box,ga,onDone,o={}){
   const items=[];
   (ga.parts||[]).forEach(([t,role])=>{if(role)items.push({t,role,src:'q'});else String(t).split(/\s+/).filter(Boolean).forEach(w=>items.push({t:w,role:null,src:'q'}))});
   (ga.fig||[]).forEach(([t,role])=>items.push({t,role,src:'fig'}));
@@ -1413,11 +1454,12 @@ function gaBox(box,ga,onDone){
      <div class="ga-pens" role="radiogroup" aria-label="펜 고르기"><button type="button" class="ga-pen f ${pen==='f'?'on':''}" data-p="f" role="radio" aria-checked="${pen==='f'}">🎯 구할 것</button><button type="button" class="ga-pen k ${pen==='k'?'on':''}" data-p="k" role="radio" aria-checked="${pen==='k'}">📌 아는 것</button></div>
      <div class="ga-line">${items.map((x,i)=>x.src==='q'?`<button type="button" class="ga-w ${mk[i]||''}" data-i="${i}">${x.t}</button>`:'').join(' ')}</div>
      ${(ga.fig||[]).length?`<div class="ga-figcap">그림에서 찾은 것</div><div class="ga-line fig">${items.map((x,i)=>x.src==='fig'?`<button type="button" class="ga-w ${mk[i]||''}" data-i="${i}">${x.t}</button>`:'').join('')}</div>`:''}
-     <div class="ga-row"><button type="button" class="btn primary ga-ok">다 칠했어요</button><span class="ga-msg ${cls||''}" role="status">${msg||''}</span></div>`;
+     <div class="ga-row"><button type="button" class="btn primary ga-ok">다 칠했어요</button><span class="ga-msg ${cls||''}" role="status">${msg||(o.nocheck?'🌿 익히기 단계라 채점하지 않아요. 스스로 칠해 보세요.':'')}</span></div>`;
     $$('.ga-pen',box).forEach(b=>b.onclick=()=>{pen=b.dataset.p;render()});
     $$('.ga-w',box).forEach(b=>b.onclick=()=>{const i=+b.dataset.i;mk[i]=mk[i]===pen?null:pen;render()});
     $('.ga-ok',box).onclick=checkIt}
   function checkIt(){
+    if(o.nocheck){done();return}
     const needF=items.some(x=>x.role==='f'),missF=items.some((x,i)=>x.role==='f'&&mk[i]!=='f'),missK=items.some((x,i)=>x.role==='k'&&mk[i]!=='k');
     const wrong=items.map((x,i)=>i).filter(i=>mk[i]&&mk[i]!==items[i].role);
     if(!missF&&!missK&&!wrong.length){done();return}
@@ -1428,8 +1470,9 @@ function gaBox(box,ga,onDone){
     else if(missF&&needF)m='🎯 문제가 무엇을 구하라고 하나요? "~를 구하시오" 앞을 보세요.';
     else m='📌 문제에 이미 나와 있는 수나 이름이 더 있어요.'+((ga.fig||[]).length?' 그림 쪽도 보세요.':'');
     render(m,'bad')}
-  function done(){const f=items.filter(x=>x.role==='f').map(x=>x.t),k=items.filter(x=>x.role==='k').map(x=>x.t);
-    box.innerHTML=`<div class="ga-sum"><span class="ga-tag f">🎯 ${f.join(', ')}</span>${k.length?`<span class="ga-tag k">📌 ${k.join(', ')}</span>`:''}</div>`;box.classList.add('fin');onDone()}
+  function done(){const by=r=>items.filter((x,i)=>o.nocheck?mk[i]===r:x.role===r).map(x=>x.t),f=by('f'),k=by('k');
+    if(o.nocheck&&!f.length&&!k.length){box.innerHTML='<div class="ga-sum muted">칠하지 않고 넘어갔어요.</div>';box.classList.add('fin');onDone(fails);return}
+    box.innerHTML=`<div class="ga-sum">${f.length?`<span class="ga-tag f">🎯 ${f.join(', ')}</span>`:''}${k.length?`<span class="ga-tag k">📌 ${k.join(', ')}</span>`:''}</div>`;box.classList.add('fin');onDone(fails)}
   render()}
 
 /* ───────── 문제 만들기 ───────── */
@@ -1608,16 +1651,75 @@ function viewLesson(id,tab){
   if(tab==='practice')viewPractice(body,id);
 }
 const STEPGEN={poly:GEN.polyStep,types:GEN.typesStep,area:GEN.areaStep};
+/* ───────── 단원 마무리에서 가져온 것: 확인 문제 · 핵심 생각 · 0단계 덜어 주기 · 오늘 목표 · 축하 ───────── */
+/* 💡 문제 유형마다 핵심 생각 (확인 문제를 맞히면 다른 유형의 핵심 생각과 섞어서 고르게 해요) */
+const KEY_IDEA={
+  'poly:prism':'면의 개수 = 밑면 2개 + 옆면(밑면의 변의 수)','poly:pyramid':'면의 개수 = 밑면 1개 + 옆면(밑면의 변의 수)',
+  'types:prism':'각기둥: 면 n+2 · 모서리 3n · 꼭짓점 2n','types:pyramid':'각뿔: 면 n+1 · 모서리 2n · 꼭짓점 n+1','types:frustum':'각뿔대: 면 n+2 · 모서리 3n · 꼭짓점 2n',
+  'regular:edge':'모든 면의 변을 세고 ÷ 2 (모서리 하나에 면 2개)','regular:vertex':'모든 면의 꼭짓점을 세고 ÷ (한 꼭짓점에 모인 면의 수)','regular:floor':'꼭짓점을 층으로 나누어 세고 더하기',
+  'area:tri':'겉넓이 = 밑넓이 × 2 + 밑면의 둘레 × 높이','area:box':'겉넓이 = 밑넓이 × 2 + 밑면의 둘레 × 높이','area:cyl':'원기둥 옆면의 가로 = 밑면인 원의 둘레(2πr)',
+  'sign:step':'반대되는 두 양 중 하나에 +, 다른 하나에 −','iadd:same':'같은 부호: 절댓값의 합에 공통 부호','iadd:diff':'다른 부호: 절댓값의 차에 절댓값이 큰 수의 부호'};
+function keyIdea(box,ptype,after){const right=KEY_IDEA[ptype];if(!right){after();return}
+  const ids=new Set(LESSONS.filter(l=>l.ready).map(l=>l.id)),others=shuffle(Math.random,[...new Set(Object.entries(KEY_IDEA).filter(([k])=>ids.has(k.split(':')[0])).map(([,t])=>t))].filter(t=>t!==right)).slice(0,2),ch=shuffle(Math.random,[right,...others]);
+  const w=el(`<div class="keyidea"><b>💡 이 문제의 핵심 생각은 무엇이었나요?</b><div class="where-l">${ch.map((t,i)=>`<button type="button" data-i="${i}">${t}</button>`).join('')}</div></div>`);box.appendChild(w);
+  $$('button',w).forEach(b=>b.onclick=()=>{const ok=ch[+b.dataset.i]===right;if(ok)award(2);
+    w.innerHTML=`<div class="rulebox ${ok?'ok':''}">💡 핵심 생각: <b>${right}</b>${ok?' ✔ 맞아요! 공책에도 적어 두세요.':'<br><span class="muted">처음엔 다른 것을 골랐어요. 이 생각을 공책에 적어 두세요.</span>'}</div>`;after()})}
+/* 확인 문제를 틀렸을 때: 무엇을 놓쳤나요? */
+const MISS=[['rule','식(공식)을 잘못 떠올렸어요','개념 카드의 식을 다시 보고, 단계로 한 번 더 따라가 봐요.'],['ask','묻는 것을 잘못 봤어요','🎯 구할 것부터 칠하는 습관을 들여요.'],['fig','그림에서 수를 잘못 읽었어요','📌 그림 속 수마다 이름표(반지름, 높이…)를 붙여 봐요.'],['calc','계산 실수를 했어요','기초 연산에서 그 계산을 연습해 봐요.']];
+function missedPick(box,id,after){const w=el(`<div class="keyidea"><b>무엇을 놓쳤나요?</b><div class="where-l">${MISS.map(m=>`<button type="button" data-k="${m[0]}">${m[1]}</button>`).join('')}</div></div>`);box.appendChild(w);
+  $$('button',w).forEach(b=>b.onclick=()=>{const m=MISS.find(x=>x[0]===b.dataset.k),P=prog(id);P.miss=Object.assign({},OBJ(P.miss));P.miss[m[0]]=NUM(P.miss[m[0]])+1;save();
+    w.innerHTML=`<div class="rulebox">🪞 ${m[1]} → ${m[2]}</div>`;after()})}
+/* 같은 유형으로 숫자만 바뀐 쌍둥이 문제 */
+function twinSeed(g,ptype,avoid){for(let k=0;k<80;k++){const sd=newSeed();if(sd!==avoid&&GEN[g](sd).ptype===ptype)return sd}return newSeed()}
+/* 0단계 덜어 주기: 🌱 배우기(채점) → 🌿 익히기(칠하기만) → 🌳 스스로(안내 없음). 0단계와 단계를 모두 바로 맞힌 문제가 2개 이어지면 한 칸 올라가고, 틀리면 한 칸 내려가요. */
+const GA_ST=[['🌱','배우기','구할 것·아는 것을 칠하고 확인해요'],['🌿','익히기','칠하기만 하고 바로 풀어요'],['🌳','스스로','안내 없이 풀어요. 🖍 형광펜은 골라서 켜요']];
+const gaStageOf=id=>Math.max(0,Math.min(2,NUM(prog(id).gst)));
+function gaStageHTML(id){const st=gaStageOf(id),run=NUM(prog(id).grun);
+  return`<div class="spath">${GA_ST.map((x,i)=>`<span class="${i===st?'cur':i<st?'got':''}">${x[0]} ${x[1]}</span>`).join('<em>›</em>')}<small>${GA_ST[st][2]}${st<2?` · 다음 단계까지 ${2-run}문제`:''}</small></div>`}
+function gaAfter(id,R){if(!R.gaOn)return;const P=prog(id),st=gaStageOf(id);
+  if(st===2){P.gfree=NUM(P.gfree)+1;if(R.gaSelf){P.gself=NUM(P.gself)+1;award(1)}}
+  if(R.good&&!R.gaFails&&R.wrongs===0){P.grun=NUM(P.grun)+1;if(P.grun>=2&&st<2){P.gst=st+1;P.grun=0;const x=GA_ST[st+1];cheer(`${x[0]} ${x[1]} 단계로 자랐어요!`,x[2])}}
+  else if(!R.good){P.gst=Math.max(0,st-1);P.grun=0}else P.grun=0;
+  save()}
+/* 🎯 오늘 혼자 맞힌 문제 (3 🌱 · 6 💪 · 10 🏆) */
+const DAY_GOAL=[{n:3,e:'🌱',t:'첫걸음!'},{n:6,e:'💪',t:'절반 넘었어요!'},{n:10,e:'🏆',t:'오늘의 목표 달성!'}];
+const goalN=()=>{const g=OBJ(DB._goal);return g.d===today()?NUM(g.ok):0};
+function goalBar(){const n=goalN(),g=10,nx=DAY_GOAL.find(m=>n<m.n);
+  return`<div class="dayg"><div class="dl"><b>🎯 오늘 혼자 맞힌 문제 ${n}개</b><span>${nx?`${nx.e} 까지 ${nx.n-n}개`:'🏆 오늘의 목표 달성! 더 가 볼까요?'}</span></div><div class="db"><div style="width:${Math.min(100,n/g*100)}%"></div>${DAY_GOAL.map(m=>`<i class="${n>=m.n?'on':''}" style="left:${Math.min(96,m.n/g*100)}%">${m.e}</i>`).join('')}</div></div>`}
+function goalUp(){const n=goalN()+1;DB._goal={d:today(),ok:n};save();const m=DAY_GOAL.find(x=>x.n===n);if(m)cheer(`${m.e} ${m.t}`,`오늘 혼자 맞힌 문제 ${n}개`)}
+const CONF_C=['#ff6b6b','#ffcf4a','#4dabf7','#69db7c','#b197fc','#ff9f1c'];
+function cheer(big,sub){let o=$('#celeb');if(!o){o=el('<div class="celeb" id="celeb" aria-live="polite"><div class="cel-box"><div class="cel-b"></div><div class="cel-s"></div></div><div class="cel-conf"></div></div>');document.body.appendChild(o)}
+  $('.cel-b',o).textContent=big;$('.cel-s',o).innerHTML=sub||'';
+  $('.cel-conf',o).innerHTML=reduced?'':Array.from({length:46},(_,i)=>`<i style="left:${Math.random()*100}%;background:${CONF_C[i%CONF_C.length]};animation-delay:${Math.random()*.6}s;animation-duration:${1.8+Math.random()*1.2}s"></i>`).join('');
+  o.classList.remove('on');void o.offsetWidth;o.classList.add('on');clearTimeout(cheer.t);cheer.t=setTimeout(()=>o.classList.remove('on'),3000)}
 function viewSteps(body,id){
-  const p=prog(id);
-  const wrap=el(`<div><div class="card panel"><div class="statbar"><div class="stat"><small>단계 문제를 끝까지 푼 횟수</small><b>${p.steps}</b></div>
-    <span class="muted" style="font-size:15px">한 단계씩 맞혀야 다음 단계가 열려요. 막히면 파란 낱말을 눌러 보세요.</span>
-    <button type="button" class="btn ghost" id="newProb" style="margin-left:auto">다른 숫자로 다시</button></div><div id="probHost"></div></div></div>`);
+  const p=prog(id),L=LESSONS.find(l=>l.id===id);
+  const wrap=el(`<div><div class="card panel"><div class="statbar"><div class="stat"><small>단계 문제를 끝까지 푼 횟수</small><b class="stN">${p.steps}</b></div>
+    <span class="muted" style="font-size:15px">한 단계씩 맞혀야 다음 단계가 열려요. 다 풀면 🔒 확인 문제로 정말 알았는지 확인해요.</span>
+    <button type="button" class="btn ghost" id="newProb" style="margin-left:auto">다른 숫자로 다시</button></div><div class="goalHost"></div><div class="stageHost"></div><div id="probHost"></div></div></div>`);
   body.appendChild(wrap);
-  const SG={poly:'polyStep',types:'typesStep',area:'areaStep',regular:'regularStep'}[id]||(GEN[id+'Step']?id+'Step':id);
-  const go=()=>{const seed=newSeed(),prob=GEN[SG](seed);renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,lesson:id,onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요. 내일 다시 나와요.</span>')}
-    const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn${good?'':' primary'}">${good?'하나 더':'비슷한 문제 하나 더'}</button><a class="btn primary" href="#${id}-practice">연습하러 가기 →</a></span>`);$('button',nb).onclick=go;box.appendChild(nb)}})};
-  $('#newProb',wrap).onclick=go;go();
+  const host=$('#probHost',wrap),SG={poly:'polyStep',types:'typesStep',area:'areaStep',regular:'regularStep'}[id]||(GEN[id+'Step']?id+'Step':id);
+  const refresh=()=>{$('.goalHost',wrap).innerHTML=goalBar();$('.stageHost',wrap).innerHTML=GEN[SG](1).ga?gaStageHTML(id):'';$('.stN',wrap).textContent=p.steps};
+  const acts=(box,btns)=>{const nb=el(`<span class="next-acts"></span>`);btns.forEach(([t,cls,fn])=>{const b=el(`<button type="button" class="btn ${cls}">${t}</button>`);b.onclick=fn;nb.appendChild(b)});
+    nb.appendChild(el(`<a class="btn ghost" href="#${id}-practice">연습하러 가기 →</a>`));box.appendChild(nb)};
+  /* 🔒 확인 문제: 숫자만 바뀐 쌍둥이, 책 덮고 답은 한 번만. n=2는 🔁 재확인 문제 */
+  function checkTwin(n,ptype,avoid){const sd=twinSeed(SG,ptype,avoid),tp=GEN[SG](sd);
+    tp.title=`<span class="chk-tag">${n===1?'🔒 확인 문제':'🔁 재확인 문제'} · 숫자만 바뀌었어요. 책 덮고, 답은 한 번만!</span><br>`+tp.title;
+    renderProblem(host,tp,{mode:'final',once:true,lesson:id,onDone:({good,wrongs,box})=>{
+      logAttempt({lesson:id,kind:'practice',good,wrongs,mode:'check',gen:SG,seed:sd,ptype:tp.ptype});
+      if(good){award(n===1?5:3);goalUp();refresh();if(n===2)toast('회복! 다시 풀어서 해냈어요.');keyIdea(box,tp.ptype,()=>acts(box,[['다음 문제 →','primary',go]]));return}
+      addReview(SG,sd,id);
+      if(n===1)missedPick(box,id,()=>acts(box,[['단계로 다시 풀어 보기','primary',()=>reStep(sd)],['🔁 재확인 문제 바로 풀기','',()=>checkTwin(2,tp.ptype,sd)]]));
+      else{requestHelp({lesson:id,place:`${L?L.no+'차시 '+L.title:''} · 재확인 문제도 틀림`,q:stepQText(tp.finalQ||tp.steps[tp.steps.length-1].q)});
+        box.insertAdjacentHTML('beforeend',`<div class="hl-help" style="flex-basis:100%">${isStudent()?'🙋 선생님께 알렸어요. 이 문제는 복습 노트에도 넣었어요.':'🙋 손을 들어 선생님께 여쭤봐요. 이 문제는 복습 노트에 넣었어요.'}</div>`);acts(box,[['다른 문제 →','primary',go]])}}})}
+  /* 확인 문제를 틀리면: 같은 문제를 단계로 다시 → 재확인 문제 */
+  function reStep(sd){const pr=GEN[SG](sd);pr.title='<span class="chk-tag">방금 틀린 확인 문제를 단계로 나누어 다시 풀어요</span><br>'+pr.title;
+    renderProblem(host,pr,{mode:'steps',visual:true,lesson:id,ga:false,onDone:({box})=>acts(box,[['🔁 재확인 문제 풀기','primary',()=>checkTwin(2,pr.ptype,sd)]])})}
+  const go=()=>{const seed=newSeed(),prob=GEN[SG](seed);renderProblem(host,prob,{mode:'steps',visual:true,lesson:id,gaStage:gaStageOf(id),onDone:R=>{const{good,wrongs,mode,stepWrongs,revealed,box}=R;
+    logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');gaAfter(id,R);
+    if(good){p.steps++;save();award(10);if(wrongs===0)goalUp()}else{award(4);addReview(SG,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요. 내일 다시 나와요.</span>')}
+    refresh();acts(box,[['🔒 확인 문제 풀기','primary',()=>checkTwin(1,prob.ptype,seed)],[good?'하나 더':'비슷한 문제 하나 더','',go]])}})};
+  $('#newProb',wrap).onclick=go;refresh();go();
 }
 function viewPractice(body,id){
   const p=prog(id),P=p.prac;
@@ -1625,15 +1727,15 @@ function viewPractice(body,id){
      <div class="stat"><small>푼 문제</small><b id="sSolved">${P.solved}</b></div>
      <div class="stat"><small>연속 정답</small><b id="sStreak">${P.streak}</b></div>
      <span class="lvl" id="sLvl"></span>${(DB._rev||[]).length?`<a class="lvl" style="margin-left:0;background:#fff" href="#review">복습 노트 ${dueReviews().length?'· 오늘 '+dueReviews().length+'문제':'· '+(DB._rev||[]).length+'문제 대기'}</a>`:''}</div><div id="practHost"></div></div>`);
-  body.appendChild(wrap);
-  const upd=()=>{$('#sSolved',wrap).textContent=P.solved;$('#sStreak',wrap).textContent=P.streak;$('#sLvl',wrap).textContent=P.level>=2?'단계 없이 도전 중':'단계 따라 풀기';save()};
+  body.appendChild(wrap);wrap.querySelector('.statbar').insertAdjacentHTML('afterend','<div class="goalHost"></div>');
+  const upd=()=>{$('.goalHost',wrap).innerHTML=goalBar();$('#sSolved',wrap).textContent=P.solved;$('#sStreak',wrap).textContent=P.streak;$('#sLvl',wrap).textContent=P.level>=2?'단계 없이 도전 중':'단계 따라 풀기';save()};
   function next(){
     let seed,isRetry=false;
     P.retry.forEach(x=>x.due--);const ri_=P.retry.findIndex(x=>x.due<=0);
     if(ri_>=0){seed=P.retry[ri_].seed;P.retry.splice(ri_,1);isRetry=true}else seed=newSeed();
     const prob=GEN[id](seed);
     if(isRetry)prob.title+='<span class="retry-tag">다시 도전</span>';
-    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',lesson:id,ga:P.solved<8,onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
+    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',lesson:id,gaStage:gaStageOf(id),onDone:R=>{const{good,usedSteps,mode,wrongs,stepWrongs,revealed,box}=R;gaAfter(id,R);if(good&&wrongs===0)goalUp();
       logAttempt({lesson:id,kind:'practice',good,wrongs,mode,gen:id,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('prac');if(good&&wrongs===0)dayBump('clean');
       P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(id,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
       if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else if(prob.steps.length>1&&!usedSteps){P.streak++}else{P.streak++}}
@@ -2637,7 +2739,8 @@ function dataSummary(d){d=OBJ(d);const me=OBJ(d._me),t=today(),streak=(me.last==
   const les=LESSONS.filter(l=>l.ready).map(l=>{const p=OBJ(d[l.id]),pr=OBJ(p.prac);return[!!p.concept,!!p.explore,NUM(p.steps)>0,NUM(pr.solved)>=5]});
   const solved=LESSONS.reduce((a,l)=>a+NUM(OBJ(OBJ(d[l.id]).prac).solved),0),rev=Array.isArray(d._rev)?d._rev:[];
   const calc=Object.values(OBJ(d._calc)).reduce((a,v)=>a+Math.min(3,NUM(OBJ(v).stars)),0),facts=Object.values(OBJ(d._facts)).filter(v=>NUM(OBJ(v).lv)>=3).length,dg=OBJ(d._calcDiag),plan=Array.isArray(dg.plan)?dg.plan:[];
-  return{calc,facts,diag:!!dg.d,plan,pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
+  const RL=LESSONS.filter(l=>l.ready),gst=RL.map(l=>Math.min(2,NUM(OBJ(d[l.id]).gst))),gself=RL.reduce((a,l)=>a+NUM(OBJ(d[l.id]).gself),0),gfree=RL.reduce((a,l)=>a+NUM(OBJ(d[l.id]).gfree),0);
+  return{gst,gself,gfree,calc,facts,diag:!!dg.d,plan,pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
 function viewTeacher(){
   crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
@@ -2646,7 +2749,7 @@ function viewTeacher(){
    <div class="card panel tHelp"><div class="t-head"><h2>🙋 도움이 필요한 학생 <span class="t-help-n"></span></h2><span class="t-tools"><button type="button" class="btn ghost tHelpAll" hidden>모두 도와줬어요</button></span></div><div class="tHelpBody"><p class="muted" style="margin:0">불러오는 중…</p></div></div>
    <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
     <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
-    <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div>
+    <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요. 옆 그림은 0단계(구·아) 단계예요: 🌱 배우기 · 🌿 익히기 · 🌳 스스로.</p></div>
    <div class="card panel tBoss" hidden><div class="t-head"><h2>우리 반 보스전</h2><span class="t-tools tBossTools"><label class="t-sel">학생 1명당 보스 체력 <select class="inp sel tPer" aria-label="학생 1명당 보스 체력">${[20,30,50,80,120,200].map(v=>`<option value="${v}">${v}</option>`).join('')}</select></label><a class="btn ghost tBV" href="#teacher">크게 띄우기</a></span></div><div class="tBossBody"></div></div>
    <div class="card panel tBB" hidden><div class="t-head"><h2>숫자야구</h2><span class="t-tools tBBTools"><label class="t-sel"><input type="checkbox" class="tBBon"> 켜기</label><label class="t-sel">최대 판돈 <select class="inp sel tBBmax" aria-label="최대 판돈">${[0,5,10,20,50].map(v=>`<option value="${v}">${v?v+'포인트':'친선만'}</option>`).join('')}</select></label></span></div><div class="tBBbody"></div></div>
    <div class="card panel"><div class="t-head"><h2>많이 막히는 단계</h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
@@ -2667,8 +2770,10 @@ function viewTeacher(){
       const fresh=helpSeen?H.filter(h=>!helpSeen.has(h.id)):[];helpSeen=new Set(H.map(h=>h.id));
       if(fresh.length)toast(`🙋 ${fresh.map(h=>`${h.grade}-${h.klass} ${h.num}번`).join(', ')} 학생이 도움을 기다려요.`);
       $('.t-help-n',box).textContent=H.length?`(${H.length})`:'';box.classList.toggle('on',!!H.length);$('.tHelpAll',box).hidden=H.length<2;
-      body.innerHTML=H.length?`<ul class="t-help">${H.map(h=>`<li class="${fresh.some(f=>f.id===h.id)?'new':''}"><b>${h.grade}-${h.klass} ${h.num}번</b><span>${esc(h.place||h.lesson)}${h.question?`<small>${esc(h.question)}</small>`:''}</span><span class="t-ago">${relTime(h.created_at)}</span><button type="button" class="t-mini t-hdone" data-id="${h.id}">도와줬어요</button></li>`).join('')}</ul>`
-        :'<p class="muted" style="margin:0">지금은 없어요. 학생이 한 단계에서 3번 틀리면 여기에 바로 떠요.</p>';
+      const grp={};H.forEach(h=>{const k=h.place||h.lesson;(grp[k]=grp[k]||new Set()).add(h.sid)});
+      const tog=Object.entries(grp).filter(([,v])=>v.size>=3).sort((a,b)=>b[1].size-a[1].size).map(([k,v])=>`<div class="together">🤝 <b>${esc(k)}</b>에서 <b>${v.size}명</b>이 막혔어요. 함께 볼까요?</div>`).join('');
+      body.innerHTML=tog+(H.length?`<ul class="t-help">${H.map(h=>`<li class="${fresh.some(f=>f.id===h.id)?'new':''}"><b>${h.grade}-${h.klass} ${h.num}번</b><span>${esc(h.place||h.lesson)}${h.question?`<small>${esc(h.question)}</small>`:''}</span><span class="t-ago">${relTime(h.created_at)}</span><button type="button" class="t-mini t-hdone" data-id="${h.id}">도와줬어요</button></li>`).join('')}</ul>`
+        :'<p class="muted" style="margin:0">지금은 없어요. 학생이 한 단계에서 3번 틀리거나 재확인 문제까지 틀리면 여기에 바로 떠요.</p>');
       $$('.t-hdone',body).forEach(b=>b.onclick=async()=>{b.disabled=true;try{await API.call('hg_t_help_done',{p_token:tTok(),p_id:+b.dataset.id})}catch(e){fail(e)}loadHelp()})}
     catch(e){if(isMissingFn(e)){helpOff=true;$('.t-tools',box).hidden=true;body.innerHTML=`<p style="margin:0">도움 알림을 켜려면 Supabase 대시보드 → <b>SQL Editor</b> → New query에 저장소의 <code>supabase/help.sql</code> 내용을 붙여 넣고 <b>Run</b> 해 주세요. 한 번만 하면 돼요.</p>`}else fail(e)}}
   {const tick=()=>{if(!$('.tHelp',app)||!$('.tHelp',app).isConnected)return;if(!document.hidden)loadHelp();setTimeout(tick,10000)};setTimeout(tick,10000)}
@@ -2684,10 +2789,10 @@ function viewTeacher(){
     {const nm=s=>`${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번`,lst=a=>a.length>15?a.slice(0,15).join(', ')+` 외 ${a.length-15}명`:a.join(', ');
       const away=S.filter(x=>!x.s.last_seen||Date.parse(x.s.last_seen)<wk).map(x=>nm(x.s)),back=S.filter(x=>x.due>=5).map(x=>`${nm(x.s)}(${x.due})`),noc=S.filter(x=>x.s.last_seen&&Date.parse(x.s.last_seen)>=wk&&!x.calc&&!x.diag).map(x=>nm(x.s)),base=S.filter(x=>x.plan.includes('facts')||x.plan.includes('add')).map(x=>`${nm(x.s)}(${x.plan.slice(0,2).map(id=>({add:'덧뺄',facts:'구구단',div:'나눗',order:'순서',fracbase:'분수'})[id]||id).join('·')})`);
       $('.t-watch',app).innerHTML=(away.length?`<div><b>7일 넘게 들어오지 않았어요</b> (${away.length}명) · ${lst(away)}</div>`:'')+(back.length?`<div class="mid"><b>복습이 5문제 넘게 밀렸어요</b> · ${lst(back)}</div>`:'')+(noc.length?`<div class="mid"><b>기초 연산을 아직 시작하지 않았어요</b> · ${lst(noc)}</div>`:'')+(base.length?`<div class="mid"><b>시작점 찾기에서 덧셈·뺄셈이나 곱셈구구부터 다지기로 나왔어요</b> · ${lst(base)}</div>`:'')}
-    $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
-    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
+    $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>${(()=>{const fr=S.reduce((a,x)=>a+x.gfree,0),sf=S.reduce((a,x)=>a+x.gself,0);return fr?`<div class="stat"><small>스스로 구·아 (🌳 단계에서 형광펜을 켠 비율)</small><b>${Math.round(sf/fr*100)}%</b></div>`:''})()}`;
+    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts,gst})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
-      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}</span></td>`).join('')}
+      ${les.map((a,li)=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}</span>${a[2]?`<span class="t-gst" title="0단계: ${['배우기','익히기','스스로'][gst[li]]}">${['🌱','🌿','🌳'][gst[li]]}</span>`:''}</td>`).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
       <td class="t-act"><button type="button" class="t-mini t-reset">비밀번호</button><button type="button" class="t-mini t-del">삭제</button></td></tr>`).join('');
     $$('.tRows tr',app).forEach(tr=>wireRow(tr));loadTBoss();loadTBB()}
