@@ -1364,7 +1364,11 @@ const LESSONS=[
   {id:'spherearea',no:10,title:'구의 겉넓이',sub:'반지름이 같은 원의 넓이 4개',tb:'05 구의 겉넓이와 부피 · 233쪽',ready:false,unit:'solid'},
   {id:'sphere',no:11,title:'구의 부피',sub:'원기둥과 비교하기',tb:'05 구의 겉넓이와 부피 · 234~235쪽',ready:false,unit:'solid'},
 ];
-const TABS=[{id:'concept',t:'개념',s:'핵심 정리'},{id:'explore',t:'탐구',s:'보고 만지기'},{id:'steps',t:'단계 문제',s:'한 걸음씩'},{id:'practice',t:'연습',s:'반복해서 풀기'}];
+// 차시 흐름: 정규 수업 전에 '미리 보기' → 정규 수업 뒤에 '같이 풀기 · 혼자 풀기'로 다지기 → '더 알아보기'(탐구)는 수업 뒤에
+// id는 예전 그대로(concept · steps · practice · explore)라서 학생 기록은 그대로 이어져요.
+const TABS=[{id:'concept',t:'미리 보기',s:'정규 수업 전에'},{id:'steps',t:'같이 풀기',s:'한 단계씩'},{id:'practice',t:'혼자 풀기',s:'섞어서 반복'},{id:'explore',t:'더 알아보기',s:'수업 뒤에 탐구'}];
+const DATA_TABS=['concept','explore','steps','practice'];   // 저장된 진도 배열의 순서 (교사 화면 · 엑셀)
+const TAB_NM=Object.fromEntries(TABS.map(t=>[t.id,t.t]));
 const UNITS=[['소인수분해',false],['정수와 유리수',false],['문자의 사용과 식',false],['일차방정식',false],['좌표평면과 그래프',false],['기본 도형',false],['평면도형의 성질',false],['입체도형의 성질',false],['자료의 정리와 해석',false]].map(([u])=>[u,u===UI_.name]);
 
 /* ───────── 화면: 홈 ───────── */
@@ -1379,8 +1383,8 @@ function viewHome(){
   app.innerHTML=`
   <section class="hero ${back?'compact':''}">
     <div>
-      <h1>수업에서 배운 것을<br><span class="mark">한 걸음씩</span> 다시.</h1>
-      <p>모르는 낱말은 눌러서 바로 확인하고, 그림은 직접 돌려 보고, 어려운 문제는 단계로 나누어 풀어요.</p>
+      <h1>다음 수업은 <span class="mark">한 걸음 먼저</span>,<br>배운 것은 한 걸음씩 다시.</h1>
+      <p>정규 수업 전에 <b>미리 보기</b>로 낱말과 그림을 익히고, 수업이 끝나면 <b>같이 풀기 → 혼자 풀기</b>로 다져요. 어려운 문제는 단계로 나누어 풀어요.</p>
       <p style="margin-top:18px"><a class="btn primary" href="${UNIT_HASH}">${UI_.start}</a></p>
     </div>
     <div>${UNIT_ID==="solid"?'<div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div>':`<div class="hero-fig svgfig">${typeof heroArt==="function"?heroArt():""}</div>`}</div>
@@ -1429,14 +1433,14 @@ function viewReview(){
   next();
 }
 /* 화면: 단원 */
-function pipsOf(id){const p=DB[id];const a=p?[p.concept,p.explore,p.steps>0,p.prac&&p.prac.solved>=5]:[0,0,0,0];return a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}
+function pipsOf(id){const p=DB[id];const v=p?{concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac&&p.prac.solved>=5}:{};return TABS.map(t=>`<span class="pip ${v[t.id]?'on':''}" title="${t.t}"></span>`).join('')}
 function homeCalcChips(){const due=dueList(),dg=OBJ(DB._calcDiag),plan=calcPlan().map(id=>CALC.find(t=>t.id===id)),rest=CALC.filter(calcVisible).sort((a,b)=>NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars));
   const list=[...due,...plan,...rest].filter((t,i,a)=>t&&a.indexOf(t)===i).slice(0,dg.d?4:3);
   return(dg.d?'':`<a class="calc-chip start" href="#calc-start"><b>시작점 찾기</b><small>처음이면 여기부터</small></a>`)+list.map(t=>`<a class="calc-chip" href="#calc-${t.id}"><b>${t.nm}</b>${calcDue(t.id)?'<small class="due">복습할 때</small>':starRow(Math.min(3,NUM(calcPeek(t.id).stars)))}</a>`).join('')}
 function viewUnit(){
   crumbs.innerHTML=`<span class="sep">›</span><span>${UI_.name}</span>`;
   app.innerHTML=`<div class="unit-head"><div><h1>${UI_.name}</h1><p>${UI_.sub}</p></div>
-    <div class="legend"><span><i class="on"></i>개념 → 탐구 → 단계 문제 → 연습 5문제</span></div></div>
+    <div class="legend"><span><i class="on"></i>미리 보기(수업 전) → 같이 풀기 → 혼자 풀기 5문제 → 더 알아보기</span></div></div>
   <div class="lessons">${LESSONS.map(l=>l.ready?`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="pips" aria-label="진행 상황">${pipsOf(l.id)}</span></a>`
     :`<div class="card lesson soon"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="soon-tag">준비 중</span></div>`).join('')}</div>`;
 }
@@ -1451,8 +1455,8 @@ function viewLesson(id,tab){
   $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
   const body=$('#tabBody');
   const nextBtn=(label,to)=>`<div class="next-row"><a class="btn primary" href="#${id}-${to}">${label} →</a></div>`;
-  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('beforeend',nextBtn('탐구하러 가기','explore'));p.concept=true;save();award(5,'concept:'+id)}
-  if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('단계 문제 풀기','steps'));p.explore=true;save()}
+  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('beforeend',nextBtn('같이 풀기 (정규 수업 뒤에)','steps'));p.concept=true;save();award(5,'concept:'+id)}
+  if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('혼자 풀기','practice'));p.explore=true;save()}
   DB._last={id,tab};save();
   if(tab==='steps')viewSteps(body,id);
   if(tab==='practice')viewPractice(body,id);
@@ -1470,7 +1474,7 @@ function viewSteps(body,id){
   $('#newProb',wrap).onclick=go;go();
 }
 function viewPractice(body,id){
-  const p=prog(id),P=p.prac;
+  const p=prog(id),P=p.prac,curL=LESSONS.find(l=>l.id===id)||{};
   const wrap=el(`<div class="card panel"><div class="statbar">
      <div class="stat"><small>푼 문제</small><b id="sSolved">${P.solved}</b></div>
      <div class="stat"><small>연속 정답</small><b id="sStreak">${P.streak}</b></div>
@@ -1481,13 +1485,17 @@ function viewPractice(body,id){
     let seed,isRetry=false;
     P.retry.forEach(x=>x.due--);const ri_=P.retry.findIndex(x=>x.due<=0);
     if(ri_>=0){seed=P.retry[ri_].seed;P.retry.splice(ri_,1);isRetry=true}else seed=newSeed();
-    const prob=GEN[id](seed);
+    // 섞어 풀기: 지난 차시(이미 공부를 시작한 차시) 문제를 열에 셋쯤 섞어요. 다시 도전 문제는 섞지 않아요.
+    const prevL=LESSONS.filter(l=>l.ready&&l.unit===curL.unit&&l.no<curL.no&&GEN[l.id]&&OBJ(DB[l.id]).concept);
+    const mixL=!isRetry&&prevL.length&&Math.random()<0.3?prevL[Math.floor(Math.random()*prevL.length)]:null,gid=mixL?mixL.id:id;
+    const prob=GEN[gid](seed);
     if(isRetry)prob.title+='<span class="retry-tag">다시 도전</span>';
+    if(mixL)prob.title='<span class="rv-from">섞어 풀기 · '+mixL.no+'차시 '+mixL.title+'</span><br>'+prob.title;
     renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
-      logAttempt({lesson:id,kind:'practice',good,wrongs,mode,gen:id,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('prac');if(good&&wrongs===0)dayBump('clean');
-      P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(id,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
+      logAttempt({lesson:gid,kind:'practice',good,wrongs,mode,gen:gid,seed,ptype:prob.ptype,stepWrongs,revealed,mixed:!!mixL});dayBump('prac');if(good&&wrongs===0)dayBump('clean');
+      P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(gid,seed,gid);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
       if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else if(prob.steps.length>1&&!usedSteps){P.streak++}else{P.streak++}}
-      else{P.streak=0;P.fails++;P.retry.push({seed,due:2});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
+      else{P.streak=0;P.fails++;if(!mixL)P.retry.push({seed,due:2});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
       upd();const nb=el('<button type="button" class="btn primary">다음 문제 →</button>');nb.onclick=next;box.appendChild(nb);nb.focus()}});
   }
   upd();next();
@@ -2451,7 +2459,7 @@ function viewTeacher(){
     $('.t-tiles',app).innerHTML=`<div class="stat"><small>학생</small><b>${L.length}</b></div><div class="stat"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="stat"><small>평균 포인트</small><b>${avg}</b></div><div class="stat"><small>최근 7일 풀이 수</small><b>${tries}</b></div>`;
     $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td><button type="button" class="t-num" aria-expanded="false">${klassSel==='all'?`${s.grade}-${s.klass}-`:''}${s.num}번</button>${s.locked?' <span class="t-lock">잠김</span>':''}</td>
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
-      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TABS[i].t}"></span>`).join('')}</span></td>`).join('')}
+      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
       <td class="t-act"><button type="button" class="t-mini t-reset">비밀번호</button><button type="button" class="t-mini t-del">삭제</button></td></tr>`).join('');
     $$('.tRows tr',app).forEach(tr=>wireRow(tr));loadTBoss();loadTBB()}
@@ -2504,7 +2512,7 @@ function viewTeacher(){
   $$('.tDays button',app).forEach(b=>b.onclick=()=>{days=+b.dataset.d;$$('.tDays button',app).forEach(x=>x.classList.toggle('on',x===b));loadStats()});
   $('.tRefresh',app).onclick=()=>{loadRoster();loadStats()};
   $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
-    const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>TABS.map(t=>`${l.no}차시 ${t.t}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
+    const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>DATA_TABS.map(k=>`${l.no}차시 ${TAB_NM[k]}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
     const rows=L.map(s=>{const x=dataSummary(s.data);return[s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.facts,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
     const cell=v=>{v=String(v);return/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
     const csv='﻿'+[head,...rows].map(r=>r.map(cell).join(',')).join('\r\n');
@@ -3560,11 +3568,11 @@ function viewDrill(){crumbs.innerHTML=`<span class="sep">›</span><span>오늘�
       $('.dAgain',app).onclick=()=>viewDrill()}})}
 /* ───────── 오늘의 길잡이: 집에서 혼자 해도 순서를 잃지 않게 ───────── */
 const CALC_FOR={poly:['add','mul','sub'],types:['sub','eq'],regular:['facts','mul','div'],area:['area','pi','surf','frac','unit']};
-const TAB_DO={concept:'개념 읽기',explore:'탐구 활동 해 보기',steps:'단계 문제 1개 풀기',practice:'연습 문제 5개 풀기'};
+const TAB_DO={concept:'미리 보기 (정규 수업 전에)',explore:'더 알아보기 · 탐구 활동',steps:'같이 풀기 1문제',practice:'혼자 풀기 5문제'};
 function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   if(due||NUM(D.c.review))S.push({done:!due,t:due?`복습 노트 ${due}문제`:'복습 노트',s:due?'틀렸던 문제를 다시 풀어요':'오늘 복습을 끝냈어요',href:'#review'});
   const L=LESSONS.filter(l=>l.ready),cur=L.find(l=>lessonDone(l.id)<4),moved=NUM(D.c.steps)+NUM(D.c.prac)+NUM(D.c.explore)>0;
-  if(cur){const p=OBJ(DB[cur.id]),tab=!p.concept?'concept':!p.explore?'explore':!(NUM(p.steps)>0)?'steps':'practice';
+  if(cur){const p=OBJ(DB[cur.id]),tab=!p.concept?'concept':!(NUM(p.steps)>0)?'steps':!(NUM(OBJ(p.prac).solved)>=5)?'practice':'explore';
     S.push({done:moved,more:true,t:`${cur.no}차시 ${cur.title}`,s:TAB_DO[tab]+(tab==='practice'?` (지금 ${NUM(OBJ(p.prac).solved)}개)`:''),href:'#'+cur.id+(tab==='concept'?'':'-'+tab)})}
   else S.push({done:moved,more:true,t:'열린 차시를 모두 마쳤어요',s:'연습 문제로 실력을 다져요',href:'#'+L[L.length-1].id+'-practice'});
   const cdone=NUM(D.c.calc)>0,dg=OBJ(DB._calcDiag);
