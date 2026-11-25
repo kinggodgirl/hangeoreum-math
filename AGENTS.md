@@ -1,0 +1,36 @@
+# 한 걸음 수학 — 멀티-AI 협업 가이드 (AGENTS.md)
+
+이 저장소는 **빌드 도구 없이 GitHub Pages에서 바로 동작하는 순수 HTML/CSS/JS** 중1 수학 기초학력 웹앱입니다.
+여러 AI(Claude, Gemini, Cursor 등)가 동시에 작업할 때 충돌을 방지하고 안정성을 유지하기 위해 아래 규칙을 반드시 따르세요.
+
+## 1. 파일 구조 및 담당 영역
+
+| 파일 | 역할 | 수정 시 주의사항 |
+| :--- | :--- | :--- |
+| `index.html` | 화면 뼈대 및 CSS/JS 로드 순서 정의 | `<script>` 로드 순서(`01` → `07`)를 바꾸지 마세요. |
+| `styles.css` | 전체 스타일시트 | 기존 CSS 변수(`--paper`, `--ink`, `--accent`, `--hi`) 유지 |
+| `js/01-core.js` | 공통 유틸, `DB` 저장/정리(`save`, `tidyDB`), 3D 뷰어, 용어 사전, 키패드(`answerUI`, `check`), 문제 신고(`repMount`), 단계 문제 렌더러 | `localStorage` 키 이름(`STORE_KEY`)과 `DB` 기존 필드 호환성 유지 |
+| `js/02-unit-solid.js` | 입체도형 차시·홈·개념·탐구, 로그인 및 Supabase API 호출(`API.call`), 교과서 유형 | 서버 RPC 이름(`hg_*`) 임의 변경 금지 |
+| `js/03-teacher.js` | 교사 대시보드(`viewTeacher`, `openStu`, `dataSummary`, `loadReports`, `renderOmr`) | 기초 연산 오개념(`_calcErrs`), 취약 구구단(`_facts`), 문제 신고, OMR 집계 유지 |
+| `js/04-games.js` | 오늘의 미션, 꾸미기 상점, 우리 반 보스전, 숫자야구 | `DB._me` 포인트·배지 구조 유지 |
+| `js/05-calc.js` | 기초 연산 19개 주제(`CALC`), `EXAM_FOCUS`, `KEYS`, `LINKS`, `DIAG`, 5/10문제 미니 모드, 오늘의 계산(`viewDrill`), 오늘의 길잡이 | 시험 범위 변경 시 `EXAM_FOCUS`와 `EXAM_TAG`만 우선 수정 |
+| `js/06-unit-int.js` | 정수와 유리수 단원(`unit: 'int'`) | `LESSONS`, `STEPGEN`, `CALC_FOR`, `TERMS`, `BADGES` 확장 블록 |
+| `js/07-print-omr-boot.js` | 단원 필터링, 점검 학습지 인쇄, OMR 사진 채점, 라우터(`route`) 및 초기 실행 | 마지막에 로드되어야 함 |
+| `tests/verify.mjs` | 문법 검사 및 전체 연산 1,710문항 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
+
+## 2. 공유 데이터 계약 (`DB` JSON)
+
+`DB`는 학생 기기 `localStorage`와 Supabase에 JSON으로 동기화됩니다(서버 저장 한도 300KB).
+- `DB._me`: 포인트(`pts`), 연속 일수(`streak`), 1회 보상(`once`), 배지(`badges`)
+- `DB._calc[topicId]`: `stars`(0~3), `unlock`(1~3), `best`, `ways`, `box`(0~5), `due`(YYYY-MM-DD)
+- `DB._calcDiag`: 시작점 찾기 결과(`d`, `res`, `lvRes`, `plan`)
+- `DB._calcErrs`: 기초 연산 오개념 누적(`{tid, m, n, d}`, `tidyDB()`에서 상위 25건 유지)
+- `DB._facts[key]`: 곱셈구구 36칸 익힘 상태(`lv`, `d`, `n`, `w`)
+- `DB._rev`, `DB._omr`: 복습 노트, 학생 OMR 자가 채점 기록
+
+## 3. 멀티-AI 작업 원칙
+
+1. **작업 범위 한정**: 요청받은 기능의 담당 파일(예: 기초 연산은 `js/05-calc.js`)만 수정하고, 다른 모듈은 건드리지 마세요.
+2. **빌드 도구 금지**: Webpack, Vite, TypeScript 컴파일 단계를 추가하지 마세요.
+3. **검증 필수**: 코드 수정 후 반드시 `node tests/verify.mjs`를 실행해 모든 JS 문법과 문제 생성기·채점·오개념 진단이 통과하는지 확인하세요.
+4. **어조 유지**: 학생에게 보이는 모든 안내 문구는 따뜻하고 쉬운 한국어 해요체를 사용합니다.
