@@ -766,6 +766,89 @@ footer{color:var(--ink-soft);font-size:14px;border-top:1px solid var(--line);pad
   .lesson .pips,.lesson .soon-tag{grid-column:2}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 막혔을 때: 실수 유형 → 힌트 보기 → 정답 + 선생님 도움 */
+.step .hintmsg{display:grid;gap:8px;background:none;padding:0}
+.hl-why{background:var(--hi-soft);border-radius:8px;padding:8px 10px}
+.hl-why.soft{background:#f1f3f7}
+.hl-hint{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:8px 10px}
+.hl-open{justify-self:start}
+.hl-help{background:#fff1e0;border-left:4px solid #e08a1e;border-radius:8px;padding:8px 10px}
+.step .reveal{justify-self:start}
+/* 0단계 구·아 */
+.ga{margin:12px 0 4px;padding:12px 14px;border:2px dashed var(--line);border-radius:12px;background:#fff}
+.ga.fin{border-style:solid;padding:8px 12px;background:#fbfbf8}
+.ga-top{font-size:16px;margin-bottom:8px}
+.ga-pens{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.ga-pen{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-weight:700;cursor:pointer;min-height:44px}
+.ga-pen.f.on{border-color:#c0392b;background:#fde4e1}
+.ga-pen.k.on{border-color:#2a4d9e;background:#e1e9fb}
+.ga-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:19px;line-height:1.5}
+.ga-line.fig{font-size:16px}
+.ga-figcap{font-size:14px;color:var(--ink-soft);margin:10px 0 4px}
+.ga-w{border:none;background:transparent;border-bottom:2px dotted var(--line);border-radius:4px;padding:2px 4px;cursor:pointer;font:inherit;min-height:40px}
+.ga-line.fig .ga-w{border:1.5px solid var(--line);border-radius:8px;padding:4px 10px;background:#fff}
+.ga-w.f{background:linear-gradient(transparent 45%,#ffb4a8 45%);border-bottom-color:#c0392b}
+.ga-w.k{background:linear-gradient(transparent 45%,#b5cbf5 45%);border-bottom-color:#2a4d9e}
+.ga-line.fig .ga-w.k{background:#e1e9fb;border-color:#2a4d9e}
+.ga-line.fig .ga-w.f{background:#fde4e1;border-color:#c0392b}
+.ga-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.ga-msg{font-size:15px}
+.ga-msg.bad{color:var(--bad)}
+.ga-sum{display:flex;gap:8px;flex-wrap:wrap;font-size:15px}
+.ga-tag{border-radius:999px;padding:2px 12px;font-weight:700}
+.ga-tag.f{background:#fde4e1;color:#8e2a1f}
+.ga-tag.k{background:#e1e9fb;color:#1f3a7a}
+/* 교사 화면: 도움 알림 */
+.tHelpAll[hidden]{display:none}
+.tHelp.on{border:2px solid #e08a1e;box-shadow:0 0 0 4px #fff1e0}
+.t-help{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.t-help li{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:#fff8ef}
+.t-help li.new{animation:helpPulse 1.2s ease-in-out 3}
+.t-help li span small{display:block;color:var(--ink-soft);font-size:13px}
+.t-help .t-ago{font-size:13px;color:var(--ink-soft)}
+@keyframes helpPulse{50%{background:#ffd9a8}}
+@media (max-width:560px){.t-help li{grid-template-columns:1fr auto}.t-help li>span:nth-child(2){grid-column:1/-1;grid-row:2}}
+
+/* 개념 영상 */
+.vid{padding:0;overflow:hidden;margin-bottom:18px}
+.vid-stage{position:relative;background:radial-gradient(circle at 50% 40%,#fff 0,#eef2fa 70%)}
+.vid-stage canvas{width:100%;aspect-ratio:16/9;display:block}
+@media (max-width:560px){.vid-stage canvas{aspect-ratio:1/1}}
+.vid-cap{min-height:96px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 14px;background:#1d2640;color:#fff;font-weight:700;font-size:clamp(19px,4.8vw,26px);line-height:1.5}
+.vid-capin{display:block}
+.vw{display:inline-block;opacity:0;transform:translateY(10px) scale(.85);animation:vwIn .42s cubic-bezier(.3,1.6,.5,1) forwards}
+.vw.em{color:#ffe266;animation-name:vwEm;animation-duration:.6s}
+.vw.emo{animation-name:vwEmo;animation-duration:.8s}
+.vid-cap.still .vw{animation:none;opacity:1;transform:none}
+.vid:not(.started) .vid-cap .vw{opacity:0}
+@keyframes vwIn{to{opacity:1;transform:none}}
+@keyframes vwEm{0%{opacity:0;transform:scale(.4)}60%{opacity:1;transform:scale(1.3) rotate(-3deg)}100%{opacity:1;transform:none}}
+@keyframes vwEmo{0%{opacity:0;transform:translateY(16px) scale(.3)}50%{opacity:1;transform:translateY(-10px) scale(1.4) rotate(12deg)}75%{transform:translateY(2px) rotate(-6deg)}100%{opacity:1;transform:none}}
+.vid-big{position:absolute;inset:0 0 96px 0;margin:auto;width:220px;height:150px;border:none;border-radius:18px;background:rgba(29,38,64,.9);color:#fff;display:grid;place-items:center;align-content:center;gap:2px;cursor:pointer}
+.vid-big span{font-size:40px;line-height:1}
+.vid-big small{opacity:.8;font-size:13px}
+.vid.started .vid-big{display:none}
+.vid.ended .vid-big{display:grid}
+.vid.ended .vid-big span::after{content:''}
+.vid-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}
+.vid-pp,.vid-re{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:17px}
+.vid-dots{flex:1;display:flex;gap:6px}
+.vid-dot{flex:1;height:10px;border-radius:5px;border:none;background:#e2e6ee;cursor:pointer;padding:0;position:relative;overflow:hidden}
+.vid-dot.done{background:var(--accent)}
+.vid-dot.on{background:#e2e6ee}
+.vid-dot.on::after{content:'';position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(.15)}
+.vid.playing .vid-dot.on::after{animation:dotFill var(--d,5s) linear forwards}
+@keyframes dotFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.vw{animation:none;opacity:1;transform:none}}
+
+/* 방과후 모드 첫 화면: 오늘 할 일 하나 */
+.today{margin:22px 0 16px;padding:22px 22px 24px;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--hi)}
+.today-k{font-size:15px;color:var(--ink-soft);font-weight:700}
+.today h1{font-size:clamp(26px,6vw,36px);margin:6px 0 4px}
+.today p{margin:0 0 16px;color:var(--ink-soft)}
+.today-go{font-size:20px;padding:14px 28px;min-height:56px}
+.today.done{box-shadow:6px 6px 0 var(--ok-soft)}
 </style>
 </head>
 <body>
@@ -1239,11 +1322,28 @@ function check(step,v){
 function fmtAns(step){if(step.type==='sn')return(step.ansText||sgnTxt(step.ans))+(step.suffix?' '+step.suffix:'');if(step.suffix&&/^각/.test(step.suffix))return kn(step.ans)+step.suffix;if(step.type==='pi')return(step.ans===1?'':step.ans)+'π'+(step.suffix?' '+step.suffix:'');return step.ans+(step.suffix?' '+step.suffix:'')}
 
 /* ───────── 단계 문제 화면 ───────── */
+/* ───────── 막혔을 때: 실수 유형 → 힌트 보기 → 정답 + 선생님 도움 ───────── */
+/* step.errs: [[틀린 값, 실수 설명], ...]  (π 문제는 π의 계수)
+   step.why: {선택지: 설명}  (고르기 문제)
+   설명이 없으면, 앞·뒤 단계의 답을 쓴 경우를 알려 줘요. */
+function mistakeMsg(s,v,S,i){
+  if(s.type==='choice')return(s.why&&s.why[v])||'';
+  let x;if(s.type==='pi'){const c=String(v).replace('π','');x=c===''?1:parseFloat(c)}else if(s.type==='sn')x=snVal(v);else x=parseFloat(v);
+  if(!isFinite(x))return'';
+  const hit=(s.errs||[]).find(e=>Math.abs(e[0]-x)<1e-9);if(hit)return hit[1];
+  const j=S.findIndex((o,k)=>k!==i&&o.type!=='choice'&&o.type===s.type&&Math.abs(o.ans-x)<1e-9);
+  if(j>=0&&S.length>1)return j<i?`(${j+1})단계의 답을 그대로 썼어요. 이번 단계에서 묻는 것을 다시 읽어 봐요.`:`(${j+1})단계에서 구할 값이에요. 지금은 한 단계 앞을 구해요.`;
+  return''}
+const stepQText=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().slice(0,80);
+/* 3번 틀리면 선생님 화면에 알림 (로그인한 학생만, 서버에 help.sql이 있어야 해요) */
+async function requestHelp(o){if(!isStudent())return false;
+  try{await API.call('hg_help_request',{p_token:AUTH.token,p_lesson:String(o.lesson||'').slice(0,20),p_place:String(o.place||'').slice(0,60),p_q:String(o.q||'').slice(0,120)});return true}
+  catch(e){if(isAuthErr(e))authExpired();return false}}
 function renderProblem(host,prob,opt={}){
   let mode=(opt.mode==='final'&&prob.steps.length>1)?'final':'steps';
-  let usedSteps=mode==='steps',revealed=false;
+  let usedSteps=mode==='steps',revealed=false,helped=false;
   host.innerHTML='';
-  const root=el(`<div class="prob"><div class="prob-q"></div><div class="prob-body"><div class="prob-fig"><canvas aria-label="문제 그림"></canvas></div><div class="side"><ol class="steps"></ol><div class="tail"></div></div></div></div>`);
+  const root=el(`<div class="prob"><div class="prob-q"></div><div class="ga" hidden></div><div class="prob-body"><div class="prob-fig"><canvas aria-label="문제 그림"></canvas></div><div class="side"><ol class="steps"></ol><div class="tail"></div></div></div></div>`);
   $('.prob-q',root).innerHTML=prob.title;host.appendChild(root);
   const vis=!!opt.visual;let fv=null,netU=null;const figBox=$('.prob-fig',root);
   const mkFig=cv=>{fv=figure(cv,Object.assign({},prob.fig,vis?{visual:true}:{}));return fv};
@@ -1257,35 +1357,80 @@ function renderProblem(host,prob,opt={}){
       if(!netU){const N=prob.fig.net;netU=unfoldViewer(cv,{shape:N,t:0});netU.v.tick=()=>{if(netU.t<1){netU.t=Math.min(1,netU.t+(reduced?1:0.015));netU.v.dirty=true}};nb.textContent='입체도형으로 보기'}
       else{netU=null;mkFig(cv);syncHl();nb.textContent='전개도로 펼쳐 보기'}}}
   const ol=$('.steps',root),tail=$('.tail',root);
-  let cur=0,tries=0,wrongs=0,sw=[],rv=[];
+  let cur=0,tries=0,wrongs=0,sw=[],rv=[],ho=[];
+  /* 0단계: 구할 것 · 아는 것 칠하기 */
+  let gaDone=!(prob.ga&&opt.ga!==false&&mode==='steps');
+  if(!gaDone)gaBox($('.ga',root),prob.ga,()=>{gaDone=true;draw()});
   function syncHl(){if(svgFig){if(vis&&prob.fig.step){const box=$('.prob-fig',root);if(box)box.innerHTML=prob.fig.svg(vis,cur)}return}if(!vis||!fv||netU)return;const S=list();const st=S[Math.min(cur,S.length-1)];applyHl(fv,prob.fig.mesh,cur>=S.length?(prob.endHl||st.hl):st.hl)}
   function revealAfter(){if(!vis||!prob.figAfter||cur<prob.figAfter.at||$('.prob-fig',root))return;
     const box=el(`<div class="prob-fig"><canvas aria-label="찾은 입체도형"></canvas><div class="fighint">${prob.figAfter.cap}</div></div>`);$('.prob-body',root).prepend(box);$('.prob-body',root).classList.remove('nofig');
     const v2=figure($('canvas',box),Object.assign({visual:true},prob.figAfter.fig));applyHl(v2,prob.figAfter.fig.mesh,prob.figAfter.hl)}
   const list=()=>mode==='final'?[Object.assign({},prob.steps[prob.steps.length-1],{q:prob.finalQ||prob.steps[prob.steps.length-1].q})]:prob.steps;
+  function ladder(li,hm,s,i,mm){const S=list();
+    const head=mm?`<div class="hl-why">🔎 ${mm}</div>`:`<div class="hl-why soft">${tries===1?'🤔 아직 아니에요. 문제와 그림을 다시 한 번 봐요.':tries===2?'🤔 또 아니에요. 힌트를 열어 볼까요?':'🤔 어려운 단계예요. 힌트를 보고 천천히 다시 해 봐요.'}</div>`;
+    const hintOpen=ho[i]||tries>=3;
+    const hint=s.hint?(hintOpen?`<div class="hl-hint">💡 ${s.hint}</div>`:(tries>=2?'<button type="button" class="btn ghost hl-open">💡 힌트 보기</button>':'')):'';
+    let help='';
+    if(tries>=3){help=`<div class="hl-help">${isStudent()?'🙋 선생님께 도움을 요청했어요. 선생님이 오시기 전에 힌트를 보고 한 번 더 해 봐도 좋아요.':'🙋 손을 들어 선생님께 여쭤봐요. 힌트를 보고 한 번 더 해 봐도 좋아요.'}</div><button type="button" class="btn ghost reveal">정답 보고 넘어가기</button>`;
+      if(!helped){helped=true;const L=LESSONS.find(l=>l.id===opt.lesson);requestHelp({lesson:opt.lesson||'',place:`${L?L.no+'차시 '+L.title:''}${S.length>1?` · (${i+1})단계`:''}`,q:stepQText(s.q)})}}
+    hm.hidden=false;hm.innerHTML=head+hint+help;
+    const ob=$('.hl-open',hm);if(ob)ob.onclick=()=>{ho[i]=1;ladder(li,hm,s,i,mm)};
+    const rb=$('.reveal',hm);if(rb)rb.onclick=()=>{s._shown=true;revealed=true;rv[i]=1;tries=0;cur++;draw();if(cur>=S.length)finish()}}
   function draw(){
     syncHl();revealAfter();
     ol.innerHTML='';const S=list();
-    S.forEach((s,i)=>{const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):i===cur?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
+    S.forEach((s,i)=>{const now=gaDone&&i===cur;const li=el(`<li class="step ${i<cur?(s._shown?'shown':'done'):now?'cur':'lock'}"><div class="sq"><span class="sn">${S.length>1?`(${i+1})`:''}</span><div class="sb"><div>${s.q}</div></div></div></li>`);
       const sb=$('.sb',li);
       if(i<cur){sb.appendChild(el(`<div class="ans">${s._shown?'정답: ':CHECK+' '}${fmtAns(s).replace(/π/g,'<span class="rm">π</span>')}</div>`));if(s.ok)sb.appendChild(el(`<div class="expl">${s.ok}</div>`))}
-      if(i===cur){
-        const hm=el('<div class="hintmsg" hidden></div>');
+      if(now){
+        const hm=el('<div class="hintmsg" hidden></div>');let last='';
         const ui=answerUI(s,v=>{const r=check(s,v);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
-          tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':r==='nosign'?'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
-          if(tries>=3&&!$('.reveal',li)){const rb=el('<button type="button" class="btn ghost reveal" style="margin-top:8px">정답 확인하고 넘어가기</button>');rb.onclick=()=>{s._shown=true;revealed=true;rv[i]=1;tries=0;cur++;draw();if(cur>=S.length)finish()};sb.appendChild(rb)}
+          if(r==='nopi'||r==='nosign'){hm.hidden=false;hm.innerHTML=`<div class="hl-why soft">${r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.'}</div>`;return false}
+          if(String(v)===last&&tries)return false;last=String(v);
+          tries++;wrongs++;sw[i]=(sw[i]||0)+1;ladder(li,hm,s,i,mistakeMsg(s,v,S,i));
           return false});
         sb.append(ui,hm);
-        if(mode==='final'){const swb=el('<button type="button" class="btn ghost" style="margin-top:10px">단계로 나누어 풀기</button>');swb.onclick=()=>{mode='steps';usedSteps=true;cur=0;tries=0;sw=[];rv=[];draw()};sb.appendChild(swb)}
+        if(mode==='final'){const swb=el('<button type="button" class="btn ghost" style="margin-top:10px">단계로 나누어 풀기</button>');swb.onclick=()=>{mode='steps';usedSteps=true;cur=0;tries=0;sw=[];rv=[];ho=[];draw()};sb.appendChild(swb)}
       }
       ol.appendChild(li)});
   }
-  function finish(){const good=!revealed;tail.innerHTML='';const r=el(`<div class="result ${good?'ok':'bad'}"><span>${good?(mode==='final'?'단계 없이 혼자 풀었어요!':'모든 단계를 해냈어요!'):'정답을 확인한 단계가 있어요. 비슷한 문제를 다시 풀어 봐요.'}</span></div>`);tail.appendChild(r);
+  function finish(){const good=!revealed;tail.innerHTML='';const r=el(`<div class="result ${good?'ok':'bad'}"><span>${good?(mode==='final'?'단계 없이 혼자 풀었어요!':'모든 단계를 해냈어요!'):'정답을 확인한 단계가 있어요. 비슷한 문제로 한 번 더 해 봐요.'}</span></div>`);tail.appendChild(r);
     const n=list().length,stepWrongs=range(n).map(k=>sw[k]||0),revealedArr=range(n).map(k=>rv[k]||0);
     if(opt.onDone)opt.onDone({good,usedSteps,mode,wrongs,stepWrongs,revealed:revealedArr,box:r})}
   prob.steps.forEach(s=>delete s._shown);
   draw();
 }
+/* 0단계 · 구·아: 문제 문장에서 🎯 구할 것(빨강)과 📌 아는 것(파랑)을 칠해요
+   ga={parts:[[글, 'f'|'k'|null], ...], fig:[[그림에서 아는 것, 'k'|null], ...]} */
+function gaBox(box,ga,onDone){
+  const items=[];
+  (ga.parts||[]).forEach(([t,role])=>{if(role)items.push({t,role,src:'q'});else String(t).split(/\s+/).filter(Boolean).forEach(w=>items.push({t:w,role:null,src:'q'}))});
+  (ga.fig||[]).forEach(([t,role])=>items.push({t,role,src:'fig'}));
+  let pen='f',fails=0;const mk=items.map(()=>null);
+  box.hidden=false;
+  function render(msg,cls){
+    box.innerHTML=`<div class="ga-top"><b>0단계</b> 먼저 <b>구·아!</b> 펜을 고르고 낱말을 눌러 칠해요.</div>
+     <div class="ga-pens" role="radiogroup" aria-label="펜 고르기"><button type="button" class="ga-pen f ${pen==='f'?'on':''}" data-p="f" role="radio" aria-checked="${pen==='f'}">🎯 구할 것</button><button type="button" class="ga-pen k ${pen==='k'?'on':''}" data-p="k" role="radio" aria-checked="${pen==='k'}">📌 아는 것</button></div>
+     <div class="ga-line">${items.map((x,i)=>x.src==='q'?`<button type="button" class="ga-w ${mk[i]||''}" data-i="${i}">${x.t}</button>`:'').join(' ')}</div>
+     ${(ga.fig||[]).length?`<div class="ga-figcap">그림에서 찾은 것</div><div class="ga-line fig">${items.map((x,i)=>x.src==='fig'?`<button type="button" class="ga-w ${mk[i]||''}" data-i="${i}">${x.t}</button>`:'').join('')}</div>`:''}
+     <div class="ga-row"><button type="button" class="btn primary ga-ok">다 칠했어요</button><span class="ga-msg ${cls||''}" role="status">${msg||''}</span></div>`;
+    $$('.ga-pen',box).forEach(b=>b.onclick=()=>{pen=b.dataset.p;render()});
+    $$('.ga-w',box).forEach(b=>b.onclick=()=>{const i=+b.dataset.i;mk[i]=mk[i]===pen?null:pen;render()});
+    $('.ga-ok',box).onclick=checkIt}
+  function checkIt(){
+    const needF=items.some(x=>x.role==='f'),missF=items.some((x,i)=>x.role==='f'&&mk[i]!=='f'),missK=items.some((x,i)=>x.role==='k'&&mk[i]!=='k');
+    const wrong=items.map((x,i)=>i).filter(i=>mk[i]&&mk[i]!==items[i].role);
+    if(!missF&&!missK&&!wrong.length){done();return}
+    fails++;
+    if(fails>=3){items.forEach((x,i)=>mk[i]=x.role);render('이렇게 칠하면 돼요. 확인하고 단계로 가요.','soft');setTimeout(done,reduced?0:1800);return}
+    let m='';
+    if(wrong.length){const x=items[wrong[0]];m=x.role?`‘${x.t}’는 ${x.role==='f'?'🎯 구할 것':'📌 아는 것'}이에요.`:`‘${x.t}’는 칠하지 않아도 돼요.`}
+    else if(missF&&needF)m='🎯 문제가 무엇을 구하라고 하나요? "~를 구하시오" 앞을 보세요.';
+    else m='📌 문제에 이미 나와 있는 수나 이름이 더 있어요.'+((ga.fig||[]).length?' 그림 쪽도 보세요.':'');
+    render(m,'bad')}
+  function done(){const f=items.filter(x=>x.role==='f').map(x=>x.t),k=items.filter(x=>x.role==='k').map(x=>x.t);
+    box.innerHTML=`<div class="ga-sum"><span class="ga-tag f">🎯 ${f.join(', ')}</span>${k.length?`<span class="ga-tag k">📌 ${k.join(', ')}</span>`:''}</div>`;box.classList.add('fin');onDone()}
+  render()}
 
 /* ───────── 문제 만들기 ───────── */
 function solidFig(m,o={}){return{mesh:m,yaw:o.yaw??-0.45,pitch:o.pitch??0.33,pad:o.pad??0.40,labels:o.labels}}
@@ -1293,11 +1438,11 @@ const GEN={};
 /* 1차시: 다면체 */
 GEN.polyStep=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid']),n=ri(r,3,8),Ty=TYPE[tp];
   const nm=kn(n)+'각형';const opts=shuffle(r,(n===3?[n,n+1,n+2]:[n-1,n,n+1]).map(k=>kn(k)+'각형'));const F=Ty.F(n);
-  return{ptype:'poly:'+tp,title:'다음 다면체는 몇 면체인지 구하시오.',fig:solidFig(Ty.mk(n)),finalQ:'이 다면체는 몇 면체인가요?',steps:[
+  return{ptype:'poly:'+tp,title:'다음 다면체는 몇 면체인지 구하시오.',ga:{parts:[['다음',null],['다면체는','k'],['몇 면체인지','f'],['구하시오.',null]]},fig:solidFig(Ty.mk(n)),finalQ:'이 다면체는 몇 면체인가요?',steps:[
     {hl:'base',q:`${T('밑면')}의 모양은 어떤 ${T('다각형')}인가요?`,type:'choice',choices:opts,ans:nm,hint:tp==='prism'?'위아래로 마주 보는 면의 변을 세어 보세요.':'맨 아래 면의 변을 세어 보세요. 뾰족한 꼭짓점과 마주 보는 면이에요.',ok:`밑면은 ${nm}이에요.`},
-    {hl:'base',q:`${T('밑면')}은 몇 개인가요?`,type:'num',ans:tp==='prism'?2:1,suffix:'개',hint:tp==='prism'?'각기둥은 위와 아래에 밑면이 있어요.':'각뿔은 밑면이 아래에만 있어요.'},
-    {hl:'side',q:`${T('옆면')}은 몇 개인가요?`,type:'num',ans:n,suffix:'개',hint:`밑면의 변 하나마다 옆면이 하나씩 붙어 있어요. 밑면의 변은 ${n}개예요.`},
-    {hl:'all',q:'면의 개수를 모두 더하면, 이 다면체는 몇 면체인가요?',type:'num',ans:F,suffix:'면체',hint:`(밑면의 개수) + (옆면의 개수) = ${tp==='prism'?2:1} + ${n}`,ok:`면이 ${F}개이므로 ${kn(F)}면체예요.`}]}};
+    {hl:'base',q:`${T('밑면')}은 몇 개인가요?`,type:'num',ans:tp==='prism'?2:1,suffix:'개',errs:tp==='prism'?[[1,'각기둥은 밑면이 위에도 있고 아래에도 있어요.']]:[[2,'각뿔은 위가 뾰족한 꼭짓점이라 밑면이 아래 하나뿐이에요.']],hint:tp==='prism'?'각기둥은 위와 아래에 밑면이 있어요.':'각뿔은 밑면이 아래에만 있어요.'},
+    {hl:'side',q:`${T('옆면')}은 몇 개인가요?`,type:'num',ans:n,suffix:'개',errs:[[n+2,'밑면까지 함께 셌어요. 옆면만 세어요.'],[n+1,'밑면까지 함께 셌어요. 옆면만 세어요.']],hint:`밑면의 변 하나마다 옆면이 하나씩 붙어 있어요. 밑면의 변은 ${n}개예요.`},
+    {hl:'all',q:'면의 개수를 모두 더하면, 이 다면체는 몇 면체인가요?',type:'num',ans:F,suffix:'면체',errs:[[n,'옆면만 셌어요. 밑면도 더해요.'],[tp==='prism'?n+1:n+2,tp==='prism'?'밑면을 하나만 더했어요. 각기둥은 밑면이 2개예요.':'각뿔은 밑면이 1개예요.']],hint:`(밑면의 개수) + (옆면의 개수) = ${tp==='prism'?2:1} + ${n}`,ok:`면이 ${F}개이므로 ${kn(F)}면체예요.`}]}};
 GEN.poly=seed=>{const r=mulberry(seed);const k=pick(r,['is','is','count','count','step']);
   if(k==='step')return GEN.polyStep(seed+7);
   if(k==='is'){const id=pick(r,Object.keys(SOLIDS)),S=SOLIDS[id];
@@ -1310,11 +1455,11 @@ GEN.poly=seed=>{const r=mulberry(seed);const k=pick(r,['is','is','count','count'
 GEN.typesStep=seed=>{const r=mulberry(seed);const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],n=ri(r,3,10);
   const parts=shuffle(r,['F','E','V']);const g=parts[0],a=parts[1];const gv=Ty[g](n),av=Ty[a](n),gf=Ty['f'+g],af=Ty['f'+a];
   const solveHint=gf.includes('+')?`양변에서 ${josa(gf.split('+')[1],'을','를')} 빼 보세요.`:`양변을 ${josaRo(gf[0])} 나누어 보세요.`;
-  return{ptype:'types:'+tp,title:`${PART[g]}의 개수가 ${gv}개인 ${Ty.nm}의 ${PART[a]}의 개수를 구하시오.`,fig:null,figAfter:{at:3,fig:solidFig(Ty.mk(n)),hl:'F'+a.toLowerCase(),cap:`${kn(n)}${Ty.nm} · ${josa(PART[a],'을','를')} 층별로 칠했어요`},finalQ:`${PART[a]}의 개수는 몇 개인가요?`,steps:[
-    {tag:'개수를 n을 사용한 식으로 나타내기',q:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}의 개수를 <span class="math">n</span>을 사용하여 나타내면?`,type:'choice',mathChoices:true,choices:['n+1','n+2','2n','3n'],ans:gf,hint:`삼${Ty.nm}, 사${josa(Ty.nm,'을','를')} 떠올려 ${josa(PART[g],'을','를')} 세어 보세요. 개념 카드의 표도 도움이 돼요.`,ok:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}: ${gf.replace('n','<span class="math">n</span>')}개`},
-    {tag:'방정식을 풀어 n의 값 구하기',q:`${gf.replace('n','<span class="math">n</span>')} = ${gv} 이므로 <span class="math">n</span>의 값은?`,type:'num',ans:n,hint:`${T('방정식')}을 풀어요. ${solveHint}`},
+  return{ptype:'types:'+tp,title:`${PART[g]}의 개수가 ${gv}개인 ${Ty.nm}의 ${PART[a]}의 개수를 구하시오.`,ga:{parts:[[`${PART[g]}의 개수가 ${gv}개인`,'k'],[`${Ty.nm}의`,'k'],[`${PART[a]}의 개수를`,'f'],['구하시오.',null]]},fig:null,figAfter:{at:3,fig:solidFig(Ty.mk(n)),hl:'F'+a.toLowerCase(),cap:`${kn(n)}${Ty.nm} · ${josa(PART[a],'을','를')} 층별로 칠했어요`},finalQ:`${PART[a]}의 개수는 몇 개인가요?`,steps:[
+    {tag:'개수를 n을 사용한 식으로 나타내기',q:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}의 개수를 <span class="math">n</span>을 사용하여 나타내면?`,type:'choice',mathChoices:true,choices:['n+1','n+2','2n','3n'],ans:gf,why:Object.fromEntries(['n+1','n+2','2n','3n'].filter(c=>c!==gf).map(c=>{const ps=['F','E','V'].filter(q=>Ty['f'+q]===c).map(q=>PART[q]);return[c,ps.length?`‘${c}’ 식은 ${Ty.nm}의 ${ps.join('·')}의 개수예요. 지금은 ${PART[g]}의 개수를 찾아요.`:`‘${c}’ 식은 ${Ty.nm}에 맞지 않아요. 삼${Ty.nm}을 떠올려 ${PART[g]}을 세어 보세요.`]})),hint:`삼${Ty.nm}, 사${josa(Ty.nm,'을','를')} 떠올려 ${josa(PART[g],'을','를')} 세어 보세요. 개념 카드의 표도 도움이 돼요.`,ok:`<span class="math">n</span>${Ty.nm}의 ${PART[g]}: ${gf.replace('n','<span class="math">n</span>')}개`},
+    {tag:'방정식을 풀어 n의 값 구하기',q:`${gf.replace('n','<span class="math">n</span>')} = ${gv} 이므로 <span class="math">n</span>의 값은?`,type:'num',ans:n,errs:[[gv,'개수를 그대로 썼어요. 방정식을 풀어 n을 구해요.'],...(gf.includes('+')?[[gv+(+gf.split('+')[1]),'빼야 할 수를 더했어요. 양변에서 빼요.']]:[[gv*(+gf[0]),'나누어야 할 수를 곱했어요. 양변을 나눠요.']])],hint:`${T('방정식')}을 풀어요. ${solveHint}`},
     {tag:'입체도형의 이름 정하기',q:'이 입체도형의 이름은?',type:'num',ans:n,suffix:Ty.nm,hint:`<span class="math">n</span>의 값이 곧 밑면의 변의 개수예요.`,ok:`${kn(n)}${Ty.nm}${Ty.nm.endsWith('대')?'예요':'이에요'}.`},
-    {tag:'n을 넣어 구하는 개수 계산하기',q:`${kn(n)}${Ty.nm}의 ${PART[a]}의 개수는?`,type:'num',ans:av,suffix:'개',hint:`${PART[a]}의 개수는 ${af.replace('n','<span class="math">n</span>')}개예요. <span class="math">n</span> = ${n}을 넣어 보세요.`}]}};
+    {tag:'n을 넣어 구하는 개수 계산하기',q:`${kn(n)}${Ty.nm}의 ${PART[a]}의 개수는?`,type:'num',ans:av,suffix:'개',errs:[[gv,`${PART[g]}의 개수예요. 구할 것은 ${PART[a]}의 개수예요.`],[n,'n의 값이에요. 이 값을 식에 넣어 계산해요.']],hint:`${PART[a]}의 개수는 ${af.replace('n','<span class="math">n</span>')}개예요. <span class="math">n</span> = ${n}을 넣어 보세요.`}]}};
 GEN.types=seed=>{const r=mulberry(seed);const k=pick(r,['step','step','direct','direct','side','name']);
   if(k==='step')return GEN.typesStep(seed+3);
   const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],n=ri(r,3,9);
@@ -1325,24 +1470,24 @@ GEN.types=seed=>{const r=mulberry(seed);const k=pick(r,['step','step','direct','
 GEN.areaStep=seed=>{const r=mulberry(seed);const k=pick(r,['tri','box','cyl']);
   if(k==='tri'){const[a,b,c]=pick(r,[[3,4,5],[6,8,10],[5,12,13]]),h=ri(r,Math.round(c*0.6),c+1);const B=a*b/2,Pm=a+b+c,Lt=Pm*h,S=2*B+Lt;
     const m=prism([[0,0],[a,0],[0,b]],h);const top=z=>[[0,0,z],[a,0,z],[0,b,z]];const t=top(h),bt=top(0);
-    return{ptype:'area:tri',title:'다음 그림과 같은 삼각기둥의 겉넓이를 구하시오.',finalQ:'삼각기둥의 겉넓이는 몇 cm²인가요?',fig:{net:{P:[[0,0],[a,0],[0,b]],h,perimLabel:`밑면의 둘레 = ${Pm} cm`,hLabel:`높이 ${h} cm`},mesh:m,yaw:0.62,pitch:0.5,pad:0.34,labels:[[bt[0],bt[1],a+' cm'],[bt[0],bt[2],b+' cm'],[t[1],t[2],c+' cm',{from:[a/3,b/3,h]}],[bt[1],t[1],h+' cm']]},steps:[
-      {hl:'base1',q:`${T('밑넓이')}는 몇 ${T('cm²')}인가요?`,type:'num',ans:B,suffix:'cm²',hint:`밑면은 직각삼각형이에요. ${T('삼각형의 넓이')}: ${a} × ${b} ÷ 2`,ok:`${a} × ${b} ÷ 2 = ${B}`},
-      {hl:'baseEdge',q:`밑면의 ${T('둘레')}는 몇 cm인가요?`,type:'num',ans:Pm,suffix:'cm',hint:`세 변의 길이를 모두 더해요: ${a} + ${b} + ${c}`},
-      {hl:'side',q:`${T('옆넓이')}는 몇 cm²인가요?`,type:'num',ans:Lt,suffix:'cm²',hint:`옆면을 펼치면 가로가 ${Pm} cm(밑면의 둘레), 세로가 ${h} cm(높이)인 직사각형이에요.`,ok:`${Pm} × ${h} = ${Lt}`},
-      {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'num',ans:S,suffix:'cm²',hint:`(밑넓이) × 2 + (옆넓이) = ${B} × 2 + ${Lt}`,ok:`${B} × 2 + ${Lt} = ${S}`}]}}
+    return{ptype:'area:tri',title:'다음 그림과 같은 삼각기둥의 겉넓이를 구하시오.',ga:{parts:[['다음 그림과 같은',null],['삼각기둥의','k'],['겉넓이를','f'],['구하시오.',null]],fig:shuffle(r,[[`밑면의 두 변 ${a} cm, ${b} cm`,'k'],[`가장 긴 변 ${c} cm`,'k'],[`높이 ${h} cm`,'k']])},finalQ:'삼각기둥의 겉넓이는 몇 cm²인가요?',fig:{net:{P:[[0,0],[a,0],[0,b]],h,perimLabel:`밑면의 둘레 = ${Pm} cm`,hLabel:`높이 ${h} cm`},mesh:m,yaw:0.62,pitch:0.5,pad:0.34,labels:[[bt[0],bt[1],a+' cm'],[bt[0],bt[2],b+' cm'],[t[1],t[2],c+' cm',{from:[a/3,b/3,h]}],[bt[1],t[1],h+' cm']]},steps:[
+      {hl:'base1',q:`${T('밑넓이')}는 몇 ${T('cm²')}인가요?`,type:'num',ans:B,suffix:'cm²',errs:[[a*b,'÷ 2를 빠뜨렸어요. 삼각형은 직사각형의 절반이에요.'],[Pm,'둘레를 구했어요. 넓이는 밑변 × 높이 ÷ 2예요.']],hint:`밑면은 직각삼각형이에요. ${T('삼각형의 넓이')}: ${a} × ${b} ÷ 2`,ok:`${a} × ${b} ÷ 2 = ${B}`},
+      {hl:'baseEdge',q:`밑면의 ${T('둘레')}는 몇 cm인가요?`,type:'num',ans:Pm,suffix:'cm',errs:[[a+b,'두 변만 더했어요. 가장 긴 변까지 세 변을 모두 더해요.'],[B,'넓이를 구했어요. 둘레는 변의 길이를 더해요.']],hint:`세 변의 길이를 모두 더해요: ${a} + ${b} + ${c}`},
+      {hl:'side',q:`${T('옆넓이')}는 몇 cm²인가요?`,type:'num',ans:Lt,suffix:'cm²',errs:[[B*h,'밑넓이에 높이를 곱했어요. 그건 부피예요. 옆넓이는 (밑면의 둘레) × (높이)예요.'],[Pm+h,'더했어요. 직사각형의 넓이는 가로 × 세로예요.']],hint:`옆면을 펼치면 가로가 ${Pm} cm(밑면의 둘레), 세로가 ${h} cm(높이)인 직사각형이에요.`,ok:`${Pm} × ${h} = ${Lt}`},
+      {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'num',ans:S,suffix:'cm²',errs:[[B+Lt,'밑넓이를 한 번만 더했어요. 밑면은 위와 아래 2개예요.'],[2*Lt+B,'옆넓이를 두 번 더했어요. 두 번 더하는 것은 밑넓이예요.']],hint:`(밑넓이) × 2 + (옆넓이) = ${B} × 2 + ${Lt}`,ok:`${B} × 2 + ${Lt} = ${S}`}]}}
   if(k==='box'){const a=ri(r,3,9),b=ri(r,2,7),h=ri(r,3,9);const B=a*b,Pm=2*(a+b),Lt=Pm*h,S=2*B+Lt;const m=prism([[0,0],[a,0],[a,b],[0,b]],h);
-    return{ptype:'area:box',title:'다음 그림과 같은 직육면체의 겉넓이를 구하시오.',finalQ:'직육면체의 겉넓이는 몇 cm²인가요?',fig:{net:{P:[[0,0],[a,0],[a,b],[0,b]],h,perimLabel:`밑면의 둘레 = ${Pm} cm`,hLabel:`높이 ${h} cm`},mesh:m,yaw:-0.5,pitch:0.4,pad:0.36,labels:[[[0,0,0],[a,0,0],a+' cm'],[[a,0,0],[a,b,0],b+' cm'],[[a,0,0],[a,0,h],h+' cm']]},steps:[
-      {hl:'base1',q:`${T('밑넓이')}는 몇 ${T('cm²')}인가요?`,type:'num',ans:B,suffix:'cm²',hint:`밑면은 직사각형이에요. ${T('직사각형의 넓이')}: ${a} × ${b}`},
-      {hl:'baseEdge',q:`밑면의 ${T('둘레')}는 몇 cm인가요?`,type:'num',ans:Pm,suffix:'cm',hint:`네 변을 모두 더해요: ${a} + ${b} + ${a} + ${b}`},
-      {hl:'side',q:`${T('옆넓이')}는 몇 cm²인가요?`,type:'num',ans:Lt,suffix:'cm²',hint:`옆면을 펼친 직사각형: 가로 ${Pm} cm × 세로 ${h} cm`,ok:`${Pm} × ${h} = ${Lt}`},
-      {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'num',ans:S,suffix:'cm²',hint:`${B} × 2 + ${Lt}`,ok:`${B} × 2 + ${Lt} = ${S}`}]}}
+    return{ptype:'area:box',title:'다음 그림과 같은 직육면체의 겉넓이를 구하시오.',ga:{parts:[['다음 그림과 같은',null],['직육면체의','k'],['겉넓이를','f'],['구하시오.',null]],fig:shuffle(r,[[`가로 ${a} cm`,'k'],[`세로 ${b} cm`,'k'],[`높이 ${h} cm`,'k']])},finalQ:'직육면체의 겉넓이는 몇 cm²인가요?',fig:{net:{P:[[0,0],[a,0],[a,b],[0,b]],h,perimLabel:`밑면의 둘레 = ${Pm} cm`,hLabel:`높이 ${h} cm`},mesh:m,yaw:-0.5,pitch:0.4,pad:0.36,labels:[[[0,0,0],[a,0,0],a+' cm'],[[a,0,0],[a,b,0],b+' cm'],[[a,0,0],[a,0,h],h+' cm']]},steps:[
+      {hl:'base1',q:`${T('밑넓이')}는 몇 ${T('cm²')}인가요?`,type:'num',ans:B,suffix:'cm²',errs:[[a+b,'더했어요. 직사각형의 넓이는 가로 × 세로예요.'],[Pm,'둘레를 구했어요. 넓이는 가로 × 세로예요.']],hint:`밑면은 직사각형이에요. ${T('직사각형의 넓이')}: ${a} × ${b}`},
+      {hl:'baseEdge',q:`밑면의 ${T('둘레')}는 몇 cm인가요?`,type:'num',ans:Pm,suffix:'cm',errs:[[a+b,'두 변만 더했어요. 직사각형은 변이 4개예요.'],[B,'넓이를 구했어요. 둘레는 네 변의 길이를 더해요.']],hint:`네 변을 모두 더해요: ${a} + ${b} + ${a} + ${b}`},
+      {hl:'side',q:`${T('옆넓이')}는 몇 cm²인가요?`,type:'num',ans:Lt,suffix:'cm²',errs:[[B*h,'밑넓이에 높이를 곱했어요. 그건 부피예요. 옆넓이는 (밑면의 둘레) × (높이)예요.'],[(a+b)*h,'둘레를 절반만 썼어요. 밑면의 둘레는 네 변의 합이에요.']],hint:`옆면을 펼친 직사각형: 가로 ${Pm} cm × 세로 ${h} cm`,ok:`${Pm} × ${h} = ${Lt}`},
+      {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'num',ans:S,suffix:'cm²',errs:[[B+Lt,'밑넓이를 한 번만 더했어요. 밑면은 위와 아래 2개예요.'],[2*Lt+B,'옆넓이를 두 번 더했어요. 두 번 더하는 것은 밑넓이예요.']],hint:`${B} × 2 + ${Lt}`,ok:`${B} × 2 + ${Lt} = ${S}`}]}}
   const rr=ri(r,2,6),h=ri(r,3,10);const m=prism(regPoly(64,rr),h,true);
-  return{ptype:'area:cyl',title:'다음 그림과 같은 원기둥의 겉넓이를 구하시오.',finalQ:'원기둥의 겉넓이는 몇 cm²인가요?',fig:{net:{P:regPoly(64,rr),h,smooth:true,perimLabel:`밑면의 둘레 = ${2*rr}π cm`,hLabel:`높이 ${h} cm`,inside:true},mesh:m,yaw:0,pitch:0.34,pad:0.34,after:(ctx,v)=>cylLabels(ctx,v,rr,h)},steps:[
-    {hl:'baseEdge',q:'원기둥의 전개도에서 옆면(직사각형)의 가로의 길이는 무엇과 같나요?',type:'choice',choices:['밑면의 둘레','밑면의 반지름','원기둥의 높이'],ans:'밑면의 둘레',hint:'옆면을 감싼 종이를 펼친다고 생각해 보세요. 밑면의 원을 한 바퀴 둘러요.',ok:'옆면의 가로 = 밑면인 원의 둘레'},
-    {hl:'base1',q:`${T('밑넓이')}는 몇 cm²인가요?`,type:'pi',ans:rr*rr,suffix:'cm²',hint:`${T('원의 넓이')}: π × ${rr} × ${rr}`},
-    {hl:'baseEdge',q:`밑면의 둘레는 몇 cm인가요?`,type:'pi',ans:2*rr,suffix:'cm',hint:`${T('원의 둘레')}: 2 × π × ${rr}`},
-    {hl:'side',q:'옆넓이는 몇 cm²인가요?',type:'pi',ans:2*rr*h,suffix:'cm²',hint:`(밑면의 둘레) × (높이) = ${2*rr}π × ${h}`,ok:`${2*rr}π × ${h} = ${2*rr*h}π`},
-    {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'pi',ans:2*rr*rr+2*rr*h,suffix:'cm²',hint:`(밑넓이) × 2 + (옆넓이) = ${rr*rr}π × 2 + ${2*rr*h}π`,ok:`${2*rr*rr}π + ${2*rr*h}π = ${2*rr*rr+2*rr*h}π`}]}};
+  return{ptype:'area:cyl',title:'다음 그림과 같은 원기둥의 겉넓이를 구하시오.',ga:{parts:[['다음 그림과 같은',null],['원기둥의','k'],['겉넓이를','f'],['구하시오.',null]],fig:shuffle(r,[[`밑면의 반지름 ${rr} cm`,'k'],[`높이 ${h} cm`,'k']])},finalQ:'원기둥의 겉넓이는 몇 cm²인가요?',fig:{net:{P:regPoly(64,rr),h,smooth:true,perimLabel:`밑면의 둘레 = ${2*rr}π cm`,hLabel:`높이 ${h} cm`,inside:true},mesh:m,yaw:0,pitch:0.34,pad:0.34,after:(ctx,v)=>cylLabels(ctx,v,rr,h)},steps:[
+    {hl:'baseEdge',q:'원기둥의 전개도에서 옆면(직사각형)의 가로의 길이는 무엇과 같나요?',type:'choice',choices:['밑면의 둘레','밑면의 반지름','원기둥의 높이'],ans:'밑면의 둘레',why:{'밑면의 반지름':'반지름은 원의 중심에서 둘레까지예요. 옆면의 가로는 원을 한 바퀴 둘러요.','원기둥의 높이':'높이는 옆면의 세로예요. 가로는 원을 한 바퀴 두른 길이예요.'},hint:'옆면을 감싼 종이를 펼친다고 생각해 보세요. 밑면의 원을 한 바퀴 둘러요.',ok:'옆면의 가로 = 밑면인 원의 둘레'},
+    {hl:'base1',q:`${T('밑넓이')}는 몇 cm²인가요?`,type:'pi',ans:rr*rr,suffix:'cm²',errs:[[2*rr,'원의 둘레(2πr)를 구했어요. 넓이는 π × 반지름 × 반지름이에요.'],[rr,'반지름을 한 번만 곱했어요. π × 반지름 × 반지름이에요.'],[4*rr*rr,'지름으로 계산했어요. 반지름으로 계산해요.']],hint:`${T('원의 넓이')}: π × ${rr} × ${rr}`},
+    {hl:'baseEdge',q:`밑면의 둘레는 몇 cm인가요?`,type:'pi',ans:2*rr,suffix:'cm',errs:[[rr*rr,'넓이(πr²)를 구했어요. 원의 둘레는 2 × π × 반지름이에요.'],[rr,'2를 빠뜨렸어요. 둘레는 2 × π × 반지름이에요.']],hint:`${T('원의 둘레')}: 2 × π × ${rr}`},
+    {hl:'side',q:'옆넓이는 몇 cm²인가요?',type:'pi',ans:2*rr*h,suffix:'cm²',errs:[[rr*rr*h,'밑넓이에 높이를 곱했어요. 그건 부피예요. 옆넓이는 (밑면의 둘레) × (높이)예요.'],[rr*h,'2를 빠뜨렸어요. 밑면의 둘레는 2πr이에요.']],hint:`(밑면의 둘레) × (높이) = ${2*rr}π × ${h}`,ok:`${2*rr}π × ${h} = ${2*rr*h}π`},
+    {hl:'all',q:`${T('겉넓이')}는 몇 cm²인가요?`,type:'pi',ans:2*rr*rr+2*rr*h,suffix:'cm²',errs:[[rr*rr+2*rr*h,'밑넓이를 한 번만 더했어요. 밑면은 위와 아래 2개예요.']],hint:`(밑넓이) × 2 + (옆넓이) = ${rr*rr}π × 2 + ${2*rr*h}π`,ok:`${2*rr*rr}π + ${2*rr*h}π = ${2*rr*rr+2*rr*h}π`}]}};
 GEN.area=seed=>GEN.areaStep(seed);
 function cylLabels(ctx,v,r,h,lr,lh){const C=v.proj([0,0,h]);const ang=-0.35;const Rp=v.proj([r*Math.cos(ang),r*Math.sin(ang),h]);
   ctx.strokeStyle='#151a28';ctx.lineWidth=2;line(ctx,C,Rp);ctx.beginPath();ctx.arc(C[0],C[1],3.2,0,TAU);ctx.fillStyle='#151a28';ctx.fill();
@@ -1376,25 +1521,30 @@ function viewHome(){
   const D=DB._drill||{},drillToday=D.last===today(),due=dueReviews().length,wait=(DB._rev||[]).length-due,dueN=dueList().length;
   const last=DB._last&&LESSONS.find(l=>l.id===DB._last.id&&l.ready);const lastTab=last?TABS.find(t=>t.id===DB._last.tab)||TABS[0]:null;
   const M=me(),nb=Object.keys(M.badges).length,back=M.pts>0||LESSONS.some(l=>lessonDone(l.id));
+  const G=guideSteps(),gi=G.findIndex(x=>!x.done),gx=G[gi],gn=G.filter(x=>x.done).length;
+  /* 방과후 모드: 한 번이라도 공부한 학생은 '오늘 할 일' 하나만 크게 보여 줘요. 게임은 맨 아래로. */
+  const todayCard=gx?`<section class="card today"><span class="today-k">오늘은 이것부터! · ${gn+1}/${G.length}</span><h1>${gx.t}</h1><p>${gx.s}</p><a class="btn primary today-go" href="${gx.href}">▶ 시작하기</a></section>`
+    :`<section class="card today done"><span class="today-k">오늘 할 일 ${G.length}/${G.length}</span><h1>오늘 할 일을 다 했어요! 🎉</h1><p>더 하고 싶으면 연습 문제나 게임을 해 봐요.</p><a class="btn primary today-go" href="#me">내 기록 보기</a></section>`;
   app.innerHTML=`
-  <section class="hero ${back?'compact':''}">
+  ${back?todayCard:`<section class="hero ${back?'compact':''}">
     <div>
       <h1>수업에서 배운 것을<br><span class="mark">한 걸음씩</span> 다시.</h1>
       <p>모르는 낱말은 눌러서 바로 확인하고, 그림은 직접 돌려 보고, 어려운 문제는 단계로 나누어 풀어요.</p>
       <p style="margin-top:18px"><a class="btn primary" href="${UNIT_HASH}">${UI_.start}</a></p>
     </div>
     <div>${UNIT_ID==="solid"?'<div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div>':`<div class="hero-fig svgfig">${typeof heroArt==="function"?heroArt():""}</div>`}</div>
-  </section>
+  </section>`}
   <div class="card guide" id="guide">${guideHTML()}</div>
+  <div class="sec-title"><h2>1학년 단원</h2><span>지금은 ${UI_.name} 단원을 열어 두었어요 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*4}</span></div>
+  <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="${UNIT_HASH}"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · ${LESSONS.filter(l=>l.ready).length}개 차시 →</span></a>`:'').join('')}</div>
+  <p class="units-soon">준비 중인 단원: ${UNITS.filter(x=>!x[1]).map(x=>x[0]).join(' · ')}</p>
+  <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
+  <div class="calc-strip">${homeCalcChips()}</div>
   <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
   <div class="game-row${STANDALONE?' solo':''}"><div class="card mis-card" id="misCard">${missionCardHTML()}</div>${STANDALONE?'':`<div class="card boss-card" id="bossCard">${bossCardHTML()}</div>`}</div>
   ${STANDALONE?'':`<a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>`}
-  <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
-  <div class="calc-strip">${homeCalcChips()}</div>
-  <div class="sec-title"><h2>1학년 단원</h2><span>지금은 ${UI_.name} 단원을 열어 두었어요 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*4}</span></div>
-  <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="${UNIT_HASH}"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · ${LESSONS.filter(l=>l.ready).length}개 차시 →</span></a>`:'').join('')}</div>
-  <p class="units-soon">준비 중인 단원: ${UNITS.filter(x=>!x[1]).map(x=>x[0]).join(' · ')}</p>`;
-  if(UNIT_ID==='solid'){const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk())}
+`;
+  if(UNIT_ID==='solid'&&$('#heroCv')){const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk())}
   if(isStudent())loadClass();
 }
 function viewMe(){
@@ -1422,7 +1572,7 @@ function viewReview(){
     if(!L.length){host.innerHTML=`<div class="feedback ok">오늘 복습할 문제를 모두 풀었어요! ${(DB._rev||[]).length?`나머지 ${(DB._rev||[]).length}문제는 정해진 날에 다시 나와요.`:''}</div><div class="next-row" style="justify-content:flex-start"><a class="btn" href="#home">처음 화면으로</a></div>`;return}
     const item=L[0],prob=GEN[item.g](item.seed),L0=LESSONS.find(l=>l.id===item.lid);
     prob.title=`<span class="rv-from">${L0?L0.no+'차시 '+L0.title+' · ':''}${item.stage+1}번째 복습</span><br>`+prob.title;
-    renderProblem(host,prob,{mode:'final',onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);dayBump('review');logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
+    renderProblem(host,prob,{mode:'final',lesson:item.lid||'',onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);dayBump('review');logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
       if(ok){bump('review');award(5)}else award(1);
       box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?(item.stage>=3?'졸업! 이 문제는 이제 나오지 않아요.':`한 번에 맞혔어요. ${[1,3,7][item.stage]}일 뒤에 한 번 더 나와요.`):'헷갈렸던 문제예요. 내일 다시 나와요.'}</span>`);
       const nb=el('<button type="button" class="btn primary">다음 →</button>');nb.onclick=next;box.appendChild(nb);stats()}})}
@@ -1451,7 +1601,7 @@ function viewLesson(id,tab){
   $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
   const body=$('#tabBody');
   const nextBtn=(label,to)=>`<div class="next-row"><a class="btn primary" href="#${id}-${to}">${label} →</a></div>`;
-  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('beforeend',nextBtn('탐구하러 가기','explore'));p.concept=true;save();award(5,'concept:'+id)}
+  if(tab==='concept'){CONCEPT[id](body);conceptVideo(body,id);body.insertAdjacentHTML('beforeend',nextBtn('탐구하러 가기','explore'));p.concept=true;save();award(5,'concept:'+id)}
   if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('단계 문제 풀기','steps'));p.explore=true;save()}
   DB._last={id,tab};save();
   if(tab==='steps')viewSteps(body,id);
@@ -1465,8 +1615,8 @@ function viewSteps(body,id){
     <button type="button" class="btn ghost" id="newProb" style="margin-left:auto">다른 숫자로 다시</button></div><div id="probHost"></div></div></div>`);
   body.appendChild(wrap);
   const SG={poly:'polyStep',types:'typesStep',area:'areaStep',regular:'regularStep'}[id]||(GEN[id+'Step']?id+'Step':id);
-  const go=()=>{const seed=newSeed(),prob=GEN[SG](seed);renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요. 내일 다시 나와요.</span>')}
-    const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn">하나 더</button><a class="btn primary" href="#${id}-practice">연습하러 가기 →</a></span>`);$('button',nb).onclick=go;box.appendChild(nb)}})};
+  const go=()=>{const seed=newSeed(),prob=GEN[SG](seed);renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,lesson:id,onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요. 내일 다시 나와요.</span>')}
+    const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn${good?'':' primary'}">${good?'하나 더':'비슷한 문제 하나 더'}</button><a class="btn primary" href="#${id}-practice">연습하러 가기 →</a></span>`);$('button',nb).onclick=go;box.appendChild(nb)}})};
   $('#newProb',wrap).onclick=go;go();
 }
 function viewPractice(body,id){
@@ -1483,7 +1633,7 @@ function viewPractice(body,id){
     if(ri_>=0){seed=P.retry[ri_].seed;P.retry.splice(ri_,1);isRetry=true}else seed=newSeed();
     const prob=GEN[id](seed);
     if(isRetry)prob.title+='<span class="retry-tag">다시 도전</span>';
-    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
+    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',lesson:id,ga:P.solved<8,onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
       logAttempt({lesson:id,kind:'practice',good,wrongs,mode,gen:id,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('prac');if(good&&wrongs===0)dayBump('clean');
       P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(id,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
       if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else if(prob.steps.length>1&&!usedSteps){P.streak++}else{P.streak++}}
@@ -1492,6 +1642,72 @@ function viewPractice(body,id){
   }
   upd();next();
 }
+
+
+/* ───────── 개념 영상: 움직이는 그림 + 톡톡 튀는 자막 (소리 없음) ─────────
+   장면 = {show:무엇을 보여 줄지, cap:'자막 (**강조**)', ms:길이}
+   show: {solid:'SOLIDS 키', hl:'강조'} 또는 {unfold:'UNF 키', hold:true(펼친 채로)} */
+const VIDEOS={
+  poly:[
+    {show:{solid:'cube',hl:'A'},cap:'**다각형**으로만 둘러싸인 입체도형을 **다면체**라고 해요 🧊',ms:5200},
+    {show:{solid:'p5',hl:'A'},cap:'오각기둥도 면이 모두 다각형! → **다면체** ✅',ms:4600},
+    {show:{solid:'cyl'},cap:'원기둥은 옆면이 **굽은 면**이에요 😮 → 다면체가 **아니에요** ❌',ms:5200},
+    {show:{solid:'p3',hl:'all'},cap:'면이 **5개**면 **오면체** ✋',ms:4400},
+    {show:{solid:'cube',hl:'all'},cap:'면이 **6개**면 **육면체** 🎲',ms:4400},
+    {show:{solid:'y4',hl:'E'},cap:'면과 면이 만나는 선분은 **모서리** ✏️',ms:4600},
+    {show:{solid:'y4',hl:'V:4'},cap:'모서리와 모서리가 만나는 점은 **꼭짓점** 📍',ms:4600}],
+  types:[
+    {show:{solid:'p5',hl:'base'},cap:'위아래 **두 밑면**이 평행하고 모양이 같아요',ms:4800},
+    {show:{solid:'p5',hl:'side'},cap:'옆면이 모두 **직사각형** → **각기둥** 🏢',ms:4600},
+    {show:{solid:'y4',hl:'base'},cap:'밑면이 **하나**, 위는 뾰족한 꼭짓점',ms:4400},
+    {show:{solid:'y4',hl:'side'},cap:'옆면이 모두 **삼각형** → **각뿔** 🔺',ms:4400},
+    {show:{solid:'f4',hl:'side'},cap:'각뿔을 잘라 낸 아랫부분은 **각뿔대**, 옆면은 **사다리꼴** ✂️',ms:5400},
+    {show:{solid:'p6',hl:'base'},cap:'이름은 **밑면 모양**으로! 밑면이 육각형 → **육각기둥** 🏷️',ms:5200}],
+  regular:[
+    {show:{solid:'tet',hl:'A'},cap:'모든 면이 **합동인 정다각형**이고…',ms:4400},
+    {show:{solid:'cube',hl:'V:top'},cap:'한 꼭짓점에 모인 면의 개수가 **모두 같으면** → **정다면체** ⭐',ms:5400},
+    {show:{solid:'tet',hl:'all'},cap:'정사면체: 정**삼**각형 **4**개 🔺',ms:3800},
+    {show:{solid:'cube',hl:'all'},cap:'정육면체: 정**사**각형 **6**개 🎲',ms:3800},
+    {show:{solid:'oct',hl:'all'},cap:'정팔면체: 정**삼**각형 **8**개 💎',ms:3800},
+    {show:{solid:'dod',hl:'all'},cap:'정십이면체: 정**오**각형 **12**개 ⚽',ms:3800},
+    {show:{solid:'ico',hl:'all'},cap:'정이십면체: 정**삼**각형 **20**개 🎯',ms:3800},
+    {show:{solid:'ico'},cap:'정다면체는 딱 **다섯 가지**뿐이에요! 🖐️',ms:4600}],
+  area:[
+    {show:{solid:'p3',hl:'all'},cap:'**겉넓이** = 겉면 **전체의 넓이** 📦',ms:4600},
+    {show:{unfold:'box'},cap:'쫙 펼치면… **전개도**! 🗺️',ms:5200},
+    {show:{unfold:'box',hold:true},cap:'밑면은 위아래 **2개** (파란 면)',ms:4600},
+    {show:{unfold:'box',hold:true},cap:'옆면은 **직사각형** 하나! 가로 = **밑면의 둘레**, 세로 = **높이**',ms:5600},
+    {show:{unfold:'box',hold:true},cap:'**겉넓이 = 밑넓이 × 2 + 옆넓이** ✨',ms:5200},
+    {show:{unfold:'cyl'},cap:'원기둥도 똑같이! 옆면의 가로 = **원의 둘레** 🥫',ms:5600}]
+};
+function capHTML(t){let k=0;return t.split(/(\*\*[^*]+\*\*)/).filter(Boolean).flatMap(seg=>{const em=/^\*\*/.test(seg),txt=em?seg.slice(2,-2):seg;
+  return txt.split(/(\s+)/).filter(x=>x!=='').map(w=>/^\s+$/.test(w)?w:`<span class="vw${em?' em':''}${/\p{Extended_Pictographic}/u.test(w)?' emo':''}" style="animation-delay:${(k++)*0.16}s">${w}</span>`)}).join('')}
+function conceptVideo(host,id){const SC=VIDEOS[id];if(!SC)return;
+  const total=SC.reduce((a,s)=>a+s.ms,0);
+  const box=el(`<div class="card vid"><div class="vid-stage"><canvas aria-label="개념 영상 그림"></canvas><div class="vid-cap" aria-live="polite"></div>
+    <button type="button" class="vid-big" aria-label="영상 보기"><span>▶</span><b>개념 영상 ${Math.round(total/1000)}초</b><small>소리 없이 자막으로 봐요</small></button></div>
+    <div class="vid-bar"><button type="button" class="vid-pp" aria-label="재생">▶</button><div class="vid-dots">${SC.map((s,i)=>`<button type="button" class="vid-dot" data-i="${i}" aria-label="${i+1}번째 장면"></button>`).join('')}</div><button type="button" class="vid-re" aria-label="처음부터">↻</button></div></div>`);
+  host.prepend(box);
+  const stage=$('.vid-stage',box),capEl=$('.vid-cap',box);
+  let i=0,playing=false,timer=null,started=0,left=0,view=null;
+  function setScene(k,anim){i=k;const s=SC[k],sh=s.show;
+    $$('.vid-dot',box).forEach((d,j)=>{d.classList.toggle('on',j===k);d.classList.toggle('done',j<k)});
+    capEl.innerHTML=`<span class="vid-capin">${capHTML(s.cap)}</span>`;if(!anim)capEl.classList.add('still');else capEl.classList.remove('still');
+    const old=$('canvas',stage),cv=el('<canvas aria-label="개념 영상 그림"></canvas>');old.replaceWith(cv);
+    if(sh.unfold){const N=UNF[sh.unfold];const U=unfoldViewer(cv,{shape:Object.assign({perimLabel:'밑면의 둘레',hLabel:'높이'},N),t:sh.hold||!anim?1:0,pad:0.44});
+      U.v.tick=()=>{if(U.t<1&&playing){U.t=Math.min(1,U.t+(reduced?1:0.012));U.v.dirty=true}};view=U.v}
+    else{const m=SOLIDS[sh.solid].mk();const v=new Viewer(cv,{auto:anim,yaw:-0.5,pitch:0.42,pad:0.36});v.setScene([{mesh:m,st:{tint:[236,239,245]}}]);
+      let hl=sh.hl;if(hl==='V:top')hl='V:'+topVertex(m);if(hl)applyHl(v,m,hl);view=v}}
+  function run(ms){clearTimeout(timer);{const d=$$('.vid-dot',box)[i];d.style.setProperty('--d',ms+'ms');d.classList.remove('on');void d.offsetWidth;d.classList.add('on')}started=performance.now();left=ms;timer=setTimeout(()=>{if(i<SC.length-1){setScene(i+1,true);run(SC[i].ms)}else stop(true)},ms)}
+  function play(){if(playing)return;playing=true;box.classList.add('playing');box.classList.remove('ended');$('.vid-pp',box).textContent='❚❚';$('.vid-pp',box).setAttribute('aria-label','멈춤');
+    if(view)view.auto=!reduced;if(left>0&&left<SC[i].ms){capEl.classList.add('still');run(left)}else{setScene(i,true);run(SC[i].ms)}}
+  function stop(end){playing=false;clearTimeout(timer);left=end?0:Math.max(0,left-(performance.now()-started));if(view)view.auto=false;box.classList.remove('playing');$('.vid-pp',box).textContent='▶';$('.vid-pp',box).setAttribute('aria-label','재생');
+    if(end){box.classList.add('ended');i=0;award(2,'video:'+id)}}
+  $('.vid-big',box).onclick=()=>{box.classList.add('started');play()};
+  $('.vid-pp',box).onclick=()=>{box.classList.add('started');playing?stop():play()};
+  $('.vid-re',box).onclick=()=>{box.classList.add('started');stop();left=0;setScene(0,true);play()};
+  $$('.vid-dot',box).forEach(d=>d.onclick=()=>{box.classList.add('started');const k=+d.dataset.i;stop();left=0;setScene(k,true);play()});
+  setScene(0,false)}
 
 /* ───────── 개념 카드 ───────── */
 const CONCEPT={};
@@ -2066,20 +2282,20 @@ EXPLORE.regular=body=>{
 /* 단계 문제와 연습 */
 GEN.regularStep=seed=>{const r=mulberry(seed);const kind=pick(r,['edge','vertex','floor']);
   if(kind==='floor'){const rk=pick(r,['cube','oct','dod','ico']),R=REG.find(x=>x.k===rk),m=SOLIDS[R.k].mk(),fl=REG_FLOOR[R.k].split('+').length;
-    return{ptype:'regular:floor',title:`다음 ${R.nm}의 꼭짓점의 개수를 구하시오.`,fig:solidFig(m),finalQ:'꼭짓점은 모두 몇 개인가요?',steps:[
+    return{ptype:'regular:floor',title:`다음 ${R.nm}의 꼭짓점의 개수를 구하시오.`,ga:{parts:[['다음',null],[`${R.nm}의`,'k'],['꼭짓점의 개수를','f'],['구하시오.',null]]},fig:solidFig(m),finalQ:'꼭짓점은 모두 몇 개인가요?',steps:[
       {tag:'몇 층 건물인지 찾기',hl:'Fv',q:'꼭짓점을 같은 높이끼리 묶으면 몇 층 건물인가요?',type:'choice',choices:['2층','3층','4층'],ans:fl+'층',hint:'같은 색 꼭짓점이 한 층이에요. 그림을 돌려서 높이를 비교해 보세요.'},
       {tag:'층마다 꼭짓점 세기',hl:'Fv',q:'위층부터 차례로 꼭짓점의 개수를 쓰면?',type:'choice',mathChoices:true,choices:shuffle(r,[REG_FLOOR[R.k],...REG_FLOOR_X[R.k]]),ans:REG_FLOOR[R.k],hint:'한 층씩 같은 색 점을 세어 보세요.'},
       {tag:'층별 개수 더하기',hl:'Fv',q:'꼭짓점은 모두 몇 개인가요?',type:'num',ans:R.V,suffix:'개',hint:`${REG_FLOOR[R.k].replace(/\+/g,' + ')}`,ok:`${R.nm}의 꼭짓점은 ${R.V}개예요.`}]}}
   const rk=pick(r,['cube','oct','dod','ico']),R=REG.find(x=>x.k===rk),m=SOLIDS[R.k].mk(),opts=['정삼각형','정사각형','정오각형'],sides=R.F*R.n;
   const head=[{tag:'면의 모양 찾기',hl:'A',q:`${R.nm}의 면은 어떤 ${T('정다각형')}인가요?`,type:'choice',choices:opts,ans:R.face,hint:'면 하나의 변을 세어 보세요.'},
-    {tag:'면의 개수',q:'면은 모두 몇 개인가요?',type:'num',ans:R.F,suffix:'개',hint:`이름에 답이 있어요. ${R.nm} → ${kn(R.F)}면체`},
+    {tag:'면의 개수',q:'면은 모두 몇 개인가요?',type:'num',ans:R.F,suffix:'개',errs:[[R.V,'꼭짓점의 개수예요. 면을 세어요.'],[R.E,'모서리의 개수예요. 면을 세어요.']],hint:`이름에 답이 있어요. ${R.nm} → ${kn(R.F)}면체`},
     {tag:kind==='edge'?'모든 면의 변 세기 (면 × 변)':'모든 면의 꼭짓점 세기 (면 × 꼭짓점)',q:`면을 하나씩 떼어 놓고 ${kind==='edge'?'변':'꼭짓점'}을 모두 세면 몇 개인가요?`,type:'num',ans:sides,suffix:'개',hint:`면 ${R.F}개 × ${R.face}의 ${kind==='edge'?'변':'꼭짓점'} ${R.n}개`}];
-  if(kind==='edge')return{ptype:'regular:edge',title:`다음 ${R.nm}의 모서리의 개수를 구하시오.`,fig:solidFig(m),finalQ:'모서리는 모두 몇 개인가요?',steps:[...head,
-    {tag:'겹쳐 센 것 나누기 (÷ 2)',hl:'E',q:'모서리 하나에서 면이 2개씩 만나요. 모서리는 몇 개인가요?',type:'num',ans:R.E,suffix:'개',hint:`모서리를 두 번씩 셌어요. ${sides} ÷ 2`,ok:`${sides} ÷ 2 = ${R.E}, 모서리는 ${R.E}개예요.`}]};
+  if(kind==='edge')return{ptype:'regular:edge',title:`다음 ${R.nm}의 모서리의 개수를 구하시오.`,ga:{parts:[['다음',null],[`${R.nm}의`,'k'],['모서리의 개수를','f'],['구하시오.',null]]},fig:solidFig(m),finalQ:'모서리는 모두 몇 개인가요?',steps:[...head,
+    {tag:'겹쳐 센 것 나누기 (÷ 2)',hl:'E',q:'모서리 하나에서 면이 2개씩 만나요. 모서리는 몇 개인가요?',type:'num',ans:R.E,suffix:'개',errs:[[sides,'모서리 하나를 두 번씩 셌어요. 2로 나눠요.']],hint:`모서리를 두 번씩 셌어요. ${sides} ÷ 2`,ok:`${sides} ÷ 2 = ${R.E}, 모서리는 ${R.E}개예요.`}]};
   const t=topVertex(m);
-  return{ptype:'regular:vertex',title:`다음 ${R.nm}의 꼭짓점의 개수를 구하시오.`,fig:solidFig(m),finalQ:'꼭짓점은 모두 몇 개인가요?',steps:[...head,
+  return{ptype:'regular:vertex',title:`다음 ${R.nm}의 꼭짓점의 개수를 구하시오.`,ga:{parts:[['다음',null],[`${R.nm}의`,'k'],['꼭짓점의 개수를','f'],['구하시오.',null]]},fig:solidFig(m),finalQ:'꼭짓점은 모두 몇 개인가요?',steps:[...head,
     {tag:'한 꼭짓점에 모인 면 세기',hl:'V:'+t,q:'색칠한 꼭짓점에 모인 면은 몇 개인가요?',type:'num',ans:R.deg,suffix:'개',hint:'주황색 점 둘레의 칠한 면을 세어 보세요.'},
-    {tag:'겹쳐 센 것 나누기',hl:'Fv',q:'꼭짓점은 모두 몇 개인가요?',type:'num',ans:R.V,suffix:'개',hint:`꼭짓점 하나를 ${R.deg}번씩 셌어요. ${sides} ÷ ${R.deg}`,ok:`${sides} ÷ ${R.deg} = ${R.V}, 꼭짓점은 ${R.V}개예요.`}]}};
+    {tag:'겹쳐 센 것 나누기',hl:'Fv',q:'꼭짓점은 모두 몇 개인가요?',type:'num',ans:R.V,suffix:'개',errs:[[sides,`꼭짓점 하나를 ${R.deg}번씩 셌어요. ${R.deg}로 나눠요.`],[sides/2,`2로 나눴어요. 한 꼭짓점에 모인 면은 ${R.deg}개라서 ${R.deg}로 나눠요.`]],hint:`꼭짓점 하나를 ${R.deg}번씩 셌어요. ${sides} ÷ ${R.deg}`,ok:`${sides} ÷ ${R.deg} = ${R.V}, 꼭짓점은 ${R.V}개예요.`}]}};
 const REG_TF={t:['정다면체는 다섯 가지뿐이다.','정육면체의 면은 모두 정사각형이다.','정팔면체의 한 꼭짓점에 모인 면은 4개이다.','정십이면체의 면은 정오각형이다.','정사면체의 모서리는 6개이다.','정이십면체의 꼭짓점은 12개이다.','면의 모양이 정삼각형인 정다면체는 세 가지이다.','정십이면체와 정이십면체는 모서리의 개수가 같다.'],
   f:[['정이십면체의 면은 정오각형이다.','정이십면체의 면은 정삼각형이에요.'],['정육면체의 한 꼭짓점에 모인 면은 4개이다.','정육면체는 한 꼭짓점에 면이 3개 모여요.'],['면의 모양이 정육각형인 정다면체도 있다.','정육각형 3개를 모으면 120° × 3 = 360°라서 평평해져요.'],['정팔면체의 꼭짓점은 8개이다.','정팔면체의 꼭짓점은 6개예요. (1 + 4 + 1)'],['정사면체의 면은 정사각형이다.','정사면체의 면은 정삼각형이에요.'],['모든 면이 합동인 정삼각형이면 항상 정다면체이다.','삼각쌍뿔처럼 꼭짓점마다 모인 면의 개수가 다르면 정다면체가 아니에요.']]};
 const CIRC=['①','②','③','④','⑤'];
@@ -2169,7 +2385,12 @@ const MOCK=(()=>{
       S.attempts.forEach(a=>{if(a.mode!=='steps'||!a.step_wrongs||Date.parse(a.created_at)<=since)return;a.step_wrongs.forEach((w,i)=>{const k=a.lesson+'|'+a.ptype+'|'+(i+1);
         const x=g[k]=g[k]||{lesson:a.lesson,ptype:a.ptype,gen:a.gen,seed:a.seed,step:i+1,n:0,wrong:0,revealed:0};x.n++;if(w>0)x.wrong++;if(a.revealed&&a.revealed[i]>0)x.revealed++})});
       return Object.values(g).sort((a,b)=>a.lesson.localeCompare(b.lesson)||String(a.ptype).localeCompare(String(b.ptype))||a.step-b.step)},
-    hg_t_student_attempts({p_token,p_sid,p_limit}){needT(p_token);return S.attempts.filter(a=>a.sid===p_sid).slice(-(p_limit||40)).reverse()}};
+    hg_t_student_attempts({p_token,p_sid,p_limit}){needT(p_token);return S.attempts.filter(a=>a.sid===p_sid).slice(-(p_limit||40)).reverse()},
+    hg_help_request({p_token,p_lesson,p_place,p_q}){const sid=sidOf(p_token);S.help=S.help||[];S.hseq=(S.hseq||0)+1;
+      if(S.help.some(h=>h.sid===sid&&Date.now()-Date.parse(h.created_at)<6e4))return{ok:true,skipped:true};
+      S.help.push({id:S.hseq,sid,lesson:String(p_lesson||'').slice(0,20),place:p_place||null,question:p_q||null,created_at:nowISO(),done_at:null});S.help=S.help.slice(-300);return{ok:true}},
+    hg_t_help({p_token,p_grade,p_klass}){needT(p_token);const since=Date.now()-3*36e5;return(S.help||[]).filter(h=>!h.done_at&&Date.parse(h.created_at)>since).map(h=>{const st=S.students[h.sid]||{};return Object.assign({grade:st.grade,klass:st.klass,num:st.num},h)}).filter(h=>h.num&&(p_grade==null||h.grade===p_grade)&&(p_klass==null||h.klass===p_klass))},
+    hg_t_help_done({p_token,p_id}){needT(p_token);(S.help||[]).forEach(h=>{if(!h.done_at&&(p_id==null||h.id===p_id))h.done_at=nowISO()});return{ok:true}}};
 
   /* 숫자야구 (체험 모드: 방을 만들면 3초 뒤 체험용 친구가 들어와 같이 해요) */
   const BBX=()=>{S.bb=S.bb||{games:[],guesses:[],ledger:[],seq:1};S.bbconf=S.bbconf||{};return S.bb};
@@ -2422,6 +2643,7 @@ function viewTeacher(){
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   const ready=LESSONS.filter(l=>l.ready);
   app.innerHTML=`<div class="unit-head"><div><h1>교사 화면</h1><p>학생 이름은 저장하지 않아요. 학년·반·번호와 학습 기록만 보여요.</p></div><div class="next-row" style="margin:0"><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
+   <div class="card panel tHelp"><div class="t-head"><h2>🙋 도움이 필요한 학생 <span class="t-help-n"></span></h2><span class="t-tools"><button type="button" class="btn ghost tHelpAll" hidden>모두 도와줬어요</button></span></div><div class="tHelpBody"><p class="muted" style="margin:0">불러오는 중…</p></div></div>
    <div class="card panel"><div class="t-head"><h2>학급 현황</h2><span class="t-tools"><label class="t-sel">반 <select class="inp sel tClass" aria-label="반 고르기"></select></label><button type="button" class="btn ghost tCsv">엑셀로 받기</button></span></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
     <div class="tablewrap"><table class="t t-roster"><thead><tr><th>번호</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th><th>관리</th></tr></thead><tbody class="tRows"></tbody></table></div>
     <p class="muted tEmpty" hidden>아직 학생이 없어요. 아래 ‘학생 만들기’에서 번호와 비밀번호를 만들어 주세요.</p><p class="muted" style="font-size:14px;margin-bottom:0">번호를 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div>
@@ -2437,6 +2659,20 @@ function viewTeacher(){
   const fail=e=>{if(isAuthErr(e)){tSet(null);toast('교사 로그인이 끝났어요. 다시 로그인해 주세요.');viewTeacher();return true}toast(e.message);return false};
   async function loadRoster(){try{ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[];renderRoster()}catch(e){fail(e)}}
   async function loadStats(){try{renderStats(await API.call('hg_t_step_stats',{p_token:tTok(),p_days:days})||[])}catch(e){fail(e)}}
+  /* 🙋 도움 알림: 학생이 한 단계에서 3번 틀리면 여기에 떠요. 10초마다 새로 봐요. */
+  let helpSeen=null,helpOff=false;
+  async function loadHelp(){const box=$('.tHelp',app);if(!box||!box.isConnected||helpOff)return;const body=$('.tHelpBody',box);
+    const one=klassSel&&/^\d+-\d+$/.test(klassSel)?klassSel.split('-').map(Number):[null,null];
+    try{const H=await API.call('hg_t_help',{p_token:tTok(),p_grade:one[0],p_klass:one[1]})||[];
+      const fresh=helpSeen?H.filter(h=>!helpSeen.has(h.id)):[];helpSeen=new Set(H.map(h=>h.id));
+      if(fresh.length)toast(`🙋 ${fresh.map(h=>`${h.grade}-${h.klass} ${h.num}번`).join(', ')} 학생이 도움을 기다려요.`);
+      $('.t-help-n',box).textContent=H.length?`(${H.length})`:'';box.classList.toggle('on',!!H.length);$('.tHelpAll',box).hidden=H.length<2;
+      body.innerHTML=H.length?`<ul class="t-help">${H.map(h=>`<li class="${fresh.some(f=>f.id===h.id)?'new':''}"><b>${h.grade}-${h.klass} ${h.num}번</b><span>${esc(h.place||h.lesson)}${h.question?`<small>${esc(h.question)}</small>`:''}</span><span class="t-ago">${relTime(h.created_at)}</span><button type="button" class="t-mini t-hdone" data-id="${h.id}">도와줬어요</button></li>`).join('')}</ul>`
+        :'<p class="muted" style="margin:0">지금은 없어요. 학생이 한 단계에서 3번 틀리면 여기에 바로 떠요.</p>';
+      $$('.t-hdone',body).forEach(b=>b.onclick=async()=>{b.disabled=true;try{await API.call('hg_t_help_done',{p_token:tTok(),p_id:+b.dataset.id})}catch(e){fail(e)}loadHelp()})}
+    catch(e){if(isMissingFn(e)){helpOff=true;$('.t-tools',box).hidden=true;body.innerHTML=`<p style="margin:0">도움 알림을 켜려면 Supabase 대시보드 → <b>SQL Editor</b> → New query에 저장소의 <code>supabase/help.sql</code> 내용을 붙여 넣고 <b>Run</b> 해 주세요. 한 번만 하면 돼요.</p>`}else fail(e)}}
+  {const tick=()=>{if(!$('.tHelp',app)||!$('.tHelp',app).isConnected)return;if(!document.hidden)loadHelp();setTimeout(tick,10000)};setTimeout(tick,10000)}
+  $('.tHelpAll',app).onclick=async()=>{try{await API.call('hg_t_help_done',{p_token:tTok(),p_id:null})}catch(e){fail(e)}loadHelp()};
   const curList=()=>ROSTER.filter(s=>klassSel==='all'||`${s.grade}-${s.klass}`===klassSel);
   function classes(){const m=new Map();ROSTER.forEach(s=>m.set(`${s.grade}-${s.klass}`,{g:s.grade,k:s.klass}));return[...m.entries()]}
   function renderRoster(){const sel=$('.tClass',app),C=classes();
@@ -2500,9 +2736,9 @@ function viewTeacher(){
       `<div class="t-stats">${G.map(g=>`<div class="t-stat"><div class="t-stat-h"><b>${PTYPE_NM[g.ptype]||esc(g.ptype)}</b><span class="muted">${g.n}번 풀었어요</span></div><ol>${g.steps.map(st=>{const w=st.n?Math.round(st.wrong/st.n*100):0,rv=st.n?Math.round(st.revealed/st.n*100):0;
         return`<li><span class="sl">(${st.step}) ${esc(label(g,st))}</span><span class="bar" role="img" aria-label="틀림 ${w}%, 정답 확인 ${rv}%"><i class="w" style="width:${w}%"></i><i class="r" style="width:${rv}%"></i></span><span class="pc rm">${w}%</span></li>`}).join('')}</ol></div>`).join('')}</div>
       <p class="muted t-legend"><i class="lw"></i>한 번이라도 틀린 비율 <i class="lr"></i>세 번 틀려서 정답을 확인한 비율</p>`}
-  $('.tClass',app).onchange=e=>{klassSel=e.target.value;lsSet('hangeoreum-t-class',klassSel);renderRoster()};
+  $('.tClass',app).onchange=e=>{klassSel=e.target.value;lsSet('hangeoreum-t-class',klassSel);renderRoster();helpSeen=null;loadHelp()};
   $$('.tDays button',app).forEach(b=>b.onclick=()=>{days=+b.dataset.d;$$('.tDays button',app).forEach(x=>x.classList.toggle('on',x===b));loadStats()});
-  $('.tRefresh',app).onclick=()=>{loadRoster();loadStats()};
+  $('.tRefresh',app).onclick=()=>{loadRoster();loadStats();loadHelp()};
   $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
     const head=['학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>TABS.map(t=>`${l.no}차시 ${t.t}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
     const rows=L.map(s=>{const x=dataSummary(s.data);return[s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.facts,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
@@ -2523,7 +2759,7 @@ function viewTeacher(){
     $('.t-cards',host).onclick=()=>{$('.t-cardhost',host).innerHTML=`<div class="pincards">${list.map(x=>`<div class="pincard"><span class="pc-brand">한 걸음 수학</span><b>${g}학년 ${k}반 ${x.num}번</b><span>비밀번호</span><span class="pc-pin rm">${x.pin}</span><small>학년·반·번호를 고르고 비밀번호를 누르세요</small></div>`).join('')}</div><p><button type="button" class="btn t-print">인쇄하기</button> <span class="muted" style="font-size:14px">인쇄가 안 되면 화면을 캡처해서 나눠 주세요.</span></p>`;
       $('.t-print',host).onclick=()=>{document.body.classList.add('printing-cards');try{window.print()}catch(er){}setTimeout(()=>document.body.classList.remove('printing-cards'),500)}}}
   $('.t-pw',app).onsubmit=async e=>{e.preventDefault();const f=e.target,m=$('.tPMsg',app);try{const r=await API.call('hg_t_change_password',{p_token:tTok(),p_old:f.o.value,p_new:f.n.value});m.textContent=r&&r.ok?'비밀번호를 바꿨어요.':(r&&r.msg)||'바꾸지 못했어요.';if(r&&r.ok)f.reset()}catch(er){fail(er)}};
-  loadRoster();loadStats();
+  loadRoster();loadStats();loadHelp();
 }
 
 
@@ -2982,7 +3218,8 @@ function svgGridRect(a,b){const c=Math.min(30,Math.floor(220/a)),x0=46,y0=12,W=x
   return`<svg class="cfig" viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="한 줄에 ${a}칸씩 ${b}줄인 직사각형">${g}</svg>`}
 const ordFig=parts=>`<div class="ordfig">${parts.map(p=>Array.isArray(p)?`<span class="grp">${M_(p[0])}<small>먼저</small></span>`:M_(p)).join('')}</div>`;
 /* ── 읽어 주기 (그림 + 소리: 글을 읽는 부담 덜기) ── */
-const canSpeak=typeof window!=='undefined'&&'speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
+/* 읽어 주기(TTS)는 껐어요: 기계 목소리 대신 개념 영상의 움직이는 자막으로 봐요. 다시 켜려면 false를 지우세요. */
+const canSpeak=false&&typeof window!=='undefined'&&'speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
 function sayText(h){let s=String(h).replace(/<span class="frs"><span>([^<]*)<\/span><span>([^<]*)<\/span><\/span>/g,' $2분의 $1 ').replace(/<sup>(\d+)<\/sup>⁄<sub>(\d+)<\/sub>/g,' $2분의 $1 ').replace(/\{\?\}/g,' 얼마 ');
   s=stripTags(s);[[/cm²/g,'제곱센티미터'],[/cm³/g,'세제곱센티미터'],[/m²/g,'제곱미터'],[/m³/g,'세제곱미터'],[/mm/g,'밀리미터'],[/cm/g,'센티미터'],[/mL/g,'밀리리터'],[/(\d)\s*m\b/g,'$1 미터'],[/(\d)\s*L\b/g,'$1 리터'],
    [/²/g,'의 제곱'],[/³/g,'의 세제곱'],[/×/g,' 곱하기 '],[/÷/g,' 나누기 '],[/−/g,' 빼기 '],[/\+/g,' 더하기 '],[/=/g,' 는 '],[/π/g,'파이'],[/⅓/g,'3분의 1'],[/½/g,'2분의 1'],[/¾/g,'4분의 3'],[/\?/g,' 얼마 '],[/→/g,', ']].forEach(([a,b])=>{s=s.replace(a,b)});
