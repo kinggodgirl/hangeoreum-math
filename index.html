@@ -1669,7 +1669,7 @@ function viewHome(){
     <div>${UNIT_ID==="solid"?'<div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div>':`<div class="hero-fig svgfig">${typeof heroArt==="function"?heroArt():""}</div>`}</div>
   </section>
   <div class="card guide" id="guide">${guideHTML()}</div>
-  <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#scan" class="pw-scan">📷 점검지 채점</a> · <a href="#me">내 기록 보기</a></span></div>
+  <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
   <div class="game-row${STANDALONE?' solo':''}"><div class="card mis-card" id="misCard">${missionCardHTML()}</div>${STANDALONE?'':`<div class="card boss-card" id="bossCard">${bossCardHTML()}</div>`}</div>
   ${STANDALONE?'':`<a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>`}
   <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
@@ -1797,7 +1797,7 @@ function viewLesson(id,tab){
   if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('혼자 풀기','practice'));p.explore=true;save()}
   DB._last={id,tab};save();
   if(tab==='steps')viewSteps(body,id);
-  if(tab==='practice'){viewPractice(body,id);body.insertAdjacentHTML('beforeend',`<div class="card panel pw-cta"><b>🖨 마지막 점검</b> · 배운 유형을 섞은 <b>인쇄용 학습지</b>로 시험처럼 풀어 봐요. <a class="btn ghost" href="#print-${id}">점검 학습지 만들기 →</a><a class="pw-scan" href="#scan">📷 다 푼 답안지 채점</a></div>`)}
+  if(tab==='practice'){viewPractice(body,id);body.insertAdjacentHTML('beforeend',`<div class="card panel pw-cta"><b>🖨 마지막 점검</b> · 배운 유형을 섞은 <b>인쇄용 학습지</b>로 시험처럼 풀어 봐요. <a class="btn ghost" href="#print-${id}">점검 학습지 만들기 →</a></div>`)}
 }
 const STEPGEN={poly:GEN.polyStep,types:GEN.typesStep,area:GEN.areaStep};
 /* 유형 고르기 화면 (대청 수학 「기초 연습」처럼 카드에서 유형을 골라 들어가요) */
