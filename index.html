@@ -776,7 +776,10 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 /* 점검 학습지 */
 
 .pw-omrp{display:flex;justify-content:center}.omr-card{width:100%;max-width:640px;height:auto;display:block}
-.pw-scan{font-size:12.5px;color:var(--muted,#666);margin-left:10px;white-space:nowrap}.sec-title .pw-scan{margin-left:0}
+.rep-row{text-align:right;margin-top:6px}.rep-btn{background:none;border:0;padding:4px 2px;font-size:12px;color:var(--muted,#888);cursor:pointer;text-decoration:underline;text-underline-offset:2px;opacity:.75}
+.rep-btn:hover{opacity:1}.rep-box{text-align:left;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:4px;font-size:14px}.rep-box .chips{margin:6px 0}.rep-box .inp{width:100%;margin:4px 0 8px}
+.rep-act{display:flex;gap:6px}.rep-ok{text-align:left;font-size:13px;color:var(--muted,#666);margin-top:4px}
+.t-rep{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0;font-size:14px}.t-rep.done{opacity:.55}.t-rnote{margin:4px 0}.t-rctx{font-size:12.5px;margin:2px 0 6px}.t-ract{display:flex;gap:6px;flex-wrap:wrap}.t-rprob{margin-top:8px}
 .omr-shot{margin:4px 8px 4px 0}.omr-out{margin-top:12px}.omr-photo{width:100%;max-width:520px;display:block;margin:0 auto 10px;border-radius:8px;border:1px solid var(--line)}
 .omr-err{padding:12px;border-radius:10px;background:#fef2f2;color:#991b1b}
 .omr-score{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:6px 0}.omr-big{font-size:44px;font-weight:800;line-height:1}.omr-big small{font-size:20px;color:var(--muted,#666)}
@@ -1492,6 +1495,24 @@ function check(step,v){
 function fmtAns(step){if(step.type==='sn')return(step.ansText||sgnTxt(step.ans))+(step.suffix?' '+step.suffix:'');if(step.suffix&&/^각/.test(step.suffix))return kn(step.ans)+step.suffix;if(step.type==='pi')return(step.ans===1?'':step.ans)+'π'+(step.suffix?' '+step.suffix:'');return step.ans+(step.suffix?' '+step.suffix:'')}
 
 /* ───────── 단계 문제 화면 ───────── */
+/* ───────── 문제 신고 (학생) ─────────
+   문제 아래 작은 글자 링크 하나만 보여요. 누르면 이유를 고르고 보내요. 서버 함수: supabase/report.sql */
+const REP_WHY=['정답이 이상해요','그림이 이상해요','문제가 이해 안 돼요','기타'];
+const repCtx=(root,cur)=>{const q=$('.prob-q',root),st=$$('.steps > li',root)[cur];return((q?q.innerText:'')+(st?' ｜ '+st.innerText:'')).replace(/\s+/g,' ').trim().slice(0,400)};
+function repMount(root,prob,rep,getCur){
+  const row=el(`<div class="rep-row"><button type="button" class="rep-btn">⚑ 문제가 이상해요</button></div>`);root.appendChild(row);
+  $('.rep-btn',row).onclick=()=>{let why=null;
+    row.innerHTML=`<div class="rep-box"><div class="rep-t">어떤 점이 이상한가요? <span class="muted">선생님께 전달돼요.</span></div>
+      <div class="chips">${REP_WHY.map(w=>`<button type="button" class="chip rep-w">${w}</button>`).join('')}</div>
+      <input class="inp rep-note" maxlength="200" placeholder="더 알려 줄 것이 있으면 적어요 (선택)">
+      <div class="rep-act"><button type="button" class="btn primary t-mini rep-send" disabled>보내기</button><button type="button" class="btn ghost t-mini rep-x">취소</button></div></div>`;
+    $$('.rep-w',row).forEach(b=>b.onclick=()=>{why=b.textContent;$$('.rep-w',row).forEach(x=>x.classList.toggle('on',x===b));$('.rep-send',row).disabled=false});
+    $('.rep-x',row).onclick=()=>{row.remove();repMount(root,prob,rep,getCur)};
+    $('.rep-send',row).onclick=async()=>{const b=$('.rep-send',row);b.disabled=true;const cur=getCur();
+      try{await API.call('hg_report',{p_token:isStudent()?AUTH.token:null,p_lesson:String(rep.lesson||'etc').slice(0,20),p_gen:rep.gen||null,p_seed:rep.seed??null,p_ptype:prob.ptype||null,
+          p_step:cur,p_reason:why,p_note:$('.rep-note',row).value.trim()||null,p_ctx:repCtx(root,cur)});
+        row.innerHTML='<div class="rep-ok">고마워요! 선생님께 전달했어요. 이 문제는 넘어가도 괜찮아요.</div>'}
+      catch(e){if(isAuthErr&&isAuthErr(e))authExpired();row.innerHTML=`<div class="rep-ok">${isMissingFn(e)?'아직 신고를 받을 준비가 안 됐어요. 선생님께 말로 알려 주세요.':'보내지 못했어요. 잠시 뒤에 다시 해 주세요.'}</div>`}}}}
 function renderProblem(host,prob,opt={}){
   let mode=(opt.mode==='final'&&prob.steps.length>1)?'final':'steps';
   let usedSteps=mode==='steps',revealed=false;
@@ -1511,6 +1532,7 @@ function renderProblem(host,prob,opt={}){
       else{netU=null;mkFig(cv);syncHl();nb.textContent='전개도로 펼쳐 보기'}}}
   const ol=$('.steps',root),tail=$('.tail',root);
   let cur=0,tries=0,wrongs=0,sw=[],rv=[];
+  if(opt.rep&&!opt.worked)repMount(root,prob,opt.rep,()=>cur);
   function syncHl(){if(svgFig){if(vis&&prob.fig.step){const box=$('.prob-fig',root);if(box)box.innerHTML=prob.fig.svg(vis,cur)}return}if(!vis||!fv||netU)return;const S=list();const st=S[Math.min(cur,S.length-1)];applyHl(fv,prob.fig.mesh,cur>=S.length?(prob.endHl||st.hl):st.hl)}
   function revealAfter(){if(!vis||!prob.figAfter||cur<prob.figAfter.at||$('.prob-fig',root))return;
     const box=el(`<div class="prob-fig"><canvas aria-label="찾은 입체도형"></canvas><div class="fighint">${prob.figAfter.cap}</div></div>`);$('.prob-body',root).prepend(box);$('.prob-body',root).classList.remove('nofig');
@@ -1647,7 +1669,7 @@ function viewHome(){
     <div>${UNIT_ID==="solid"?'<div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div>':`<div class="hero-fig svgfig">${typeof heroArt==="function"?heroArt():""}</div>`}</div>
   </section>
   <div class="card guide" id="guide">${guideHTML()}</div>
-  <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#scan" class="pw-scan">📷 점검지 채점</a> · <a href="#me">내 기록 보기</a></span></div>
+  <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
   <div class="game-row${STANDALONE?' solo':''}"><div class="card mis-card" id="misCard">${missionCardHTML()}</div>${STANDALONE?'':`<div class="card boss-card" id="bossCard">${bossCardHTML()}</div>`}</div>
   ${STANDALONE?'':`<a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>`}
   <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
@@ -1683,7 +1705,7 @@ function viewReview(){
     if(!L.length){host.innerHTML=`<div class="feedback ok">오늘 복습할 문제를 모두 풀었어요! ${(DB._rev||[]).length?`나머지 ${(DB._rev||[]).length}문제는 정해진 날에 다시 나와요.`:''}</div><div class="next-row" style="justify-content:flex-start"><a class="btn" href="#home">처음 화면으로</a></div>`;return}
     const item=L[0],prob=GEN[item.g](item.seed),L0=LESSONS.find(l=>l.id===item.lid);
     prob.title=`<span class="rv-from">${L0?L0.no+'차시 '+L0.title+' · ':''}${item.stage+1}번째 복습</span><br>`+prob.title;
-    renderProblem(host,prob,{mode:'final',onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);dayBump('review');logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
+    renderProblem(host,prob,{mode:'final',rep:{lesson:item.lid||LESSON_OF[item.g]||'review',gen:item.g,seed:item.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);dayBump('review');logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
       if(ok){bump('review');award(5)}else award(1);
       box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?(item.stage>=3?'졸업! 이 문제는 이제 나오지 않아요.':`한 번에 맞혔어요. ${[1,3,7][item.stage]}일 뒤에 한 번 더 나와요.`):'헷갈렸던 문제예요. 내일 다시 나와요.'}</span>`);
       const nb=el('<button type="button" class="btn primary">다음 →</button>');nb.onclick=next;box.appendChild(nb);stats()}})}
@@ -1775,7 +1797,7 @@ function viewLesson(id,tab){
   if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('혼자 풀기','practice'));p.explore=true;save()}
   DB._last={id,tab};save();
   if(tab==='steps')viewSteps(body,id);
-  if(tab==='practice'){viewPractice(body,id);body.insertAdjacentHTML('beforeend',`<div class="card panel pw-cta"><b>🖨 마지막 점검</b> · 배운 유형을 섞은 <b>인쇄용 학습지</b>로 시험처럼 풀어 봐요. <a class="btn ghost" href="#print-${id}">점검 학습지 만들기 →</a><a class="pw-scan" href="#scan">📷 다 푼 답안지 채점</a></div>`)}
+  if(tab==='practice'){viewPractice(body,id);body.insertAdjacentHTML('beforeend',`<div class="card panel pw-cta"><b>🖨 마지막 점검</b> · 배운 유형을 섞은 <b>인쇄용 학습지</b>로 시험처럼 풀어 봐요. <a class="btn ghost" href="#print-${id}">점검 학습지 만들기 →</a></div>`)}
 }
 const STEPGEN={poly:GEN.polyStep,types:GEN.typesStep,area:GEN.areaStep};
 /* 유형 고르기 화면 (대청 수학 「기초 연습」처럼 카드에서 유형을 골라 들어가요) */
@@ -1808,13 +1830,13 @@ function viewSteps(body,id){
     const sync=i=>{rc=i;$$('.exHost .step',host).forEach((li,k)=>li.classList.toggle('sync',k===i));
       const cl=$('.tryHost .step.cur',host),es=ex.steps[i];if(!cl||!es||$('.mstep',cl))return;
       cl.insertBefore(el(`<details class="mstep"><summary>선생님 풀이 · 같은 단계 보기</summary><div class="mq">${es.q}</div><div class="wk"><span class="wka">${fmtAns(es)}</span>${(es.why||es.hint||es.ok)?`<span class="wkw">${es.why||es.hint||es.ok}</span>`:''}</div></details>`),cl.firstChild)};
-    renderProblem($('.tryHost',host),prob,{mode:'steps',visual:true,onStep:i=>setTimeout(()=>sync(i)),onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{sync(-1);logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:key,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
+    renderProblem($('.tryHost',host),prob,{mode:'steps',visual:true,rep:{lesson:id,gen:key,seed},onStep:i=>setTimeout(()=>sync(i)),onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{sync(-1);logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:key,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
       if(good){p.steps++;p.tyS[cur]=(p.tyS[cur]||0)+1;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(key,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요.</span>')}
       const nx=TL.find(t=>t.no>cur);
       const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-k="same">같은 유형 하나 더</button><button type="button" class="btn ghost" data-k="ex">새 풀이 예시로</button>${nx?`<button type="button" class="btn primary" data-k="next">유형 ${nx.no} · ${nx.nm} →</button>`:`<a class="btn primary" href="#${id}-practice">혼자 풀러 가기 →</a>`}</span>`);
       $('[data-k=same]',nb).onclick=()=>pair(cur,exSeed);$('[data-k=ex]',nb).onclick=()=>pair(cur);if(nx)$('[data-k=next]',nb).onclick=()=>pair(nx.no);box.appendChild(nb)}})};
   const go=()=>{const seed=newSeed(),prob=GEN[SG0](seed);
-    renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG0,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
+    renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,rep:{lesson:id,gen:SG0,seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG0,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
       if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG0,seed,id)}
       const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn">하나 더</button><a class="btn primary" href="#${id}-practice">혼자 풀러 가기 →</a></span>`);$('button',nb).onclick=go;box.appendChild(nb)}})};
   if(TL)pickScreen();else go();
@@ -1846,7 +1868,7 @@ function viewPractice(body,id){
     if(TM)prob.title=`<details class="tykey"><summary>핵심 보기</summary>${TM.key}</details>`+stripTB(prob.title);
     if(isRetry)prob.title+='<span class="retry-tag">다시 도전</span>';
     if(mixL)prob.title='<span class="rv-from">섞어 풀기 · '+mixL.no+'차시 '+mixL.title+'</span><br>'+prob.title;
-    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
+    renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',rep:{lesson:id,gen:gid,seed},onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
       const lid=LESSON_OF[gid]||id;
       logAttempt({lesson:lid,kind:'practice',good,wrongs,mode,gen:gid,seed,ptype:prob.ptype,stepWrongs,revealed,mixed:!!mixL});
       if(TY&&TY.lid===id){const x=P.ty[TY.T.no]=P.ty[TY.T.no]||{n:0,ok:0};x.n++;if(good&&wrongs===0)x.ok++}
@@ -2546,6 +2568,10 @@ const MOCK=(()=>{
       return{now:nowISO(),students:Object.values(S.students).filter(s=>s.grade===p_grade&&s.klass===p_klass).sort((a,b)=>a.num-b.num).map(s=>{const L=lv[s.sid]||{};
         return{sid:s.sid,num:s.num,last_seen:s.last_seen,loc:L.loc||null,loc_at:L.loc_at||null,prog_at:L.prog_at||null,help_at:L.help_at||null,help_loc:L.help_loc||null,ack_at:L.ack_at||null,
           att:S.attempts.filter(a=>a.sid===s.sid&&Date.parse(a.created_at)>=d0.getTime()).slice(-60)}})}},
+    hg_report(a){const sid=a.p_token?sidOf(a.p_token):null;if(!a.p_lesson||!a.p_reason)fail('신고 내용의 모양이 올바르지 않아요.');const R=S.reports=S.reports||[];
+      R.push({id:(R.length?R[R.length-1].id:0)+1,sid,lesson:a.p_lesson,gen:a.p_gen,seed:a.p_seed,ptype:a.p_ptype,step:a.p_step,reason:a.p_reason,note:a.p_note,ctx:a.p_ctx,done:false,created_at:nowISO()});if(R.length>200)R.shift();return{ok:true}},
+    hg_t_reports({p_token,p_all}){needT(p_token);return(S.reports||[]).filter(r=>p_all||!r.done).slice().reverse().map(r=>{const s=S.students[r.sid]||{};return Object.assign({},r,{grade:s.grade,klass:s.klass,num:s.num})})},
+    hg_t_report_done({p_token,p_id,p_done}){needT(p_token);const r=(S.reports||[]).find(x=>x.id===p_id);if(r)r.done=p_done!==false;return{ok:true}},
     hg_t_groups({p_token}){needT(p_token);return GR().list.map(g=>({id:g.id,name:g.name,sids:g.sids.filter(x=>S.students[x]).sort()}))},
     hg_t_group_save({p_token,p_id,p_name}){needT(p_token);const nm=String(p_name||'').trim();if(nm.length<1||nm.length>30)fail('반 이름은 1~30자로 정해 주세요.');const G=GR();
       if(p_id==null){if(G.list.length>=30)fail('방과후 반은 30개까지 만들 수 있어요.');const g={id:G.seq++,name:nm,sids:[]};G.list.push(g);return{ok:true,id:g.id}}
@@ -3095,7 +3121,7 @@ function viewTeacher(){
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   document.body.classList.add('t-wide');
   const ready=LESSONS.filter(l=>l.ready);
-  const TABS_T=[['now','🙋 지금 도울 학생'],['stat','📊 학습 현황'],['steps','🧩 많이 막히는 단계'],['people','👥 학생 관리'],['game','🎮 게임'],['set','⚙ 설정']];
+  const TABS_T=[['now','🙋 지금 도울 학생'],['stat','📊 학습 현황'],['steps','🧩 막히는 단계 · 신고'],['people','👥 학생 관리'],['game','🎮 게임'],['set','⚙ 설정']];
   app.innerHTML=`<div class="t-top"><div><h1>교사 화면</h1><p class="muted">방과후 반을 만들어 학년·반이 다른 학생들을 한 화면에서 봐요. 이름은 이 기기에만 저장돼요.</p></div>
      <div class="t-topb"><span class="t-at muted tLiveAt"></span><label class="t-sel t-auto"><input type="checkbox" class="tAuto" checked> 10초마다 새로 고침</label><a class="btn ghost" href="#print">🖨 점검 학습지</a><a class="btn ghost" href="#scan">📷 사진 채점</a><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
    <div class="t-scope" role="tablist" aria-label="볼 학생 고르기"></div>
@@ -3103,7 +3129,7 @@ function viewTeacher(){
     <aside class="card t-side"><div class="t-side-h"><b class="tSideT">학생</b><span class="muted tSideN"></span></div><ul class="t-stu tStu"></ul>
      <p class="muted t-side-f">● 접속 중 · ✋ 손듦 · 숫자는 오늘 푼 문제<br>이름을 누르면 자세히 볼 수 있어요.</p></aside>
     <section class="t-main">
-     <nav class="t-tabs" role="tablist">${TABS_T.map(([k,t])=>`<button type="button" role="tab" data-t="${k}">${t}${k==='now'?' <span class="cntb tHelpN" hidden></span>':''}</button>`).join('')}</nav>
+     <nav class="t-tabs" role="tablist">${TABS_T.map(([k,t])=>`<button type="button" role="tab" data-t="${k}">${t}${k==='now'?' <span class="cntb tHelpN" hidden></span>':k==='steps'?' <span class="cntb tRepN" hidden></span>':''}</button>`).join('')}</nav>
      <div class="t-pane" data-p="now">
       <div class="card panel tLive"><div class="t-head"><h2>🙋 지금 도울 학생</h2></div>
        <p class="muted t-lead">손든 학생, 단계 정답을 보고 넘어간 학생, 같은 유형을 3번 연속 틀린 학생, ${STALL_MIN}분 넘게 답을 내지 않은 학생이 모여요. 도와준 뒤 [✓ 도왔어요]를 누르면 정리돼요.</p><div class="together tTogether"></div><div class="tHelp"></div></div>
@@ -3114,6 +3140,7 @@ function viewTeacher(){
        <div class="tablewrap"><table class="t t-roster"><thead><tr><th>학생</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th></tr></thead><tbody class="tRows"></tbody></table></div><div class="tOmr"></div>
        <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div></div>
      <div class="t-pane" data-p="steps">
+      <div class="card panel tRep"></div>
       <div class="card panel"><div class="t-head"><h2>많이 막히는 단계 <span class="muted tScopeNm" style="font-size:17px"></span></h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
        <p class="muted t-lead">단계 문제와 ‘단계 따라 풀기’ 연습에서 단계마다 틀린 비율이에요. 다음 시간에 다시 짚을 곳을 찾을 때 써 보세요.</p><div class="tStatsNote"></div><div class="tStats"></div></div></div>
      <div class="t-pane" data-p="people"><div class="tPeople"></div></div>
@@ -3166,7 +3193,7 @@ function viewTeacher(){
   async function loadAll(){try{ROSTER=await API.call('hg_t_overview',{p_token:tTok()})||[]}catch(e){fail(e);return}
     try{GROUPS=(await API.call('hg_t_groups',{p_token:tTok()})||[]).map(g=>({id:g.id,name:g.name,sids:g.sids||[]}));groupsOff=false}
     catch(e){if(isMissingFn(e)){groupsOff=true;GROUPS=[]}else{fail(e);return}}
-    render();loadLive();loadStats()}
+    render();loadLive();loadStats();loadReports()}
   function render(){fixScope();renderScope();renderSide();renderRoster();renderPeople();$$('.tScopeNm',app).forEach(x=>x.textContent='· '+scopeNm());if(TAB==='game')loadGames()}
 
   /* ── 왼쪽 학생 목록 ── */
@@ -3221,6 +3248,22 @@ function viewTeacher(){
       ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td></tr>`).join('');
     $$('.tRows .t-num',app).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid));renderOmr(L)}
+  /* ── 문제 신고 ── */
+  let repAll=false,repMissing=false;
+  async function loadReports(){const box=$('.tRep',app),nb=$('.tRepN',app);if(!box)return;
+    if(repMissing){box.innerHTML=`<h2>⚑ 학생 문제 신고</h2><p class="muted t-lead">서버에 <b>supabase/report.sql</b>을 실행하면 학생이 보낸 신고가 여기에 모여요.</p>`;return}
+    let R;try{R=await API.call('hg_t_reports',{p_token:tTok(),p_all:repAll})||[]}catch(e){if(isMissingFn(e)){repMissing=true;loadReports()}else fail(e);return}
+    const open=R.filter(r=>!r.done).length;if(nb){nb.hidden=!open;nb.textContent=open}
+    const who=r=>r.sid?(NAMES[r.sid]?esc(NAMES[r.sid]):`${r.grade}-${r.klass}-${r.num}`):'로그인 안 함',ln=l=>{const L=LESSONS.find(x=>x.id===l);return L?`${L.no}차시`:esc(l)};
+    box.innerHTML=`<div class="t-head"><h2>⚑ 학생 문제 신고 <span class="muted" style="font-size:15px">${open?`확인 안 한 것 ${open}개`:''}</span></h2><label class="t-sel"><input type="checkbox" class="tRepAll" ${repAll?'checked':''}> 확인한 것도 보기</label></div>
+      ${R.length?R.map(r=>`<div class="t-rep ${r.done?'done':''}" data-id="${r.id}"><div><b>${esc(r.reason)}</b> · ${r.ptype&&PTYPE_NM[r.ptype]?esc(PTYPE_NM[r.ptype]):ln(r.lesson)}${r.step!=null?` · ${NUM(r.step)+1}단계`:''} <span class="muted">· ${who(r)} · ${relTime(r.created_at)}</span></div>
+        ${r.note?`<div class="t-rnote">“${esc(r.note)}”</div>`:''}${r.ctx?`<div class="muted t-rctx">${esc(r.ctx)}</div>`:''}
+        <div class="t-ract">${r.gen&&GEN[r.gen]&&r.seed!=null?`<button type="button" class="btn ghost t-mini tRepOpen">문제 열어 보기</button>`:''}<button type="button" class="btn ghost t-mini tRepDone">${r.done?'다시 열기':'✓ 확인했어요'}</button></div><div class="t-rprob"></div></div>`).join('')
+        :'<p class="muted t-empty" style="margin:0">신고된 문제가 없어요 🙂</p>'}`;
+    $('.tRepAll',box).onchange=e=>{repAll=e.target.checked;loadReports()};
+    $$('.t-rep',box).forEach(d=>{const r=R.find(x=>String(x.id)===d.dataset.id);
+      const o=$('.tRepOpen',d);if(o)o.onclick=()=>{const h=$('.t-rprob',d);if(h.innerHTML){h.innerHTML='';return}try{renderProblem(h,GEN[r.gen](+r.seed),{mode:'steps',visual:true})}catch(e){h.textContent='문제를 다시 만들지 못했어요.'}};
+      $('.tRepDone',d).onclick=async()=>{try{await API.call('hg_t_report_done',{p_token:tTok(),p_id:r.id,p_done:!r.done});loadReports()}catch(e){fail(e)}}})}
   /* ── 점검 학습지: 학생이 직접 찍어 채점한 점수 ── */
   function renderOmr(L){const box=$('.tOmr',app);if(!box)return;const by={};
     L.forEach(s=>{const O=OBJ(OBJ(s.data)._omr);Object.keys(O).forEach(k=>{if(O[k]&&typeof O[k]==='object')(by[k]=by[k]||[]).push({s,x:O[k]})})});
