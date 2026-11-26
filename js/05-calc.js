@@ -836,6 +836,10 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
 /* 이번 시험 범위: 원과 부채꼴 ~ 입체도형 (구의 겉넓이·부피 제외). 범위가 바뀌면 이 두 줄만 고쳐요 */
 const EXAM_FOCUS=['pi','frac','fracbase','pow','area','surf','unit','ratio','sub','eq','mul','div'];
 const EXAM_TAG={pi:'원·부채꼴·기둥·뿔',frac:'부채꼴·뿔의 부피',fracbase:'부채꼴 약분',pow:'원·입체',area:'겉넓이',surf:'기둥의 겉넓이',unit:'부피',ratio:'중심각·호·넓이의 비',sub:'다면체 개수',eq:'몇 각기둥',mul:'넓이·부피',div:'삼각형·뿔'};
+const EXAM_NM='원과 부채꼴 ~ 입체도형 (구 제외)';
+/* 시험 모드: 기본으로 켜져 있어요. 켜면 기초 연산 목록·오늘의 계산·홈에 시험 범위 계산만 보여요(학생마다 이 기기에 기억) */
+const calcExamMode=()=>EXAM_FOCUS.length>0&&lsGet('hangeoreum-calc-exam',true)!==false;
+const inExam=t=>!calcExamMode()||EXAM_FOCUS.includes(t.id);
 const examRank=id=>{const i=EXAM_FOCUS.indexOf(id);return i<0?99:i};
 const CALC_GRP=[['solid','원·부채꼴 · 입체도형 핵심 계산','이번 시험 범위(원과 부채꼴·입체도형)에 바로 나오는 계산이에요.'],['mid','중1 핵심 연산','부호·분수·소수·약수와 배수. 정비례·반비례와 부채꼴 계산의 바탕이에요.'],['base','기초 다지기','모든 계산의 바탕이에요. 흔들리는 부분부터 챙겨요.']];
 const calcVisible=t=>!SITE.calcGroups||SITE.calcGroups.includes(t.grp);
@@ -856,21 +860,23 @@ const calcPath=id=>{const P=CALC_PATHS.find(p=>p.ids.includes(id));if(!P)return 
 const calcNm=id=>(CALC.find(t=>t.id===id)||{}).nm||'';
 /* 한 갈래에서 지금 할 칸: 별을 하나도 못 받은 첫 칸(없으면 다 익히지 않은 첫 칸) */
 const pathNow=ids=>ids.find(id=>NUM(calcPeek(id).stars)<1)||ids.find(id=>!calcDone(id))||null;
-function ladderHTML(P,dueIds,plan){const ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)});if(!ids.length)return'';
+function ladderHTML(P,dueIds,plan){const exam=calcExamMode(),ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)&&inExam(t)});if(!ids.length)return'';
   const now=pathNow(ids),done=ids.filter(calcDone).length,start=plan.find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1);
   return`<section class="card panel ladder" aria-label="${P.nm} 사다리"><div class="lad-h"><span class="lad-ic" aria-hidden="true">${P.ic}</span><div><h2>${P.nm} <small class="muted">${done} / ${ids.length}칸</small></h2><p class="muted">${P.d}</p></div></div>
    <ol class="lad">${ids.map((id,i)=>{const t=CALC.find(c=>c.id===id),st=calcPeek(id),N=calcLvN(id),n=Math.min(N,NUM(st.stars)),fin=n>=N,isNow=id===now,ex=EXAM_TAG[id],K=KEYS[id];
-     return`<li class="${fin?'fin':isNow?'now':''}"><a href="#calc-${id}"><span class="lad-no" aria-hidden="true">${fin?CHECK:i+1}</span><span class="lad-b"><b>${t.nm}</b>${K?`<small class="kw">💡 ${K.w}</small>`:''}<span class="calc-tags">${isNow?'<i class="ctag now">지금 여기</i>':''}${id===start&&!isNow?'<i class="ctag rec">추천</i>':''}${dueIds.includes(id)?'<i class="ctag due">복습</i>':''}${ex?`<i class="ctag exam">시험 · ${ex}</i>`:''}</span></span>${starRow(n,N)}</a></li>`}).join('')}</ol></section>`}
+     return`<li class="${fin?'fin':isNow?'now':''}"><a href="#calc-${id}"><span class="lad-no" aria-hidden="true">${fin?CHECK:i+1}</span><span class="lad-b"><b>${t.nm}</b>${K?`<small class="kw">💡 ${K.w}</small>`:''}<span class="calc-tags">${isNow?'<i class="ctag now">지금 여기</i>':''}${id===start&&!isNow?'<i class="ctag rec">추천</i>':''}${dueIds.includes(id)?'<i class="ctag due">복습</i>':''}${ex?`<i class="ctag exam">${exam?'':'시험 · '}${ex}</i>`:''}</span></span>${starRow(n,N)}</a></li>`}).join('')}</ol></section>`}
 function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 연산</span>`;stopSpeak();
   const dueIds=dueList().map(t=>t.id),dg=OBJ(DB._calcDiag),plan=calcPlan();
   app.innerHTML=`<div class="unit-head"><div><h1>기초 연산</h1><p>짧게, 자주, 정확하게. <b>생각하는 법</b>을 익히고 쉬운 수부터 연습해요.</p></div></div>
    ${!dg.d?`<a class="card start-card" href="#calc-start"><span><b>처음이라면 여기부터 · 시작점 찾기</b><small>${DIAG.length}문제로 어디서부터 하면 좋을지 찾아 줘요. 시험이 아니에요.</small></span><span class="go" aria-hidden="true">→</span></a>`:''}
-   <div class="card panel calc-sum"><div class="stat"><small>모은 별</small><b class="rm">${calcStars()} / ${CALC.filter(calcVisible).reduce((n,t)=>n+calcLvN(t.id),0)}</b></div><div class="stat"><small>구구단 익힘</small><b class="rm">${factsKnown()} / 36</b></div><div class="stat"><small>오늘 복습</small><b class="rm">${dueIds.length>2?`2 / ${dueIds.length}`:dueIds.length}</b></div>
+   <div class="card panel calc-sum"><div class="stat"><small>모은 별</small><b class="rm">${CALC.filter(t=>calcVisible(t)&&inExam(t)).reduce((n,t)=>n+Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)),0)} / ${CALC.filter(t=>calcVisible(t)&&inExam(t)).reduce((n,t)=>n+calcLvN(t.id),0)}</b></div><div class="stat"><small>구구단 익힘</small><b class="rm">${factsKnown()} / 36</b></div><div class="stat"><small>오늘 복습</small><b class="rm">${dueIds.length>2?`2 / ${dueIds.length}`:dueIds.length}</b></div>
     <div class="calc-acts"><a class="btn${dg.d?' primary':''}" href="#drill">오늘의 계산${dueIds.length?` · 복습 ${Math.min(2,dueIds.length)}개`:''}</a>${dg.d?'<a class="btn ghost" href="#calc-start">시작점 다시 찾기</a>':''}</div></div>
    ${dueIds.length>2?`<p class="calc-due">밀린 복습이 ${dueIds.length}개 있지만 괜찮아요! 오늘은 부담 없이 <b>2개만</b> 먼저 챙겨도 충분해요.</p>`:''}
-   <p class="lad-intro">사다리는 <b>위 칸이 아래 칸의 바탕</b>이에요. 갈래마다 <b>지금 여기</b> 칸부터 하면 돼요. <i class="ctag exam">시험</i> 꼬리표는 이번 시험 범위에 바로 쓰이는 계산이에요.</p>
-   ${dg.d&&plan.length?`<div class="card panel calc-plan"><b>내 추천 순서</b> ${plan.map((id,i)=>`<a class="chip" href="#calc-${id}">${i+1}. ${CALC.find(x=>x.id===id).nm}</a>`).join(' ')}</div>`:''}
-   <div class="ladders">${CALC_PATHS.map(P=>ladderHTML(P,dueIds,plan)).join('')}</div>`}
+   ${EXAM_FOCUS.length?`<div class="seg exam-mode" role="tablist" aria-label="보기 방식"><button type="button" data-m="1" class="${calcExamMode()?'on':''}">🎯 시험 모드 · ${EXAM_NM}</button><button type="button" data-m="0" class="${calcExamMode()?'':'on'}">전체 사다리</button></div>`:''}
+   <p class="lad-intro">${calcExamMode()?`이번 시험에 나오는 계산만 모았어요. 갈래마다 <b>지금 여기</b> 칸부터 해요. 막히면 칸 안에서 <b>앞 칸(바탕)</b>으로 갈 수 있어요.`:`사다리는 <b>위 칸이 아래 칸의 바탕</b>이에요. 갈래마다 <b>지금 여기</b> 칸부터 하면 돼요. <i class="ctag exam">시험</i> 꼬리표는 이번 시험 범위에 바로 쓰이는 계산이에요.`}</p>
+   ${dg.d&&plan.filter(id=>inExam(CALC.find(t=>t.id===id))).length?`<div class="card panel calc-plan"><b>내 추천 순서</b> ${plan.filter(id=>inExam(CALC.find(t=>t.id===id))).map((id,i)=>`<a class="chip" href="#calc-${id}">${i+1}. ${CALC.find(x=>x.id===id).nm}</a>`).join(' ')}</div>`:''}
+   <div class="ladders">${CALC_PATHS.map(P=>ladderHTML(P,dueIds,plan)).join('')}</div>`;
+  app.querySelectorAll('.exam-mode button').forEach(b=>b.onclick=()=>{lsSet('hangeoreum-calc-exam',b.dataset.m==='1');viewCalc()})}
 /* ── 곱셈구구 표 ── */
 const FLV_NM=['아직','연습 중','빠르게 맞힘','익힘','오래 기억'];
 function factGridHTML(){let h='<div class="fgrid-wrap"><table class="fgrid" aria-label="내 구구단 표"><thead><tr><th scope="col">×</th>';for(let b=2;b<=9;b++)h+=`<th scope="col">${b}</th>`;h+='</tr></thead><tbody>';
@@ -951,10 +957,10 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
        <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`}
     ask()}}
 /* ── 오늘의 계산: 복습할 주제(간격 반복) + 곱셈구구 + 지난 주제를 섞어서 10문제 ── */
-function drillPlan(r,count=10){const out=[],allDue=dueList().sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=CALC.filter(t=>t.id!=='facts'&&calcStarted(t.id)).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)||1));
+function drillPlan(r,count=10){const out=[],allDue=dueList().filter(inExam).sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=CALC.filter(t=>t.id!=='facts'&&calcStarted(t.id)&&inExam(t)).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)||1));
   const add=(t,L)=>{let q;for(let k=0;k<6;k++){q=Object.assign({type:'num'},t.gen(L,r));if(!out.some(x=>x.q===q.q))break}q.tid=t.id;q.lv=L;if(t.id!=='facts')q.regen=()=>Object.assign({type:'num'},t.gen(L,r),{tid:t.id,lv:L});out.push(q)};
   due.forEach(t=>add(t,lvOf(t)));
-  const F=CALC.find(t=>t.id==='facts'),fl=lvOf(F),nf=count<=5?1:(started.length<2?2:1);for(let i=0;i<nf&&out.length<count;i++)add(F,ri(r,1,fl));
+  const F=CALC.find(t=>t.id==='facts'),fl=lvOf(F),nf=calcExamMode()?0:count<=5?1:(started.length<2?2:1);for(let i=0;i<nf&&out.length<count;i++)add(F,ri(r,1,fl));
   for(const t of started.filter(t=>!due.includes(t))){if(out.length>=count)break;add(t,lvOf(t))}
   const basics=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));let i=0;while(out.length<count){const t=basics[i%basics.length];add(t,lvOf(t));i++}
   const Q=shuffle(r,out);for(let pass=0;pass<4;pass++)for(let j=1;j<Q.length;j++)if(Q[j].tid===Q[j-1].tid){const k=Q.findIndex((x,m)=>m>j&&x.tid!==Q[j].tid&&Q[m-1].tid!==Q[j].tid&&(m+1>=Q.length||Q[m+1].tid!==Q[j].tid));if(k>0)[Q[j],Q[k]]=[Q[k],Q[j]]}
@@ -996,7 +1002,7 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   const cdone=NUM(D.c.calc)>0,dg=OBJ(DB._calcDiag),nowT=calcNowT();
   if(nowT){const st=calcPeek(nowT.id),lv=Math.min(calcLvN(nowT.id),NUM(st.stars)+1);S.push({done:cdone,more:true,t:`기초 연산 · ${nowT.nm}`,s:cdone?'오늘 한 세트 했어요':`선생님이 먼저 하자고 한 계산이에요 · ${lv}단계`,href:'#calc-'+nowT.id})}
   else if(!dg.d)S.push({done:cdone,more:true,t:'기초 연산 · 시작점 찾기',s:cdone?'오늘 한 세트 했어요 · 시작점 찾기도 해 보세요':`${DIAG.length}문제로 어디서부터 할지 찾아요`,href:'#calc-start'});
-  else{const dueT=dueList()[0],planT=calcPlan().map(id=>CALC.find(t=>t.id===id)).find(t=>t&&NUM(calcPeek(t.id).stars)<1),ids=CALC_FOR[cur?cur.id:'area']||[];
+  else{const dueT=dueList().filter(inExam)[0],planT=calcPlan().map(id=>CALC.find(t=>t.id===id)).find(t=>t&&inExam(t)&&NUM(calcPeek(t.id).stars)<1),ids=CALC_FOR[cur?cur.id:'area']||[];
     const examT=EXAM_FOCUS.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&calcVisible(t)&&!calcDone(t.id));
     const tp=dueT||examT||planT||ids.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&!calcDone(t.id))||CALC.filter(calcVisible).sort((a,b)=>examRank(a.id)-examRank(b.id)||NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars))[0];
     const st=calcPeek(tp.id),sub=calcDue(tp.id)?'복습할 때예요 · 10문제':Object.keys(OBJ(st.ways)).length?`${Math.min(calcLvN(tp.id),NUM(st.stars)+1)}단계 10문제`:'생각하는 법부터 익혀요';
