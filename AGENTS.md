@@ -26,6 +26,7 @@
 | `js/08-deco.js` | 화면에 Fluent Emoji 3D 아이콘과 색종이 축하 효과 덧붙이기 | 화면 로직은 건드리지 않고 DOM 후처리만 담당 |
 | `COLLAB.md` | **공용 작업 보드 및 인계장** | 현재 진행 중인 작업 ID(`Txx`), 담당 AI, 허용 파일(`Scope`), 인계 메모 기록 |
 | `docs/specs/` | 작업별 교과서 스펙·설계 문서(`Txx-*.md`) | 저작권 원문 대신 요약 스펙·유형·완료 조건을 공유하는 폴더 |
+| `data/textbook-bank.json` · `docs/textbook-bank.md` | 시험 범위 교과서 문제 꼬리표 은행(요약·수치·정답만, 원문 없음). 차시·보스전·미니게임 문제를 만들 때 공통 기준 | 한 줄씩 덧붙이기 · 형식은 `docs/textbook-bank.md` · `tests/textbook-bank.mjs`가 검사 |
 | `tests/verify.mjs` | 문법 검사 및 전체 연산·연결맵·원과 부채꼴·나의 길 자동 검증 스크립트 | `main` 반영/PR 전 반드시 `node tests/verify.mjs` 실행 |
 
 ## 2. 공유 데이터 계약 (`DB` JSON)
