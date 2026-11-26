@@ -1,25 +1,20 @@
 /* T08: 교과서 한 걸음 — 중심각과 호(cent) 3탭 × 3트랙 시범 UI */
 
-.ct-head{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.ct-head{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .ct-head-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
 .ct-brand-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:#eef3fb;border:1.5px solid #bfd3f7;color:var(--accent,#2a4d9e);font-size:13px;font-weight:700}
-.ct-title-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.ct-title-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .ct-title-row h1{margin:0;font-size:28px}
 .ct-tb{font-size:14px;color:var(--ink-soft,#5a6377)}
 
-/* 3트랙 선택 바 (낙인 방지: 행동 중심 명칭만 노출) */
-.ct-tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.ct-tr{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line,#d8dce4);background:var(--card,#fff);cursor:pointer;text-align:left;min-height:60px;transition:border-color .15s,background .15s,transform .1s}
-.ct-tr:hover{border-color:#94a3b8}
-.ct-tr strong{font-size:16px;display:flex;align-items:center;gap:6px}
-.ct-tr small{font-size:13px;color:var(--ink-soft,#5a6377);line-height:1.35}
-.ct-tr[data-track="1"].on{background:#eaf7ef;border-color:#2b7a4b;color:#144d2b}
-.ct-tr[data-track="1"].on small{color:#1f6039}
-.ct-tr[data-track="2"].on{background:#eaf0fc;border-color:#2a4d9e;color:#18326d}
-.ct-tr[data-track="2"].on small{color:#26468f}
-.ct-tr[data-track="3"].on{background:#f2ecfc;border-color:#6d47b8;color:#3d2275}
-.ct-tr[data-track="3"].on small{color:#553596}
-.ct-tr-note{margin:0;padding:8px 12px;border-radius:10px;background:#f8f9fc;border:1px solid var(--line,#d8dce4);font-size:14px;color:var(--ink-soft,#5a6377)}
+/* 3트랙 이모티콘 선택 필 (차시 제목 옆) */
+.ct-tr-pills{display:inline-flex;align-items:center;gap:4px;padding:3px;border-radius:999px;border:1.5px solid var(--line,#d8dce4);background:var(--card,#fff)}
+.ct-tr-pill{display:inline-grid;place-items:center;width:38px;height:36px;padding:0;border:1.5px solid transparent;border-radius:999px;background:transparent;cursor:pointer;font-size:20px;line-height:1;opacity:.55;transition:background .12s,border-color .12s,opacity .12s,transform .1s}
+.ct-tr-pill:hover{opacity:.9;background:#f4f6fa}
+.ct-tr-pill.on{opacity:1;transform:scale(1.04)}
+.ct-tr-pill[data-track="1"].on{background:#eaf7ef;border-color:#2b7a4b}
+.ct-tr-pill[data-track="2"].on{background:#eaf0fc;border-color:#2a4d9e}
+.ct-tr-pill[data-track="3"].on{background:#f2ecfc;border-color:#6d47b8}
 
 /* 3탭 바 */
 .ct-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
@@ -92,10 +87,15 @@
 .ct-click-concept{display:grid;gap:14px}
 .ct-nameplate{margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--hi-soft,#fff6c7);border:1.5px solid #d9be52;font-size:15px;line-height:1.5}
 
-/* 🌿 한걸음: 고정 정교화 대표 예제 */
-.ct-wx{border:1.5px solid #bfd3f7;background:#f9fbff;border-radius:14px;padding:16px;margin-bottom:16px}
-.ct-wx-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.ct-wx-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:var(--accent,#2a4d9e);color:#fff;font-size:13px;font-weight:700}
+/* 🌿 한걸음: 접이식 선생님 대표 예제 */
+.ct-wx{border:1.5px solid #bfd3f7;background:#f9fbff;border-radius:12px;margin-bottom:12px;overflow:hidden}
+.ct-wx-toggle{width:100%;display:flex;align-items:center;gap:8px;padding:10px 14px;background:transparent;border:0;cursor:pointer;text-align:left;min-height:44px}
+.ct-wx-toggle:hover{background:#f0f5ff}
+.ct-wx-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:var(--accent,#2a4d9e);color:#fff;font-size:13px;font-weight:700;white-space:nowrap}
+.ct-wx-sum{font-size:14px;font-weight:600;color:var(--ink,#1d2640)}
+.ct-wx-chev{margin-left:auto;font-size:13px;font-weight:700;color:var(--accent,#2a4d9e);white-space:nowrap}
+.ct-wx-body{padding:0 14px 14px;border-top:1px solid #dce5f7}
+.ct-wx .ct-svg{max-width:240px}
 .ct-wx-steps{display:flex;flex-direction:column;gap:8px}
 .ct-wx-step{border:1.5px solid #dce5f7;border-radius:10px;padding:10px 12px;background:#fff;cursor:pointer;text-align:left;width:100%}
 .ct-wx-step.on{border-color:var(--accent,#2a4d9e);background:#eef3fb}
@@ -121,7 +121,7 @@
 .ct-bonus-explore small{color:var(--ink-soft,#5a6377);font-size:14px}
 
 @media (max-width:760px){
-  .ct-tracks,.ct-tabs{grid-template-columns:1fr}
+  .ct-tabs{grid-template-columns:1fr}
   .ct-stage{grid-template-columns:1fr}
-  .ct-hit,.ct-subtab,.ct-tr,.ct-tab{min-height:46px}
+  .ct-hit,.ct-subtab,.ct-tab{min-height:46px}
 }

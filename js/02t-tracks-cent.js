@@ -435,9 +435,9 @@ function viewCentLesson(id,tab){
   if(!explicitTab&&tr===1&&!p.t1SchemaDone)activeTab='steps';
 
   const trackInfos=[
-    {k:1,ic:'🌱',nm:'첫걸음',sub:'모양·조건 분해 먼저 · 계산 도움'},
-    {k:2,ic:'🌿',nm:'한걸음',sub:'대표 예제 + 기본 유형 정복'},
-    {k:3,ic:'🌳',nm:'두걸음',sub:'복합 유형 조합 분석 · 실전'}
+    {k:1,ic:'🌱',nm:'첫걸음'},
+    {k:2,ic:'🌿',nm:'한걸음'},
+    {k:3,ic:'🌳',nm:'두걸음'}
   ];
   const tabDefs=tr===1
     ?[
@@ -463,18 +463,19 @@ function viewCentLesson(id,tab){
         <span class="ct-brand-tag">📘 교과서 한 걸음 · 2차시</span>
         <span class="ct-tb">교과서 ${L.tb}</span>
       </div>
-      <div class="ct-title-row"><h1>${L.title}</h1></div>
-      <div class="ct-tracks" role="group" aria-label="학습 트랙 선택">
-        ${trackInfos.map(t=>`<button type="button" class="ct-tr${t.k===tr?' on':''}" data-track="${t.k}"><strong>${t.ic} ${t.nm}</strong><small>${t.sub}</small></button>`).join('')}
+      <div class="ct-title-row">
+        <h1>${L.title}</h1>
+        <div class="ct-tr-pills" role="group" aria-label="학습 단계 선택">
+          ${trackInfos.map(t=>`<button type="button" class="ct-tr-pill${t.k===tr?' on':''}" data-track="${t.k}" title="${t.nm}" aria-label="${t.nm}" aria-pressed="${t.k===tr}">${t.ic}</button>`).join('')}
+        </div>
       </div>
-      <p class="ct-tr-note">${tr===1?'<b>첫걸음 순서:</b> ① 유형 익히기에서 예시·비예시 모양과 문제 쪼개기를 먼저 해 본 뒤 → ② 개념 보기에서 이름표를 확인해요.':tr===2?'<b>한걸음:</b> 개념은 이미 알면 바로 차시 마무리로 건너뛰어도 돼요. 막히면 선생님 대표 예제로 돌아와요.':'<b>두걸음:</b> 기존 유형 두 개가 합쳐진 복합 유형을 쪼개어 풀어요.'}</p>
     </div>
     <div class="ct-tabs" role="tablist">
       ${tabDefs.map((t,i)=>`<button type="button" role="tab" class="ct-tab${t.id===activeTab?' on':''}${doneMap[t.id]?' done':''}" data-tab="${t.id}" aria-selected="${t.id===activeTab}"><span class="ct-tab-num">${doneMap[t.id]&&t.id!==activeTab?'✓':i+1}</span><span class="ct-tab-lbl"><b>${t.t}</b><small>${t.s}</small></span>${t.rec?`<span class="ct-rec-badge">${t.rec}</span>`:''}</button>`).join('')}
     </div>
     <div id="ctBody"></div>`;
 
-  $$('.ct-tr',app).forEach(b=>b.onclick=()=>{
+  $$('.ct-tr-pill',app).forEach(b=>b.onclick=()=>{
     setTrack(+b.dataset.track);
     viewCentLesson('cent',activeTab);
   });
@@ -829,41 +830,65 @@ function renderT2Concept(body){
   draw();
 }
 
-function renderT2Steps(body,initialTypeNo){
+function renderT2Steps(body,initialTypeNo,openWorked){
   const p=centProg(),TL=(typeof PTYPES!=='undefined'&&PTYPES.cent)||[];
   p.tyS=p.tyS||{};
-  let curNo=initialTypeNo||null,wxStep=0,probSeed=typeof newSeed==='function'?newSeed():1;
+  let curNo=initialTypeNo||null,wxOpen=!!openWorked,wxStep=0,probSeed=typeof newSeed==='function'?newSeed():1;
 
   const draw=()=>{
     if(!curNo){
       body.innerHTML=`<div class="ct-card">
-        <div class="ct-card-h"><h2>유형 고르기</h2><span class="muted">각 유형마다 <b>고정 선생님 대표 예제</b>를 보고 변형 문제를 연습해요</span></div>
+        <div class="ct-card-h"><h2>유형 고르기</h2><span class="muted">각 유형마다 대표 예제를 접어 두고 변형 문제를 연습해요</span></div>
         <div class="tpick">${TL.map(t=>`<button type="button" class="tpc" data-no="${t.no}"><span class="tpn">유형 ${t.no}</span><b>${t.nm}</b><div class="d">${t.key}</div><div class="s"><span>${t.tb}</span><span>${p.tyS[t.no]?`✓ ${p.tyS[t.no]}번 풀었어요`:'아직 안 풀었어요'}</span></div></button>`).join('')}</div>
       </div>`;
-      $$('.tpc',body).forEach(b=>b.onclick=()=>{curNo=+b.dataset.no;wxStep=0;probSeed=typeof newSeed==='function'?newSeed():1;draw()});
+      $$('.tpc',body).forEach(b=>b.onclick=()=>{curNo=+b.dataset.no;wxOpen=false;wxStep=0;probSeed=typeof newSeed==='function'?newSeed():1;draw()});
       return;
     }
     const W=WORKED[curNo],T_=TL.find(t=>t.no===curNo)||{no:curNo,nm:''};
-    const stObj=W.steps[Math.min(wxStep,W.steps.length-1)];
     body.innerHTML=`
       <div class="tybar"><span class="tyn">유형 ${T_.no}</span><b>${T_.nm}</b><button type="button" class="btn tyback" id="t2Back">🔀 다른 유형 고르기</button></div>
-      <div class="ct-wx">
-        <div class="ct-wx-head"><span class="ct-wx-tag">👩‍🏫 정교화 선생님 대표 예제</span><span class="muted">단계를 누르면 왼쪽 그림의 핵심 부위가 함께 강조돼요</span></div>
-        <p style="margin:0 0 10px">${W.prob}</p>
-        <div class="ct-stage">
-          <div class="ct-fig">${W.fig(stObj.hl)}</div>
-          <div>
-            <div class="ct-wx-steps">
-              ${W.steps.map((s,i)=>`<button type="button" class="ct-wx-step${i===wxStep?' on':''}" data-ws="${i}"><div class="ct-wx-step-top">${s.t}</div>${i<=wxStep?`<div class="ct-wx-step-body">${s.body}</div>`:'<small class="muted">눌러서 설명 보기</small>'}</button>`).join('')}
+      <div id="t2WxHost"></div>
+      <div class="ct-card"><div class="ct-card-h"><h2>유형 ${T_.no} 문제 풀기</h2><button type="button" class="btn ghost" id="t2New">🔄 새 숫자 문제</button></div><div id="t2ProbHost"></div></div>`;
+
+    const drawWx=()=>{
+      const wxHost=$('#t2WxHost',body);
+      if(!wxHost)return;
+      if(!wxOpen){
+        wxHost.innerHTML=`<div class="ct-wx collapsed">
+          <button type="button" class="ct-wx-toggle" id="t2WxToggle" aria-expanded="false">
+            <span class="ct-wx-tag">👩‍🏫 선생님 대표 예제</span>
+            <span class="ct-wx-sum">${W.nm} · 풀이 보기</span>
+            <span class="ct-wx-chev">펼치기 ▾</span>
+          </button>
+        </div>`;
+      }else{
+        const stObj=W.steps[Math.min(wxStep,W.steps.length-1)];
+        wxHost.innerHTML=`<div class="ct-wx open">
+          <button type="button" class="ct-wx-toggle" id="t2WxToggle" aria-expanded="true">
+            <span class="ct-wx-tag">👩‍🏫 선생님 대표 예제</span>
+            <span class="ct-wx-sum">${W.nm}</span>
+            <span class="ct-wx-chev">접기 ▴</span>
+          </button>
+          <div class="ct-wx-body">
+            <p style="margin:8px 0 10px">${W.prob}</p>
+            <div class="ct-stage">
+              <div class="ct-fig">${W.fig(stObj.hl)}</div>
+              <div>
+                <div class="ct-wx-steps">
+                  ${W.steps.map((s,i)=>`<button type="button" class="ct-wx-step${i===wxStep?' on':''}" data-ws="${i}"><div class="ct-wx-step-top">${s.t}</div>${i<=wxStep?`<div class="ct-wx-step-body">${s.body}</div>`:'<small class="muted">눌러서 설명 보기</small>'}</button>`).join('')}
+                </div>
+                <div class="ct-pitfall">${W.pitfall}</div>
+              </div>
             </div>
-            <div class="ct-pitfall">${W.pitfall}</div>
           </div>
-        </div>
-      </div>
-      <div class="ct-card"><div class="ct-card-h"><h2>이제 숫자만 바뀐 변형 문제 풀기</h2><button type="button" class="btn ghost" id="t2New">🔄 새 숫자 문제</button></div><div id="t2ProbHost"></div></div>`;
+        </div>`;
+      }
+      const tg=$('#t2WxToggle',wxHost);if(tg)tg.onclick=()=>{wxOpen=!wxOpen;drawWx()};
+      $$('[data-ws]',wxHost).forEach(b=>b.onclick=()=>{wxStep=+b.dataset.ws;drawWx()});
+    };
 
     const back=$('#t2Back',body);if(back)back.onclick=()=>{curNo=null;draw()};
-    $$('[data-ws]',body).forEach(b=>b.onclick=()=>{wxStep=+b.dataset.ws;draw()});
+    drawWx();
     const mountVar=()=>{
       const prob=typeof GEN==='object'&&GEN[tyKey('cent',curNo)]?GEN[tyKey('cent',curNo)](probSeed):null;
       if(!prob||typeof renderProblem!=='function')return;
@@ -877,7 +902,7 @@ function renderT2Steps(body,initialTypeNo){
         row.innerHTML=`<button type="button" class="btn" id="t2More">같은 유형 하나 더</button>${nx?`<button type="button" class="btn primary" id="t2Next">유형 ${nx.no} →</button>`:'<a class="btn primary" href="#cent-practice">차시 마무리 하러 가기 →</a>'}`;
         box.appendChild(row);
         const mBtn=$('#t2More',row);if(mBtn)mBtn.onclick=()=>{probSeed=(probSeed+7)%99999+1;mountVar()};
-        const nBtn=$('#t2Next',row);if(nBtn)nBtn.onclick=()=>{curNo=nx.no;wxStep=0;probSeed=(probSeed+13)%99999+1;draw()};
+        const nBtn=$('#t2Next',row);if(nBtn)nBtn.onclick=()=>{curNo=nx.no;wxOpen=false;wxStep=0;probSeed=(probSeed+13)%99999+1;draw()};
       }});
     };
     const nw=$('#t2New',body);if(nw)nw.onclick=()=>{probSeed=(probSeed+17)%99999+1;mountVar()};
@@ -964,7 +989,7 @@ function renderT2Practice(body){
   renderAdaptivePractice(body,{
     title:'🌿 한걸음 차시 마무리 (4유형 각 1문)',
     items,
-    onRescue:it=>{renderT2Steps(body,it.tyNo)},
+    onRescue:it=>{renderT2Steps(body,it.tyNo,true)},
     onPass:(host,results)=>{
       p.trackDone=Math.max(Number(p.trackDone)||0,2);
       p.concept=true;p.steps=Math.max(Number(p.steps)||0,1);
@@ -1072,7 +1097,7 @@ function renderT3Practice(body){
   renderAdaptivePractice(body,{
     title:'🌳 두걸음 실전 차시 마무리 (기본 4 + 복합 2)',
     items,
-    onRescue:it=>{if(it.cid)renderT3Steps(body,it.cid);else renderT2Steps(body,it.tyNo)},
+    onRescue:it=>{if(it.cid)renderT3Steps(body,it.cid);else renderT2Steps(body,it.tyNo,true)},
     onPass:(host,results)=>{
       p.trackDone=3;p.concept=true;p.steps=Math.max(Number(p.steps)||0,1);
       p.prac=p.prac||{solved:0,streak:0,level:1,fails:0,retry:[]};
