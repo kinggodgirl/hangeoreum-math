@@ -19,6 +19,7 @@
 | `js/06-unit-int.js` | 정수와 유리수 단원(`unit: 'int'`) | `LESSONS`, `STEPGEN`, `CALC_FOR`, `TERMS`, `BADGES` 확장 블록 |
 | `js/06c-unit-circle.js` | 원과 부채꼴 단원(`unit: 'circle'`, 차시 `arc` · `cent` · `sector`). 입체도형 사이트에서 함께 열림(`OPEN_UNITS`) | 함수 안에 넣어 전역 이름을 만들지 않음 · 그림은 SVG(`fig.svg`) |
 | `js/06g-goal.js` | 나의 길: 학생이 고르는 목표 3갈래(`GOALS`: 🌱 `calc` · 🌿 `base` · 🌳 `up`), 기록 추천(`goalRec`), 홈 카드·길잡이·기초 연산 화면 연결. 교사 화면은 `goalOf`·`goalBadge`로 표시 | `viewHome`·`viewCalc`·`guideSteps`를 감싸서 덧붙여요. 추천 규칙을 바꿀 땐 `goalRec`만 고쳐요 |
+| `js/boss-bank.js` · `boss-raid.css` | 오늘의 보스 도전(T05) 문제 은행(`window.BOSS_BANK={normal,hard}`)과 전투 화면 스타일. 게임 로직은 `js/04-games.js` 끝(`raidOpen`) | 문제는 배열 끝에 한 칸씩 덧붙이기 · 규격은 파일 맨 위 주석 |
 | `js/07-print-omr-boot.js` | 단원 필터링, 점검 학습지 인쇄, OMR 사진 채점, 라우터(`route`) 및 초기 실행 | 마지막(`08-deco.js` 직전, 부트 담당)에 로드되어야 함 |
 | `js/08-deco.js` | 화면에 Fluent Emoji 3D 아이콘과 색종이 축하 효과 덧붙이기 | 화면 로직은 건드리지 않고 DOM 후처리만 담당 |
 | `COLLAB.md` | **공용 작업 보드 및 인계장** | 현재 진행 중인 작업 ID(`Txx`), 담당 AI, 허용 파일(`Scope`), 인계 메모 기록 |
@@ -35,6 +36,7 @@
 - `DB._calcErrs`: 기초 연산 오개념 누적(`{tid, m, n, d}`, `tidyDB()`에서 상위 25건 유지)
 - `DB._facts[key]`: 곱셈구구 36칸 익힘 상태(`lv`, `d`, `n`, `w`)
 - `DB._goal`: 나의 길(`k`: `calc`|`base`|`up`, 고른 날 `d`, 그때 추천 `rec`, 최근 6번 기록 `h`)
+- `DB._raid`: 오늘의 보스 도전(`days[날짜]={f 무료 사용, p 유료 횟수}`, `w` 승, `g` 판, `beat` 물리친 보스) · 상자 보상은 `DB._shop`의 `bonusGot/bonusUsed`, `shieldGot/shieldUsed`, `couponPcs`, `own['frame:b-*']`, `own['title:*']`(늘어나기만 하는 값으로 저장)
 - `DB._rev`, `DB._omr`: 복습 노트, 학생 OMR 자가 채점 기록
 
 ## 3. Antigravity ↔ Claude Code 클라우드 협업 프로토콜

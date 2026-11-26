@@ -88,7 +88,20 @@ const SHOP=[
    {id:'sakura',nm:'벚꽃 링',p:35,cls:'f-sakura'},
    {id:'night',nm:'밤하늘 별',p:55,cls:'f-night'},
    {id:'gold',nm:'반짝 골드',p:80,cls:'f-gold'},
-   {id:'aura',nm:'무지개 오라',p:110,cls:'f-aura'}]},
+   {id:'aura',nm:'무지개 오라',p:110,cls:'f-aura'},
+   /* 보스 한정(bossOnly): 포인트로 못 사고, 보스 도전 보물상자에서만 나와요 */
+   {id:'b-golem',nm:'골렘 강철 링',p:999,cls:'f-b-golem',bossOnly:'golem'},
+   {id:'b-sphinx',nm:'스핑크스 황금 링',p:999,cls:'f-b-sphinx',bossOnly:'sphinx'},
+   {id:'b-turtle',nm:'에메랄드 등껍질',p:999,cls:'f-b-turtle',bossOnly:'turtle'},
+   {id:'b-witch',nm:'마녀의 마법진',p:999,cls:'f-b-witch',bossOnly:'witch'},
+   {id:'b-drake',nm:'드래곤 불꽃 오라',p:999,cls:'f-b-drake',bossOnly:'drake'},
+   {id:'b-king',nm:'대왕 로열 오라',p:999,cls:'f-b-king',bossOnly:'king'}]},
+ {cat:'title',nm:'칭호',items:[
+   {id:'none',nm:'칭호 없음',p:0},
+   {id:'golem',nm:'골렘 분쇄자',p:999,bossOnly:'golem'},
+   {id:'witch',nm:'마녀의 라이벌',p:999,bossOnly:'witch'},
+   {id:'drake',nm:'드래곤 슬레이어',p:999,bossOnly:'drake'},
+   {id:'king',nm:'이십면체 정복자',p:999,bossOnly:'king'}]},
  {cat:'hat',nm:'모자',items:[
    {id:'none',nm:'안 쓰기',p:0,ic:'🙂'},
    {id:'party',nm:'파티 고깔',p:300,ic:'🎉'},
@@ -113,6 +126,7 @@ let themePreview=null;
 function applyTheme(){const it=themePreview||shopItem('hi',myEq().hi),r=document.documentElement.style;r.setProperty('--hi',it.c);r.setProperty('--hi-soft',it.s)}
 function equipItem(c,id){if(!owns(c,id))return false;shopState().eq[c]=id;save();applyTheme();return true}
 function buyItem(c,id){const it=shopItem(c,id);if(!it||it.id!==id)return false;if(owns(c,id))return equipItem(c,id);
+  if(it.bossOnly){toast('보스 도전 보물상자에서만 얻을 수 있어요.');return false}
   if(balance()<it.p){toast(`포인트가 ${it.p-balance()}만큼 모자라요.`);return false}
   const S=shopState();S.spent+=it.p;S.own[c+':'+id]=1;S.eq[c]=id;save();applyTheme();return true}
 
@@ -176,9 +190,9 @@ function mountSpin(host,render,{speed=0.6}={}){
   requestAnimationFrame(ts=>{last=ts;requestAnimationFrame(tick)})}
 function mountAvatar(host,getEq,size=210){let curKey='',token=0;
   function sync(){if(!host||!host.isConnected)return;const eq=getEq(),it=shopItem('mini',eq.mini),fr=shopItem('frame',eq.frame);
-    const hat=eq.hat&&eq.hat!=='none'?eq.hat:'';const key=it.id+':'+fr.id+':'+hat;if(key===curKey)return;
+    const hat=eq.hat&&eq.hat!=='none'?eq.hat:'';const key=it.id+':'+fr.id+':'+hat+':'+eq.title;if(key===curKey)return;
     curKey=key;const myTok=++token;
-    host.innerHTML=mini3DHTML(it,size,fr.cls);const mv=$('model-viewer',host);
+    host.innerHTML=mini3DHTML(it,size,fr.cls)+titleChip(eq.title);const mv=$('model-viewer',host);
     if(mv)mv.addEventListener('error',()=>{if(token===myTok)host.innerHTML=avatarThumb(eq,size)});
     if(mv&&hat)hatGLB(it.f,hat).then(u=>{if(token===myTok&&mv.isConnected)mv.src=u}).catch(()=>{})}
   sync();return sync}
@@ -187,8 +201,14 @@ function mountAvatar(host,getEq,size=210){let curKey='',token=0;
 function gachaInfo(){const S=shopState(),t=today(),pool=shopCat('mini').items.filter(it=>it.p>0&&!owns('mini',it.id));
   const used=S.gachaDay===t?NUM(S.gachaCnt):0,drillDone=NUM(dayState().c.drill)>0||OBJ(DB._drill).last===t;
   const free=drillDone&&S.freeGachaDay!==t&&pool.length>0&&used<GACHA_MAX_DAY;
-  return{pool,used,left:Math.max(0,GACHA_MAX_DAY-used),free,total:shopCat('mini').items.filter(it=>it.p>0).length}}
-function pullGacha(){const g=gachaInfo();if(!g.pool.length)return{err:'all'};if(g.left<=0)return{err:'limit'};
+  return{pool,used,left:Math.max(0,GACHA_MAX_DAY-used),free,tix:bonusLeft(),total:shopCat('mini').items.filter(it=>it.p>0).length}}
+/* 보스 도전 보물상자에서 받은 것: 늘어나기만 하는 개수(Got/Used)로 저장해야 기기끼리 합칠 때(큰 값 우선) 되살아나지 않아요 */
+const bonusLeft=()=>{const S=shopState();return Math.max(0,NUM(S.bonusGot)-NUM(S.bonusUsed))};
+const shieldLeft=()=>{const S=shopState();return Math.max(0,NUM(S.shieldGot)-NUM(S.shieldUsed))};
+function pullGacha(useTix){const g=gachaInfo();if(!g.pool.length)return{err:'all'};
+  if(useTix){if(g.tix<=0)return{err:'tix'};const S=shopState();S.bonusUsed=NUM(S.bonusUsed)+1;const ws=g.pool.map(it=>RAR_W[it.r]||30);let roll=Math.random()*ws.reduce((a,b)=>a+b,0),won=g.pool[g.pool.length-1];
+    for(let i=0;i<g.pool.length;i++){roll-=ws[i];if(roll<=0){won=g.pool[i];break}}S.own['mini:'+won.id]=1;save();return{won,free:true,dup:false,tix:true}}
+  if(g.left<=0)return{err:'limit'};
   if(!g.free&&balance()<GACHA_COST)return{err:'pts',need:GACHA_COST-balance()};
   const S=shopState(),t=today();if(S.gachaDay!==t){S.gachaDay=t;S.gachaCnt=0}
   if(g.free)S.freeGachaDay=t;else S.spent+=GACHA_COST;
@@ -210,29 +230,31 @@ function viewShop(){
   function drawGacha(resHTML=''){const g=gachaInfo(),got=g.total-g.pool.length,box=$('#gachaBox',app);
     const btnTxt=!g.pool.length?'모든 3D 캐릭터를 모았어요 🎉':g.left<=0?`오늘 뽑기 완료 (${GACHA_MAX_DAY}/${GACHA_MAX_DAY})`:g.free?'🎁 오늘의 계산 무료 뽑기!':`🎁 캡슐 뽑기 (${GACHA_COST}포인트)`;
     const dis=!g.pool.length||g.left<=0||(!g.free&&balance()<GACHA_COST)||gachaBusy;
-    box.innerHTML=`<div class="gacha-head"><h2>🎁 3D 미니 캐릭터 캡슐 뽑기</h2><button type="button" class="btn primary gachaGo" ${dis?'disabled':''}>${btnTxt}</button></div>
+    box.innerHTML=`<div class="gacha-head"><h2>🎁 3D 미니 캐릭터 캡슐 뽑기</h2><button type="button" class="btn primary gachaGo" ${dis?'disabled':''}>${btnTxt}</button>${g.tix&&g.pool.length?`<button type="button" class="btn gachaTix" ${gachaBusy?'disabled':''}>🎟️ 보스 뽑기권 쓰기 (${g.tix}장)</button>`:''}</div>
       <p class="gacha-meta"><b>포인트 뽑기는 중복 없음!</b> 아직 없는 캐릭터만 나와요 · 무료 뽑기는 가진 캐릭터가 또 나올 수도 있어요 · 모은 캐릭터 <b class="rm">${got}/${g.total}</b> · 오늘 남은 횟수 <b class="rm">${g.left}/${GACHA_MAX_DAY}</b>${g.free?' · <b style="color:var(--ok)">오늘의 계산 완료 무료권 사용 가능!</b>':' · 오늘의 계산을 끝내면 하루 1회 무료!'}</p>
       ${resHTML?`<div class="gacha-stage">${resHTML}</div>`:''}`;
-    const gb=$('.gachaGo',box);
-    if(gb)gb.onclick=()=>{if(gachaBusy)return;gachaBusy=true;drawGacha('<div class="gacha-cap" aria-hidden="true">💊</div><p class="muted" style="margin:6px 0 0">캡슐이 열리고 있어요…</p>');
-      setTimeout(()=>{const r=pullGacha();gachaBusy=false;
-        if(r.err){drawGacha(`<p class="muted">${r.err==='pts'?`포인트가 ${r.need}만큼 모자라요.`:r.err==='limit'?'오늘 뽑기 횟수를 다 썼어요. 내일 다시 뽑아요!':'이미 모든 캐릭터를 모았어요!'}</p>`);return}
+    const gb=$('.gachaGo',box),gt=$('.gachaTix',box);
+    const go=useTix=>{if(gachaBusy)return;gachaBusy=true;drawGacha('<div class="gacha-cap" aria-hidden="true">💊</div><p class="muted" style="margin:6px 0 0">캡슐이 열리고 있어요…</p>');
+      setTimeout(()=>{const r=pullGacha(useTix);gachaBusy=false;
+        if(r.err){drawGacha(`<p class="muted">${r.err==='pts'?`포인트가 ${r.need}만큼 모자라요.`:r.err==='limit'?'오늘 뽑기 횟수를 다 썼어요. 내일 다시 뽑아요!':r.err==='tix'?'보스 뽑기권이 없어요.':'이미 모든 캐릭터를 모았어요!'}</p>`);return}
         const w=r.won;if(r.dup)toast(`앗, 이미 가진 ‘${w.nm}’가 나왔어요. 내일 또 도전해요!`);else celebrate(`${RAR_NM[w.r]} 캐릭터 ‘${w.nm}’를 얻었어요!`);
         drawGacha(`<div class="gacha-res"><span class="rar ${w.r}">${RAR_NM[w.r]}</span><h3 style="margin:4px 0 8px">${w.nm}${r.dup?' <small class="muted">(이미 있어요)</small>':''}</h3>${mini3DHTML(w,170,shopItem('frame',myEq().frame).cls)}<p style="margin:10px 0 0"><button type="button" class="btn primary gEquip">바로 장착하기</button></p></div>`);
         const ge=$('.gEquip',box);if(ge)ge.onclick=()=>{equipItem('mini',w.id);setPreview(null);toast(`${w.nm} 캐릭터로 바꿨어요!`);drawGacha('')};
-        draw()},reduced?0:650)}}
+        draw()},reduced?0:650)};
+    if(gb)gb.onclick=()=>go(false);if(gt)gt.onclick=()=>go(true)}
   function setPreview(p){preview=p;themePreview=p&&p.cat==='hi'?shopItem('hi',p.id):null;applyTheme();syncAv();draw()}
   function draw(){$('#bal',app).textContent=balance();$$('.shopTabs button',app).forEach(b=>{const on=b.dataset.c===cat;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
     const C=shopCat(cat),E=myEq();
     $('#shopGrid',app).innerHTML=C.items.map(it=>{const own=owns(cat,it.id),on=E[cat]===it.id,sel=preview&&preview.cat===cat&&preview.id===it.id;
-      const pic=cat==='hat'?`<span class="hat-ic">${it.ic}</span>`:cat==='hi'?`<span class="hi-sw"><span style="background:linear-gradient(transparent 52%,${it.c} 52%)">형광펜</span></span>`:cat==='frame'?`<span class="av-fr ${it.cls} fr-sw"></span>`:miniThumbHTML(it,88);
+      const pic=cat==='hat'?`<span class="hat-ic">${it.ic}</span>`:cat==='hi'?`<span class="hi-sw"><span style="background:linear-gradient(transparent 52%,${it.c} 52%)">형광펜</span></span>`:cat==='frame'?`<span class="av-fr ${it.cls} fr-sw"></span>`:cat==='title'?`<span class="ti-chip">${it.id==='none'?'—':'🏅 '+it.nm}</span>`:miniThumbHTML(it,88);
       const badge=it.r?`<span class="rar ${it.r}">${RAR_NM[it.r]}</span>`:'';
-      return`<button type="button" class="shop-item ${on?'on':''} ${sel?'sel':''}" data-id="${it.id}" aria-pressed="${!!sel}">${badge}<span class="pic">${pic}</span><b>${it.nm}</b><small>${on?'쓰는 중':own?'가지고 있음':it.p+' 포인트'}</small></button>`}).join('');
+      return`<button type="button" class="shop-item ${on?'on':''} ${sel?'sel':''}" data-id="${it.id}" aria-pressed="${!!sel}">${badge}<span class="pic">${pic}</span><b>${it.nm}</b><small>${on?'쓰는 중':own?'가지고 있음':it.bossOnly?'🔒 보스 상자 한정':it.p+' 포인트'}</small></button>`}).join('');
     $$('#shopGrid .shop-item',app).forEach(b=>b.onclick=()=>setPreview({cat,id:b.dataset.id}));act();if(!gachaBusy&&!$('.gacha-res',app))drawGacha()}
   function act(){const A=$('#shopAct',app);if(!preview){A.innerHTML='<span class="muted">아래에서 고르면 위 캐릭터에 먼저 입혀 볼 수 있어요.</span>';return}
     const it=shopItem(preview.cat,preview.id),own=owns(preview.cat,preview.id),on=myEq()[preview.cat]===preview.id;
     if(on){A.innerHTML=`<b>${it.nm}</b> <span class="muted">· 쓰는 중이에요</span>`;return}
     if(own){A.innerHTML=`<b>${it.nm}</b> <button type="button" class="btn primary">이걸로 바꾸기</button>`;$('button',A).onclick=()=>{equipItem(preview.cat,preview.id);setPreview(null);toast('바꿨어요!')};return}
+    if(it.bossOnly){const b=BOSSES.find(x=>x.id===it.bossOnly);A.innerHTML=`<b>${it.nm}</b> <span class="muted">· 포인트로는 못 사요. <a href="#boss">보스 도전</a>에서 ${b?josa(b.nm,'을','를')+' 물리치고 ':''}보물상자를 열면 나올 수 있어요.</span>`;return}
     const lack=it.p-balance();
     A.innerHTML=`<b>${it.nm}</b> · <b class="rm">${it.p}</b> 포인트 ${lack>0?`<span class="muted">· ${lack}포인트 더 모으면 살 수 있어요</span>`:'<button type="button" class="btn primary">사기</button>'}`;
     const bb=$('button',A);if(bb)bb.onclick=()=>{if(buyItem(preview.cat,preview.id)){setPreview(null);celebrate(`${josa(it.nm,'을','를')} 샀어요!`)}}}
@@ -265,7 +287,8 @@ async function loadClass(force){if(!isStudent()||GAME.off)return null;if(GAME.bu
   finally{GAME.busy=false;renderBossBits()}}
 function bossRewards(st){if(!st||!(NUM(st.my)>0))return;bossPlan(st).defeated.forEach(s=>{const n=10+5*s.k;if(award(n,'boss:'+st.week_start+':'+s.k)){bump('boss');setTimeout(()=>celebrate(`우리 반이 ${josa(s.boss.nm,'을','를')} 물리쳤어요! 보너스 +${n}`),400)}})}
 const offHTML=()=>`<div class="g-head"><b class="t">우리 반 보스전</b></div><p class="muted" style="margin:6px 0 0">선생님이 서버에 게임 설정을 추가하면 열려요.</p>`;
-function bossCardHTML(){
+function bossCardHTML(){return bossCardBase()+raidStripHTML()}
+function bossCardBase(){
   if(!isStudent())return`<div class="g-head"><b class="t">우리 반 보스전</b></div><p style="margin:6px 0 12px">로그인하면 반 친구들과 함께 이번 주 보스를 물리쳐요. 내가 받은 포인트만큼 보스에게 데미지가 들어가요.</p><a class="btn" href="#login">로그인하기</a>`;
   if(GAME.off)return offHTML();
   const st=GAME.st;if(!st)return`<div class="g-head"><b class="t">우리 반 보스전</b></div><p class="muted">불러오는 중…</p>`;
@@ -310,8 +333,9 @@ function renderBossBits(){const c=$('#bossCard');if(c)c.innerHTML=bossCardHTML()
   const h=$('#bossHost');if(!h||location.hash!=='#boss')return;
   if(GAME.off){h._st=null;h.innerHTML=`<div class="card panel">${offHTML()}</div>`;return}
   if(GAME.st){if(h._st)updateBossPage(h,GAME.st,{});else renderBossPage(h,GAME.st,{})}}
-function viewBoss(){crumbs.innerHTML=`<span class="sep">›</span><span>우리 반 보스전</span>`;
-  app.innerHTML=`<div class="unit-head"><div><h1>우리 반 보스전</h1><p>내가 받은 포인트만큼 보스에게 데미지가 들어가요. 반 친구들과 힘을 모아 이번 주 보스를 물리쳐요.</p></div></div><div id="bossHost"></div>`;
+function viewBoss(){crumbs.innerHTML=`<span class="sep">›</span><span>보스전</span>`;
+  app.innerHTML=`<div class="unit-head"><div><h1>보스전</h1><p>혼자 도전하는 <b>오늘의 보스 도전</b>과, 반 친구들과 포인트를 모아 때리는 <b>우리 반 보스전</b>이 있어요.</p></div></div><div id="raidHost"></div><h2 class="raid-sub">우리 반 보스전</h2><div id="bossHost"></div>`;
+  raidLobby($('#raidHost',app));
   const h=$('#bossHost',app);
   if(!isStudent()){h.innerHTML=`<div class="card panel"><p style="margin-top:0">로그인하면 우리 반 친구들과 함께 보스전에 참여해요.</p><a class="btn primary" href="#login">로그인하기</a></div>`;return}
   if(GAME.off){h.innerHTML=`<div class="card panel">${offHTML()}</div>`;return}
@@ -492,3 +516,216 @@ function viewBBCpu(key){crumbs.innerHTML=`<span class="sep">›</span><a href="#
   app.innerHTML='<div id="bbHost"></div>';renderBB(state())}
 
 
+
+/* ───────── 오늘의 보스 도전 (T05): 혼자 하는 미니 게임 ─────────
+   입장권: 오늘의 계산을 끝내면 하루 1번 무료 · 그다음은 20포인트로 2번 더(하루 최대 3판)
+   방식(RAID_MODES)은 주마다 바꿀 수 있게 나눠 두었어요. 지금은 '폭탄 방어전' 하나예요.
+   문제는 js/boss-bank.js(window.BOSS_BANK)에서 가져와요.
+   포인트는 '끝까지 하기 · 다시 맞히기 · 새 도전'에만 조금 주고, 큰 보상은 보물상자(물건)로 줘요. */
+const RAID={COST:20,PAID_MAX:2,POT:10,HP:{normal:500,hard:450},SEC:{normal:45,hard:75},HEARTS:3,GAUGE_MS:2000,PARRY_MS:1200,BASE:100};
+const RAID_MODES={defense:{nm:'폭탄 방어전',d:'보스가 던지는 문제 폭탄이 성벽에 닿기 전에 풀어서 터뜨려요.'}};
+const raidModeNow=()=>'defense';
+const DICE=[null,
+  {nm:'보스 광폭화',ic:'😡',d:'문제마다 시간 −5초. 대신 이기면 무조건 황금 상자!'},
+  {nm:'행운의 방패',ic:'🍀',d:'첫 실수 1번은 자동으로 막아 줘요.'},
+  {nm:'시간의 모래시계',ic:'⏳',d:'문제마다 시간 +10초.'},
+  {nm:'정밀 조준',ic:'🎯',d:'PERFECT 황금 존이 2배로 넓어져요.'},
+  {nm:'강타 버프',ic:'💪',d:'이번 판 데미지 1.5배!'},
+  {nm:'잭팟!',ic:'🎰',d:'데미지 2배 + 이기면 보물상자를 2번 열어요!'}];
+const DICE_FACE=['','⚀','⚁','⚂','⚃','⚄','⚅'];
+function raidBoss(d=today()){const w=Math.floor((Date.parse(d+'T00:00:00Z')/864e5+3)/7);return BOSSES[((w%BOSSES.length)+BOSSES.length)%BOSSES.length]}
+function raidDay(){const R=DB._raid=OBJ(DB._raid),t=today();R.days=OBJ(R.days);Object.keys(R.days).forEach(k=>{if(k<addDays(t,-3))delete R.days[k]});
+  const D=R.days[t]=OBJ(R.days[t]);D.f=NUM(D.f);D.p=NUM(D.p);R.w=NUM(R.w);R.g=NUM(R.g);return{R,D}}
+function raidTix(){const{D}=raidDay(),t=today(),drill=NUM(dayState().c.drill)>0||OBJ(DB._drill).last===t;
+  return{drill,free:drill&&!D.f,paidLeft:D.f?Math.max(0,RAID.PAID_MAX-D.p):0,played:D.f+D.p}}
+const titleChip=id=>{if(!id||id==='none')return'';const it=shopItem('title',id);return it&&it.id===id?`<div class="ti-chip on-av">🏅 ${it.nm}</div>`:''};
+/* 연속 보호 방패: 하루(이상) 빠졌을 때, 가진 방패만큼 연속 일수를 이어 줘요 */
+function shieldCheck(){const M=me(),t=today(),y=addDays(t,-1);if(!M.last||M.last>=y||NUM(M.streak)<2)return;
+  let gap=0,d=M.last;while(d<y&&gap<8){d=addDays(d,1);gap++}
+  if(gap<1||gap>shieldLeft())return;const S=shopState();S.shieldUsed=NUM(S.shieldUsed)+gap;M.last=y;save();
+  setTimeout(()=>toast(`🛡️ 연속 보호 방패 ${gap}개를 써서 연속 ${M.streak}일이 그대로 이어졌어요!`),300)}
+award=(f=>function(n,k,w){shieldCheck();return f(n,k,w)})(award);
+
+function raidStripHTML(){const t=raidTix(),n=(t.free?1:0)+t.paidLeft;
+  return`<a class="raid-strip" href="#boss"><span>⚔️ <b>오늘의 보스 도전</b> · ${esc(raidBoss().nm)}</span><small>${t.free?'무료 입장권 있어요!':t.drill?(n?`추가 입장 ${n}번 가능`:'오늘은 다 했어요'):'오늘의 계산을 끝내면 무료 입장'}</small></a>`}
+function raidLootCount(){const S=shopState(),fr=shopCat('frame').items.filter(i=>i.bossOnly),ti=shopCat('title').items.filter(i=>i.bossOnly);
+  return{tix:bonusLeft(),shield:shieldLeft(),pcs:NUM(S.couponPcs)%3,coupons:Math.floor(NUM(S.couponPcs)/3),fr:fr.filter(i=>owns('frame',i.id)).length,frN:fr.length,ti:ti.filter(i=>owns('title',i.id)).length,tiN:ti.length}}
+function raidLobby(host){if(!host)return;const b=raidBoss(),t=raidTix(),{R}=raidDay(),L=raidLootCount(),mode=RAID_MODES[raidModeNow()];
+  const btns=t.free?`<button type="button" class="btn primary raidGo" data-pay="0">🎟️ 무료 입장권으로 도전!</button>`
+    :!t.drill?`<a class="btn primary" href="#drill">오늘의 계산 하고 무료 입장권 받기 →</a>`
+    :t.paidLeft?`<button type="button" class="btn primary raidGo" data-pay="1">${RAID.COST}포인트로 한 번 더 (오늘 ${t.paidLeft}번 남음)</button>`
+    :`<span class="muted">오늘 도전은 다 했어요. 내일 새 입장권이 생겨요!</span>`;
+  host.innerHTML=`<div class="card panel raid-lobby">
+    <div class="rl-top"><div class="rl-pic"></div><div class="rl-info"><span class="stage-tag">이번 주 보스 · ${mode.nm}</span><h2>${esc(b.nm)}</h2>
+      <p>${mode.d} 정답을 맞히면 <b>타이밍 게이지</b>를 눌러 더 세게! 틀리면 번쩍 뜨는 <b>🛡️ 막기</b>를 재빨리 눌러요.</p>
+      <div class="rl-act">${btns}</div>
+      <small class="muted">하루 최대 3판 · 시험 범위: 원과 부채꼴 · 입체도형 · 정비례와 반비례${R.g?` · 내 전적 ${R.w}승 / ${R.g}판`:''}</small></div></div>
+    <div class="rl-loot">
+      <a href="#shop" title="상점에서 쓸 수 있어요">🎟️ 캡슐 뽑기권 <b class="rm">${L.tix}</b></a>
+      <span title="하루 빠져도 연속 일수를 지켜 줘요">🛡️ 연속 보호 방패 <b class="rm">${L.shield}</b></span>
+      <span title="조각 3개 = 쿠폰 1장">🎫 대면 수업 쿠폰 조각 <b class="rm">${L.pcs}/3</b>${L.coupons?` · 완성 쿠폰 <b class="rm">${L.coupons}</b>장 (선생님께 보여 주세요)`:''}</span>
+      <a href="#shop">🖼️ 보스 한정 프레임 <b class="rm">${L.fr}/${L.frN}</b> · 칭호 <b class="rm">${L.ti}/${L.tiN}</b></a></div></div>`;
+  mountSpin($('.rl-pic',host),y=>bossSVG(b,150,y),{speed:0.5});
+  $$('.raidGo',host).forEach(x=>x.onclick=()=>raidOpen(x.dataset.pay==='1',()=>raidLobby(host)))}
+
+function raidPick(tier,G){const B=(window.BOSS_BANK||{})[tier]||[];if(!B.length)return null;const want=G.units[G.qi%G.units.length];let q=null;
+  for(let k=0;k<40;k++){const it=B[Math.floor(Math.random()*B.length)];let c;try{c=typeof it==='function'?it(Math.random):Object.assign({},it)}catch(e){continue}
+    if(!c||!c.q)continue;if(G.used.has(c.q)&&k<36)continue;q=c;if(k<30&&c.unit!==want)continue;break}
+  if(!q)return null;G.used.add(q.q);if(q.type==='choice')q.choices=shuffle(Math.random,q.choices||[]);if(!q.type)q.type='num';return q}
+
+function raidChestSVG(gold,size=96){const c=gold?['#ffd23f','#c98a00','#fff3b0']:['#cfd6e4','#7d889e','#f2f5fa'];
+  return`<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="90" rx="36" ry="5" fill="rgba(0,0,0,.18)"/>
+   <rect x="14" y="44" width="72" height="42" rx="6" fill="${c[0]}" stroke="#1d2640" stroke-width="3.5"/><path class="lid" d="M14 46 V34 a12 12 0 0 1 12-12 h48 a12 12 0 0 1 12 12 V46 z" fill="${c[2]}" stroke="#1d2640" stroke-width="3.5"/>
+   <rect x="14" y="44" width="72" height="8" fill="${c[1]}" stroke="#1d2640" stroke-width="3"/><rect x="42" y="40" width="16" height="20" rx="3" fill="#1d2640"/><circle cx="50" cy="49" r="3" fill="${c[0]}"/>
+   ${gold?'<path d="M24 30l3 5 5 1-4 3 1 6-5-3-5 3 1-6-4-3 5-1z" fill="#fff"/>':''}</svg>`}
+
+/* 보물상자 내용: 꽝 없음. 이번 주 보스의 한정 프레임·칭호가 섞여 있어요 */
+function raidLoot(gold,boss){const S=shopState(),fr=shopCat('frame').items.find(i=>i.bossOnly===boss.id),ti=shopCat('title').items.find(i=>i.bossOnly===boss.id);
+  const W=[['pts',gold?20:35],['tix',gold?22:12],['shield',gold?15:20],['coupon',18]];
+  if(fr&&!owns('frame',fr.id))W.push(['frame',gold?15:8]);if(ti&&!owns('title',ti.id))W.push(['title',gold?10:4]);
+  if(!gachaInfo().pool.length)W.splice(1,1);
+  let roll=Math.random()*W.reduce((a,b)=>a+b[1],0),k=W[0][0];for(const w of W){roll-=w[1];if(roll<=0){k=w[0];break}}
+  const n=gold?15+Math.floor(Math.random()*11):8+Math.floor(Math.random()*5);
+  return{pts:{k,ic:'💰',nm:`포인트 주머니 +${n}`,d:'바로 쓸 수 있는 포인트예요.',n},tix:{k,ic:'🎟️',nm:'캡슐 뽑기권 1장',d:'상점에서 하루 횟수와 상관없이, 아직 없는 캐릭터만 나와요.'},
+    shield:{k,ic:'🛡️',nm:'연속 보호 방패 1개',d:'하루 빠져도 연속 일수를 지켜 줘요.'},coupon:{k,ic:'🎫',nm:'대면 수업 쿠폰 조각 1개',d:'3개 모으면 방과후 수업 보너스 쿠폰 1장!'},
+    frame:fr&&{k,ic:'🖼️',nm:`보스 한정 프레임 ‘${fr.nm}’`,d:'상점 프로필 프레임에서 바로 쓸 수 있어요.',id:fr.id,cls:fr.cls},
+    title:ti&&{k,ic:'🏅',nm:`보스 한정 칭호 ‘${ti.nm}’`,d:'상점 칭호 탭에서 달 수 있어요.',id:ti.id}}[k]}
+function raidApply(x){const S=shopState();
+  if(x.k==='pts')award(x.n,null,'보물상자 포인트 주머니');
+  else if(x.k==='tix')S.bonusGot=NUM(S.bonusGot)+1;
+  else if(x.k==='shield')S.shieldGot=NUM(S.shieldGot)+1;
+  else if(x.k==='coupon'){S.couponPcs=NUM(S.couponPcs)+1;if(S.couponPcs%3===0)setTimeout(()=>celebrate('🎫 쿠폰 조각 3개! 대면 수업 보너스 쿠폰 1장이 완성됐어요'),900)}
+  else if(x.k==='frame')S.own['frame:'+x.id]=1;
+  else if(x.k==='title')S.own['title:'+x.id]=1;
+  save()}
+
+function raidOpen(paid,onClose){
+  const old=$('.raid-ov');if(old)old.remove();
+  const boss=raidBoss(),ov=el(`<div class="raid-ov" role="dialog" aria-modal="true" aria-label="오늘의 보스 도전"><div class="raid-box"><div class="raid-top"></div><div class="raid-stage"></div></div></div>`);
+  document.body.appendChild(ov);document.body.classList.add('raid-lock');
+  const top=$('.raid-top',ov),stage=$('.raid-stage',ov);let G=null,keyFn=null,timers=[],closed=false;
+  const later=(f,ms)=>{const id=setTimeout(()=>{if(!closed)f()},ms);timers.push(id);return id};
+  const close=()=>{if(closed)return;closed=true;timers.forEach(clearTimeout);ov.remove();document.body.classList.remove('raid-lock');removeEventListener('keydown',onKey,true);removeEventListener('hashchange',close);activeBox=null;if(onClose)onClose()};
+  const onKey=e=>{if(e.key==='Escape'&&(!G||G.over)){close();return}if((e.key===' '||e.code==='Space')&&keyFn){e.preventDefault();e.stopPropagation();keyFn()}};
+  addEventListener('keydown',onKey,true);addEventListener('hashchange',close);
+  const buzz=ms=>{try{if(navigator.vibrate)navigator.vibrate(ms)}catch(e){}};
+
+  /* 1) 준비: 난이도 · 물약 */
+  function prep(){const ptsNeed=()=>(paid?RAID.COST:0)+(opt.time?RAID.POT:0)+(opt.heart?RAID.POT:0);
+    top.innerHTML=`<b>⚔️ ${esc(boss.nm)} · 준비</b><button type="button" class="btn ghost raid-x">닫기</button>`;$('.raid-x',top).onclick=close;
+    const draw=()=>{const need=ptsNeed(),lack=need>balance();
+      stage.innerHTML=`<div class="rp-prep"><div class="rp-boss"></div>
+        <h3>난이도를 골라요</h3><div class="rp-modes">
+          <button type="button" class="rp-mode ${opt.tier==='normal'?'on':''}" data-t="normal"><b>⚔️ 일반</b><small>문제마다 ${RAID.SEC.normal}초 · 이기면 <b>은 상자</b></small></button>
+          <button type="button" class="rp-mode ${opt.tier==='hard'?'on':''}" data-t="hard"><b>🔥 필살기</b><small>어려운 문제 · ${RAID.SEC.hard}초 · 이기면 <b>황금 상자</b></small></button></div>
+        <h3>물약 (선택)</h3><div class="rp-pots">
+          <button type="button" class="rp-pot ${opt.time?'on':''}" data-p="time">⏳ 시간 연장 +15초 <small>${RAID.POT}포인트</small></button>
+          <button type="button" class="rp-pot ${opt.heart?'on':''}" data-p="heart">❤️ 예비 하트 +1 <small>${RAID.POT}포인트</small></button></div>
+        <p class="rp-cost">${need?`이번 판에 쓸 포인트 <b class="rm">${need}</b> · 쓸 수 있는 포인트 <b class="rm">${balance()}</b>`:'🎟️ 무료 입장권을 써요.'}${lack?` <span class="bad">· ${need-balance()}포인트가 모자라요</span>`:''}</p>
+        <button type="button" class="btn primary rp-go" ${lack?'disabled':''}>🎲 운명의 주사위 굴리고 시작!</button></div>`;
+      mountSpin($('.rp-boss',stage),y=>bossSVG(boss,120,y),{speed:0.6});
+      $$('.rp-mode',stage).forEach(b=>b.onclick=()=>{opt.tier=b.dataset.t;draw()});
+      $$('.rp-pot',stage).forEach(b=>b.onclick=()=>{opt[b.dataset.p]=!opt[b.dataset.p];draw()});
+      $('.rp-go',stage).onclick=()=>{const t=raidTix(),need=ptsNeed();if(paid?!t.paidLeft:!t.free){toast('입장권이 없어요.');close();return}if(need>balance()){draw();return}
+        const{R,D}=raidDay();if(paid)D.p+=1;else D.f=1;R.g+=1;if(need)shopState().spent+=need;save();updatePill();dice()}};
+    const opt={tier:'normal',time:false,heart:false};draw();
+    prep.opt=opt}
+
+  /* 2) 운명의 주사위 */
+  function dice(){const opt=prep.opt,face=1+Math.floor(Math.random()*6),D=DICE[face];
+    top.innerHTML=`<b>🎲 운명의 주사위</b>`;
+    stage.innerHTML=`<div class="rd-wrap"><div class="rd-die" aria-live="polite">⚀</div><div class="rd-res"></div></div>`;
+    const die=$('.rd-die',stage);let k=0;const spin=()=>{die.textContent=DICE_FACE[1+(k++%6)];if(k<14)later(spin,50+k*12)};if(!reduced)spin();
+    later(()=>{die.textContent=DICE_FACE[face];die.classList.add('land');buzz(30);
+      $('.rd-res',stage).innerHTML=`<div class="rd-buff f${face}"><span class="ic">${D.ic}</span><b>${face} · ${D.nm}</b><small>${D.d}</small></div><button type="button" class="btn primary rd-go">전투 시작! (스페이스)</button>`;
+      const go=()=>{keyFn=null;start(opt,face)};$('.rd-go',stage).onclick=go;keyFn=go},reduced?200:1150)}
+
+  /* 3) 전투 */
+  function start(opt,face){const tier=opt.tier,maxH=RAID.HEARTS+(opt.heart?1:0);
+    G={tier,face,hp:RAID.HP[tier],max:RAID.HP[tier],hearts:maxH,maxH,sec:RAID.SEC[tier]+(face===3?10:0)-(face===1?5:0)+(opt.time?15:0),
+      luck:face===2,guard:false,combo:0,best:0,allCombo:false,perfect:0,good:0,hits:0,shots:0,missed:[],used:new Set(),units:shuffle(Math.random,BOSS_BANK_UNITS()),qi:0,over:false,mult:face===6?2:face===5?1.5:1,zone:face===4?2:1};
+    stage.innerHTML=`<div class="rb-arena"><div class="rb-boss"><div class="rb-hp"><i></i><span></span></div><div class="rb-pic"></div></div>
+      <div class="rb-lane"><div class="rb-bomb"><span class="bi">💣</span><b class="bt"></b></div></div><div class="rb-wall" aria-hidden="true"></div><div class="rb-fx"></div></div>
+      <div class="rb-card"><div class="rb-meta"></div><div class="rb-q"></div><div class="rb-ans"></div></div>`;
+    mountSpin($('.rb-pic',stage),y=>bossSVG(boss,108,y),{speed:0.7});drawTop();drawHP();next()}
+  function drawTop(){if(!G)return;const D=DICE[G.face];
+    top.innerHTML=`<span class="rh-hearts" aria-label="하트 ${G.hearts}개">${'❤️'.repeat(G.hearts)}${'🤍'.repeat(Math.max(0,G.maxH-G.hearts))}</span><span class="rh-buff" title="${D.d}">${D.ic} ${D.nm}</span>${G.combo>=2?`<span class="rh-combo">PERFECT ×${G.combo}</span>`:''}${G.allCombo?'<span class="rh-combo gold">황금 상자 승급!</span>':''}<button type="button" class="btn ghost raid-x">그만하기</button>`;
+    const x=$('.raid-x',top);x.onclick=()=>{if(G.over){close();return}if(x.dataset.sure){finish(false,true);return}x.dataset.sure=1;x.textContent='정말 그만할까요? 한 번 더 누르면 끝나요'}}
+  function drawHP(){const i=$('.rb-hp i',stage),s=$('.rb-hp span',stage);if(i)i.style.width=Math.max(0,G.hp/G.max*100).toFixed(1)+'%';if(s)s.textContent=`체력 ${Math.max(0,G.hp)} / ${G.max}`}
+  function fx(html,cls){const lay=$('.rb-fx',stage);if(!lay)return;const d=el(`<span class="rfx ${cls||''}">${html}</span>`);lay.appendChild(d);later(()=>d.remove(),1400)}
+  function next(){if(!G||G.over)return;const q=raidPick(G.tier,G);G.qi++;
+    if(!q){stage.innerHTML='<p class="muted">문제를 불러오지 못했어요. 새로 고침해 주세요.</p>';return}
+    G.q=q;G.shots++;G.state='ans';
+    $('.rb-meta',stage).innerHTML=`<span class="rb-unit">${esc(q.unit||'')}</span><span>폭탄 ${G.shots}번째</span>`;$('.rb-q',stage).innerHTML=q.q;
+    const bomb=$('.rb-bomb',stage);bomb.className='rb-bomb';bomb.style.top='0%';
+    const box=$('.rb-ans',stage);box.innerHTML='';box.appendChild(answerUI(q,v=>{if(G.state!=='ans')return;const ok=check(q,v);
+      if(ok==='nopi'){toast('답 끝에 π를 붙여요.');return false}if(ok==='nosign'){toast('부호(+, −)를 붙여요.');return false}
+      if(ok===true){hitPhase();return true}wrong(String(v));return true}));
+    const t0=performance.now(),lim=G.sec*1000,bt=$('.bt',bomb);
+    const tick=now=>{if(closed||G.over||G.state!=='ans'||G.q!==q)return;const p=Math.min(1,(now-t0)/lim),left=Math.ceil((lim-(now-t0))/1000);
+      bomb.style.top=(p*100).toFixed(2)+'%';bt.textContent=Math.max(0,left);bomb.classList.toggle('hurry',left<=10);
+      if(p>=1){wrong(null);return}requestAnimationFrame(tick)};requestAnimationFrame(tick)}
+  /* 정답 → 저스트 타이밍 게이지 */
+  function hitPhase(){G.state='gauge';G.hits++;const box=$('.rb-ans',stage),gw=6*G.zone,ow=18;
+    box.innerHTML=`<div class="rg"><p class="rg-t">정답! 가운데 <b>황금 존</b>에 맞춰 누르면 PERFECT!</p><div class="rg-bar"><i class="rg-good" style="left:${50-ow}%;width:${ow*2}%"></i><i class="rg-gold" style="left:${50-gw}%;width:${gw*2}%"></i><b class="rg-cur"></b></div>
+      <button type="button" class="btn primary rg-hit">지금! (스페이스)</button></div>`;
+    activeBox=null;const cur=$('.rg-cur',box),t0=performance.now(),per=reduced?1400:900;let done=false,p=0;
+    const tick=now=>{if(done||closed||!G||G.over)return;const ph=((now-t0)/per)%2;p=ph<1?ph:2-ph;cur.style.left=(p*100).toFixed(2)+'%';if(now-t0>=RAID.GAUGE_MS){hit(null);return}requestAnimationFrame(tick)};
+    const hit=pp=>{if(done)return;done=true;keyFn=null;const d=Math.abs((pp==null?-1:pp)*100-50);
+      const g=pp==null?'late':d<=gw?'perfect':d<=ow?'good':'miss';strike(g)};
+    const tap=e=>{if(e)e.preventDefault();hit(p)};$('.rg-hit',box).onclick=tap;$('.rg-bar',box).onpointerdown=tap;keyFn=tap;requestAnimationFrame(tick)}
+  function strike(g){if(!G||G.over)return;const m={perfect:2,good:1.3,miss:1,late:1}[g],dmg=Math.round(RAID.BASE*m*G.mult);
+    if(g==='perfect'){G.perfect++;G.combo++;G.best=Math.max(G.best,G.combo);if(G.combo>=3&&!G.allCombo){G.allCombo=true;later(()=>toast('🌟 PERFECT 3연속! 이기면 황금 상자로 승급해요'),500)}}else{G.combo=0;if(g==='good')G.good++}
+    G.hp-=dmg;const bomb=$('.rb-bomb',stage);if(bomb)bomb.classList.add('fly');
+    fx(`${g==='perfect'?'PERFECT!':g==='good'?'GOOD!':'명중!'} <b>−${dmg}</b>`,g);buzz(g==='perfect'?[20,30,40]:25);
+    const pic=$('.rb-pic',stage);if(pic&&!reduced){pic.classList.remove('hit');void pic.offsetWidth;pic.classList.add('hit')}
+    $('.rb-ans',stage).innerHTML=`<p class="rg-t">${g==='perfect'?'⚡ 완벽한 타이밍! 데미지 2배':g==='good'?'좋아요! 데미지 1.3배':'정답이라 기본 데미지는 그대로 들어가요.'}</p>`;
+    drawTop();drawHP();later(()=>{if(G.hp<=0)finish(true);else next()},1100)}
+  /* 오답·시간 초과 → 1.2초 긴급 막기 */
+  function wrong(v){if(G.state!=='ans')return;G.state='hurt';G.combo=0;const q=G.q;G.missed.push({q,v});activeBox=null;
+    const bomb=$('.rb-bomb',stage);if(bomb){bomb.style.top='100%';bomb.classList.add('boom')}
+    $('.rb-ans',stage).innerHTML=`<p class="rg-t">${v==null?'⏰ 시간이 다 됐어요!':'앗, 아쉬워요!'} 정답은 <b>${esc(fmtAns(q))}</b> · 끝나고 다시 볼 수 있어요.</p>`;drawTop();
+    if(G.luck){G.luck=false;fx('🍀 행운의 방패가 막았어요!','guard');later(next,1500);return}
+    if(G.guard){later(()=>hurt(),500);return}
+    later(()=>{const ar=$('.rb-arena',stage);if(!ar)return;const b=el('<button type="button" class="rp-parry">🛡️ 막기!</button>');
+      b.style.left=(8+Math.random()*60)+'%';b.style.top=(12+Math.random()*55)+'%';ar.appendChild(b);let done=false;
+      const ok=e=>{if(e)e.preventDefault();if(done)return;done=true;keyFn=null;b.remove();G.guard=true;fx('⚡ 저스트 가드!','guard');buzz([15,20,15]);later(next,1300)};
+      b.onpointerdown=ok;b.onclick=ok;keyFn=ok;later(()=>{if(done)return;done=true;keyFn=null;b.remove();hurt()},RAID.PARRY_MS)},450)}
+  function hurt(){if(!G||G.over)return;G.hearts--;fx('💥 성벽이 흔들려요! 하트 −1','hurt');buzz(120);const a=$('.rb-arena',stage);if(a&&!reduced){a.classList.remove('shake');void a.offsetWidth;a.classList.add('shake')}
+    drawTop();later(()=>{if(G.hearts<=0)finish(false);else next()},1300)}
+
+  /* 4) 끝: 이기면 보물상자 → 복기 */
+  function finish(win,quit){if(G.over)return;G.over=true;G.state='end';keyFn=null;activeBox=null;const{R}=raidDay();if(win){R.w+=1;R.beat=OBJ(R.beat);R.beat[boss.id]=1}save();
+    const gold=win&&(G.tier==='hard'||G.face===1||G.allCombo),picks=win?(G.face===6?2:1):0,got=[];
+    const pts=[];const give=(n,k,why)=>{if(award(n,k,why))pts.push(`+${n} ${why}`)};
+    if(!quit){give(5,'boss:'+today()+':raidfin','보스전을 끝까지 했어요')}
+    if(win){give(10,'rboss:'+boss.id,`${boss.nm} 첫 승리 (새 도전)`);if(G.tier==='hard')give(10,'rhard:first','필살기 첫 승리 (새 도전)')}
+    if(win)chest(gold,picks,got,()=>summary(win,gold,got,pts,quit));else summary(win,gold,got,pts,quit)}
+  function chest(gold,left,got,done){top.innerHTML=`<b>🎁 ${gold?'황금':'은'} 보물상자</b>`;
+    const L=[0,1,2].map(()=>raidLoot(gold,boss));
+    stage.innerHTML=`<div class="rc-wrap"><h3>${josa(boss.nm,'을','를')} 물리쳤어요! 상자를 하나 골라요${left>1?` <small>(잭팟! ${left}번 열어요)</small>`:''}</h3>
+      <div class="rc-row">${L.map((_,i)=>`<button type="button" class="rc-chest ${gold?'gold':''}" data-i="${i}" aria-label="${i+1}번 상자">${raidChestSVG(gold)}</button>`).join('')}</div><div class="rc-res" aria-live="polite"></div></div>`;
+    if(!got.length)celebrate('');
+    $$('.rc-chest',stage).forEach(b=>b.onclick=()=>{if(stage.dataset.busy)return;stage.dataset.busy=1;const i=+b.dataset.i,x=L[i];b.classList.add('shake2');
+      later(()=>{b.classList.remove('shake2');b.classList.add('open');raidApply(x);got.push(x);celebrate(`${x.ic} ${x.nm}!`);
+        $$('.rc-chest',stage).forEach((c,j)=>{c.disabled=true;if(j!==i){c.classList.add('peek');c.insertAdjacentHTML('beforeend',`<span class="rc-peek">${L[j].ic}<small>${esc(L[j].nm)}</small></span>`)}});
+        $('.rc-res',stage).innerHTML=`<div class="rc-got"><span class="ic">${x.ic}</span><b>${esc(x.nm)}</b><small>${esc(x.d)}</small></div><button type="button" class="btn primary rc-next">${left>1?'한 번 더 열기!':'결과 보기'}</button>`;
+        $('.rc-next',stage).onclick=()=>{delete stage.dataset.busy;if(left>1)chest(gold,left-1,got,done);else done()}},reduced?100:900)})}
+  function summary(win,gold,got,pts,quit){let retry=0;
+    top.innerHTML=`<b>${win?'🏆 승리!':quit?'도전 끝':'💥 이번엔 아쉬워요'}</b><button type="button" class="btn ghost raid-x">닫기</button>`;$('.raid-x',top).onclick=close;
+    const t=raidTix(),more=t.free||t.paidLeft;
+    stage.innerHTML=`<div class="rs-wrap"><div class="rs-head ${win?'win':''}"><div class="rs-pic"></div><div><h3>${win?`${josa(boss.nm,'을','를')} 물리쳤어요!`:quit?'여기까지 했어요.':`${boss.nm}에게 이번엔 졌어요.`}</h3>
+        <p>${win?(gold?'황금 상자를 열었어요!':'은 상자를 열었어요!'):'괜찮아요. 놓친 문제를 다시 풀면 다음 판이 훨씬 쉬워져요.'}</p></div></div>
+      <div class="rs-stats"><span>맞힌 폭탄 <b class="rm">${G.hits}</b>/${G.shots}</span><span>PERFECT <b class="rm">${G.perfect}</b></span><span>최고 연속 <b class="rm">${G.best}</b></span><span>남은 하트 <b class="rm">${Math.max(0,G.hearts)}</b></span></div>
+      ${got.length?`<div class="rs-got">${got.map(x=>`<span>${x.ic} ${esc(x.nm)}</span>`).join('')}</div>`:''}
+      ${pts.length?`<p class="rs-pts">받은 포인트: ${pts.join(' · ')}</p>`:''}
+      ${G.missed.length?`<h3>💡 놓친 문제 핵심 복기</h3><p class="muted" style="margin-top:0">다시 풀어서 맞히면 문제마다 <b>+2</b> (이번 판 최대 2문제)</p><ol class="rs-miss">${G.missed.map((m,i)=>`<li data-i="${i}"><span class="rb-unit">${esc(m.q.unit||'')}</span><div class="rs-q">${m.q.q}</div>
+        <div class="rs-tip">정답 <b>${esc(fmtAns(m.q))}</b>${m.v!=null?` <span class="muted">(내 답: ${esc(m.v)})</span>`:' <span class="muted">(시간 초과)</span>'}<br>${m.q.tip||''}</div><button type="button" class="btn t-mini rs-retry">다시 풀어 보기</button><div class="rs-box"></div></li>`).join('')}</ol>`:'<p class="rs-clean">🌟 놓친 문제 없이 끝냈어요!</p>'}
+      <div class="rs-act">${more?`<button type="button" class="btn primary rs-again">${t.free?'무료 입장권으로 또 도전':`${RAID.COST}포인트로 한 번 더`}</button>`:''}<button type="button" class="btn rs-close">닫기</button></div></div>`;
+    const rp=$('.rs-pic',stage);if(win)rp.innerHTML=raidChestSVG(gold,90);else mountSpin(rp,y=>bossSVG(boss,90,y),{speed:0.5});
+    $('.rs-close',stage).onclick=close;const ag=$('.rs-again',stage);if(ag)ag.onclick=()=>{const tt=raidTix();paid=!tt.free;G=null;prep()};
+    $$('.rs-miss li',stage).forEach(li=>{const m=G.missed[+li.dataset.i],btn=$('.rs-retry',li),bx=$('.rs-box',li);
+      btn.onclick=()=>{btn.remove();$('.rs-tip',li).classList.add('hide');const q=Object.assign({},m.q);bx.appendChild(answerUI(q,v=>{const ok=check(q,v);if(ok==='nopi'){toast('답 끝에 π를 붙여요.');return false}if(ok!==true)return false;
+        bx.innerHTML=`<p class="rs-ok">맞혔어요! ${retry<2?'':'(포인트는 이번 판 2문제까지)'}</p>`;$('.rs-tip',li).classList.remove('hide');if(retry<2){retry++;award(2,null,'놓친 문제를 다시 풀어 맞혔어요')}activeBox=null;return true}))}})}
+  prep()}
+const BOSS_BANK_UNITS=()=>((window.BOSS_BANK||{}).units||['원과 부채꼴','입체도형','정비례와 반비례']).slice();

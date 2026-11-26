@@ -14,6 +14,7 @@
 | **T02** | 테스트·문서·저장소 정비 (`tests/verify.mjs` 입체도형/정수 생성기 검증 추가, `README.md` 최신화, `toast`/`esc` 안전화, 병합 완료된 구 `claude/project-thread-*` 및 임시 `agy/t00-collab-rules` 브랜치 정리) | Antigravity | `tests/verify.mjs`, `README.md`, `js/01-core.js`, `js/03-teacher.js` | 대기 (`T01` 직후) |
 | **T03** | 시험 범위 차시 확장 A: 3차시 `회전체` · 4차시 `회전체의 성질` (교과서 217~219쪽) | Antigravity *(조율 가능)* | `js/02r-solid-rot.js`(신규), `docs/specs/T03-solid-rot.md`, `index.html`, `js/02-unit-solid.js`(최소 훅) | 스펙 준비 대기 |
 | **T04** | 시험 범위 차시 확장 B: 6차시 `기둥의 부피` · 7차시 `뿔의 겉넓이` · 8차시 `뿔의 부피` (교과서 223~231쪽) | Claude Code | `js/02v-solid-vol.js`(신규), `docs/specs/T04-solid-vol.md`, `index.html`, `js/02-unit-solid.js`(최소 훅) | 스펙 준비 대기 (`T03`과 병렬 가능) |
+| **T05** | 보스전 미니 게임 개편: 혼자 하는 `오늘의 보스 도전`(폭탄 방어전 · 입장권 · 운명의 주사위 · 타이밍 게이지 · 긴급 막기 · 3택1 보물상자 · 놓친 문제 복기). 선생님 기획서(Boss Battle Design Handoff) 기준 | Claude Code | `js/04-games.js`, `js/boss-bank.js`(신규), `boss-raid.css`(신규), `index.html`(로드 2줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 
 ---
 
@@ -57,3 +58,12 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
   * 구 방식 정리: 로컬 `hg-patch_20261126_games_shop-3d-gacha.zip` 내용은 이미 `main`에 머지 및 후속 확장(`#40`) 완료됨. 앞으로는 GitHub 자율 반영/PR + `COLLAB.md`로만 협업.
   * 잔여 브랜치 참고: 기존 `claude/project-thread-*` 4개와 임시 `agy/t00-collab-rules` 브랜치는 `T02` 저장소 정비 시 일괄 정리 예정.
   * 다음 단계: Antigravity가 `T01`(DB 위생 패치) + `T02`(테스트·문서·브랜치 정리) 및 `docs/specs/T03-*.md`, `T04-*.md` 스펙 등록 진행.
+
+* **2026-11-26 (`T05` 완료, Claude Code)**
+  * 보스전 화면(`#boss`) 위쪽에 혼자 하는 **오늘의 보스 도전(폭탄 방어전)** 추가. 아래 `우리 반 보스전`(포인트 = 데미지)은 그대로.
+  * 문제 은행은 `js/boss-bank.js`(`window.BOSS_BANK={normal,hard}`)로 분리: 다른 AI는 배열 끝에 한 칸씩 덧붙이면 돼요. 규격은 파일 맨 위 주석.
+  * 방식은 `RAID_MODES`/`raidModeNow()`로 나눠 두어, 다음에 빙고·성 탈출 같은 방식을 주마다 돌릴 수 있어요.
+  * 보상: 포인트는 끝까지 하기 +5(하루 1번), 보스별 첫 승리 +10, 필살기 첫 승리 +10, 놓친 문제 다시 맞히기 +2(판당 2문제), 상자 포인트 주머니(은 8~12 · 황금 15~25)만. 입장권 20P·물약 10P가 더 커서 포인트가 불어나지 않아요.
+  * 새 DB 필드: `DB._raid`(`days[YYYY-MM-DD]={f,p}`, `w`, `g`, `beat`), `DB._shop`의 `bonusGot/bonusUsed`(캡슐 뽑기권), `shieldGot/shieldUsed`(연속 보호 방패), `couponPcs`(쿠폰 조각, 3개=1장), 보스 한정 프레임 `own['frame:b-*']`, 칭호 `own['title:*']`·`eq.title`. 기기 병합이 큰 값 우선이라 '남은 개수' 대신 늘어나기만 하는 Got/Used로 저장.
+  * `award()`를 04-games.js에서 감싸 연속 보호 방패를 적용(01-core.js는 건드리지 않음). DB/서버 SQL 변경 없음.
+  * `T02` 참고: `tests/verify.mjs`에 `js/boss-bank.js` 문법·정답 검사(모든 생성기 → `check()` 통과)를 넣어 주면 좋아요. 이번에는 T02 소유 파일이라 손대지 않고 따로 13,500문항 검사로 확인했어요.
