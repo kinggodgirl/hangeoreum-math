@@ -1076,3 +1076,4 @@ body.t-dopen{overflow:hidden}
 .uc-ls .t{flex:1;font-size:15px}.uc-ls .pips{flex:none}
 .ucard .uc-go{margin-top:auto;text-align:center}
 @media (max-width:520px){.units-big{grid-template-columns:1fr}}
+.choices button.also{background:#e9f7ee;border-color:#2e8b57;color:#1e6b3f;cursor:default}.choices button.also::before{content:"○ "}

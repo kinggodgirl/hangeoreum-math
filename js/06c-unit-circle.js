@@ -134,14 +134,15 @@ const DEF=[['원은 평면 위의 한 점 O에서 □에 있는 모든 점으로
 const BOXH='<span class="cbox">□</span>';
 GEN.arcDef=seed=>{const r=mulberry(seed),[s,ok,w]=DEF[seed%DEF.length];
   return{ptype:'arc:def',title:`□에 알맞은 것을 고르시오.<div class="cond">${s.replace('□',BOXH)}</div>`,fig:null,steps:[{q:'□에 알맞은 것은?',type:'choice',choices:shuffle(r,[ok,...w]),ans:ok,hint:'굽으면 호, 곧으면 현 · 반지름 2개 + 호는 부채꼴, 현 + 호는 활꼴이에요.',ok:s.replace('□',`<b>${ok}</b>`)}]}};
+const ALSO_DIAM={'현':'맞아요! 지름도 원 위의 두 점을 이은 선분이라서 <b>현</b>이에요. 그런데 <b>더 정확한 이름</b>이 있어요. 원의 중심을 지나는 현은 뭐라고 부를까요? 하나 더 골라 보세요.'};
 const PIC_KIND=['반지름','지름','현','호','부채꼴','활꼴','중심각'],PIC_NAMES=['반지름','지름','현','호','부채꼴','활꼴','중심각'];
 GEN.arcPic=seed=>{const r=mulberry(seed),k=PIC_KIND[seed%PIC_KIND.length],fig=idFig(k,r);
   return{ptype:'arc:pic',title:'원 O에서 <b>주황색으로 표시한 것</b>의 이름을 고르시오.',fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:'주황색으로 표시한 것의 이름은?',steps:[
-    {q:'가장 알맞은 이름을 고르세요.',type:'choice',choices:PIC_NAMES.slice(),ans:k,hint:CAT_HINT[NAME_CAT[k]],ok:NAME_INFO[k]}]}};
+    {q:'가장 알맞은 이름을 고르세요.',type:'choice',choices:PIC_NAMES.slice(),ans:k,also:k==='지름'?ALSO_DIAM:null,hint:CAT_HINT[NAME_CAT[k]],ok:NAME_INFO[k]}]}};
 GEN.arcName=seed=>{const r=mulberry(seed),k=ID_KIND[seed%ID_KIND.length],ans=k.startsWith('none')?NONE:k,cat=NAME_CAT[k],fig=idFig(k,r);
   return{ptype:'arc:name',title:'원 O에서 <b>주황색으로 표시한 것</b>의 이름을 쓰시오.',fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:'주황색으로 표시한 것의 이름은?',steps:[
     {tag:'모양 보기',q:'주황색으로 표시한 것은 어떤 모양인가요?',type:'choice',choices:['곧은 선분','굽은 선','둘러싸인 도형','각'],ans:cat,hint:'선인지, 도형인지, 각인지 먼저 보세요. 선이면 곧은지 굽었는지 봐요.'},
-    {tag:'이름 정하기',q:'이름은 무엇인가요?',type:'choice',choices:[...CAT_NAMES[cat],NONE],ans,hint:CAT_HINT[cat],ok:NAME_INFO[k]}]}};
+    {tag:'이름 정하기',q:'이름은 무엇인가요?',type:'choice',choices:[...CAT_NAMES[cat],NONE],ans,also:k==='지름'?ALSO_DIAM:null,hint:CAT_HINT[cat],ok:NAME_INFO[k]}]}};
 const TF_T=['지름은 원의 중심을 지나는 현이다.','한 원에서 지름은 가장 긴 현이다.','반원은 중심각의 크기가 180°인 부채꼴이다.','반원은 활꼴이기도 하다.','부채꼴은 두 반지름과 호로 둘러싸인 도형이다.','활꼴은 현과 호로 둘러싸인 도형이다.','지름의 길이는 반지름의 길이의 2배이다.'];
 const TF_F=[['현은 원 위의 두 점을 이은 곡선이다.','현은 곧은 선분이에요. 굽은 선은 호예요.'],['부채꼴의 꼭짓점은 원 위에 있다.','부채꼴의 꼭짓점은 원의 중심이에요.'],['활꼴은 두 반지름과 호로 둘러싸인 도형이다.','반지름 2개 + 호는 부채꼴이에요. 활꼴은 현 + 호예요.'],['지름은 현이 아니다.','지름도 원 위의 두 점을 이은 선분이라서 현이에요.'],['반원은 부채꼴이 아니다.','반원은 중심각이 180°인 부채꼴이에요.'],['중심각은 두 현이 이루는 각이다.','중심각은 두 반지름이 이루는 각이에요.']];
 const CIRC5=['①','②','③','④','⑤'];

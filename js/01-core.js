@@ -431,7 +431,7 @@ function answerUI(step,onTry){
   const wrap=el('<div class="answer"></div>');
   if(step.type==='choice'){
     const box=el('<div class="choices"></div>');
-    step.choices.forEach(c=>{const b=el(`<button type="button" class="${step.mathChoices?'math':''}"></button>`);b.textContent=c;b.onclick=()=>{if(onTry(c)===false){b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400)}};box.appendChild(b)});
+    step.choices.forEach(c=>{const b=el(`<button type="button" class="${step.mathChoices?'math':''}"></button>`);b.textContent=c;b.onclick=()=>{const t=onTry(c);if(t===false){b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400)}else if(t==='also'){b.classList.add('also');b.disabled=true}};box.appendChild(b)});
     wrap.appendChild(box);return wrap}
   let val='';
   const field=el(`<div class="field" tabindex="0" role="textbox" aria-label="답 입력"><span class="val"></span><span class="caret"></span>${step.suffix?`<span class="suf">${step.suffix}</span>`:''}</div>`);
@@ -509,7 +509,8 @@ function renderProblem(host,prob,opt={}){
       if(i===cur&&opt.worked){const b=el(`<button type="button" class="btn primary wkbtn">풀이 보기 ▶</button>`);b.onclick=()=>{cur++;draw();if(cur>=S.length&&opt.onWorked){tail.innerHTML='';opt.onWorked(tail)}};sb.appendChild(b)}
       else if(i===cur){
         const hm=el('<div class="hintmsg" hidden></div>');
-        const ui=answerUI(s,v=>{const r=check(s,v);livePing(true);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
+        const ui=answerUI(s,v=>{if(s.also&&s.also[v]){hm.hidden=false;hm.innerHTML=`<span class="ok">○ ${s.also[v]}</span>`;return'also'}  /* also: 틀리진 않았지만 더 정확한 답이 있는 보기(예: 지름 → 현) */
+          const r=check(s,v);livePing(true);if(r===true){tries=0;cur++;draw();if(cur>=S.length)finish();return true}
           tries++;wrongs++;sw[i]=(sw[i]||0)+1;hm.hidden=false;hm.innerHTML=r==='nopi'?'π를 붙여서 답해 보세요. 예) 12π':r==='nosign'?'양수는 양의 부호 + 를 붙여서 답해요. + 를 먼저 누르고 숫자를 눌러요.':(tries===1?'다시 생각해 볼까요? ':'')+(s.hint||'');
           if(tries>=3&&!$('.reveal',li)){const rb=el('<button type="button" class="btn ghost reveal" style="margin-top:8px">정답 확인하고 넘어가기</button>');rb.onclick=()=>{s._shown=true;revealed=true;rv[i]=1;tries=0;cur++;draw();if(cur>=S.length)finish()};sb.appendChild(rb)}
           return false});
