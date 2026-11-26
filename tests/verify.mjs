@@ -15,6 +15,7 @@ const jsFiles = [
   'js/06c-unit-circle.js',
   'js/02c-concept-plus.js',
   'js/06g-goal.js',
+  'js/02t-tracks-cent.js',
   'js/07-print-omr-boot.js',
 ];
 
@@ -45,6 +46,7 @@ const mkEl = (tag = 'div') => {
     addEventListener() {}, removeEventListener() {},
     getContext() { return new Proxy({}, { get: () => () => {} }); },
     focus() {}, remove() {},
+    get content() { return { firstElementChild: mkEl() }; },
     get innerHTML() { return _html; },
     set innerHTML(v) { _html = String(v); _text = _html.replace(/<[^>]+>/g, ''); },
     get textContent() { return _text; },
@@ -85,11 +87,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc,CENT_T08:window.CENT_T08,lessonTrackDone:window.lessonTrackDone,viewLesson};',
   sandbox
 );
 
-const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc, CENT_T08, lessonTrackDone, viewLesson } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -266,6 +268,73 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   const elS = mkEl(); CONCEPT.sector(elS);
   if (!elS.innerHTML.includes('cp-lab') || !elS.innerHTML.includes('cp-strat') || !/<svg/.test(elS.innerHTML)) {
     errors.push('CONCEPT.sector missing pilot UI or SVG');
+  }
+}
+
+// T08: 교과서 한 걸음 3탭×3트랙 시범(cent) 검증
+{
+  if (!CENT_T08 || !Array.isArray(CENT_T08.SCHEMA_QS) || CENT_T08.SCHEMA_QS.length !== 4) {
+    errors.push('Missing CENT_T08.SCHEMA_QS (expected 4 items)');
+  } else {
+    CENT_T08.SCHEMA_QS.forEach((q, idx) => {
+      if (!q.q || !q.choices.includes(q.ans) || !/<svg/.test(q.fig())) {
+        errors.push(`Invalid SCHEMA_QS[${idx}]`);
+      }
+    });
+  }
+  if (!CENT_T08 || !Array.isArray(CENT_T08.FIRST_GUIDE) || CENT_T08.FIRST_GUIDE.length !== 3) {
+    errors.push('Missing CENT_T08.FIRST_GUIDE (expected 3 items)');
+  } else {
+    const calcIds = new Set(CALC.map(c => c.id));
+    CENT_T08.FIRST_GUIDE.forEach((g, idx) => {
+      if (!calcIds.has(g.calcTopic) || !/<svg/.test(g.fig([])) || !Number.isFinite(g.calcAns)) {
+        errors.push(`Invalid FIRST_GUIDE[${idx}]`);
+      }
+    });
+  }
+  if (!CENT_T08 || !Array.isArray(CENT_T08.WORKED) || CENT_T08.WORKED.length < 5) {
+    errors.push('Missing CENT_T08.WORKED (1..4)');
+  } else {
+    for (let i = 1; i <= 4; i++) {
+      const w = CENT_T08.WORKED[i];
+      if (!w || !Array.isArray(w.steps) || w.steps.length < 3 || !w.pitfall || !/<svg/.test(w.fig(w.steps[0].hl))) {
+        errors.push(`Invalid WORKED[${i}]`);
+      }
+    }
+  }
+  if (!CENT_T08 || !CENT_T08.GEN_COMPOUND) {
+    errors.push('Missing CENT_T08.GEN_COMPOUND');
+  } else {
+    for (const cid of ['C1', 'C2', 'C3']) {
+      for (let sd = 1; sd <= 40; sd++) {
+        const P = CENT_T08.GEN_COMPOUND[cid](sd);
+        if (!P || !Array.isArray(P.combo) || P.combo.length !== 2 || !P.fig || !/<svg/.test(P.fig.svg())) {
+          errors.push(`Bad compound ${cid} seed ${sd}`); break;
+        }
+        const bad = P.steps.find(st => !checkStep(st));
+        if (bad) {
+          errors.push(`Compound ${cid} step fails seed ${sd}: ${bad.q}`); break;
+        }
+      }
+    }
+  }
+  if (typeof lessonTrackDone !== 'function') {
+    errors.push('Missing lessonTrackDone');
+  } else {
+    const prevCent = DB.cent;
+    DB.cent = { concept: false, steps: 0, prac: { solved: 0 } };
+    if (lessonTrackDone('cent') !== 0) errors.push('lessonTrackDone empty should be 0');
+    DB.cent = { concept: true, steps: 1, prac: { solved: 0 } };
+    if (lessonTrackDone('cent') !== 2) errors.push('lessonTrackDone legacy compat should be 2');
+    DB.cent = { trackDone: 3, concept: true, steps: 1, prac: { solved: 5 } };
+    if (lessonTrackDone('cent') !== 3) errors.push('lessonTrackDone explicit 3 failed');
+    for (const tr of [1, 2, 3]) {
+      DB.cent = { track: tr, concept: false, steps: 0, prac: { solved: 0 } };
+      for (const tb of ['concept', 'steps', 'practice']) {
+        viewLesson('cent', tb);
+      }
+    }
+    if (prevCent) DB.cent = prevCent; else delete DB.cent;
   }
 }
 

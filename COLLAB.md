@@ -17,6 +17,7 @@
 | **T05** | 보스전 미니 게임 개편: 혼자 하는 `오늘의 보스 도전`(폭탄 방어전 · 입장권 · 운명의 주사위 · 타이밍 게이지 · 긴급 막기 · 3택1 보물상자 · 놓친 문제 복기). 선생님 기획서(Boss Battle Design Handoff) 기준 | Claude Code | `js/04-games.js`, `js/boss-bank.js`(신규), `boss-raid.css`(신규), `index.html`(로드 2줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 | **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T07** | 열린 차시 개념 학습 교육학적 보완 시범 적용 (`area`·`sector`: 공식 통일·전개도/부채꼴 인터랙티브 발견 활동·인지 부하 축소·전략 선택 가이드) | Antigravity | `concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T08** | 『교과서 한 걸음』 3탭 × 3트랙 시범 전면 개편 (`cent` 중심각과 호: 첫걸음·한걸음·두걸음 루프, 대표 예제, 복합 유형, 적응형 마무리, 기초 연산 연계) | Antigravity | `tracks-cent.css`(신규), `js/02t-tracks-cent.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 
 ---
 
@@ -54,6 +55,12 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (`T08` 완료, Antigravity)**
+  * `[T08]` 메인 학습 공식 명칭을 **『교과서 한 걸음』**으로 정리하고, 2차시(`cent`: 중심각과 호)에 **3탭(`개념 보기 · 유형 익히기 · 차시 마무리`) × 3트랙(`🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음`)** 시범 구조를 전면 적용 (`tracks-cent.css`, `js/02t-tracks-cent.js`, `index.html`, `tests/verify.mjs`, `COLLAB.md`만 수정).
+  * **🌱 첫걸음**: 유형 익히기(예시·비예시 4문항 + 1.5초 찍기 방지 쿨다운 → 교사 풀이 지시 4단계 클릭 분해 + `계산이 어렵나요?` 토글 시 교사 대행 및 기초 연산(`mul`/`ratio`/`div`) 3초 자동 이동 & `오늘의 길잡이` 우선 추천) → 클릭형 모양 스키마 개념 → 무계산 구조 마무리.
+  * **🌿 한걸음**: 개념 보기 패스 가능 + 유형별 고정 정교화 선생님 대표 예제(`WORKED` 1~4, 도형 연동·함정 노트) + 적응형 4유형 차시 마무리(1오답 재확인, 2연속 오답 시 대표 예제 복귀).
+  * **🌳 두걸음**: 복합 유형 3종(`C1`: 세 호의 비+몇 배, `C2`: 세 호의 비+중심각의 비, `C3`: 반원 180°+중심각의 비) 2단계 조합 파악 후 실행 + 6문항 적응형 마무리 + 1초 메타인지 체크. `더 알아보기`는 개념 하단/완료 보너스로 이동.
+  * **향후 보스전 연동 규약**: `window.lessonTrackDone(id)`가 `0(미완료) / 1(첫걸음) / 2(한걸음) / 3(두걸음)`을 반환하며, 기존 기록(`prac.solved>=5` 또는 `steps>0 && concept`)은 `2`로 호환됩니다(보스전 코드 수정은 추후 별도 작업에서 진행).
 * **2026-11-26 (`T07` 완료, Antigravity)**
   * `[T07]` 대표 2차시(`area` 기둥의 겉넓이 · `sector` 부채꼴의 호의 길이와 넓이)에 교육학적 보완 시범 적용 (`concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md`만 수정).
   * `CONCEPT.area`: `2πr²+2πrh` 문자식 제거 후 선생님 방식(`둘레 = 지름 × π`, `넓이 = 반둘레 × 반지름`)과 4단계 절차로 단일화, 초등 바탕(`둘레 cm` vs `넓이 cm²`) 리마인드·전개도 3D 펼치기 미니 슬라이더(`삼각기둥`·`직육면체`·`원기둥`)·반지름 탐색·기둥별 전략표 추가.
