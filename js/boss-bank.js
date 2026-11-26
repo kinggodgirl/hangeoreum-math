@@ -64,9 +64,15 @@
         ['면이 정오각형이고, 한 꼭짓점에 모인 면이 3개', '정십이면체']]);
       return { unit: S, q: `<b>${it[0]}</b>인 정다면체는?`, ans: it[1], type: 'choice', choices: ['정사면체', '정육면체', '정팔면체', '정십이면체', '정이십면체'],
         tip: `${it[0]} → ${it[1]}` }; },
-    r => { const it = P(r, [['직사각형', '한 변', '원기둥'], ['직각삼각형', '직각을 낀 한 변', '원뿔'], ['반원', '지름', '구'], ['사다리꼴(두 각이 직각)', '직각을 낀 변', '원뿔대']]);
-      return { unit: S, q: `<b>${it[0]}</b>을 <b>${it[1]}</b>을 축으로 하여 한 바퀴 돌리면 생기는 회전체는?`, ans: it[2], type: 'choice', choices: ['원기둥', '원뿔', '구', '원뿔대'],
-        tip: `${it[0]}을 ${it[1]}을 축으로 돌리면 ${it[2]}가 돼요.` }; },
+    r => { const [a, b] = P(r, [[3, 4], [6, 8], [5, 12], [4, 6], [6, 5]]), h = R(r, 2, 9), base = a * b / 2;
+      return { unit: S, q: `밑면이 두 변 <b>${a} cm</b>, <b>${b} cm</b>를 낀 직각삼각형이고 높이가 <b>${h} cm</b>인 삼각기둥의 <b>부피</b>는?`, ans: base * h, type: 'num', suffix: 'cm³',
+        tip: `밑넓이 = ${a} × ${b} ÷ 2 = ${base} → 부피 = ${base} × ${h} = ${base * h} cm³` }; },
+    r => { const rad = R(r, 2, 6), h = R(r, 3, 10);
+      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원기둥의 <b>옆넓이</b>는?`, ans: 2 * rad * h, type: 'pi', suffix: 'cm²',
+        tip: `옆면을 펼치면 직사각형: 가로(밑면 둘레) ${pi(2 * rad)} × 세로(높이) ${h} = ${pi(2 * rad * h)} cm²` }; },
+    r => { const a = R(r, 2, 6);
+      return { unit: S, q: `한 모서리가 <b>${a} cm</b>인 정육면체의 <b>겉넓이</b>는?`, ans: 6 * a * a, type: 'num', suffix: 'cm²',
+        tip: `면 6개가 모두 넓이 ${a * a}인 정사각형: ${a * a} × 6 = ${6 * a * a} cm²` }; },
     r => { const a = R(r, 2, 8), b = R(r, 2, 8), c = R(r, 2, 10);
       return { unit: S, q: `가로 <b>${a} cm</b>, 세로 <b>${b} cm</b>, 높이 <b>${c} cm</b>인 직육면체의 <b>부피</b>는?`, ans: a * b * c, type: 'num', suffix: 'cm³',
         tip: `부피 = 밑넓이 × 높이 = ${a * b} × ${c} = ${a * b * c} cm³` }; },
@@ -76,19 +82,10 @@
     r => { const rad = R(r, 2, 6), h = R(r, 2, 10);
       return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원기둥의 <b>부피</b>는?`, ans: rad * rad * h, type: 'pi', suffix: 'cm³',
         tip: `부피 = πr² × h = ${pi(rad * rad)} × ${h} = ${pi(rad * rad * h)} cm³` }; },
-    r => { const rad = P(r, [3, 6]), h = R(r, 2, 8);
-      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원뿔의 <b>부피</b>는?`, ans: rad * rad * h / 3, type: 'pi', suffix: 'cm³',
-        tip: `뿔의 부피 = ⅓ × 밑넓이 × 높이 = ⅓ × ${pi(rad * rad)} × ${h} = ${pi(rad * rad * h / 3)} cm³` }; },
     r => { const b = P(r, [[3, 4], [4, 6], [6, 5], [5, 6], [6, 6]]), h = P(r, [3, 6, 9]);
       const base = b[0] * b[1];
       return { unit: S, q: `밑면이 가로 <b>${b[0]} cm</b>, 세로 <b>${b[1]} cm</b>인 직사각형이고 높이가 <b>${h} cm</b>인 사각뿔의 <b>부피</b>는?`, ans: base * h / 3, type: 'num', suffix: 'cm³',
         tip: `뿔의 부피 = ⅓ × ${base} × ${h} = ${base * h / 3} cm³ (같은 기둥의 ⅓)` }; },
-    r => { const rad = R(r, 1, 6);
-      return { unit: S, q: `반지름이 <b>${rad} cm</b>인 구의 <b>겉넓이</b>는?`, ans: 4 * rad * rad, type: 'pi', suffix: 'cm²',
-        tip: `구의 겉넓이 = 4πr² = 4π × ${rad}² = ${pi(4 * rad * rad)} cm²` }; },
-    r => { const rad = P(r, [3, 6]);
-      return { unit: S, q: `반지름이 <b>${rad} cm</b>인 구의 <b>부피</b>는?`, ans: 4 * rad ** 3 / 3, type: 'pi', suffix: 'cm³',
-        tip: `구의 부피 = ⁴⁄₃πr³ = ⁴⁄₃π × ${rad ** 3} = ${pi(4 * rad ** 3 / 3)} cm³` }; },
 
     /* ── 정비례와 반비례 ── */
     r => { const a = P(r, [-4, -3, -2, 2, 3, 4, 5]), x = P(r, [-3, -2, 2, 3, 4]);
@@ -150,20 +147,18 @@
     r => { const rad = R(r, 2, 5), h = R(r, 3, 8), s = 2 * rad * rad + 2 * rad * h;
       return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원기둥의 <b>겉넓이</b>는?`, ans: s, type: 'pi', suffix: 'cm²',
         tip: `밑넓이 2개 ${pi(2 * rad * rad)} + 옆넓이 2π×${rad}×${h} = ${pi(2 * rad * h)} → ${pi(s)} cm²` }; },
-    r => { const [rad, l] = P(r, [[3, 5], [5, 13], [6, 10], [4, 9], [2, 7], [3, 8]]), s = rad * rad + rad * l;
-      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 모선의 길이가 <b>${l} cm</b>인 원뿔의 <b>겉넓이</b>는?`, ans: s, type: 'pi', suffix: 'cm²',
-        tip: `밑넓이 ${pi(rad * rad)} + 옆넓이 π×${rad}×${l} = ${pi(rad * l)} → ${pi(s)} cm²` }; },
-    r => { const rad = R(r, 2, 6);
-      return { unit: S, q: `반지름이 <b>${rad} cm</b>인 <b>반구</b>의 겉넓이는? (자른 단면도 포함)`, ans: 3 * rad * rad, type: 'pi', suffix: 'cm²',
-        tip: `구의 절반 2π×${rad}² + 단면 π×${rad}² = ${pi(3 * rad * rad)} cm²` }; },
-    { unit: S, q: '반지름이 r인 구가 꼭 맞게 들어가는 원기둥이 있어요. 이 원기둥과 밑면·높이가 같은 원뿔까지, <b>원뿔 : 구 : 원기둥</b>의 부피의 비는?', ans: '1 : 2 : 3', type: 'choice',
-      choices: ['1 : 2 : 3', '1 : 3 : 2', '1 : 1 : 3', '2 : 3 : 4'], tip: '원뿔 ⅔πr³ : 구 ⁴⁄₃πr³ : 원기둥 2πr³ = 1 : 2 : 3' },
+    r => { const big = R(r, 3, 6), sm = R(r, 1, big - 1), h = R(r, 3, 10);
+      return { unit: S, q: `반지름 <b>${big} cm</b>인 원기둥 가운데에 반지름 <b>${sm} cm</b>인 원기둥 모양 구멍을 뚫었어요. 높이가 <b>${h} cm</b>일 때 남은 부분의 <b>부피</b>는?`, ans: (big * big - sm * sm) * h, type: 'pi', suffix: 'cm³',
+        tip: `밑넓이 = ${pi(big * big)} − ${pi(sm * sm)} = ${pi(big * big - sm * sm)} → × ${h} = ${pi((big * big - sm * sm) * h)} cm³` }; },
+    r => { const rad = R(r, 2, 5), h = R(r, 2, 9);
+      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>인 원기둥의 부피가 <b>${pi(rad * rad * h)} cm³</b>예요. 이 원기둥의 <b>높이</b>는?`, ans: h, type: 'num', suffix: 'cm',
+        tip: `밑넓이 ${pi(rad * rad)} × 높이 = ${pi(rad * rad * h)} → 높이 = ${h} cm` }; },
+    r => { const a = R(r, 2, 6), b = R(r, 2, 6), V = a * b * R(r, 2, 8);
+      return { unit: S, q: `밑면이 가로 <b>${a} cm</b>, 세로 <b>${b} cm</b>인 직육면체의 부피가 <b>${V} cm³</b>예요. 이 직육면체의 <b>겉넓이</b>는?`, ans: 2 * (a * b + (a + b) * (V / (a * b))), type: 'num', suffix: 'cm²',
+        tip: `높이 = ${V} ÷ ${a * b} = ${V / (a * b)} → 겉넓이 = ${a * b} × 2 + ${2 * (a + b)} × ${V / (a * b)} = ${2 * (a * b + (a + b) * (V / (a * b)))} cm²` }; },
     r => { const a = P(r, [3, 6, 9]), h = P(r, [4, 5, 8]);
       return { unit: S, q: `한 모서리가 <b>${a} cm</b>인 정사각형을 밑면으로 하는 사각기둥과 사각뿔의 높이가 모두 <b>${h} cm</b>예요. 두 부피의 <b>차</b>는?`, ans: a * a * h * 2 / 3, type: 'num', suffix: 'cm³',
         tip: `기둥 ${a * a * h} − 뿔 ${a * a * h / 3} = ${a * a * h * 2 / 3} cm³ (기둥의 ⅔)` }; },
-    r => { const rad = P(r, [3, 6]), h = P(r, [4, 8, 10]), cyl = rad * rad * h, cone = rad * rad * h / 3;
-      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원기둥 모양 그릇에서, 밑면과 높이가 같은 <b>원뿔 모양을 파냈어요</b>. 남은 부분의 부피는?`, ans: cyl - cone, type: 'pi', suffix: 'cm³',
-        tip: `${pi(cyl)} − ${pi(cone)} = ${pi(cyl - cone)} cm³` }; },
 
     /* ── 정비례와 반비례 (고난도) ── */
     r => { const a = P(r, [-4, -3, -2, 2, 3, 5]), x1 = P(r, [-3, -2, 2, 4]), x2 = P(r, [-5, 3, 5, 6, -6].filter(v => v !== x1));
