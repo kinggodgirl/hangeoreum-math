@@ -12,10 +12,13 @@
 | **T00** | 자율 머지 협업 규칙·공용 작업 보드 세팅 | Antigravity | `AGENTS.md`, `CLAUDE.md`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T01** | Supabase DB 위생 패치 (FK 인덱스 4개 + `hg_bb_valid`/`hg_bb_score` `search_path` 고정 + SQL 동기화 + 어드바이저 재검증) | Antigravity | `supabase/schema.sql`, `supabase/game.sql`, `supabase/group.sql`, `supabase/report.sql` (+ 운영 DB 적용) | **완료** (`main`·DB 반영) |
 | **T02** | 테스트·문서·저장소 정비 (`tests/verify.mjs` 입체도형/정수 생성기 검증 추가, `README.md` 최신화, `toast` 안전화, 병합 완료된 구 브랜치 정리) | Antigravity | `tests/verify.mjs`, `README.md`, `js/01-core.js` | **완료** (`main` 반영) |
-| **T03** | 시험 범위 차시 확장 A: 3차시 `회전체` · 4차시 `회전체의 성질` (교과서 217~219쪽) | Antigravity *(조율 가능)* | `js/02r-solid-rot.js`(신규), `docs/specs/T03-solid-rot.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T03-solid-rot.md`) |
+| **T03** | 시험 범위 차시 확장 A: 3차시 `회전체` · 4차시 `회전체의 성질` (교과서 217~219쪽) | **Claude Code** *(2026-11-26 선생님 지시로 Antigravity → Claude 이관)* | `js/02r-solid-rot.js`(신규), `docs/specs/T03-solid-rot.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **진행 예정** (Claude 새 스레드) |
 | **T04** | 시험 범위 차시 확장 B: 6차시 `기둥의 부피` · 7차시 `뿔의 겉넓이` · 8차시 `뿔의 부피` (교과서 223~231쪽) | Claude Code | `js/02v-solid-vol.js`(신규), `docs/specs/T04-solid-vol.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T04-solid-vol.md` — 착수 가능) |
 | **T05** | 보스전 미니 게임 개편: 혼자 하는 `오늘의 보스 도전`(폭탄 방어전 · 입장권 · 운명의 주사위 · 타이밍 게이지 · 긴급 막기 · 3택1 보물상자 · 놓친 문제 복기). 선생님 기획서(Boss Battle Design Handoff) 기준 | Claude Code | `js/04-games.js`, `js/boss-bank.js`(신규), `boss-raid.css`(신규), `index.html`(로드 2줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 | **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T07** | 4단원 `좌표평면과 그래프` 차시 신설: `coord`(순서쌍과 좌표·사분면 109~112쪽) · `graph`(그래프 113~119쪽) · `prop`(정비례 120~126쪽) · `inv`(반비례 127~131쪽). 스펙 `docs/specs/T07-coord-graph.md` 먼저 | **Antigravity** | `docs/specs/T07-coord-graph.md`(신규), `js/02g-coord.js`(신규 IIFE), `index.html`(1줄), `tests/verify.mjs` | **대기** (스펙부터) |
+| **T08** | `tests/verify.mjs`에 보스전 문제 은행 검사 추가 (`js/boss-bank.js` 로드 → 모든 생성기 300회씩 `check()` 정답 통과 · 보기 중복 없음 · `NL`/`HL` 개수 = 문제 수 · `les`가 `LESSONS` id 또는 T07 예정 id) | **Antigravity** | `tests/verify.mjs` | **대기** |
+| **T09** | (보류) `우리 반 보스전` 다시 열기: 혼자 하는 보스 도전과 묶어 보완(예: 도전 승리 = 반 보스 큰 데미지) | 미정 | `js/04-games.js` | **보류** (선생님이 나중에 다시 결정) |
 
 ---
 
@@ -28,6 +31,35 @@
 5. **자율 머지 규칙**:
    - `main`에 직접 푸시 가능하고 `node tests/verify.mjs`를 통과했으면 각 AI가 자율적으로 `main`에 반영합니다.
    - Claude Code 클라우드 앱이 `claude/*` 브랜치 PR만 생성할 수 있는 환경이라면 `[Txx]` 제목으로 PR을 올리면 되고, **Antigravity가 검증·CI 확인 후 대신 머지**합니다.
+
+---
+
+## 2-1. 선생님과 정한 것 (2026-11-26) — 두 AI 모두 따르기
+
+### 이번 시험 범위 (확정)
+- **Ⅵ 평면도형의 성질 04·05**: 원과 부채꼴, 부채꼴의 호의 길이와 넓이 (194~201쪽)
+- **Ⅶ 입체도형의 성질 01·02·03·04**: 다면체, 회전체, 기둥의 겉넓이와 부피, 뿔의 겉넓이와 부피 — **원뿔 포함** (211~231쪽)
+- **Ⅳ 좌표평면과 그래프 전체**: 순서쌍과 좌표, 그래프, 정비례, 반비례 (109~131쪽)
+- **범위 밖**: Ⅶ-05 구의 겉넓이와 부피. 새 문제·차시에서 구는 넣지 않아요.
+
+### 보스전 (T05, `#boss`)
+- 지금은 혼자 하는 **오늘의 보스 도전(폭탄 방어전)** 만 보여요. `우리 반 보스전`은 숨김(`CLASS_BOSS_ON=false`, 집계는 계속) → T09에서 나중에.
+- **입장 조건**: 주요 학습에서 해결한 차시가 **3개 이상**(해결 = 같이 풀기 끝까지 1번 또는 혼자 풀기 3문제) + 오늘의 계산 완료 시 무료 1판, 그다음 20P로 2판(하루 최대 3판).
+- **출제**: 학생이 해결한 차시의 개념만. `js/boss-bank.js`의 `NL`/`HL`에 문제별 차시 id(`les`)가 있어요. 새 차시를 만들 때 **이 id를 그대로 쓰면** 보스전에 자동으로 연결돼요: `rotation`, `volume`, `conearea`, `cone`(T03·T04), `coord`, `prop`, `inv`(T07, `graph`도 쓰면 은행에 추가).
+- **난이도**: 선생님이 "꽤 어렵게"를 원함. 막기 0.65초, 게이지 황금 존 ±3.5%, 보스 체력 650/600, 문제 시간 40/60초. 숫자 조정은 `RAID` 상수만.
+- **보상 원칙**(PR #45와 같음): 포인트는 끝까지 하기·다시 맞히기·새 도전에만 조금. 큰 보상은 보물상자(뽑기권·방패·쿠폰 조각·보스 한정 프레임/칭호).
+- 문제를 더할 때: `js/boss-bank.js` 배열 끝에 한 칸 + `NL`/`HL` 끝에 차시 id 한 개. 구는 넣지 않기.
+
+### 역할 나눔 (협업 계획)
+| 순서 | 작업 | 담당 | 비고 |
+| :--- | :--- | :--- | :--- |
+| 1 | T03 회전체 차시 (`rotation`·`rotprop`) | Claude Code | 스펙 준비됨. 끝나면 보스전 회전체 문제 자동 열림 |
+| 2 | T04 기둥의 부피·뿔의 겉넓이·뿔의 부피 (`volume`·`conearea`·`cone`) | Claude Code | T03 다음. 원뿔 포함 |
+| 3 | T07 4단원 스펙 → 차시 (`coord`·`graph`·`prop`·`inv`) | Antigravity | 교과서 PDF로 스펙 먼저 올리면, 차시 구현은 둘 중 먼저 비는 쪽이 보드에서 가져가기 |
+| 4 | T08 verify.mjs에 보스전 문제 은행 검사 | Antigravity | T03·T04 PR과 `tests/verify.mjs`가 겹치지 않게, T08을 먼저 머지 |
+| 5 | Claude PR 교차 검토 | Antigravity | Claude는 verify 통과 후 바로 머지(프로젝트 지침). 문제 있으면 `[Txx]` 커밋만 되돌리기 |
+- `tests/verify.mjs`는 T03·T04·T07·T08이 모두 건드려요. **한 번에 한 작업만** 수정하고, 머지 전에 최신 `main`을 받아 충돌을 확인해요.
+- `index.html`은 차시마다 `<script>` 1줄만 추가(위치: `02-unit-solid.js` 뒤 · `07-print-omr-boot.js` 앞).
 
 ---
 
@@ -53,6 +85,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (협업 계획, Claude Code → Antigravity)**: 선생님과 정한 시험 범위·보스전 규칙·역할 나눔을 `2-1`절에 정리. T03을 Claude로 이관, T07(4단원 차시)·T08(보스 은행 검사)을 Antigravity에 새로 배정, T09(반 보스전 재오픈)는 보류.
 * **2026-11-26 (`T05` 후속 4, Claude Code)**: 선생님 요청으로 보스전은 '주요 학습'에서 해결한 차시(같이 풀기 끝까지 또는 혼자 풀기 3문제)가 3개 이상일 때만 열리고, 해결한 차시 개념의 문제만 나와요. `js/boss-bank.js` 맨 아래 `NL`/`HL`에 문제별 차시 id(`les`)를 적어요. 앱에 아직 없는 차시(`rotation`·`volume`·`conearea`·`cone`·4단원 `coord`·`prop`·`inv`) 문제는 그 차시가 열리면 자동으로 나와요(T03·T04 완료 시 연결됨).
 * **2026-11-26 (`T05` 후속 3, Claude Code)**: 선생님이 알려 준 시험 범위(Ⅵ-04·05, Ⅶ-01~04, Ⅳ 전체)에 맞춰 문제 은행 정리. 원뿔 부피·겉넓이·회전체 다시 넣음(구만 범위 밖), 단원 이름 `정비례와 반비례` → `좌표평면과 그래프`로 넓히고 사분면·좌표·넓이 문제 추가(일반 29 · 필살기 23 유형).
 * **2026-11-26 (`T05` 후속 2, Claude Code)**: 선생님 확인으로 `js/boss-bank.js`에서 시험 범위 밖 문제 제거(원뿔 부피·겉넓이, 구·반구, 회전체 이름, 원뿔·구·원기둥 비). 대신 삼각기둥 부피, 원기둥 옆넓이, 정육면체 겉넓이, 구멍 뚫린 원기둥 부피, 부피로 높이 구하기, 부피로 겉넓이 구하기 추가. 각뿔 부피 2문항은 남겨 둠.
