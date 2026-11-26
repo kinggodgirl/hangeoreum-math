@@ -66,21 +66,21 @@ function faceSVG(kind,x,y,u,boss){const k='#1d2640',e=10*u,f=v=>v.toFixed(1);
 const MINI_BASE='assets/mini-characters';
 const RAR_NM={common:'일반',rare:'반짝',legend:'전설'};
 const RAR_W={common:60,rare:30,legend:10};
-const GACHA_COST=180,GACHA_MAX_DAY=2;
+const GACHA_COST=400,GACHA_MAX_DAY=2;
 const SHOP=[
  {cat:'mini',nm:'3D 캐릭터',items:[
    {id:'fa',nm:'민지',f:'character-female-a',r:'common',p:0},
    {id:'ma',nm:'준호',f:'character-male-a',r:'common',p:0},
-   {id:'fb',nm:'서연',f:'character-female-b',r:'common',p:250},
-   {id:'mb',nm:'도윤',f:'character-male-b',r:'common',p:250},
-   {id:'fc',nm:'하은',f:'character-female-c',r:'common',p:250},
-   {id:'mc',nm:'시우',f:'character-male-c',r:'common',p:250},
-   {id:'fd',nm:'지우',f:'character-female-d',r:'rare',p:400},
-   {id:'md',nm:'예준',f:'character-male-d',r:'rare',p:400},
-   {id:'fe',nm:'수아',f:'character-female-e',r:'rare',p:400},
-   {id:'me',nm:'건우',f:'character-male-e',r:'rare',p:400},
-   {id:'ff',nm:'별빛 소녀',f:'character-female-f',r:'legend',p:700},
-   {id:'mf',nm:'은하 소년',f:'character-male-f',r:'legend',p:700}]},
+   {id:'fb',nm:'서연',f:'character-female-b',r:'common',p:500},
+   {id:'mb',nm:'도윤',f:'character-male-b',r:'common',p:500},
+   {id:'fc',nm:'하은',f:'character-female-c',r:'common',p:500},
+   {id:'mc',nm:'시우',f:'character-male-c',r:'common',p:500},
+   {id:'fd',nm:'지우',f:'character-female-d',r:'rare',p:800},
+   {id:'md',nm:'예준',f:'character-male-d',r:'rare',p:800},
+   {id:'fe',nm:'수아',f:'character-female-e',r:'rare',p:800},
+   {id:'me',nm:'건우',f:'character-male-e',r:'rare',p:800},
+   {id:'ff',nm:'별빛 소녀',f:'character-female-f',r:'legend',p:1400},
+   {id:'mf',nm:'은하 소년',f:'character-male-f',r:'legend',p:1400}]},
  {cat:'frame',nm:'프로필 프레임',items:[
    {id:'none',nm:'기본',p:0,cls:'f-none'},
    {id:'sky',nm:'하늘 원',p:25,cls:'f-sky'},
