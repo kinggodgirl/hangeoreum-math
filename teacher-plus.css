@@ -1,0 +1,26 @@
+/* 교사 화면 편의 기능 (T08): 이번 주 한눈에 · 쿠폰 확인 · 표 머리줄 단원 묶음 */
+.t-week td,.t-week th{white-space:nowrap;padding:8px 8px;vertical-align:middle}
+.t-week td.l,.t-week th.l{text-align:left}
+.t-week th small{font-weight:400;color:var(--ink-soft);font-size:11.5px}
+.t-wdays{display:inline-flex;gap:3px;vertical-align:middle}
+.t-wd{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1.5px solid var(--line);font-size:12px;color:var(--ink-soft);background:#fff}
+.t-wd.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+.t-wd.td{outline:2px dashed var(--accent);outline-offset:1px}
+.t-wn{margin-left:4px}
+.t-of{font-size:15px;font-weight:400;color:var(--ink-soft)}
+.t-cpl{color:#b4232a}
+.t-care{white-space:normal!important;min-width:200px}
+.t-flag{display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border-radius:999px;font-size:13px;border:1px solid #f2b33d;background:#fff7e2}
+.t-flag.hi{border-color:#d23b3b;background:#fdecec;color:#9b1c1c}
+.t-roster .t-unitrow th.t-unit{font-size:13px;padding:5px 6px;border-bottom:3px solid var(--ink)}
+.t-roster th.t-unit.u1{border-bottom-color:var(--accent)}
+.t-roster th.t-unit.u2{border-bottom-color:#2f8f5b}
+.t-roster th.t-lesh{line-height:1.25}
+.t-roster th.t-lesh small{display:block;font-size:11px}
+.t-pipkey{font-size:13px;margin:-4px 0 10px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.t-pipkey .pips{display:inline-flex}
+.t-dcp{margin:10px 0 0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:15px}
+.t-dles small{font-size:11.5px}
+.t-flag.ok{border-color:#2f8f5b;background:#e8f6ee;color:#1d6b40}
+/* 좁은 화면에서 표가 화면 전체를 밀어내지 않고 표 안에서만 옆으로 넘기게 */
+.t-cols>*{min-width:0}
