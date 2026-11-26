@@ -176,7 +176,7 @@ function viewLesson(id,tab){
   $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
   const body=$('#tabBody');
   const nextBtn=(label,to)=>`<div class="next-row"><a class="btn primary" href="#${id}-${to}">${label} →</a></div>`;
-  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('afterbegin',previewBox(id));pvWire(body,id);body.insertAdjacentHTML('beforeend',nextBtn('같이 풀기 (정규 수업 뒤에)','steps'));p.concept=true;save();award(5,'concept:'+id)}
+  if(tab==='concept'){CONCEPT[id](body);body.insertAdjacentHTML('afterbegin',previewBox(id));pvWire(body,id);body.insertAdjacentHTML('beforeend',nextBtn('같이 풀기 (정규 수업 뒤에)','steps'));if(typeof mountConceptPlus==='function')mountConceptPlus(body,id);if(!(window.CONCEPT_QUIZ&&window.CONCEPT_QUIZ[id])){p.concept=true;save();award(5,'concept:'+id)}}
   if(tab==='explore'){EXPLORE[id](body);body.insertAdjacentHTML('beforeend',nextBtn('혼자 풀기','practice'));p.explore=true;save()}
   DB._last={id,tab};save();
   if(tab==='steps')viewSteps(body,id);
@@ -1419,7 +1419,7 @@ function viewLogin(){
     <p class="muted" style="font-size:15px">학교 패드처럼 여럿이 함께 쓰는 기기라면, 공부를 마친 뒤 꼭 로그아웃해 주세요.</p></div></div>`;
     $('.lgOut',app).onclick=async()=>{await studentLogout();toast('로그아웃했어요.');viewLogin()};return}
   app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card">
-    <div class="seg logtab" role="tablist"><button type="button" class="on" data-t="s" role="tab">학생</button><button type="button" data-t="t" role="tab">선생님</button></div>
+    <div class="seg logtab" role="tablist"><button type="button" class="on" data-t="s" role="tab">학생</button><button type="button" class="on" style="display:none"></button><button type="button" data-t="t" role="tab">선생님</button></div>
     <div class="logS">
       <h1 style="font-size:28px;margin-top:14px">학생 로그인</h1>
       <p class="muted" style="margin-top:4px">로그인하면 다른 기기에서도 이어서 할 수 있고, 선생님이 내 진도를 볼 수 있어요.</p>
@@ -1443,4 +1443,3 @@ function viewLogin(){
   pinKeyHandler=e=>{if(!pad.isConnected||$('.logS',app).hidden||e.target.closest('input,select,textarea'))return;if(/^[0-9]$/.test(e.key))pad._press(e.key);else if(e.key==='Backspace'){e.preventDefault();pad._press('⌫')}};
 }
 document.addEventListener('keydown',e=>{if(pinKeyHandler)pinKeyHandler(e)});
-

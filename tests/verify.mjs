@@ -13,6 +13,7 @@ const jsFiles = [
   'js/05-calc.js',
   'js/06-unit-int.js',
   'js/06c-unit-circle.js',
+  'js/02c-concept-plus.js',
   'js/06g-goal.js',
   'js/07-print-omr-boot.js',
 ];
@@ -84,11 +85,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT_QUIZ:window.CONCEPT_QUIZ};',
   sandbox
 );
 
-const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT_QUIZ } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -211,6 +212,37 @@ for (const lid of ['sign', 'numline', 'abs', 'iadd', 'isub']) {
   const G = goalOf({ _goal: { k: 'up', d: '2000-01-01', h: [['up', '2000-01-01']] }, _calcDiag: { d: day, res: { facts: false } } });
   if (!(G.k === 'up' && G.rec === 'calc' && G.diff && G.old)) errors.push('goalOf: mismatch/old flags wrong');
   if (!dataSummary({ _goal: { k: 'calc', d: day } }).goal) errors.push('dataSummary: missing goal');
+}
+
+// 개념 학습 보완(02c-concept-plus.js): 열린 6차시 미리 보기·그림 카드·용어·확인 퀴즈 검증
+let conceptQuizCnt = 0;
+for (const lid of ['poly', 'regular', 'area', 'arc', 'cent', 'sector']) {
+  const pv = PREVIEW[lid];
+  if (!pv || !Array.isArray(pv.words) || !pv.words.length) errors.push(`Missing PREVIEW words for ${lid}`);
+  const cards = PV_CARDS[lid];
+  if (!Array.isArray(cards) || cards.length < 3) {
+    errors.push(`PV_CARDS missing or <3 for ${lid}`);
+  } else {
+    cards.forEach((c, idx) => {
+      const figs = c.figs();
+      if (!Array.isArray(figs) || !figs.length) errors.push(`PV_CARDS.${lid}[${idx}] empty figs`);
+    });
+  }
+  const qz = CONCEPT_QUIZ && CONCEPT_QUIZ[lid];
+  if (!Array.isArray(qz) || qz.length < 3) {
+    errors.push(`CONCEPT_QUIZ missing or <3 for ${lid}`);
+  } else {
+    qz.forEach((item, idx) => {
+      conceptQuizCnt++;
+      if (!item.q || !item.hint || !item.ok) errors.push(`CONCEPT_QUIZ.${lid}[${idx}] missing text`);
+      if (!Array.isArray(item.choices) || new Set(item.choices).size !== item.choices.length || !item.choices.includes(item.ans)) {
+        errors.push(`CONCEPT_QUIZ.${lid}[${idx}] invalid choices/ans`);
+      }
+    });
+  }
+}
+for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓점', '부채꼴', '중심각', '활꼴']) {
+  if (!TERMS[w] || !TERMS[w].b) errors.push(`Missing TERMS entry: ${w}`);
 }
 
 if (errors.length) {

@@ -15,6 +15,7 @@
 | **T03** | 시험 범위 차시 확장 A: 3차시 `회전체` · 4차시 `회전체의 성질` (교과서 217~219쪽) | Antigravity *(조율 가능)* | `js/02r-solid-rot.js`(신규), `docs/specs/T03-solid-rot.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T03-solid-rot.md`) |
 | **T04** | 시험 범위 차시 확장 B: 6차시 `기둥의 부피` · 7차시 `뿔의 겉넓이` · 8차시 `뿔의 부피` (교과서 223~231쪽) | Claude Code | `js/02v-solid-vol.js`(신규), `docs/specs/T04-solid-vol.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T04-solid-vol.md` — 착수 가능) |
 | **T05** | 보스전 미니 게임 개편: 혼자 하는 `오늘의 보스 도전`(폭탄 방어전 · 입장권 · 운명의 주사위 · 타이밍 게이지 · 긴급 막기 · 3택1 보물상자 · 놓친 문제 복기). 선생님 기획서(Boss Battle Design Handoff) 기준 | Claude Code | `js/04-games.js`, `js/boss-bank.js`(신규), `boss-raid.css`(신규), `index.html`(로드 2줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
+| **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 
 ---
 
@@ -52,6 +53,11 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (`T06` 완료, Antigravity)**
+  * `[T06]` 열린 6차시(`poly`·`regular`·`area`·`arc`·`cent`·`sector`) 개념 학습 전반을 `concept-plus.css` + `js/02c-concept-plus.js` 독립 모듈로 보완. (`js/04-games.js`, `styles.css`, `supabase/*` 미수정)
+  * `PREVIEW.area` 및 누락 차시 4종(`area` 4장, `arc` 4장, `cent` 3장, `sector` 4장)의 `PV_CARDS`를 추가하고, 카드·접기 본 진도(`DB[id].seenCards`), 슬라이드 확대 모달(`◀ 이전`/`다음 ▶`, `←`/`→`, `🔊 듣기`), 열린 `.fold` 내부 이전·다음·듣기 바, 클릭 가능한 핵심 낱말 칩(`T(w)`), `TERMS` 선생님 방식(`지름 × π`, `반둘레 × 반지름`) 정렬을 구현.
+  * `CONCEPT.area`에 선생님 원 공식 비교(`svgZig`)와 접기 3번(`삼각기둥에서 자주 하는 실수`) 추가, 차시 말미에 `CONCEPT_QUIZ`(차시당 3문항)를 배치해 모두 맞히면 `p.concept = true` + 5포인트 지급.
+  * 검증: `node tests/verify.mjs` 통과 (`PV_CARDS`, `PREVIEW`, `TERMS`, `CONCEPT_QUIZ` 6차시 18문항 검증 포함).
 * **2026-11-26 (`T05` 후속, Claude Code)**: 선생님 요청으로 `우리 반 보스전` 화면을 숨김(`CLASS_BOSS_ON=false`, 포인트 집계·교사 크게 띄우기는 그대로). 난이도 상향: 막기 1.2초→0.65초(버튼도 작게), 게이지 더 빠르게·황금 존 좁게, 보스 체력 일반 650/필살기 600, 문제 시간 40초/60초.
 * **2026-11-26 (`T05` 완료, Claude Code)**
   * 보스전 화면(`#boss`) 위쪽에 혼자 하는 **오늘의 보스 도전(폭탄 방어전)** 추가. 아래 `우리 반 보스전`(포인트 = 데미지)은 그대로.
