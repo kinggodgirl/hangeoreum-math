@@ -28,6 +28,7 @@
 | **T16** | Ⅵ단원 3차시 (`arc`, `cent` 업그레이드, `sector`) 3×3 트랙 + 부엉 쌤 영상 + 두걸음 교과서 복합(`C1~C5`) | Antigravity | `js/02t-tracks-cent.js`, `js/02t-tracks-circle.js`(신규), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
 | **T17** | Ⅶ단원 8차시 (`poly`, `regular`, `rotation`, `rotprop`, `area`, `volume`, `conearea`, `cone`) 3×3 트랙 + 부엉 쌤 + 두걸음 교과서 복합 | Antigravity | `js/02t-tracks-solid.js`(신규), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
 | **T18** | Ⅳ단원 4차시 (`coord`, `graph`, `prop`, `inv`) 3×3 트랙 + 부엉 쌤 + 두걸음 교과서 복합 | Antigravity | `js/02t-tracks-graph.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T19** | 첫걸음 A단계 `주황 표시 연속 구별하기`(선생님 요청): 주황 표시 그림이 연달아 뜨고 이름을 골라요. 맞히면 저절로 다음, 틀리면 이유 + 같은 종류 한 번 더(최대 4번 더). 시범 차시 `arc` | Claude Code | `js/02t-track-engine.js`(`renderT1Rapid` + `spec.schemaRapid` 훅), `js/02t-tracks-circle.js`(`arc`에 `schemaRapid`), `tracks-cent.css`(끝에 몇 줄), `tests/verify.mjs`(1줄), `COLLAB.md` | **완료** (`arc` 시범 · 나머지 14차시는 선생님 확인 뒤) |
 
 ---
 
@@ -65,6 +66,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-27 (`T19` 시범, Claude Code)**: 첫걸음 '맞을까? 아닐까?'가 손으로 쓴 3문제라 문제 글에 답이 드러나고 보기가 2~3개뿐이라는 선생님 의견으로, 예전 이름 맞히기처럼 **주황 표시 그림이 연달아 뜨는 방식**을 엔진에 넣었어요. 차시 스펙에 `schemaRapid:{n,kinds,q,choices,make(kindIdx,seed)→{fig,ans,why,also?}}`가 있으면 `renderT1Schema`가 `renderT1Rapid`로 바뀌고, 없으면 예전 `schemaQs` 그대로예요(`t1Check`·검증용 `schemaQs`는 남겨 둠). 맞히면 0.9초 뒤 자동 다음, 틀리면 정답·이유 + 같은 종류 쌍둥이(최대 4번 더), 1.5초 안 오답은 `schema_fast_wrong`로 기록. 시범은 `arc`(`GEN.arcName` 10종: 이름 7 + 어느 것도 아님 3, 보기 8개). **다른 차시로 넓힐 때는 그 차시 그림 생성기로 `make`만 만들면 돼요.**
 * **2026-11-27 (`T03`·`T04`·`T14`~`T18` 완료, Antigravity)**:
   * **전 시험 범위 15차시 전면 개방 + 3×3 트랙·`[복습 추천]` 통합**: Ⅵ(`arc`, `cent`, `sector`), Ⅶ(`poly`, `regular`, `rotation`, `rotprop`, `area`, `volume`, `conearea`, `cone`), Ⅳ(`coord`, `graph`, `prop`, `inv`) 모두 런타임 등록으로 `ready: true` 개방(`02-unit-solid.js`·`06c-unit-circle.js` 무수정, `js/02r-solid-rot.js`, `js/02v-solid-vol.js`, `js/06d-unit-graph.js`, `js/02t-tracks-circle.js`, `js/07-print-omr-boot.js` OMR `ver=3`) 및 `HG_TRACKS` 15차시·🦉 부엉 쌤 개념 영상·이틀 연속 `[복습 추천]`(`#dailyrev`) 반영 완료.
   * **공용 『교과서 한 걸음』 3×3 엔진(`js/02t-track-engine.js`)**: `concept`(사례·비사례 먼저) vs `proc`(🦉 부엉 쌤 개념 그림극 먼저) 차시별 탭 순서 자동 분기, 첫걸음 끝 **혼자 쌍둥이 1문제(`p.t1Solo`)**, 한걸음 끝 **자주 나오는 복합 4종**(`cent:ratio`, `sector:shade`, `area:comp`, `volume:comp`, `conearea:frust`, `cone:frust`), **`[복습 추천]`**(`#dailyrev`, 하루 최대 3문제, 다음 날 첫 시도 통과 시 `p.rev['ty'+no].ok` 숙달 ✓ 도장 영구 기록, +2P/일), 차시 상단 **유형 숙달 도장판**.

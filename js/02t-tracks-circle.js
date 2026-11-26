@@ -51,6 +51,11 @@ function squareCornerSVG(a){
 if(typeof HG_TRACKS==='object'){
   HG_TRACKS.register('arc',{
     kind:'concept',
+    /* [T19] 첫걸음 A단계: 대청 수학 이름 맞히기 그림(GEN.arcName)으로 주황 표시를 연달아 구별해요. 종류 10가지(이름 7 + 어느 것도 아님 3) */
+    schemaRapid:{n:8,kinds:10,q:'원 O에서 <b>주황색으로 표시한 것</b>은 무엇일까요?',
+      choices:['반지름','지름','현','호','부채꼴','활꼴','중심각','어느 것도 아니에요'],
+      make:(k,seed)=>{const pr=GEN.arcName(seed),st=pr.steps[pr.steps.length-1];
+        return{fig:pr.fig.svg(),ans:st.ans,why:st.ok||'',also:st.also||null}}},
     owlScenes:[
       {cap:'장면 ① 굽으면 호, 곧으면 현!',say:'원 위의 두 점 A, B를 잡았어요. <span class="kw">원을 따라 굽게</span> 이으면 <b>호 AB</b>, <span class="kw">곧게 선분</span>으로 이으면 <b>현 AB</b>예요.',svg:()=>arcFig('arc')},
       {cap:'장면 ② 가장 긴 현 = 지름',say:'여러 현 중에서 <span class="num">원의 중심 O</span>를 지나가는 현이 바로 <b>지름</b>이에요. 지름도 현의 한 종류예요!',svg:()=>arcFig('diam')},

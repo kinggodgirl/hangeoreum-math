@@ -250,7 +250,7 @@ function renderT1Steps(body,lid,spec){
   const drawSub=()=>{
     clearAutoNav();
     body.innerHTML=`<div class="ct-subtabs">
-      <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 맞는지 · 아닌지 구별하기 (${p.t1SchemaDone?'완료 ✓':schemaList.length+'문항'})</button>
+      <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 맞는지 · 아닌지 구별하기 (${p.t1SchemaDone?'완료 ✓':(spec.schemaRapid?spec.schemaRapid.n:schemaList.length)+'문항'})</button>
       <button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${guideList.length}유형)</button>
     </div><div id="t1SubHost"></div>`;
     $$('.ct-subtab',body).forEach(b=>b.onclick=()=>{sub=b.dataset.s;drawSub()});
@@ -261,7 +261,69 @@ function renderT1Steps(body,lid,spec){
   drawSub();
 }
 
+/* [T19] 첫걸음 A단계 · 주황 표시 연속 구별하기
+   spec.schemaRapid = { n: 문제 수, kinds: 종류 수, q: 묻는 말, choices: [보기], make(kindIdx, seed) → {fig, ans, why, also?} }
+   그림이 연달아 뜨고, 맞히면 잠깐 뒤 저절로 다음 그림. 틀리면 이유를 보여 주고 같은 종류를 한 번 더 내요. */
+function renderT1Rapid(host,lid,spec,onNextPart){
+  const R=spec.schemaRapid,p=lesProg(lid);
+  const rnd=typeof mulberry==='function'?mulberry(typeof newSeed==='function'?newSeed():Date.now()%99991):Math.random;
+  const kinds=[...Array(R.kinds).keys()];
+  for(let i=kinds.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[kinds[i],kinds[j]]=[kinds[j],kinds[i]]}
+  const total=Math.min(R.n||8,kinds.length);
+  const newSeedFor=k=>k+R.kinds*(1+Math.floor(rnd()*900));
+  const queue=kinds.slice(0,total).map(k=>({k,seed:newSeedFor(k)}));
+  let idx=0,good=0,nextT=null;
+  const finish=()=>{
+    p.t1SchemaDone=true;if(typeof save==='function')save();
+    if(typeof award==='function')award(5,lid+':t1schema','주황색 표시를 모두 구별했어요');
+    host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별하기 ${queue.length}문제 완료!</b> 한 번에 맞힌 문제 ${good}개예요. ${spec.kind==='concept'?'방금 본 모양의 이름을 <b>개념 보기</b>에서 다시 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
+      <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button></div></div>`;
+    const gb=$('#toGuideBtn',host);if(gb)gb.onclick=onNextPart;
+  };
+  const draw=()=>{
+    if(nextT){clearTimeout(nextT);nextT=null}
+    if(!host.isConnected)return;
+    if(idx>=queue.length)return finish();
+    const cur=queue[idx],it=R.make(cur.k,cur.seed),shownAt=Date.now();
+    let missed=false;
+    host.innerHTML=`<div class="ct-card ct-schema ct-rapid">
+      <div class="ct-card-h"><h2>주황색은 무엇일까요?</h2><div class="ct-schema-prog">${queue.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${queue.length}</span></div></div>
+      <div class="ct-stage">
+        <div class="ct-fig ct-rapid-fig">${it.fig}</div>
+        <div>
+          <p class="ct-schema-q">${R.q||'주황색으로 표시한 것은?'}</p>
+          <div class="ct-hit-row" id="rqOpts">${R.choices.map((c,i)=>`<button type="button" class="ct-hit" style="--i:${i}" data-v="${c}">${c}</button>`).join('')}</div>
+          <div id="rqMsg" aria-live="polite"></div>
+        </div>
+      </div></div>`;
+    const btns=$$('#rqOpts .ct-hit',host),msg=$('#rqMsg',host);
+    btns.forEach(btn=>btn.onclick=()=>{
+      const v=btn.dataset.v,ms=Date.now()-shownAt;
+      if(it.also&&it.also[v]){btn.disabled=true;msg.innerHTML=`<div class="ct-cool">💡 ${it.also[v]}</div>`;return}
+      btns.forEach(b=>b.disabled=true);
+      if(v===it.ans){
+        recordMetric(ms,null);
+        btn.classList.add('ok');
+        if(!missed)good++;
+        msg.innerHTML=`<div class="feedback ok" style="margin-top:10px">${it.why}</div>`;
+        idx++;nextT=setTimeout(draw,missed?1400:900);
+      }else{
+        missed=true;
+        recordMetric(ms,ms<1500?'schema_fast_wrong':'schema_wrong');
+        btn.classList.add('bad');
+        const ok=btns.find(b=>b.dataset.v===it.ans);if(ok)ok.classList.add('ok');
+        msg.innerHTML=`<div class="ct-cool">${ms<1500?'🐢 너무 빨리 골랐어요. 주황색 부분을 먼저 봐요.<br>':''}정답: <b>${it.ans}</b><br>${it.why}</div>
+          <div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="rqAgain">${queue.length<total+4?'같은 종류 한 번 더 →':'다음 그림 →'}</button></div>`;
+        if(queue.length<total+4)queue.splice(idx+1,0,{k:cur.k,seed:newSeedFor(cur.k)});
+        const ab=$('#rqAgain',host);if(ab)ab.onclick=()=>{idx++;draw()};
+      }
+    });
+  };
+  draw();
+}
+
 function renderT1Schema(host,lid,spec,onNextPart){
+  if(spec.schemaRapid&&typeof spec.schemaRapid.make==='function')return renderT1Rapid(host,lid,spec,onNextPart);
   const p=lesProg(lid),QS=spec.schemaQs||[];
   let idx=0,coolTimer=null,shownAt=Date.now();
   const draw=()=>{

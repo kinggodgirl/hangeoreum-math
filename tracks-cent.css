@@ -169,3 +169,11 @@
   .owl-row{flex-direction:column}
   .owl-av{width:52px;height:52px}
 }
+/* [T19] 첫걸음 주황 표시 연속 구별하기: 그림이 뜨고 보기가 뚜다다다 차례로 나타나요 */
+.ct-rapid .ct-rapid-fig{animation:owlFade .22s ease-out}
+.ct-rapid .ct-rapid-fig svg{max-width:300px;width:100%;height:auto}
+.ct-rapid .ct-hit{animation:ctPop .2s ease-out both;animation-delay:calc(var(--i,0) * 45ms)}
+.ct-rapid .ct-hit.ok:disabled,.ct-rapid .ct-hit.bad:disabled{opacity:1}
+.ct-rapid .ct-schema-prog{flex-wrap:wrap;gap:4px}.ct-rapid .ct-dot-step{width:20px;height:20px;font-size:11px}
+@keyframes ctPop{from{opacity:0;transform:translateY(6px) scale(.92)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ct-rapid .ct-hit,.ct-rapid .ct-rapid-fig{animation:none}}

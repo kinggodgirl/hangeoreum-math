@@ -361,6 +361,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       if (!Array.isArray(sp.schemaQs) || sp.schemaQs.length < 3 || sp.schemaQs.some(q => !q.choices.includes(q.ans) || !/<svg/.test(q.fig()))) {
         errors.push(`Invalid schemaQs for ${lid}`);
       }
+      const R = sp.schemaRapid; if (R) for (let k = 0; k < R.kinds; k++) for (let s = 1; s <= 30; s++) { const it = R.make(k, k + R.kinds * s); if (!R.choices.includes(it.ans) || !/<svg/.test(it.fig) || !it.why) { errors.push(`[T19] Invalid schemaRapid for ${lid} kind ${k}`); break; } }
       if (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < 3 || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !/<svg/.test(g.fig([])))) {
         errors.push(`Invalid firstGuide for ${lid}`);
       }
