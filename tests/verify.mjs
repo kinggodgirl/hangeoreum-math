@@ -11,6 +11,7 @@ const jsFiles = [
   'js/04-games.js',
   'js/05-calc.js',
   'js/06-unit-int.js',
+  'js/06c-unit-circle.js',
   'js/07-print-omr-boot.js',
 ];
 
@@ -81,11 +82,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher};',
   sandbox
 );
 
-const { CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -125,8 +126,28 @@ recordCalcErr('signed', '부호가 반대예요.');
 const ds = dataSummary(DB);
 if (!ds.calcErrs.length) errors.push('dataSummary calcErrs failed');
 
+// 원과 부채꼴: 모든 유형 생성기가 문제를 만들고, 단계마다 정답이 check()를 통과하는지
+let circleProbs = 0;
+for (const lid of ['arc', 'cent', 'sector']) {
+  if (!LESSONS.some(l => l.id === lid)) errors.push(`Missing lesson ${lid}`);
+  for (const T of PTYPES[lid] || []) {
+    for (let sd = 1; sd <= 60; sd++) {
+      circleProbs++;
+      const P = GEN[tyKey(lid, T.no)](sd);
+      if (!P || !P.steps || !P.steps.length || !T.pt.includes(P.ptype)) { errors.push(`Bad circle gen: ${lid} 유형 ${T.no}`); break; }
+      if (P.fig && P.fig.svg && !/<svg/.test(P.fig.svg(true, 0) + P.fig.svg(false, 0))) { errors.push(`Bad circle fig: ${lid} 유형 ${T.no}`); break; }
+      const bad = P.steps.find(st => {
+        if (st.type === 'choice') return !st.choices.includes(st.ans) || new Set(st.choices).size !== st.choices.length;
+        const a = st.type === 'pi' ? (st.ans === 1 ? 'π' : st.ans + 'π') : String(st.ans);
+        return !Number.isFinite(st.ans) || check(st, a) !== true;
+      });
+      if (bad) { errors.push(`Circle step answer fails: ${lid} 유형 ${T.no} seed ${sd}: ${bad.q}`); break; }
+    }
+  }
+}
+
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);
 }
-console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), repMount & teacher report OK`);
+console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), repMount & teacher report OK, circle ${circleProbs} problems`);

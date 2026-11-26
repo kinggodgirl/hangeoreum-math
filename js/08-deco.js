@@ -7,10 +7,10 @@ const DECO={dir:'assets/emoji/',skip:/^(me|shop|teacher|bossview|print)/,reduce:
 try{DECO.reduce=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
 const dxImg=(k,cls='')=>{const i=document.createElement('img');i.src=DECO.dir+k+'.webp';i.alt='';i.className='dx '+cls;i.setAttribute('aria-hidden','true');i.decoding='async';i.loading='lazy';i.draggable=false;return i};
 function dxAdd(elm,k,cls,where='afterbegin'){if(!elm||elm.querySelector(':scope > .dx'))return;elm.insertAdjacentElement(where,dxImg(k,cls))}
-const DX_LESSON={poly:'gem',regular:'die',area:'gift'};
+const DX_LESSON={poly:'gem',regular:'die',area:'gift',arc:'compass',cent:'target',sector:'cake'};
 const DX_TAB={concept:'eyes',steps:'handshake',practice:'pencil',explore:'magnifier'};
 const dxHref=h=>{h=(h||'').replace(/^.*#/,'');if(/-concept$/.test(h))return'eyes';if(/-steps$/.test(h))return'handshake';if(/-practice$/.test(h))return'pencil';if(/-explore$/.test(h))return'magnifier';
-  if(/^calc/.test(h))return'abacus';if(h==='drill')return'calendar';if(h==='review')return'notebook';if(h==='scan')return'camera';if(/^print/.test(h))return'printer';if(/^(boss|baseball|bb-)/.test(h))return'trophy';const L=/^([a-z]+)$/.exec(h);if(L&&DX_LESSON[L[1]])return DX_LESSON[L[1]];return'sparkles'};
+  if(/^unit-circle/.test(h))return'compass';if(/^calc/.test(h))return'abacus';if(h==='drill')return'calendar';if(h==='review')return'notebook';if(h==='scan')return'camera';if(/^print/.test(h))return'printer';if(/^(boss|baseball|bb-)/.test(h))return'trophy';const L=/^([a-z]+)$/.exec(h);if(L&&DX_LESSON[L[1]])return DX_LESSON[L[1]];return'sparkles'};
 function decorate(){const h=(location.hash||'').replace('#','')||'home';if(DECO.skip.test(h))return;const A=$('#app');if(!A)return;
   /* 처음 화면 */
   $$('.card.guide .g-head .t',A).forEach(t=>dxAdd(t,'map','dx-h'));
@@ -20,7 +20,7 @@ function decorate(){const h=(location.hash||'').replace('#','')||'home';if(DECO.
   $$('.boss-card .g-head .t',A).forEach(t=>dxAdd(t,'dragon','dx-h'));
   $$('.bb-strip > svg:first-child',A).forEach(sv=>sv.replaceWith(dxImg('baseball','dx-s')));
   $$('.calc-chip.start',A).forEach(t=>dxAdd(t,'compass','dx-c','beforeend'));
-  $$('.card.unit.ready',A).forEach(t=>dxAdd(t,'die','dx-corner dx-top','beforeend'));
+  $$('.card.unit.ready',A).forEach(t=>dxAdd(t,/unit-circle/.test(t.getAttribute('href')||'')?'compass':'die','dx-corner dx-top','beforeend'));
   /* 차시 목록 · 탭 */
   $$('.card.lesson.ready',A).forEach(c=>{const m=/#([a-z]+)/.exec(c.getAttribute('href')||''),t=c.querySelector('b');if(t)dxAdd(t,(m&&DX_LESSON[m[1]])||'cube','dx-l')});
   $$('.tabs .tab[data-tab]',A).forEach(b=>{const tl=b.querySelector('.tl');if(tl&&DX_TAB[b.dataset.tab])dxAdd(tl,DX_TAB[b.dataset.tab],'dx-t')});
