@@ -250,8 +250,8 @@ function renderT1Steps(body,lid,spec){
   const drawSub=()=>{
     clearAutoNav();
     body.innerHTML=`<div class="ct-subtabs">
-      <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 사례 · 비사례 구별 (${p.t1SchemaDone?'완료 ✓':schemaList.length+'문항'})</button>
-      <button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 교사 풀이 지시 따라하기 (${guideList.length}유형)</button>
+      <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 맞는지 · 아닌지 구별하기 (${p.t1SchemaDone?'완료 ✓':schemaList.length+'문항'})</button>
+      <button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${guideList.length}유형)</button>
     </div><div id="t1SubHost"></div>`;
     $$('.ct-subtab',body).forEach(b=>b.onclick=()=>{sub=b.dataset.s;drawSub()});
     const host=$('#t1SubHost',body);
@@ -268,15 +268,15 @@ function renderT1Schema(host,lid,spec,onNextPart){
     if(coolTimer){clearTimeout(coolTimer);coolTimer=null}
     if(idx>=QS.length){
       p.t1SchemaDone=true;if(typeof save==='function')save();
-      if(typeof award==='function')award(5,lid+':t1schema','사례·비사례 모양을 모두 구별했어요');
-      host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>사례 · 비사례 구별 ${QS.length}문항 완료!</b> ${spec.kind==='concept'?'방금 본 모양에 어떤 이름이 붙는지 <b>개념 보기</b>에서 확인해 봐요.':'이제 <b>교사 풀이 지시 따라하기</b>로 넘어가요.'}</div>
-        <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">교사 풀이 따라하기 →</button></div></div>`;
+      if(typeof award==='function')award(5,lid+':t1schema','맞는지 아닌지 모두 구별했어요');
+      host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별 연습 ${QS.length}문항 완료!</b> ${spec.kind==='concept'?'방금 본 모양에 어떤 이름이 붙는지 <b>개념 보기</b>에서 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
+        <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button></div></div>`;
       const gb=$('#toGuideBtn',host);if(gb)gb.onclick=onNextPart;
       return;
     }
     const q=QS[idx];shownAt=Date.now();
     host.innerHTML=`<div class="ct-card ct-schema">
-      <div class="ct-card-h"><h2>사례 · 비사례 모양 찾기</h2><div class="ct-schema-prog">${QS.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${QS.length}</span></div></div>
+      <div class="ct-card-h"><h2>맞을까? 아닐까? 구별하기</h2><div class="ct-schema-prog">${QS.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${QS.length}</span></div></div>
       <div class="ct-stage">
         <div class="ct-fig">${q.fig?q.fig():''}<div class="ct-fig-cap">그림의 핵심 표시를 눈으로 먼저 확인해요</div></div>
         <div>
@@ -318,11 +318,11 @@ function renderT1Guide(host,lid,spec){
     const key=typeof tyKey==='function'&&typeof GEN==='object'&&GEN[tyKey(lid,g.tyNo)]?tyKey(lid,g.tyNo):null;
     const prob=key?GEN[key](twinSeed):null;
     if(!prob||typeof renderProblem!=='function'){
-      soloHost.innerHTML=`<div class="feedback ok">쌍둥이 확인을 마쳤어요!</div>`;
+      soloHost.innerHTML=`<div class="feedback ok">혼자 확인 문제를 마쳤어요!</div>`;
       p.t1Solo[g.tyNo]=true;if(typeof save==='function')save();
       return;
     }
-    soloHost.innerHTML=`<div class="ct-solo"><div class="ct-solo-h"><span>🌟 혼자 확인 · 도움 없이 쌍둥이 1문제</span><button type="button" class="btn ghost mini" id="fgTwinNew">🔄 다른 숫자</button></div><div id="fgTwinBody"></div></div>`;
+    soloHost.innerHTML=`<div class="ct-solo"><div class="ct-solo-h"><span>🌟 혼자 확인 · 방금 푼 문제 비슷하게 1문제</span><button type="button" class="btn ghost mini" id="fgTwinNew">🔄 다른 숫자</button></div><div id="fgTwinBody"></div></div>`;
     const nb=$('#fgTwinNew',soloHost);if(nb)nb.onclick=()=>{twinSeed=(twinSeed+19)%99999+1;mountSoloTwin()};
     renderProblem($('#fgTwinBody',soloHost),prob,{mode:'final',visual:true,rep:{lesson:lid,gen:key,seed:twinSeed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
       if(typeof logAttempt==='function')logAttempt({lesson:lid,kind:'steps',good,wrongs,mode,gen:key,seed:twinSeed,ptype:prob.ptype,stepWrongs,revealed});
@@ -332,7 +332,7 @@ function renderT1Guide(host,lid,spec){
         p.trackDone=Math.max(Number(p.trackDone)||0,1);
         scheduleTypeRev(lid,g.tyNo,wrongs>0);
         if(typeof save==='function')save();
-        if(typeof award==='function')award(5,lid+':solo:'+g.tyNo,'도움 없이 쌍둥이 1문제를 풀었어요');
+        if(typeof award==='function')award(5,lid+':solo:'+g.tyNo,'도움 없이 혼자 확인 1문제를 풀었어요');
         const allSolo=GUIDE.every(x=>p.t1Solo[x.tyNo]);
         box.insertAdjacentHTML('beforeend',`<div class="next-row" style="justify-content:flex-start">
           ${gIdx+1<GUIDE.length?`<button type="button" class="btn primary" id="fgSoloNext">다음 유형 따라하기 →</button>`:`<a class="btn primary" href="#${lid}-practice">첫걸음 차시 마무리 →</a>`}
@@ -376,7 +376,7 @@ function renderT1Guide(host,lid,spec){
               :`<div class="ct-hit-row">${g.givenChips.map(c=>`<button type="button" class="ct-hit${foundGiven.has(c.k)?' ok':''}" data-gk="${c.k}" ${foundGiven.has(c.k)?'disabled':''}>${c.t}</button>`).join('')}</div><div id="fgM1"></div>`}
           </div>
           <div class="ct-gstep ${s2Done?'done':step===2?'cur':'lock'}">
-            <div class="ct-gstep-h"><span class="ct-gnum">${s2Done?'✓':'3'}</span>교사 풀이 식의 숫자가 어디서 왔는지 맞춰 봐요</div>
+            <div class="ct-gstep-h"><span class="ct-gnum">${s2Done?'✓':'3'}</span>선생님 풀이 식의 숫자가 어디서 왔는지 맞춰 봐요</div>
             ${step<2?'<small class="muted">2단계를 마치면 열려요</small>':`<div class="ct-eq-box">${g.teacherEq}</div>`+(s2Done?`<small style="color:var(--ok)">✓ ${g.pairAns}</small>`
               :`<p style="margin:6px 0">${g.pairQ}</p><div class="ct-hit-row">${g.pairChoices.map(c=>`<button type="button" class="ct-hit" data-p="${c}">${c}</button>`).join('')}</div><div id="fgM2"></div>`)}
           </div>
@@ -420,7 +420,7 @@ function renderT1Guide(host,lid,spec){
       const raw=String(inp.value||'').trim().replace('−','-').replace(/π/g,'');
       const v=parseFloat(raw),ms=Date.now()-stepShown;
       if(Number.isFinite(v)&&Math.abs(v-g.calcAns)<1e-6){
-        recordMetric(ms,null);step=4;if(typeof award==='function')award(3,lid+':fg:'+g.id,'교사 풀이를 따라 풀었어요');draw();
+        recordMetric(ms,null);step=4;if(typeof award==='function')award(3,lid+':fg:'+g.id,'선생님 풀이를 따라 풀었어요');draw();
       }else{
         recordMetric(ms,'calc_err');
         const m=$('#fgM3',host);if(m)m.innerHTML='<small style="color:var(--bad)">식 숫자를 다시 확인하거나, 아래 "계산이 어렵나요?"를 눌러도 돼요.</small>';
@@ -441,7 +441,7 @@ function renderT1Guide(host,lid,spec){
           <div class="ct-timer-bar"><i id="fgBar" style="width:${Math.round((3-left)/3*100)}%"></i></div>
           <div class="ct-calchelp-act">
             <a class="btn primary" href="#calc-${g.calcTopic}">지금 바로 기초 연산 가기 →</a>
-            <button type="button" class="btn ghost" id="fgCancelNav">여기 머무르고 쌍둥이 풀기</button>
+            <button type="button" class="btn ghost" id="fgCancelNav">여기 머무르고 혼자 풀어 보기</button>
           </div>`;
         const cBtn=$('#fgCancelNav',boxAfter);
         if(cBtn)cBtn.onclick=()=>{clearAutoNav();const sec=$('#fgSec',boxAfter);if(sec&&sec.parentNode)sec.parentNode.innerHTML='자동 이동을 멈췄어요. 위 버튼으로 언제든 갈 수 있어요.'};
@@ -461,7 +461,7 @@ function renderT1Guide(host,lid,spec){
 function renderT1Concept(body,lid,spec){
   body.innerHTML=`<div id="owlConceptHost"></div>
     ${spec.kind==='concept'?`<div class="next-row"><a class="btn primary" href="#${lid}-practice">3단계 차시 마무리 하러 가기 →</a></div>`
-      :`<div class="next-row"><a class="btn primary" href="#${lid}-steps">2단계 유형 익히기(교사 지시 따라하기) →</a></div>`}
+      :`<div class="next-row"><a class="btn primary" href="#${lid}-steps">2단계 유형 익히기(선생님과 따라 풀기) →</a></div>`}
     ${bonusExploreHTML(lid)}`;
   const host=$('#owlConceptHost',body);
   if(host)mountOwlShow(host,lid,spec);
@@ -485,7 +485,7 @@ function renderT1Practice(body,lid,spec){
       if(typeof award==='function')award(10,lid+':t1','첫걸음 차시 마무리를 통과했어요');
       const TL=(typeof PTYPES==='object'&&PTYPES[lid])||[];
       TL.forEach(t=>scheduleTypeRev(lid,t.no,false));
-      body.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌱 첫걸음 차시 마무리 통과!</b><br>핵심 모양 구별과 풀이 지시 확인 ${pool.length}가지를 모두 해냈어요.</div>
+      body.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌱 첫걸음 차시 마무리 통과!</b><br>핵심 구별과 풀이 따라 하기 ${pool.length}가지를 모두 해냈어요.</div>
         <div class="next-row" style="justify-content:flex-start">
           <button type="button" class="btn primary" id="upToT2">🌿 한걸음 도전하기 →</button>
           <a class="btn ghost" href="#home">처음 화면으로</a>
@@ -771,7 +771,7 @@ function renderT3Steps(body,lid,spec,initialCid){
     if(!gen){body.innerHTML='';return}
     const prob=gen(seed),wantSet=new Set(prob.combo);shownAt=Date.now();
     body.innerHTML=`<div class="ct-card">
-      <div class="ct-card-h"><h2>복합 유형 조합 분해하기</h2>
+      <div class="ct-card-h"><h2>복합 문제 쪼개서 풀기</h2>
         <div class="ct-hit-row" style="margin:0">${list.map(x=>`<button type="button" class="chip${x.id===cid?' on':''}" data-cid="${x.id}">${x.nm}</button>`).join('')}</div>
       </div>
       <div class="ct-combo">
@@ -897,18 +897,18 @@ function viewTrackLesson(id,tab){
   const tabDefs=tr===1
     ?(spec.kind==='concept'
       ?[
-        {id:'steps',t:'유형 익히기',s:'① 먼저 추천 · 사례·비사례 구별',rec:'추천 ①'},
+        {id:'steps',t:'유형 익히기',s:'① 먼저 추천 · 맞을까 아닐까 구별',rec:'추천 ①'},
         {id:'concept',t:'개념 보기',s:'② 부엉 쌤 이름표 붙이기',rec:'②'},
         {id:'practice',t:'차시 마무리',s:'③ 계산 없이 핵심 확인',rec:'③'}
       ]
       :[
         {id:'concept',t:'개념 보기',s:'① 먼저 추천 · 부엉 쌤 원리 영상',rec:'추천 ①'},
-        {id:'steps',t:'유형 익히기',s:'② 사례·비사례 + 교사 지시 따라하기',rec:'②'},
+        {id:'steps',t:'유형 익히기',s:'② 구별 연습 + 선생님과 따라 풀기',rec:'②'},
         {id:'practice',t:'차시 마무리',s:'③ 핵심 확인 문제',rec:'③'}
       ])
     :[
       {id:'concept',t:'개념 보기',s:tr===3?'선택 · 함정/전략 요약':'선택 · 부엉 쌤 영상 & 표'},
-      {id:'steps',t:'유형 익히기',s:tr===3?'복합 유형 조합 분해':'대표 예제 + 변형 연습'},
+      {id:'steps',t:'유형 익히기',s:tr===3?'복합 문제 쪼개서 풀기':'대표 예제 + 변형 연습'},
       {id:'practice',t:'차시 마무리',s:tr===3?'실전 기본+복합 마무리':'유형 섞어 풀기'}
     ];
 
