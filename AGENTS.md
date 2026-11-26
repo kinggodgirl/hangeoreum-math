@@ -17,7 +17,7 @@
 | `js/06-unit-int.js` | 정수와 유리수 단원(`unit: 'int'`) | `LESSONS`, `STEPGEN`, `CALC_FOR`, `TERMS`, `BADGES` 확장 블록 |
 | `js/06c-unit-circle.js` | 원과 부채꼴 단원(`unit: 'circle'`, 차시 `arc` · `cent` · `sector`). 입체도형 사이트에서 함께 열림(`OPEN_UNITS`) | 함수 안에 넣어 전역 이름을 만들지 않음 · 그림은 SVG(`fig.svg`) |
 | `js/07-print-omr-boot.js` | 단원 필터링, 점검 학습지 인쇄, OMR 사진 채점, 라우터(`route`) 및 초기 실행 | 마지막에 로드되어야 함 |
-| `tests/verify.mjs` | 문법 검사 및 전체 연산 1,770문항 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
+| `tests/verify.mjs` | 문법 검사 및 전체 연산 1,860문항 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
 
 ## 2. 공유 데이터 계약 (`DB` JSON)
 

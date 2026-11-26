@@ -241,7 +241,7 @@ function viewPractice(body,id){
   const acc=t=>{const x=P.ty[t.no];return x?`<span class="tystar s${tyStars(x)}">${starStr(tyStars(x))}</span> ${x.ok} / ${x.n} 맞힘`:'<span class="tystar s0">☆☆☆</span> 아직 안 풀었어요'};
   const weak=t=>{const x=P.ty[t.no];return x&&x.n>=2&&x.ok/x.n<0.6};
   const pickScreen=()=>{$('#practHost',wrap).innerHTML='';tyPicker($('#tyHost',wrap),{TL,head:'<b>유형 고르기</b><span>한 유형씩 연습하거나, 섞어서 풀며 어떤 유형인지 스스로 알아봐요. 많이 틀린 유형에는 <b>추천</b>이 붙어요.</span>',
-    mix:'모든 유형이 섞여 나와요. 풀고 나면 어떤 유형이었는지 알려 줘요.',stat:acc,rec:weak,onPick:no=>{P.mode=no;save();next()}})};
+    mix:'모든 유형이 섞여 나와요. 풀고 나면 어떤 유형이었는지 알려 주고, 맞힌 문제는 그 유형 별에도 똑같이 쌓여요.',stat:acc,rec:weak,onPick:no=>{P.mode=no;save();next()}})};
   const upd=()=>{$('#sSolved',wrap).textContent=P.solved;$('#sStreak',wrap).textContent=P.streak;$('#sLvl',wrap).textContent=P.level>=2?'단계 없이 도전 중':'단계 따라 풀기';save()};
   function next(){
     let seed,isRetry=false;
@@ -253,7 +253,7 @@ function viewPractice(body,id){
     const mk=x=>GEN['mix_'+x]?'mix_'+x:GEN[x+'2']?x+'2':x;
     const prevL=LESSONS.filter(l=>l.ready&&l.unit===curL.unit&&l.no<curL.no&&GEN[l.id]&&OBJ(DB[l.id]).concept);
     const mixL=!isRetry&&!TM&&prevL.length&&Math.random()<0.3?prevL[Math.floor(Math.random()*prevL.length)]:null,gid=rg||(TM?tyKey(id,TM.no):mk(mixL?mixL.id:id));
-    const prob=GEN[gid](seed),TY=typeOf(prob.ptype);
+    const prob=GEN[gid](seed),TY=TM?{lid:id,T:TM}:typeOf(prob.ptype,mixL?mixL.id:id);
     if(TM)prob.title=`<details class="tykey"><summary>핵심 보기</summary>${TM.key}</details>`+stripTB(prob.title);
     if(isRetry)prob.title+='<span class="retry-tag">다시 도전</span>';
     if(mixL)prob.title='<span class="rv-from">섞어 풀기 · '+mixL.no+'차시 '+mixL.title+'</span><br>'+prob.title;
@@ -262,7 +262,7 @@ function viewPractice(body,id){
       logAttempt({lesson:lid,kind:'practice',good,wrongs,mode,gen:gid,seed,ptype:prob.ptype,stepWrongs,revealed,mixed:!!mixL});
       let gained=0;if(TY&&TY.lid===id){const x=P.ty[TY.T.no]=P.ty[TY.T.no]||{n:0,ok:0};const k0=tyStars(x);x.n++;if(good&&wrongs===0){x.ok++;x.run=(x.run||0)+1;x.best=Math.max(x.best||0,x.run)}else x.run=0;gained=tyStars(x)-k0;
         if(gained>0){const k=tyStars(x);award(k*5);toast(`유형 ${TY.T.no} 별 ${k}개! ${starStr(k)}${k===3?' 이 유형 완성이에요!':''}`)}}
-      if(TY&&!TM)box.insertAdjacentHTML('afterbegin',`<div class="tyafter">이 문제는 <b>${TY.lid===id?'':(LESSONS.find(l=>l.id===TY.lid)||{}).title+' · '}유형 ${TY.T.no} · ${TY.T.nm}</b><span>${TY.T.key}</span></div>`);dayBump('prac');if(good&&wrongs===0)dayBump('clean');
+      if(TY&&!TM)box.insertAdjacentHTML('afterbegin',`<div class="tyafter">이 문제는 <b>${TY.lid===id?'':(LESSONS.find(l=>l.id===TY.lid)||{}).title+' · '}유형 ${TY.T.no} · ${TY.T.nm}</b>${TY.lid===id?` <span class="tystar s${tyStars(P.ty[TY.T.no])}">${starStr(tyStars(P.ty[TY.T.no]))}</span> <small>${nextGoal(P.ty[TY.T.no])}</small>`:''}<span>${TY.T.key}</span></div>`);dayBump('prac');if(good&&wrongs===0)dayBump('clean');
       P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(gid,seed,lid);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
       if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else P.streak++}
       else{P.streak=0;P.fails++;if(!mixL)P.retry.push({seed,due:2,g:gid});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
@@ -1188,7 +1188,7 @@ Object.entries(PTYPES).forEach(([lid,list])=>list.forEach(T_=>{const g=tyKey(lid
   GEN[g]=seed=>{const src=T_.src[seed%T_.src.length];for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}return GEN[T_.src[0]](seed)};
   LESSON_OF[g]=lid}));
 Object.keys(PTYPES).forEach(lid=>{GEN['mix_'+lid]=seed=>{const L=PTYPES[lid];return GEN[tyKey(lid,L[seed%L.length].no)](Math.floor(seed/L.length)+1)};LESSON_OF['mix_'+lid]=lid});
-function typeOf(ptype){for(const[lid,list]of Object.entries(PTYPES))for(const T_ of list)if(T_.pt.includes(ptype))return{lid,T:T_};return null}
+function typeOf(ptype,prefer){const P_=prefer&&PTYPES[prefer];if(P_)for(const T_ of P_)if(T_.pt.includes(ptype))return{lid:prefer,T:T_};for(const[lid,list]of Object.entries(PTYPES))for(const T_ of list)if(T_.pt.includes(ptype))return{lid,T:T_};return null}
 /* ───────── 1차시 「다면체 · 각뿔대」 유형 5가지 (풀이 절차로 나눔) ─────────
    ① 무엇인지 가려내기 ② 이름 짓기(2가지) ③ 그림 보고 개수 세기 ④ 이름만 보고 개수 구하기 ⑤ 거꾸로 찾기 */
 const FAM={prism:{nm:'각기둥',bases:2,cong:true},frustum:{nm:'각뿔대',bases:2,cong:false},pyramid:{nm:'각뿔',bases:1}};
