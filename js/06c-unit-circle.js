@@ -11,14 +11,14 @@ const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
 const frT=(n,d)=>{const g=gcd(n,d);n/=g;d/=g;return d===1?String(n):`${n}/${d}`};
 const PI_='<span class="rm">π</span>';
 const svgW=(w,h,inner,lab)=>`<svg viewBox="0 0 ${w} ${h}" class="cfig" role="img" aria-label="${lab||'원 그림'}" style="max-width:${w}px;width:100%;font-family:${MF}">${inner}</svg>`;
-const tx=(P,s,o={})=>`<text x="${f1(P[0])}" y="${f1(P[1])}" font-size="${o.size||22}" text-anchor="${o.anchor||'middle'}" dominant-baseline="central" fill="${o.col||INK}" ${o.sans?`font-family="'Noto Sans KR',sans-serif" font-weight="700"`:''} ${o.it?'font-style="italic"':''} stroke="#fff" stroke-width="5" paint-order="stroke">${s}</text>`;
+const tx=(P,s,o={})=>`<text x="${f1(P[0])}" y="${f1(P[1])}" font-size="${o.size||22}" text-anchor="${o.anchor||'middle'}" dominant-baseline="central" fill="${o.col||INK}" ${o.sans?`font-family="'Noto Sans KR',sans-serif" font-weight="700"`:''} ${o.it?'font-style="italic"':''} stroke="#fff" stroke-width="3.5" paint-order="stroke">${String(s).replace(/(^|[^A-Za-z])x(?![A-Za-z])/g,'$1<tspan font-style="italic" font-family="Times New Roman,serif">x</tspan>')}</text>`;
 const dot=(P,r=4)=>`<circle cx="${f1(P[0])}" cy="${f1(P[1])}" r="${r}" fill="${INK}"/>`;
 const ln=(P,Q,o={})=>`<line x1="${f1(P[0])}" y1="${f1(P[1])}" x2="${f1(Q[0])}" y2="${f1(Q[1])}" stroke="${o.col||INK}" stroke-width="${o.w||2.6}" stroke-linecap="round"${o.dash?` stroke-dasharray="${o.dash}"`:''}/>`;
 /* 수학 방향(반시계)으로 a0 → a1 */
 const arcD=(C,R,a0,a1)=>`M ${pt(pol(C,R,a0))} A ${R} ${R} 0 ${a1-a0>180?1:0} 0 ${pt(pol(C,R,a1))}`;
 const secD=(C,R,a0,a1)=>`M ${pt(C)} L ${pt(pol(C,R,a0))} A ${R} ${R} 0 ${a1-a0>180?1:0} 0 ${pt(pol(C,R,a1))} Z`;
 const circ=(C,R,o={})=>`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="${o.fill||'none'}" stroke="${o.col||INK}" stroke-width="${o.w||2.4}"/>`;
-const angMk=(C,a0,a1,lab,o={})=>{const r=o.r||24,lr=o.lr||(a1-a0<40?58:46);return`<path d="${arcD(C,r,a0,a1)}" fill="none" stroke="${o.col||INK}" stroke-width="2"/>`+(lab?tx(pol(C,lr,(a0+a1)/2),lab,{size:o.size||19,col:o.col}):'')};
+const angMk=(C,a0,a1,lab,o={})=>{const r=o.r||24,sp=Math.abs(a1-a0),hw=String(lab||'').length*(o.size||19)*0.27+4,lr=o.lr||(sp>=180?46:Math.min(92,Math.max(46,hw/Math.sin(sp*Math.PI/360))));  /* 좁은 각은 글자가 두 반지름 사이에 들어갈 만큼 바깥쪽에 */return`<path d="${arcD(C,r,a0,a1)}" fill="none" stroke="${o.col||INK}" stroke-width="2"/>`+(lab?tx(pol(C,lr,(a0+a1)/2),lab,{size:o.size||19,col:o.col}):'')};
 const labO=(C,away)=>tx(pol(C,20,away),'O',{size:20,it:false});
 
 /* 부채꼴 하나: th 중심각, mid 가운데 방향 */
