@@ -18,6 +18,7 @@
 | **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T07** | 열린 차시 개념 학습 교육학적 보완 시범 적용 (`area`·`sector`: 공식 통일·전개도/부채꼴 인터랙티브 발견 활동·인지 부하 축소·전략 선택 가이드) | Antigravity | `concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T08** | 『교과서 한 걸음』 3탭 × 3트랙 시범 전면 개편 (`cent` 중심각과 호: 첫걸음·한걸음·두걸음 루프, 대표 예제, 복합 유형, 적응형 마무리, 기초 연산 연계) | Antigravity | `tracks-cent.css`(신규), `js/02t-tracks-cent.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T09** | 교사 화면 편의 기능: 📅 이번 주 한눈에(지난 7일 공부한 날·챙길 점·수업 메모 복사) · 🎫 쿠폰 확인/사용함 · 학습 현황 표 머리줄 단원 묶음·점 범례 · 🎮 게임 탭을 학생별 보스 도전 기록으로 | Claude Code | `js/03-teacher.js`, `teacher-plus.css`(신규), `index.html`(1줄), `AGENTS.md`·`COLLAB.md`(문서) | **완료** |
 
 ---
 
@@ -55,6 +56,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (`T09` 완료, Claude Code)**: 교사 화면에 `📅 이번 주` 탭 추가(학생별 지난 7일 공부한 날 = `_me.days`+`_me.last`, 7일 풀이, 이번 주 포인트, 보스 승/판, 쿠폰, 챙길 점 + `수업 메모로 복사`). 🎫 쿠폰은 `_shop.couponPcs`가 늘어나기만 해서 선생님이 누른 '사용함' 장수는 교사 기기 `localStorage`(`hangeoreum-t-coupons`)에만 저장해요(서버·SQL 변경 없음, 학생 화면 쿠폰 수는 그대로). 학습 현황 표는 단원 머리줄(`UNIT_INFO`)로 묶고 차시 이름·점 뜻을 보여 줘요. 게임 탭은 범위(방과후 반 포함) 학생별 `오늘의 보스 도전` 기록을 보여 주고, `CLASS_BOSS_ON=false`면 반 보스전 카드를 숨겨요. 좁은 화면에서 표가 화면을 밀던 문제는 `teacher-plus.css`의 `.t-cols>*{min-width:0}`로 해결. T08 3트랙(`p.track`·`p.trackDone`)은 아직 교사 화면에 안 보여요(시범 확정 후 연결 추천). 검증: `node tests/verify.mjs` 통과 + 체험 모드 화면 확인.
 * **2026-11-26 (`T08` 완료, Antigravity)**
   * `[T08]` 메인 학습 공식 명칭을 **『교과서 한 걸음』**으로 정리하고, 2차시(`cent`: 중심각과 호)에 **3탭(`개념 보기 · 유형 익히기 · 차시 마무리`) × 3트랙(`🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음`)** 시범 구조를 전면 적용 (`tracks-cent.css`, `js/02t-tracks-cent.js`, `index.html`, `tests/verify.mjs`, `COLLAB.md`만 수정).
   * **🌱 첫걸음**: 유형 익히기(예시·비예시 4문항 + 1.5초 찍기 방지 쿨다운 → 교사 풀이 지시 4단계 클릭 분해 + `계산이 어렵나요?` 토글 시 교사 대행 및 기초 연산(`mul`/`ratio`/`div`) 3초 자동 이동 & `오늘의 길잡이` 우선 추천) → 클릭형 모양 스키마 개념 → 무계산 구조 마무리.
