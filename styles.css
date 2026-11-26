@@ -1061,3 +1061,18 @@ body.t-dopen{overflow:hidden}
 .cbox{display:inline-block;min-width:2.2em;border:2px solid var(--ink);border-radius:6px;text-align:center;line-height:1.3;margin:0 3px;color:transparent}
 .card.unit small.uch{display:block;color:var(--ink-soft);font-size:14px;margin-top:2px}
 .pw-svg .cfig{max-height:200px;width:auto;max-width:100%}.pw-svg .figbox{margin:0;padding:0;border:0;background:none}
+/* 홈 · 열린 단원 카드 */
+.hero-go{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px!important}
+.units-big{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:30px}
+.ucard{display:flex;flex-direction:column;gap:8px;padding:18px 18px 16px}
+.ucard .uc-h{color:inherit;text-decoration:none;padding-right:54px}.ucard .uc-h b{display:block;font-size:22px;line-height:1.3}
+.uc-ch{font-size:13px;color:var(--ink-soft)}
+.uc-bar{height:8px;border-radius:99px;background:#e8ecf4;overflow:hidden}.uc-bar i{display:block;height:100%;background:var(--accent,#2a4d9e);border-radius:99px}
+.uc-n{font-size:13px;color:var(--ink-soft);margin-top:-4px}
+.uc-ls{list-style:none;margin:2px 0 4px;padding:0;display:flex;flex-direction:column;gap:4px}
+.uc-ls a{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:10px;color:inherit;text-decoration:none}
+.uc-ls a:hover{background:var(--hi-soft,#fff6cc)}
+.uc-ls .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:13px;font-family:var(--math)}
+.uc-ls .t{flex:1;font-size:15px}.uc-ls .pips{flex:none}
+.ucard .uc-go{margin-top:auto;text-align:center}
+@media (max-width:520px){.units-big{grid-template-columns:1fr}}

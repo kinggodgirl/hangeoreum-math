@@ -791,7 +791,7 @@ const CALC_FOR={poly:['add','mul','sub'],types:['sub','eq'],regular:['facts','mu
 const TAB_DO={concept:'미리 보기 (정규 수업 전에)',explore:'더 알아보기 · 탐구 활동',steps:'같이 풀기 1문제',practice:'혼자 풀기 5문제'};
 function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   if(due||NUM(D.c.review))S.push({done:!due,t:due?`복습 노트 ${due}문제`:'복습 노트',s:due?'틀렸던 문제를 다시 풀어요':'오늘 복습을 끝냈어요',href:'#review'});
-  const L=LESSONS.filter(l=>l.ready),cur=L.find(l=>lessonDone(l.id)<LESSON_REQ),moved=NUM(D.c.steps)+NUM(D.c.prac)+NUM(D.c.explore)>0;
+  const lu=DB._last&&(LESSONS.find(l=>l.id===DB._last.id)||{}).unit,L=LESSONS.filter(l=>l.ready).sort((x,y)=>(y.unit===lu)-(x.unit===lu)),cur=L.find(l=>lessonDone(l.id)<LESSON_REQ),moved=NUM(D.c.steps)+NUM(D.c.prac)+NUM(D.c.explore)>0;
   if(cur){const p=OBJ(DB[cur.id]),tab=!p.concept?'concept':!(NUM(p.steps)>0)?'steps':!(NUM(OBJ(p.prac).solved)>=5)?'practice':'explore';
     S.push({who:(tab==='concept'||tab==='steps')?'T':'S',done:moved,more:true,t:`${cur.no}차시 ${cur.title}`,s:TAB_DO[tab]+(tab==='practice'?` (지금 ${NUM(OBJ(p.prac).solved)}개)`:''),href:'#'+cur.id+(tab==='concept'?'':'-'+tab)})}
   else S.push({done:moved,more:true,t:'열린 차시를 모두 마쳤어요',s:'연습 문제로 실력을 다져요',href:'#'+L[L.length-1].id+'-practice'});
