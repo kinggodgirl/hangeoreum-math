@@ -303,7 +303,7 @@ const CALC=[
      why:{q:'어림하기는 언제 쓰면 좋을까요?',choices:['계산한 답이 맞는지 빨리 확인할 때','정확한 답이 꼭 필요할 때','답을 외울 때'],ans:0,ok:'어림한 값과 많이 다르면 계산을 다시 확인해요.'}},
    {t:'답이 말이 되는지 확인하기',idea:`${M_('48 × 5')}를 계산했더니 2400이 나왔다면? 어림하면 ${M_('50 × 5 = 250')}쯤이니까 <b>잘못 계산했어요</b>.`,
      ex(r){const R=ri(r,3,9)*10,a=R+pick(r,[-2,-1,1,2]),b=ri(r,3,8),w=a*b*10,ch=['맞아요','틀렸어요'];return{q:`${M_(`${a} × ${b} = ${w}`)}${J(w,'이라고','라고').slice(String(w).length)} 계산했어요. 맞을까요?`,ans:'틀렸어요',type:'choice',choices:ch,
-       steps:[S_(`${a}에 가장 가까운 몇십은?`,'',R),S_('어림한 곱',M_(`${R} × ${b}`),R*b),S_(`${w}과 ${R*b}을 비교하면 계산은?`,'','틀렸어요','choice',ch)]}},
+       steps:[S_(`${a}에 가장 가까운 몇십은?`,'',R),S_('어림한 곱',M_(`${R} × ${b}`),R*b),S_(`${J(w,'과','와')} ${J(R*b,'을','를')} 비교하면 계산은?`,'','틀렸어요','choice',ch)]}},
      why:{q:'어림한 값과 계산한 답이 아주 다르면?',choices:['계산을 다시 확인해요','그대로 답을 써요','어림한 값을 답으로 써요'],ans:0,ok:'어림은 실수를 잡아 주는 안전망이에요.'}}],
   gen(L,r){
    if(L===1){const T=ri(r,1,9)*10,o=pick(r,[1,2,3,4,6,7,8,9]),a=T+o,R=o<5?T:T+10;
@@ -369,7 +369,7 @@ const CALC=[
    if(L===2){const a=ri(r,2,3),b=ri(r,1,4);return{q:`${N_} = ${M_(n)}일 때, ${M_(a)}${N_}${M_(` + ${b}`)}의 값`,ans:a*n+b,steps:[S_('곱하기 먼저',M_(`${a} × ${n}`),a*n),S_('그다음 더하기',M_(`${a*n} + ${b}`),a*n+b)],
      errs:[E_(Number(`${a}${n}`)+b,`${M_(a)}${N_}은 ${M_(`${a} × ${n}`)}${IYs(n)}. 숫자를 붙여 쓰면 안 돼요.`),E_(a*(n+b),'더하기를 먼저 했어요. 곱하기 먼저예요.'),E_(a+n+b,'곱해야 할 곳을 더했어요.')]}}
    const tp=pick(r,['prism','pyramid','frustum']),Ty=TYPE[tp],pp=pick(r,['F','E','V']),f=String(Ty['f'+pp]).replace('+',' + ');const m=f.match(/^(\d*)n(?:\s*\+\s*(\d+))?$/),a=m&&m[1]?+m[1]:1,b=m&&m[2]?+m[2]:0;
-   const errs=['F','E','V'].filter(x=>x!==pp&&Ty[x](n)!==Ty[pp](n)).map(x=>E_(Ty[x](n),`${PART[x]}의 개수를 구했어요. ${PART[pp]}는 ${M_(f)}개예요.`));
+   const errs=['F','E','V'].filter(x=>x!==pp&&Ty[x](n)!==Ty[pp](n)).map(x=>E_(Ty[x](n),`${PART[x]}의 개수를 구했어요. ${josa(PART[pp],'은','는')} ${M_(f)}개예요.`));
    return{q:`${kn(n)}${Ty.nm}의 ${PART[pp]}의 개수`,ans:Ty[pp](n),suffix:'개',steps:[S_(`${PART[pp]}의 개수 식 ${M_(f)}에서 ${N_}은?`,'',n),...(a>1?[S_('곱하기 먼저',M_(`${a} × ${n}`),a*n)]:[]),...(b?[S_('더하기',M_(`${a*n} + ${b}`),a*n+b)]:[])],errs}}},
  {id:'eq',grp:'solid',nm:'거꾸로 풀기',use:'정비례·반비례에서 x·a 구하기, 몇 각기둥인지 찾기',lv:['1단계 · 한 번 되돌리기','2단계 · 두 번 되돌리기','3단계 · 개수에서 n 찾기'],
   ways:[{t:'곱했으면 나눠요',idea:`${M_('3')}${N_}${M_(' = 24')}는 "3에 무엇을 곱하면 24?"예요. <b>곱하기를 거꾸로</b> 하면 나누기예요.`,
@@ -381,7 +381,7 @@ const CALC=[
   gen(L,r){const n=ri(r,3,10);
    if(L===1){if(r()<0.4){const b=ri(r,1,5),c=n+b;return{q:`${N_}${M_(` + ${b} = ${c}`)}일 때, ${N_}의 값`,ans:n,steps:[S_('거꾸로 빼요',M_(`${c} − ${b}`),n)],errs:[E_(c+b,'더했어요. 더하기를 거꾸로 하면 빼기예요.')]}}
      const a=ri(r,2,4),c=a*n;return{q:`${M_(a)}${N_}${M_(` = ${c}`)}일 때, ${N_}의 값`,ans:n,steps:[S_('거꾸로 나눠요',M_(`${c} ÷ ${a}`),n)],errs:[E_(c*a,'곱했어요. 거꾸로 하려면 나눠요.'),E_(c-a,'뺐어요. 곱하기를 거꾸로 하면 나누기예요.')]}}
-   if(L===2){const a=ri(r,2,3),b=ri(r,1,4),c=a*n+b,errs=[E_(c-b,'빼기만 했어요. 그다음 나누기도 해요.')];if((c+b)%a===0)errs.push(E_((c+b)/a,`+ ${b}를 되돌릴 때는 빼요.`));if(c%a===0)errs.push(E_(c/a-b,`나누기를 먼저 했어요. 나중에 한 + ${b}부터 되돌려요.`));
+   if(L===2){const a=ri(r,2,3),b=ri(r,1,4),c=a*n+b,errs=[E_(c-b,'빼기만 했어요. 그다음 나누기도 해요.')];if((c+b)%a===0)errs.push(E_((c+b)/a,`+ ${J(b,'을','를')} 되돌릴 때는 빼요.`));if(c%a===0)errs.push(E_(c/a-b,`나누기를 먼저 했어요. 나중에 한 + ${b}부터 되돌려요.`));
      return{q:`${M_(a)}${N_}${M_(` + ${b} = ${c}`)}일 때, ${N_}의 값`,ans:n,steps:[S_('먼저 빼요',M_(`${c} − ${b}`),a*n),S_('그다음 나눠요',M_(`${a*n} ÷ ${a}`),n)],errs}}
    const tp=pick(r,['prism','pyramid']),Ty=TYPE[tp],pp=pick(r,['E','F']),f=String(Ty['f'+pp]).replace('+',' + '),v=Ty[pp](n);const m=f.match(/^(\d*)n(?:\s*\+\s*(\d+))?$/),a=m&&m[1]?+m[1]:1,b=m&&m[2]?+m[2]:0;
    const errs=[];if(a>1&&b)errs.push(E_(v-b,'빼기만 하고 나누지 않았어요.'));if(b&&v%a===0&&a>1)errs.push(E_(v/a,'빼기를 먼저 해야 해요.'));if(b)errs.push(E_(v+b,'더했어요. 더하기를 거꾸로 하면 빼기예요.'));if(a>1)errs.push(E_(v*a,'곱했어요. 거꾸로 하려면 나눠요.'));
@@ -491,7 +491,7 @@ const CALC=[
    if(L===2){const[d1,d2]=pick(r,[[2,4],[2,6],[3,6],[2,3],[3,4],[4,6]]),cm=lcm_(d1,d2),m1=cm/d1,m2=cm/d2;
      if(r()<0.5){const n1=ri(r,1,d1-1),n2=ri(r,1,d2-1),s=n1*m1+n2*m2,g=gcd_(s,cm),p=s/g,q=cm/g,at=q===1?String(p):`${p}/${q}`;
        return{q:`${FR(n1,d1)} + ${FR(n2,d2)}`,ans:p/q,type:'sn',ansText:at,
-         steps:[S_(`공통분모는? (${d1}와 ${d2}의 최소공배수)`,'',cm),S_(`통분한 분자의 합 (${n1*m1} + ${n2*m2})`,M_(`${n1*m1} + ${n2*m2}`),s),S_('분수로 답해요 ( / 단추 )','',p/q,'sn')],
+         steps:[S_(`공통분모는? (${J(d1,'과','와')} ${d2}의 최소공배수)`,'',cm),S_(`통분한 분자의 합 (${n1*m1} + ${n2*m2})`,M_(`${n1*m1} + ${n2*m2}`),s),S_('분수로 답해요 ( / 단추 )','',p/q,'sn')],
          errs:[E_((n1+n2)/(d1+d2),'분모끼리, 분자끼리 그냥 더했어요. 통분해서 분모를 맞춰요.')]}}
      let n1=ri(r,1,d1-1),n2=ri(r,1,d2-1);if(n1*m1<=n2*m2){[n1,n2]=[n2,n1];const t=d1;return{q:`${FR(n1,d2)} − ${FR(n2,t)}`,ans:(n1*m2-n2*m1)/cm,type:'sn',ansText:(()=>{const s=n1*m2-n2*m1,g=gcd_(s,cm),p=s/g,q=cm/g;return q===1?String(p):`${p}/${q}`})(),
        steps:[S_('공통분모는?','',cm),S_('통분한 분자의 차',M_(`${n1*m2} − ${n2*m1}`),n1*m2-n2*m1),S_('분수로 답해요 ( / 단추 )','',(n1*m2-n2*m1)/cm,'sn')],errs:[E_((n1*m2+n2*m1)/cm,'더했어요. 빼기예요.')]}}
@@ -532,7 +532,7 @@ const CALC=[
        return{q:`다음 중 ${M_(n)}의 약수는?`,type:'choice',choices:ch,mathChoices:true,ans:String(ok),steps:[S_(`${n}을 나누어떨어지게 하는 수는?`,'',String(ok),'choice',ch)]}},
      why:{q:'4가 12의 약수인 까닭은?',choices:['12 ÷ 4가 나누어떨어져서','4가 12보다 작아서','4가 짝수라서'],ans:0,ok:'12 ÷ 4 = 3으로 나머지가 0이라서 약수예요.'}},
    {t:'최대공약수와 최소공배수',idea:`12와 18을 <b>둘 다 나누는 가장 큰 수</b>는 6(최대공약수), <b>둘의 공통 배수 중 가장 작은 수</b>는 36(최소공배수)이에요.`,
-     ex(r){const g=pick(r,[3,4,6]),a=g*2,b=g*3;return{q:`${M_(a)}와 ${M_(b)}의 최대공약수`,ans:g,steps:[S_(`${a}와 ${b}를 둘 다 나누는 가장 큰 수는?`,'',g)]}},
+     ex(r){const g=pick(r,[3,4,6]),a=g*2,b=g*3;return{q:`${M_(a)}${J(a,'과','와').slice(String(a).length)} ${M_(b)}의 최대공약수`,ans:g,steps:[S_(`${J(a,'과','와')} ${J(b,'을','를')} 둘 다 나누는 가장 큰 수는?`,'',g)]}},
      why:{q:'분수를 한 번에 약분할 때 쓰면 좋은 것은?',choices:['최대공약수','최소공배수','두 수의 합'],ans:0,ok:'분자와 분모의 최대공약수로 나누면 한 번에 기약분수가 돼요.'}}],
   gen(L,r){
    if(L===1){const n=pick(r,[12,15,16,18,20,24,28,30]),divs=[];for(let i=2;i<n;i++)if(n%i===0)divs.push(i);
@@ -540,24 +540,24 @@ const CALC=[
      return{q:`다음 중 ${M_(n)}의 약수는?`,type:'choice',choices:ch,mathChoices:true,ans:String(ok),
        steps:[S_(`${n}을 나머지 없이 나누는 수를 골라요`,'',String(ok),'choice',ch)]}}
    if(L===2){const g=pick(r,[2,3,4,5,6,8]),[p,q]=pick(r,[[2,3],[3,4],[3,5],[2,5],[4,5]]),a=g*p,b=g*q;
-     return{q:`${M_(a)}와 ${M_(b)}의 최대공약수`,ans:g,steps:[S_(`${a}와 ${b}를 둘 다 나누는 가장 큰 수`,'',g)],
+     return{q:`${M_(a)}${J(a,'과','와').slice(String(a).length)} ${M_(b)}의 최대공약수`,ans:g,steps:[S_(`${J(a,'과','와')} ${J(b,'을','를')} 둘 다 나누는 가장 큰 수`,'',g)],
        errs:[E_(lcm_(a,b),'최소공배수를 구했어요. 최대공약수는 둘 다 나누는 가장 큰 수예요.'),E_(1,'1보다 큰 공통 약수가 있어요.')]}}
    const g=pick(r,[2,3,4,5,6]),[p,q]=pick(r,[[2,3],[3,4],[2,5],[3,5]]),a=g*p,b=g*q,lm=lcm_(a,b);
-   return{q:`${M_(a)}와 ${M_(b)}의 최소공배수`,ans:lm,steps:[S_('먼저 최대공약수를 찾아요','',g),S_('최소공배수',M_(`${g} × ${p} × ${q}`),lm)],
+   return{q:`${M_(a)}${J(a,'과','와').slice(String(a).length)} ${M_(b)}의 최소공배수`,ans:lm,steps:[S_('먼저 최대공약수를 찾아요','',g),S_('최소공배수',M_(`${g} × ${p} × ${q}`),lm)],
      errs:[E_(g,'최대공약수를 구했어요. 최소공배수는 공통 배수 중 가장 작은 수예요.'),E_(a*b,'두 수를 그냥 곱했어요. 최대공약수로 한 번 나눠야 최소공배수가 돼요.')]}}},
  {id:'ratio',grp:'mid',nm:'비 간단히 하기',use:'비례식, 중심각·호·넓이의 비, 정비례',lv:['1단계 · 자연수의 비','2단계 · 소수의 비','3단계 · 분수의 비'],
   ways:[{t:'앞과 뒤를 같은 수로 나누기',idea:`비의 앞과 뒤를 <b>같은 수로 나누어도</b> 비는 같아요. ${M_('12 : 18')}은 둘 다 6으로 나누면 ${M_('2 : 3')}이에요.`,
-     ex(r){const[a,b]=ratioPair(r),g=ratioG(a,b);return{q:M_(`${a} : ${b}`)+'을 가장 간단한 자연수의 비로',ans:`${a/g} : ${b/g}`,type:'choice',choices:[`${a/g} : ${b/g}`],steps:[S_('두 수의 최대공약수',M_(`${a}와 ${b}`),g),S_('앞',M_(`${a} ÷ ${g}`),a/g),S_('뒤',M_(`${b} ÷ ${g}`),b/g)]}},
+     ex(r){const[a,b]=ratioPair(r),g=ratioG(a,b);return{q:M_(`${a} : ${b}`)+'을 가장 간단한 자연수의 비로',ans:`${a/g} : ${b/g}`,type:'choice',choices:[`${a/g} : ${b/g}`],steps:[S_('두 수의 최대공약수',M_(`${J(a,'과','와')} ${b}`),g),S_('앞',M_(`${a} ÷ ${g}`),a/g),S_('뒤',M_(`${b} ÷ ${g}`),b/g)]}},
      why:{q:`${M_('12 : 18')}과 ${M_('2 : 3')}은 같은 비일까요?`,choices:['네, 둘 다 6으로 나눴을 뿐이에요','아니요, 수가 작아졌어요','앞만 같아요'],ans:0,ok:'앞과 뒤를 같은 수로 나누면 비는 그대로예요.'}},
    {t:'소수·분수는 먼저 자연수로',idea:`소수는 <b>× 10</b>, 분수는 <b>분모의 최소공배수</b>를 앞과 뒤에 똑같이 곱해 자연수로 만든 다음 나눠요. 예) ${FR(1,2)} : ${FR(1,3)} → × 6 → ${M_('3 : 2')}`,
      ex(r){const d1=2,d2=3;return{q:`${FR(1,d1)} : ${FR(1,d2)}을 가장 간단한 자연수의 비로`,ans:'3 : 2',type:'choice',choices:['3 : 2'],steps:[S_('분모 2와 3의 최소공배수',M_('2와 3'),6),S_('앞',`${FR(1,2)} ${M_('× 6')}`,3),S_('뒤',`${FR(1,3)} ${M_('× 6')}`,2)]}},
      why:{q:`${M_('0.6 : 0.9')}를 자연수의 비로 바꾸려면?`,choices:['앞과 뒤에 똑같이 10을 곱해요','앞에만 10을 곱해요','0.6에서 0.9를 빼요'],ans:0,ok:'앞과 뒤에 같은 수를 곱해야 비가 그대로예요. 6 : 9 → 2 : 3'}}],
   gen(L,r){
-   if(L===1){const[a,b]=ratioPair(r),g=ratioG(a,b);return ratioQ(r,M_(`${a} : ${b}`),a,b,[S_('두 수의 최대공약수',M_(`${a}와 ${b}`),g),S_('앞을 나누면',M_(`${a} ÷ ${g}`),a/g),S_('뒤를 나누면',M_(`${b} ÷ ${g}`),b/g)])}
+   if(L===1){const[a,b]=ratioPair(r),g=ratioG(a,b);return ratioQ(r,M_(`${a} : ${b}`),a,b,[S_('두 수의 최대공약수',M_(`${J(a,'과','와')} ${b}`),g),S_('앞을 나누면',M_(`${a} ÷ ${g}`),a/g),S_('뒤를 나누면',M_(`${b} ÷ ${g}`),b/g)])}
    if(L===2){let a,b;do{[a,b]=ratioPair(r)}while(a%10===0&&b%10===0);const g=ratioG(a,b),A=a/10,B=b/10;
      return ratioQ(r,M_(`${A} : ${B}`),a,b,[S_('앞과 뒤에 10을 곱하면 · 앞',M_(`${A} × 10`),a),S_('뒤',M_(`${B} × 10`),b),S_('최대공약수로 나누면 · 앞',M_(`${a} ÷ ${g}`),a/g),S_('뒤',M_(`${b} ÷ ${g}`),b/g)],{[`${a} : ${b}`]:'자연수로 바꾼 다음, 최대공약수로 한 번 더 나눠요.'})}
    let d1,d2,n1,n2;do{d1=ri(r,2,6);d2=ri(r,2,6);n1=ri(r,1,d1-1);n2=ri(r,1,d2-1)}while(d1===d2||ratioG(n1,d1)>1||ratioG(n2,d2)>1);
-   const Lc=d1*d2/ratioG(d1,d2),a=n1*Lc/d1,b=n2*Lc/d2,g=ratioG(a,b),st=[S_(`분모 ${d1}과 ${d2}의 최소공배수`,M_(`${d1}과 ${d2}`),Lc),S_('앞에 곱하면',`${FR(n1,d1)} ${M_('× '+Lc)}`,a),S_('뒤에 곱하면',`${FR(n2,d2)} ${M_('× '+Lc)}`,b)];
+   const Lc=d1*d2/ratioG(d1,d2),a=n1*Lc/d1,b=n2*Lc/d2,g=ratioG(a,b),st=[S_(`분모 ${J(d1,'과','와')} ${d2}의 최소공배수`,M_(`${J(d1,'과','와')} ${d2}`),Lc),S_('앞에 곱하면',`${FR(n1,d1)} ${M_('× '+Lc)}`,a),S_('뒤에 곱하면',`${FR(n2,d2)} ${M_('× '+Lc)}`,b)];
    if(g>1)st.push(S_('최대공약수로 나누면 · 앞',M_(`${a} ÷ ${g}`),a/g),S_('뒤',M_(`${b} ÷ ${g}`),b/g));
    return ratioQ(r,`${FR(n1,d1)} : ${FR(n2,d2)}`,a,b,st,{[`${n1} : ${n2}`]:'분자끼리만 쓰면 안 돼요. 분모의 최소공배수를 앞과 뒤에 똑같이 곱해요.',[`${d2*n1} : ${d1*n2}`]:'곱한 수가 앞과 뒤에서 달라요. 같은 수(분모의 최소공배수)를 곱해요.'})}},
  {id:'signed',grp:'mid',nm:'부호가 있는 계산',use:'정수와 유리수의 사칙연산',lv:['1단계 · 같은 부호 더하기','2단계 · 다른 부호 더하기','3단계 · 뺄셈과 부호 곱셈'],
@@ -634,7 +634,7 @@ const LINKS={
  unit:r=>{const a=ri(r,2,9);return[{p:`${svgMeter()}<p>${M_(a+' m')}는?</p>`,choices:[`${a*100} cm`,`${a*10} cm`,`${a} cm`],ans:`${a*100} cm`,ok:`1 m = 100 cm라서 ${a} m = ${a*100} cm.`}]},
  fracop:r=>[{p:`<p class="kbig">${FR(1,2)} ÷ ${FR(3,4)}</p><p>곱셈으로 바꾸면?</p>`,choices:['1/2 × 4/3','2/1 × 3/4','1/2 × 3/4'],ans:'1/2 × 4/3',ok:'÷ 뒤의 분수만 위아래를 뒤집어 곱해요.'}],
  dec:r=>[{p:`<p class="kbig">${M_('2.4 + 0.35')}</p><p>소수점 자리를 맞춘 식은?</p>`,choices:['2.40 + 0.35','0.24 + 0.35','24 + 35'],ans:'2.40 + 0.35',ok:'2.4 뒤에 0을 붙여 2.40으로 맞추면 자릿값이 정확해요.'}],
- ratio:r=>{const[a,b]=ratioPair(r),g=ratioG(a,b);return[{p:`<p class="kbig">${M_(`${a} : ${b}`)}</p><p>앞과 뒤를 똑같이 나눌 가장 큰 수는?</p>`,choices:shuffle(r,[String(g),String(a*b/g),String(a+b)]).filter((x,i,A)=>A.indexOf(x)===i),ans:String(g),ok:`${a}와 ${b}의 최대공약수 ${g}로 나누면 ${a/g} : ${b/g}이에요.`}]},
+ ratio:r=>{const[a,b]=ratioPair(r),g=ratioG(a,b);return[{p:`<p class="kbig">${M_(`${a} : ${b}`)}</p><p>앞과 뒤를 똑같이 나눌 가장 큰 수는?</p>`,choices:shuffle(r,[String(g),String(a*b/g),String(a+b)]).filter((x,i,A)=>A.indexOf(x)===i),ans:String(g),ok:`${J(a,'과','와')} ${b}의 최대공약수 ${josaRo(String(g))} 나누면 ${a/g} : ${b/g}이에요.`}]},
  gcd:r=>[{p:`<p class="kbig">${M_('12')}와 ${M_('18')}</p><p>둘 다 나누어떨어지게 하는 가장 큰 수는?</p>`,choices:['6','3','36'],ans:'6',ok:'6은 12와 18의 최대공약수예요. 36은 최소공배수예요.'}],
  signed:r=>[{p:`<p class="kbig">${M_('(+3) − (−5)')}</p><p>덧셈으로 바꾸면?</p>`,choices:['(+3) + (+5)','(+3) + (−5)','(−3) + (+5)'],ans:'(+3) + (+5)',ok:'빼는 수의 부호만 반대로 바꿔 더해요.'}]};
 /* 잇기 활동: ① 이 낱말을 떠올릴 계산 고르기 ② 이 계산에 떠올릴 낱말 고르기 ③ 그림·말 ↔ 식 */
@@ -728,16 +728,31 @@ const calcNowT=()=>{const t=CALC.find(c=>c.id===CALC_NOW);return t&&calcVisible(
 const calcPlan=()=>{const d=OBJ(DB._calcDiag);return Array.isArray(d.plan)?d.plan.filter(id=>CALC.some(t=>t.id===id)):[]};
 function calcCard(t,dueIds,plan){const s=calcPeek(t.id),wd=t.ways.filter((w,k)=>OBJ(s.ways)[k]).length,isDue=dueIds.includes(t.id),rec=plan.includes(t.id)&&NUM(s.stars)<1,ex=EXAM_TAG[t.id];
   return`<a class="card calc-card" href="#calc-${t.id}"><span class="calc-tags">${ex?`<i class="ctag exam">시험 · ${ex}</i>`:''}${isDue?'<i class="ctag due">복습</i>':''}${rec?'<i class="ctag rec">추천</i>':''}</span><b>${t.nm}</b>${KEYS[t.id]?`<span class="kw">💡 ${KEYS[t.id].w}</span>`:''}<small>${t.use}</small><span class="calc-prog">${starRow(Math.min(calcLvN(t.id),NUM(s.stars)),calcLvN(t.id))}<small>생각하는 법 ${wd}/${t.ways.length}</small></span></a>`}
+/* ── 기초 연산 사다리: 4갈래로 쉬운 칸부터 잇기. 앞 칸이 다음 칸의 바탕이에요 ── */
+const CALC_PATHS=[
+ {k:'num',nm:'수 감각',ic:'🔢',d:'더하고 빼고, 곱하고 나누는 힘이에요. 모든 계산의 바탕이에요.',ids:['add','facts','div','mul','est','signed']},
+ {k:'expr',nm:'식 다루기',ic:'🧩',d:'계산 순서를 지키고, 식에 수를 넣고, 거꾸로 풀어요.',ids:['order','sub','eq','surf']},
+ {k:'frac',nm:'분수 · 소수 · 비',ic:'🍕',d:'분수의 뜻에서 시작해 약분·통분, 소수, 비까지 이어져요.',ids:['fracbase','gcd','frac','fracop','dec','ratio']},
+ {k:'fig',nm:'도형 계산',ic:'📐',d:'제곱, 넓이 공식, π, 단위 바꾸기로 원과 입체도형을 계산해요.',ids:['pow','area','pi','unit']}];
+const calcPath=id=>{const P=CALC_PATHS.find(p=>p.ids.includes(id));if(!P)return null;const ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)}),i=ids.indexOf(id);return i<0?null:{P,ids,i,prev:ids[i-1]||null,next:ids[i+1]||null}};
+const calcNm=id=>(CALC.find(t=>t.id===id)||{}).nm||'';
+/* 한 갈래에서 지금 할 칸: 별을 하나도 못 받은 첫 칸(없으면 다 익히지 않은 첫 칸) */
+const pathNow=ids=>ids.find(id=>NUM(calcPeek(id).stars)<1)||ids.find(id=>!calcDone(id))||null;
+function ladderHTML(P,dueIds,plan){const ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)});if(!ids.length)return'';
+  const now=pathNow(ids),done=ids.filter(calcDone).length,start=plan.find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1);
+  return`<section class="card panel ladder" aria-label="${P.nm} 사다리"><div class="lad-h"><span class="lad-ic" aria-hidden="true">${P.ic}</span><div><h2>${P.nm} <small class="muted">${done} / ${ids.length}칸</small></h2><p class="muted">${P.d}</p></div></div>
+   <ol class="lad">${ids.map((id,i)=>{const t=CALC.find(c=>c.id===id),st=calcPeek(id),N=calcLvN(id),n=Math.min(N,NUM(st.stars)),fin=n>=N,isNow=id===now,ex=EXAM_TAG[id],K=KEYS[id];
+     return`<li class="${fin?'fin':isNow?'now':''}"><a href="#calc-${id}"><span class="lad-no" aria-hidden="true">${fin?CHECK:i+1}</span><span class="lad-b"><b>${t.nm}</b>${K?`<small class="kw">💡 ${K.w}</small>`:''}<span class="calc-tags">${isNow?'<i class="ctag now">지금 여기</i>':''}${id===start&&!isNow?'<i class="ctag rec">추천</i>':''}${dueIds.includes(id)?'<i class="ctag due">복습</i>':''}${ex?`<i class="ctag exam">시험 · ${ex}</i>`:''}</span></span>${starRow(n,N)}</a></li>`}).join('')}</ol></section>`}
 function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 연산</span>`;stopSpeak();
   const dueIds=dueList().map(t=>t.id),dg=OBJ(DB._calcDiag),plan=calcPlan();
   app.innerHTML=`<div class="unit-head"><div><h1>기초 연산</h1><p>짧게, 자주, 정확하게. <b>생각하는 법</b>을 익히고 쉬운 수부터 연습해요.</p></div></div>
    ${!dg.d?`<a class="card start-card" href="#calc-start"><span><b>처음이라면 여기부터 · 시작점 찾기</b><small>${DIAG.length}문제로 어디서부터 하면 좋을지 찾아 줘요. 시험이 아니에요.</small></span><span class="go" aria-hidden="true">→</span></a>`:''}
-   <div class="card panel calc-sum"><div class="stat"><small>모은 별</small><b class="rm">${calcStars()} / ${CALC.filter(calcVisible).length*3}</b></div><div class="stat"><small>구구단 익힘</small><b class="rm">${factsKnown()} / 36</b></div><div class="stat"><small>오늘 복습</small><b class="rm">${dueIds.length>2?`2 / ${dueIds.length}`:dueIds.length}</b></div>
+   <div class="card panel calc-sum"><div class="stat"><small>모은 별</small><b class="rm">${calcStars()} / ${CALC.filter(calcVisible).reduce((n,t)=>n+calcLvN(t.id),0)}</b></div><div class="stat"><small>구구단 익힘</small><b class="rm">${factsKnown()} / 36</b></div><div class="stat"><small>오늘 복습</small><b class="rm">${dueIds.length>2?`2 / ${dueIds.length}`:dueIds.length}</b></div>
     <div class="calc-acts"><a class="btn${dg.d?' primary':''}" href="#drill">오늘의 계산${dueIds.length?` · 복습 ${Math.min(2,dueIds.length)}개`:''}</a>${dg.d?'<a class="btn ghost" href="#calc-start">시작점 다시 찾기</a>':''}</div></div>
    ${dueIds.length>2?`<p class="calc-due">밀린 복습이 ${dueIds.length}개 있지만 괜찮아요! 오늘은 부담 없이 <b>2개만</b> 먼저 챙겨도 충분해요.</p>`:''}
-   ${(()=>{const ef=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));return ef.length?`<div class="card panel exam-box"><h2>🎯 이번 시험 집중 연산</h2><p><b>원과 부채꼴 · 입체도형 · 정비례와 반비례</b>에 바로 쓰이는 기초 연산을 우선 배치했어요.</p><div class="exam-chips">${ef.slice(0,8).map(t=>`<a class="exam-chip" href="#calc-${t.id}"><b>${t.nm}</b><small>${EXAM_TAG[t.id]}</small>${starRow(Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)),calcLvN(t.id))}</a>`).join('')}</div></div>`:''})()}
+   <p class="lad-intro">사다리는 <b>위 칸이 아래 칸의 바탕</b>이에요. 갈래마다 <b>지금 여기</b> 칸부터 하면 돼요. <i class="ctag exam">시험</i> 꼬리표는 이번 시험 범위에 바로 쓰이는 계산이에요.</p>
    ${dg.d&&plan.length?`<div class="card panel calc-plan"><b>내 추천 순서</b> ${plan.map((id,i)=>`<a class="chip" href="#calc-${id}">${i+1}. ${CALC.find(x=>x.id===id).nm}</a>`).join(' ')}</div>`:''}
-   ${CALC_GRP.filter(([g])=>!SITE.calcGroups||SITE.calcGroups.includes(g)).map(([g,nm,d])=>`<h2 class="calc-gh">${nm}</h2><p class="muted calc-gd">${d}</p><div class="calc-grid">${CALC.filter(t=>t.grp===g).sort((a,b)=>examRank(a.id)-examRank(b.id)).map(t=>calcCard(t,dueIds,plan)).join('')}</div>`).join('')}`}
+   <div class="ladders">${CALC_PATHS.map(P=>ladderHTML(P,dueIds,plan)).join('')}</div>`}
 /* ── 곱셈구구 표 ── */
 const FLV_NM=['아직','연습 중','빠르게 맞힘','익힘','오래 기억'];
 function factGridHTML(){let h='<div class="fgrid-wrap"><table class="fgrid" aria-label="내 구구단 표"><thead><tr><th scope="col">×</th>';for(let b=2;b<=9;b++)h+=`<th scope="col">${b}</th>`;h+='</tr></thead><tbody>';
@@ -754,6 +769,7 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}const T=CALC.
   let L=calcMaxLv(id),CNT=calcLenPref();const LV=T.lv||CALC_LV;
   const draw=()=>{const st=calcState(id),wd=T.ways.filter((w,k)=>st.ways[k]).length;
     app.innerHTML=`<div class="unit-head"><div><h1>${T.nm}</h1><p>어디에 쓰여요? <b>${T.use}</b></p></div><div>${starRow(st.stars,LV.length)}</div></div>
+     ${(()=>{const W=calcPath(id);if(!W)return'';const pv=W.prev,nx=W.next,pvWeak=pv&&NUM(calcPeek(pv).stars)<1;return`<nav class="lad-bar" aria-label="사다리에서 이 칸의 자리"><span class="lad-where">${W.P.ic} ${W.P.nm} 사다리 · <b>${W.i+1}</b> / ${W.ids.length}칸</span><span class="lad-nav">${pv?`<a class="chip" href="#calc-${pv}">← 앞 칸 ${calcNm(pv)}</a>`:''}${nx?`<a class="chip" href="#calc-${nx}">다음 칸 ${calcNm(nx)} →</a>`:''}</span>${pvWeak&&NUM(calcPeek(id).stars)<1?`<p class="lad-tip">앞 칸 <a href="#calc-${pv}"><b>${calcNm(pv)}</b></a>${josa(calcNm(pv),'이','가').slice(calcNm(pv).length)} 이 계산의 바탕이에요. 어렵게 느껴지면 앞 칸부터 해도 좋아요.</p>`:''}</nav>`})()}
      ${calcDue(id)?'<p class="calc-due">복습할 때예요! 하루 이틀 지나 다시 떠올리면 더 오래 기억해요.</p>':''}
      ${id==='facts'?`<div class="card panel"><h2 style="margin-top:0">내 구구단 표 <small class="muted" style="font-size:15px">익힘 ${factsKnown()}/36</small></h2>${factGridHTML()}<div class="fLearn"></div></div>`:''}
      ${KEYS[id]?`<div class="card panel kpanel"><h2 style="margin-top:0">핵심 낱말 ${st.key?`<small class="kdone">${CHECK} 이었어요</small>`:''}</h2><p class="muted" style="margin-top:-4px">이 계산을 보면 무엇을 떠올릴까요? 신호 → 낱말 → 그림 → 식으로 이어 봐요.</p>${keyCardHTML(id)}
@@ -787,6 +803,7 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}const T=CALC.
       onFinish:(first,info)=>{const st=calcState(id),n=info.total;st.n++;st.last=today();const pct=Math.round(first*100/n);if(st.best[L]==null||pct>NUM(st.best[L]))st.best[L]=pct;
         const need=Math.ceil(n*0.8),star=first>=need&&L>st.stars;if(star)st.stars=L;calcSchedule(id,Math.round(first*10/n));save();dayBump('calc');if(first)award(first);if(star)award(5,'calc:'+id+':'+L);
         $('.dIn',app).innerHTML=`<div class="feedback ${first>=need?'ok':''}" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${n}<br>${star?`${L}단계 별을 받았어요!${L<LV.length?' 다음 단계가 열렸어요.':' 이 계산은 다 익혔어요!'}`:first>=need?'잘했어요! 이미 받은 별이에요.':`${need}문제 이상 맞히면 별을 받아요. 쪼개서 푼 문제를 떠올리며 한 번 더 해 봐요.`}</div>
+          ${(()=>{const W=calcPath(id),pv=W&&W.prev;return first<need&&pv&&!calcDone(pv)?`<p class="sum-tip lad-back"><b>바탕 다지기</b> 앞 칸 <a href="#calc-${pv}">${calcNm(pv)}</a>${josa(calcNm(pv),'을','를').slice(calcNm(pv).length)} 먼저 다지면 이 계산이 훨씬 쉬워져요.</p>`:''})()}
           ${info.tip?`<p class="sum-tip"><b>자주 나온 실수</b> ${info.tip}</p>`:''}
           <p class="sum-space">${id==='facts'?`구구단 표: 빠르게 맞힘 <b>${FACTS.filter(([a,b])=>fs0(fk(a,b)).lv>=2).length}</b>칸 · 익힘 <b>${factsKnown()}</b>칸. 다른 날 한 번 더 빠르게 맞히면 익힘이 돼요.<br>`:''}내일 오늘의 계산에서 다시 만나요. 하루 지나 다시 떠올리면 더 오래 기억해요.</p>
           <div class="next-row" style="justify-content:center"><button type="button" class="btn calcBack">${T.nm}</button><button type="button" class="btn primary calcAgain">${star&&L<LV.length?'다음 단계':'한 번 더'}</button></div>`;
