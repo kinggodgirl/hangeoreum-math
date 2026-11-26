@@ -134,6 +134,10 @@ const DEF=[['원은 평면 위의 한 점 O에서 □에 있는 모든 점으로
 const BOXH='<span class="cbox">□</span>';
 GEN.arcDef=seed=>{const r=mulberry(seed),[s,ok,w]=DEF[seed%DEF.length];
   return{ptype:'arc:def',title:`□에 알맞은 것을 고르시오.<div class="cond">${s.replace('□',BOXH)}</div>`,fig:null,steps:[{q:'□에 알맞은 것은?',type:'choice',choices:shuffle(r,[ok,...w]),ans:ok,hint:'굽으면 호, 곧으면 현 · 반지름 2개 + 호는 부채꼴, 현 + 호는 활꼴이에요.',ok:s.replace('□',`<b>${ok}</b>`)}]}};
+const PIC_KIND=['반지름','지름','현','호','부채꼴','활꼴','중심각'],PIC_NAMES=['반지름','지름','현','호','부채꼴','활꼴','중심각'];
+GEN.arcPic=seed=>{const r=mulberry(seed),k=PIC_KIND[seed%PIC_KIND.length],fig=idFig(k,r);
+  return{ptype:'arc:pic',title:'원 O에서 <b>주황색으로 표시한 것</b>의 이름을 고르시오.',fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:'주황색으로 표시한 것의 이름은?',steps:[
+    {q:'가장 알맞은 이름을 고르세요.',type:'choice',choices:PIC_NAMES.slice(),ans:k,hint:CAT_HINT[NAME_CAT[k]],ok:NAME_INFO[k]}]}};
 GEN.arcName=seed=>{const r=mulberry(seed),k=ID_KIND[seed%ID_KIND.length],ans=k.startsWith('none')?NONE:k,cat=NAME_CAT[k],fig=idFig(k,r);
   return{ptype:'arc:name',title:'원 O에서 <b>주황색으로 표시한 것</b>의 이름을 쓰시오.',fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:'주황색으로 표시한 것의 이름은?',steps:[
     {tag:'모양 보기',q:'주황색으로 표시한 것은 어떤 모양인가요?',type:'choice',choices:['곧은 선분','굽은 선','둘러싸인 도형','각'],ans:cat,hint:'선인지, 도형인지, 각인지 먼저 보세요. 선이면 곧은지 굽었는지 봐요.'},
@@ -144,7 +148,7 @@ const CIRC5=['①','②','③','④','⑤'];
 const tfQ=(r,T_,F_,pt_,head)=>{const[fs,why]=pick(r,F_),all=shuffle(r,[...shuffle(r,T_.slice()).slice(0,4),fs]),lab=all.map((x,i)=>CIRC5[i]+' '+x);
   return{ptype:pt_,title:head,fig:null,steps:[{q:'옳지 않은 것을 고르세요.',type:'choice',choices:lab,ans:lab[all.indexOf(fs)],hint:'하나씩 그림을 떠올려 확인해 보세요.',ok:why}]}};
 GEN.arcTF=seed=>tfQ(mulberry(seed),TF_T,TF_F,'arc:tf','다음 중 옳지 않은 것은?');
-GEN.arc=seed=>[GEN.arcDef,GEN.arcName,GEN.arcName,GEN.arcTF][seed%4](Math.floor(seed/4)+1);
+GEN.arc=seed=>[GEN.arcPic,GEN.arcName,GEN.arcName,GEN.arcTF][seed%4](Math.floor(seed/4)+1);
 
 /* 2차시: 중심각과 호 */
 const ANG=[20,24,30,36,40,45,60,72,90];
@@ -209,8 +213,8 @@ GEN.sector=seed=>[GEN.sectorCirc,GEN.sectorArc,GEN.sectorArea,GEN.sectorArea,GEN
 
 /* ── 유형 ── */
 Object.assign(PTYPES,{
-  arc:[{no:1,nm:'뜻 빈칸 채우기',tb:'개념',key:'<b>굽으면 호, 곧으면 현</b> · 반지름 2개 + 호 → <b>부채꼴</b> · 현 + 호 → <b>활꼴</b> · 두 반지름이 이루는 각 → <b>중심각</b>',pt:['arc:def'],src:['arcDef']},
-    {no:2,nm:'그림 보고 이름 고르기',tb:'기초',key:'① 선분 · 굽은 선 · 도형 · 각 중 무엇인지 → ② 끝점이 어디 있는지, 꼭짓점이 <b>중심</b>인지 보기',pt:['arc:name'],src:['arcName']},
+  arc:[{no:1,nm:'그림 보고 이름 맞추기',tb:'개념',key:'<b>굽으면 호, 곧으면 현</b> · 현 중에서 중심을 지나면 <b>지름</b> · 반지름 2개 + 호 → <b>부채꼴</b> · 현 + 호 → <b>활꼴</b> · 두 반지름이 이루는 각 → <b>중심각</b>',pt:['arc:pic'],src:['arcPic']},
+    {no:2,nm:'헷갈리는 그림 구별하기',tb:'기초',key:'① 선분 · 굽은 선 · 도형 · 각 중 무엇인지 → ② 끝점이 어디 있는지, 꼭짓점이 <b>중심</b>인지 보기',pt:['arc:name'],src:['arcName']},
     {no:3,nm:'옳지 않은 것 고르기',tb:'기초',key:'지름도 <b>현</b> · 반원은 <b>부채꼴이면서 활꼴</b> · 부채꼴의 꼭짓점은 <b>중심</b>',pt:['arc:tf'],src:['arcTF']}],
   cent:[{no:1,nm:'중심각 비교 ① 몇 배',tb:'기초',key:'중심각이 <b>몇 배</b>면 호의 길이·넓이도 <b>몇 배</b> (작아지면 나누기)',pt:['cent:mul'],src:['centMul']},
     {no:2,nm:'중심각 비교 ② 비',tb:'기초',key:'중심각의 비 = 호의 길이의 비 = 넓이의 비 → <b>1칸</b>을 구하고 칸 수만큼 곱하기',pt:['cent:ratio'],src:['centRatio']},
@@ -225,9 +229,9 @@ Object.assign(PTYPES,{
   GEN['mix_'+lid]=seed=>{const L=PTYPES[lid];return GEN[tyKey(lid,L[seed%L.length].no)](Math.floor(seed/L.length)+1)};LESSON_OF['mix_'+lid]=lid});
 Object.assign(STEPGEN,{arc:GEN.arcName,cent:GEN.centMul,sector:GEN.sectorArc});
 ['arc','cent','sector'].forEach(l=>{LESSON_OF[l]=l});
-['arcDef','arcName','arcTF'].forEach(g=>LESSON_OF[g]='arc');['centMul','centRatio','centThree','centTF'].forEach(g=>LESSON_OF[g]='cent');['sectorCirc','sectorArc','sectorArea','sectorLA','sectorAng'].forEach(g=>LESSON_OF[g]='sector');
+['arcDef','arcPic','arcName','arcTF'].forEach(g=>LESSON_OF[g]='arc');['centMul','centRatio','centThree','centTF'].forEach(g=>LESSON_OF[g]='cent');['sectorCirc','sectorArc','sectorArea','sectorLA','sectorAng'].forEach(g=>LESSON_OF[g]='sector');
 Object.assign(CALC_FOR,{arc:['pi','frac'],cent:['mul','div','fracbase'],sector:['pi','frac','fracbase']});
-Object.assign(PTYPE_NM,{'arc:def':'1차시 · 뜻 빈칸','arc:name':'1차시 · 그림 보고 이름','arc:tf':'1차시 · 옳지 않은 것','cent:mul':'2차시 · 중심각 몇 배','cent:ratio':'2차시 · 중심각의 비','cent:three':'2차시 · 호의 비로 중심각','cent:tf':'2차시 · 정비례 ○×',
+Object.assign(PTYPE_NM,{'arc:def':'1차시 · 뜻 빈칸','arc:pic':'1차시 · 그림 보고 이름 맞추기','arc:name':'1차시 · 헷갈리는 그림 구별하기','arc:tf':'1차시 · 옳지 않은 것','cent:mul':'2차시 · 중심각 몇 배','cent:ratio':'2차시 · 중심각의 비','cent:three':'2차시 · 호의 비로 중심각','cent:tf':'2차시 · 정비례 ○×',
   'sector:circ':'3차시 · 원의 둘레와 넓이','sector:arc':'3차시 · 부채꼴의 호의 길이','sector:area':'3차시 · 부채꼴의 넓이','sector:la':'3차시 · 호로 넓이','sector:ang':'3차시 · 중심각 구하기'});
 const add=(k,o)=>{if(!TERMS[k])TERMS[k]=o};
 add('원',{k:'원과 부채꼴',b:'<p>평면 위의 한 점 O에서 일정한 거리에 있는 모든 점으로 이루어진 도형이에요. 점 O가 원의 중심이에요.</p>'});
@@ -272,6 +276,6 @@ LESSONS.push(
   {id:'cent',no:2,title:'중심각과 호',sub:'중심각이 몇 배면 호도 몇 배',tb:'04 원과 부채꼴 · 195~197쪽',ready:true,unit:'circle'},
   {id:'sector',no:3,title:'부채꼴의 호의 길이와 넓이',sub:'원의 (중심각)/360 조각',tb:'05 부채꼴의 호의 길이와 넓이 · 198~201쪽',ready:true,unit:'circle'});
 BADGES.push({k:'cname',unit:'circle',nm:'원 이름 박사',d:'이름 맞히기 6개 끝내기',ok:M=>!!M.once['c:name']},{k:'cpiece',unit:'circle',nm:'조각 탐정',d:'원의 몇 조각 탐구 끝내기',ok:M=>!!M.once['c:pieces']});
-window.CIRCLE_GENS=['arcDef','arcName','arcTF','centMul','centRatio','centThree','centTF','sectorCirc','sectorArc','sectorArea','sectorLA','sectorAng'];
+window.CIRCLE_GENS=['arcPic','arcName','arcTF','centMul','centRatio','centThree','centTF','sectorCirc','sectorArc','sectorArea','sectorLA','sectorAng'];
 })();
 /*</CIRCLE>*/
