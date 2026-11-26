@@ -839,8 +839,18 @@ const EXAM_TAG={pi:'원·부채꼴·기둥·뿔',frac:'부채꼴·뿔의 부피'
 const EXAM_NM='원과 부채꼴 ~ 입체도형 (구 제외)';
 /* 시험 모드: 기본으로 켜져 있어요. 켜면 기초 연산 목록·오늘의 계산·홈에 시험 범위 계산만 보여요(학생마다 이 기기에 기억) */
 const calcExamMode=()=>EXAM_FOCUS.length>0&&lsGet('hangeoreum-calc-exam',true)!==false;
-const inExam=t=>!calcExamMode()||EXAM_FOCUS.includes(t.id);
-const examRank=id=>{const i=EXAM_FOCUS.indexOf(id);return i<0?99:i};
+/* 막힌 계산: 시작점 찾기에서 틀렸고 아직 별이 없거나, 연습한 단계에서 80%를 못 넘겨 별을 못 받았어요 */
+const calcStruggle=id=>{const s=calcPeek(id),st=NUM(s.stars),b=OBJ(s.best),dr=OBJ(OBJ(DB._calcDiag).res);return(dr[id]===false&&st<1)||Object.keys(b).some(L=>NUM(b[L])<80&&st<+L)};
+/* 시험 모드의 '바탕 다지기' 칸: 시험 범위 밖이지만, 막힌 계산의 바탕(연결맵의 앞 칸)이라 열어 두는 칸.
+   막힌 칸에서 위로 거슬러 올라가며, 아직 별이 없거나 그 칸도 막혔으면 열고, 그 칸도 막혔으면 한 칸 더 올라가요 */
+function examBase(){const S=new Set();if(!calcExamMode())return S;const isEx=id=>EXAM_FOCUS.includes(id),dr=OBJ(OBJ(DB._calcDiag).res);
+  const Q=CALC.filter(t=>calcVisible(t)&&calcStruggle(t.id)&&(isEx(t.id)||dr[t.id]===false)).map(t=>t.id);
+  const anc=new Set(),up=x=>calcPre(x).forEach(p=>{if(!anc.has(p)){anc.add(p);up(p)}});EXAM_FOCUS.forEach(up);
+  Q.filter(id=>!isEx(id)).forEach(id=>{if(anc.has(id)&&!calcDone(id))S.add(id)});
+  for(let i=0;i<Q.length;i++)calcPre(Q[i]).forEach(p=>{if(isEx(p)||S.has(p)||calcDone(p))return;const st=calcStruggle(p);if(st||NUM(calcPeek(p).stars)<1){S.add(p);if(st&&!Q.includes(p))Q.push(p)}});
+  return S}
+const inExam=t=>!calcExamMode()||EXAM_FOCUS.includes(t.id)||examBase().has(t.id);
+const examRank=id=>{const i=EXAM_FOCUS.indexOf(id);return i<0?(calcExamMode()&&examBase().has(id)?-1:99):i};
 const CALC_GRP=[['solid','원·부채꼴 · 입체도형 핵심 계산','이번 시험 범위(원과 부채꼴·입체도형)에 바로 나오는 계산이에요.'],['mid','중1 핵심 연산','부호·분수·소수·약수와 배수. 정비례·반비례와 부채꼴 계산의 바탕이에요.'],['base','기초 다지기','모든 계산의 바탕이에요. 흔들리는 부분부터 챙겨요.']];
 const calcVisible=t=>!SITE.calcGroups||SITE.calcGroups.includes(t.grp);
 /* 선생님이 지금 먼저 하게 할 기초 연산 주제(config의 SITE.calcNow로 바꿀 수 있어요, ''이면 끔). 다 익힐 때까지 홈·길잡이 맨 앞에 나와요 */
@@ -860,11 +870,11 @@ const calcPath=id=>{const P=CALC_PATHS.find(p=>p.ids.includes(id));if(!P)return 
 const calcNm=id=>(CALC.find(t=>t.id===id)||{}).nm||'';
 /* 한 갈래에서 지금 할 칸: 별을 하나도 못 받은 첫 칸(없으면 다 익히지 않은 첫 칸) */
 const pathNow=ids=>ids.find(id=>NUM(calcPeek(id).stars)<1)||ids.find(id=>!calcDone(id))||null;
-function ladderHTML(P,dueIds,plan){const exam=calcExamMode(),ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)&&inExam(t)});if(!ids.length)return'';
+function ladderHTML(P,dueIds,plan,base=examBase()){const exam=calcExamMode(),ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)&&(!exam||EXAM_FOCUS.includes(x)||base.has(x))});if(!ids.length)return'';
   const now=pathNow(ids),done=ids.filter(calcDone).length,start=plan.find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1);
   return`<section class="card panel ladder" aria-label="${P.nm} 사다리"><div class="lad-h"><span class="lad-ic" aria-hidden="true">${P.ic}</span><div><h2>${P.nm} <small class="muted">${done} / ${ids.length}칸</small></h2><p class="muted">${P.d}</p></div></div>
    <ol class="lad">${ids.map((id,i)=>{const t=CALC.find(c=>c.id===id),st=calcPeek(id),N=calcLvN(id),n=Math.min(N,NUM(st.stars)),fin=n>=N,isNow=id===now,ex=EXAM_TAG[id],K=KEYS[id];
-     return`<li class="${fin?'fin':isNow?'now':''}"><a href="#calc-${id}"><span class="lad-no" aria-hidden="true">${fin?CHECK:i+1}</span><span class="lad-b"><b>${t.nm}</b>${K?`<small class="kw">💡 ${K.w}</small>`:''}<span class="calc-tags">${isNow?'<i class="ctag now">지금 여기</i>':''}${id===start&&!isNow?'<i class="ctag rec">추천</i>':''}${dueIds.includes(id)?'<i class="ctag due">복습</i>':''}${ex?`<i class="ctag exam">${exam?'':'시험 · '}${ex}</i>`:''}</span></span>${starRow(n,N)}</a></li>`}).join('')}</ol></section>`}
+     return`<li class="${fin?'fin':isNow?'now':''}"><a href="#calc-${id}"><span class="lad-no" aria-hidden="true">${fin?CHECK:i+1}</span><span class="lad-b"><b>${t.nm}</b>${K?`<small class="kw">💡 ${K.w}</small>`:''}<span class="calc-tags">${isNow?'<i class="ctag now">지금 여기</i>':''}${id===start&&!isNow?'<i class="ctag rec">추천</i>':''}${dueIds.includes(id)?'<i class="ctag due">복습</i>':''}${ex?`<i class="ctag exam">${exam?'':'시험 · '}${ex}</i>`:''}${base.has(id)?'<i class="ctag base">바탕 다지기</i>':''}</span></span>${starRow(n,N)}</a></li>`}).join('')}</ol></section>`}
 /* ── 기초 계산 연결맵: 칸마다 '먼저 알아야 하는 칸(바탕)'. 사다리와 달리 갈래를 넘나드는 연결까지 담아요 ── */
 const CALC_PRE={place:[],add:[],add2:['place','add'],facts:['add'],div:['facts'],divr:['div'],mul:['facts','place'],est:['place','mul'],
  order:['add2','facts'],sub:['order'],eq:['sub','div'],surf:['order','area'],
@@ -888,16 +898,16 @@ function calcMapLayout(){const ids=CALC.filter(calcVisible).map(t=>t.id),dep={};
   rows.forEach(row=>{const off=(vw-row.length*W)/2;row.forEach((id,k)=>{pos[id]={x:off+k*W+W/2,y:24+pos[id].y*H+20}})});
   return{ids,pos,vw,vh:24+rows.length*H+10,W,H}}
 function viewCalcMap(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</span><a href="#calc">기초 연산</a><span class="sep">›</span><span>연결맵</span>`;
-  const{ids,pos,vw,vh}=calcMapLayout(),exam=calcExamMode(),nw=84,nh=40;let sel=null;
+  const{ids,pos,vw,vh}=calcMapLayout(),exam=calcExamMode(),B=examBase(),nw=84,nh=40;let sel=null;
   const col=id=>PATH_COL[(CALC_PATHS.find(p=>p.ids.includes(id))||{}).k]||'#5a6377';
   const edges=[];ids.forEach(id=>calcPre(id).forEach(p=>edges.push([p,id])));
   const edgeSvg=edges.map(([a,b])=>{const A=pos[a],B=pos[b],y1=A.y+nh/2,y2=B.y-nh/2,m=(y1+y2)/2;return`<path class="me" data-a="${a}" data-b="${b}" d="M${A.x} ${y1} C${A.x} ${m} ${B.x} ${m} ${B.x} ${y2}" marker-end="url(#mArr)"/>`}).join('');
-  const nodeSvg=ids.map(id=>{const P=pos[id],st=calcPeek(id),N=calcLvN(id),n=Math.min(N,NUM(st.stars)),fin=n>=N,ex=EXAM_FOCUS.includes(id),dim=exam&&!ex;
-    return`<g class="mn${fin?' fin':n?' part':''}${dim?' dim':''}" data-id="${id}" tabindex="0" role="button" aria-label="${calcNm(id)}, 별 ${n}/${N}${ex?', 시험 범위':''}" transform="translate(${P.x-nw/2} ${P.y-nh/2})">
+  const nodeSvg=ids.map(id=>{const P=pos[id],st=calcPeek(id),N=calcLvN(id),n=Math.min(N,NUM(st.stars)),fin=n>=N,ex=EXAM_FOCUS.includes(id),bs=B.has(id),dim=exam&&!ex&&!bs;
+    return`<g class="mn${fin?' fin':n?' part':''}${dim?' dim':''}${exam&&bs?' base':''}" data-id="${id}" tabindex="0" role="button" aria-label="${calcNm(id)}, 별 ${n}/${N}${ex?', 시험 범위':''}" transform="translate(${P.x-nw/2} ${P.y-nh/2})">
       <rect width="${nw}" height="${nh}" rx="10" style="stroke:${col(id)}"/><rect width="${nw}" height="6" rx="3" style="fill:${col(id)}"/>
       <text x="${nw/2}" y="${n?22:26}" text-anchor="middle" class="mt">${CALC_SH[id]||calcNm(id)}</text>${n?`<text x="${nw/2}" y="35" text-anchor="middle" class="ms">${'★'.repeat(n)}${'☆'.repeat(N-n)}</text>`:''}${exam&&ex?`<circle cx="${nw-4}" cy="4" r="7" class="mx"/><text x="${nw-4}" y="7.5" text-anchor="middle" class="mxt">시</text>`:''}</g>`}).join('');
   app.innerHTML=`<div class="unit-head"><div><h1>연결맵</h1><p>위에 있는 칸이 아래 칸의 <b>바탕</b>이에요. 칸을 누르면 무엇을 먼저 알아야 하고, 다음에 어디로 이어지는지 보여요.</p></div></div>
-   <div class="card panel map-card"><p class="map-legend">${CALC_PATHS.map(p=>`<span><i style="background:${PATH_COL[p.k]}"></i>${p.nm}</span>`).join('')}${exam?'<span><i class="lg-ex">시</i>시험 범위</span>':''}<span><i class="lg-fin"></i>다 익힘</span></p>
+   <div class="card panel map-card"><p class="map-legend">${CALC_PATHS.map(p=>`<span><i style="background:${PATH_COL[p.k]}"></i>${p.nm}</span>`).join('')}${exam?`<span><i class="lg-ex">시</i>시험 범위</span>${B.size?'<span><i class="lg-base"></i>바탕 다지기(열림)</span>':''}`:''}<span><i class="lg-fin"></i>다 익힘</span></p>
     <p class="map-swipe">옆으로 밀면 다른 칸도 보여요.</p><div class="map-scroll"><svg class="cmap" viewBox="0 0 ${vw} ${vh}" width="${vw}" role="group" aria-label="기초 계산 연결맵"><defs><marker id="mArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ma"/></marker></defs>${edgeSvg}${nodeSvg}</svg></div>
     <div class="map-info" aria-live="polite"><p class="muted" style="margin:0">칸을 하나 눌러 보세요.</p></div></div>
    <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`;
@@ -929,9 +939,9 @@ function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 �
    ${dueIds.length>2?`<p class="calc-due">밀린 복습이 ${dueIds.length}개 있지만 괜찮아요! 오늘은 부담 없이 <b>2개만</b> 먼저 챙겨도 충분해요.</p>`:''}
    ${EXAM_FOCUS.length?`<div class="seg exam-mode" role="tablist" aria-label="보기 방식"><button type="button" data-m="1" class="${calcExamMode()?'on':''}">🎯 시험 모드 · ${EXAM_NM}</button><button type="button" data-m="0" class="${calcExamMode()?'':'on'}">전체 사다리</button></div>`:''}
    <a class="card map-link" href="#calc-map"><span><b>🗺 연결맵 보기</b><small>어떤 계산이 어떤 계산의 바탕인지 한눈에 봐요.</small></span><span class="go" aria-hidden="true">→</span></a>
-   <p class="lad-intro">${calcExamMode()?`이번 시험에 나오는 계산만 모았어요. 갈래마다 <b>지금 여기</b> 칸부터 해요. 막히면 칸 안에서 <b>앞 칸(바탕)</b>으로 갈 수 있어요.`:`사다리는 <b>위 칸이 아래 칸의 바탕</b>이에요. 갈래마다 <b>지금 여기</b> 칸부터 하면 돼요. <i class="ctag exam">시험</i> 꼬리표는 이번 시험 범위에 바로 쓰이는 계산이에요.`}</p>
+   <p class="lad-intro">${calcExamMode()?`이번 시험에 나오는 계산만 모았어요. 갈래마다 <b>지금 여기</b> 칸부터 해요. 어떤 계산에서 막히면 그 계산의 바탕 칸이 <i class="ctag base">바탕 다지기</i>로 함께 열려요.`:`사다리는 <b>위 칸이 아래 칸의 바탕</b>이에요. 갈래마다 <b>지금 여기</b> 칸부터 하면 돼요. <i class="ctag exam">시험</i> 꼬리표는 이번 시험 범위에 바로 쓰이는 계산이에요.`}</p>
    ${dg.d&&plan.filter(id=>inExam(CALC.find(t=>t.id===id))).length?`<div class="card panel calc-plan"><b>내 추천 순서</b> ${plan.filter(id=>inExam(CALC.find(t=>t.id===id))).map((id,i)=>`<a class="chip" href="#calc-${id}">${i+1}. ${CALC.find(x=>x.id===id).nm}</a>`).join(' ')}</div>`:''}
-   <div class="ladders">${CALC_PATHS.map(P=>ladderHTML(P,dueIds,plan)).join('')}</div>`;
+   <div class="ladders">${(()=>{const B=examBase();return CALC_PATHS.map(P=>ladderHTML(P,dueIds,plan,B)).join('')})()}</div>`;
   app.querySelectorAll('.exam-mode button').forEach(b=>b.onclick=()=>{lsSet('hangeoreum-calc-exam',b.dataset.m==='1');viewCalc()})}
 /* ── 곱셈구구 표 ── */
 const FLV_NM=['아직','연습 중','빠르게 맞힘','익힘','오래 기억'];
@@ -1013,10 +1023,10 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
        <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`}
     ask()}}
 /* ── 오늘의 계산: 복습할 주제(간격 반복) + 곱셈구구 + 지난 주제를 섞어서 10문제 ── */
-function drillPlan(r,count=10){const out=[],allDue=dueList().filter(inExam).sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=CALC.filter(t=>t.id!=='facts'&&calcStarted(t.id)&&inExam(t)).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)||1));
+function drillPlan(r,count=10){const out=[],allDue=dueList().filter(inExam).sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=(B=>CALC.filter(t=>t.id!=='facts'&&(calcStarted(t.id)||B.has(t.id))&&inExam(t)))(examBase()).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)||1));
   const add=(t,L)=>{let q;for(let k=0;k<6;k++){q=Object.assign({type:'num'},t.gen(L,r));if(!out.some(x=>x.q===q.q))break}q.tid=t.id;q.lv=L;if(t.id!=='facts')q.regen=()=>Object.assign({type:'num'},t.gen(L,r),{tid:t.id,lv:L});out.push(q)};
   due.forEach(t=>add(t,lvOf(t)));
-  const F=CALC.find(t=>t.id==='facts'),fl=lvOf(F),nf=calcExamMode()?0:count<=5?1:(started.length<2?2:1);for(let i=0;i<nf&&out.length<count;i++)add(F,ri(r,1,fl));
+  const F=CALC.find(t=>t.id==='facts'),fl=lvOf(F),nf=calcExamMode()?(examBase().has('facts')?1:0):count<=5?1:(started.length<2?2:1);for(let i=0;i<nf&&out.length<count;i++)add(F,ri(r,1,fl));
   for(const t of started.filter(t=>!due.includes(t))){if(out.length>=count)break;add(t,lvOf(t))}
   const basics=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));let i=0;while(out.length<count){const t=basics[i%basics.length];add(t,lvOf(t));i++}
   const Q=shuffle(r,out);for(let pass=0;pass<4;pass++)for(let j=1;j<Q.length;j++)if(Q[j].tid===Q[j-1].tid){const k=Q.findIndex((x,m)=>m>j&&x.tid!==Q[j].tid&&Q[m-1].tid!==Q[j].tid&&(m+1>=Q.length||Q[m+1].tid!==Q[j].tid));if(k>0)[Q[j],Q[k]]=[Q[k],Q[j]]}
