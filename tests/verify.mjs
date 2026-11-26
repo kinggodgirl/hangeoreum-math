@@ -82,11 +82,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher};',
   sandbox
 );
 
-const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -121,6 +121,11 @@ const d10 = drillPlan(mulberry(42), 10);
 if (d5.Q.filter(q => !q.extra).length !== 5) errors.push('drillPlan(5) count mismatch');
 if (d10.Q.filter(q => !q.extra).length !== 10) errors.push('drillPlan(10) count mismatch');
 if (!d5.Q.some(q => EXAM_FOCUS.includes(q.tid))) errors.push('drillPlan(5) missing EXAM_FOCUS topics');
+// 연결맵: 모든 칸에 바탕 목록이 있고, 없는 칸을 가리키지 않으며, 순환이 없어야 해요
+{ const ids = new Set(CALC.map(t => t.id)), seen = {}, visit = (id, path) => { if (seen[id] === 2) return; if (seen[id] === 1) { errors.push('CALC_PRE cycle: ' + path.join('→')); return; } seen[id] = 1; (CALC_PRE[id] || []).forEach(p => visit(p, [...path, p])); seen[id] = 2; };
+  CALC.forEach(t => { if (!CALC_PRE[t.id]) errors.push('CALC_PRE missing ' + t.id); });
+  Object.entries(CALC_PRE).forEach(([k, v]) => { if (!ids.has(k)) errors.push('CALC_PRE unknown ' + k); v.forEach(p => { if (!ids.has(p)) errors.push(`CALC_PRE ${k} → unknown ${p}`); }); });
+  CALC.forEach(t => visit(t.id, [t.id])); }
 
 recordCalcErr('signed', '부호가 반대예요.');
 const ds = dataSummary(DB);
@@ -150,4 +155,4 @@ if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);
 }
-console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), repMount & teacher report OK, circle ${circleProbs} problems`);
+console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, circle ${circleProbs} problems`);
