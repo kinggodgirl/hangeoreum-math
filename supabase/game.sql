@@ -151,7 +151,7 @@ create table if not exists public.hg_bb_games (
   guest_sid   text references public.hg_students(sid) on delete cascade,
   stake       int  not null default 0 check (stake between 0 and 100),
   digits      smallint not null default 3 check (digits in (2, 3, 4)),
-  lv          text check (lv in ('easy', 'mid', 'mh', 'hard')),   -- [T09] 숫자야구 앱과 같은 4단계(하·중·중상·상). 비어 있으면 예전 방식
+  lv          text check (lv in ('easy', 'mid', 'mh', 'hard')),   -- [T10] 숫자야구 앱과 같은 4단계(하·중·중상·상). 비어 있으면 예전 방식
   host_secret text, guest_secret text,
   status      text not null default 'waiting' check (status in ('waiting', 'setup', 'playing', 'done', 'cancelled')),
   turn        text check (turn in ('host', 'guest')),
@@ -165,7 +165,7 @@ create table if not exists public.hg_bb_games (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
--- [T09] 이미 만든 표에도 4단계 칸 더하기
+-- [T10] 이미 만든 표에도 4단계 칸 더하기
 alter table public.hg_bb_games add column if not exists lv text check (lv in ('easy', 'mid', 'mh', 'hard'));
 alter table public.hg_bb_games drop constraint if exists hg_bb_games_digits_check;
 alter table public.hg_bb_games add constraint hg_bb_games_digits_check check (digits in (2, 3, 4));
@@ -181,7 +181,7 @@ create table if not exists public.hg_bb_guesses (
   guess      text,                       -- 비어 있으면 시간 초과
   s          smallint not null default 0,
   b          smallint not null default 0,
-  h          text,                       -- [T09] 하·중 단계 자리별 힌트(O 맞음 · A 자리 다름 · X 없음)
+  h          text,                       -- [T10] 하·중 단계 자리별 힌트(O 맞음 · A 자리 다름 · X 없음)
   created_at timestamptz not null default now()
 );
 alter table public.hg_bb_guesses add column if not exists h text;
@@ -257,7 +257,7 @@ begin
   end loop;
 end $$;
 
--- [T09] 단계별 숫자 범위: 하 1~6·2자리 / 중 1~9·3자리 / 중상 1~6·3자리 / 상 0~9·3자리 (lv가 비면 예전 1~9)
+-- [T10] 단계별 숫자 범위: 하 1~6·2자리 / 중 1~9·3자리 / 중상 1~6·3자리 / 상 0~9·3자리 (lv가 비면 예전 1~9)
 create or replace function public.hg_bb_ok(p text, p_lv text, d int) returns boolean
 language sql immutable set search_path = public, extensions as $$
   select p is not null and length(p) = d
@@ -270,7 +270,7 @@ language sql immutable set search_path = public, extensions as $$
   select (case p_lv when 'easy' then '1~6' when 'mh' then '1~6' when 'hard' then '0~9' else '1~9' end) || ' 중 서로 다른 숫자 ' || d || '개'
 $$;
 
--- [T09] 하·중 단계 자리별 힌트: O(숫자·자리 맞음) A(숫자는 있지만 자리 다름) X(없음)
+-- [T10] 하·중 단계 자리별 힌트: O(숫자·자리 맞음) A(숫자는 있지만 자리 다름) X(없음)
 create or replace function public.hg_bb_hint(p_secret text, p_guess text) returns text
 language plpgsql immutable set search_path = public, extensions as $$
 declare i int; h text := '';

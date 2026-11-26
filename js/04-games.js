@@ -364,7 +364,7 @@ const bbLedKey=()=>'hangeoreum-bbled:'+(AUTH?AUTH.sid:'');
 const bbLedger=()=>isStudent()?(Number(lsGet(bbLedKey(),0))||0):0;
 function setBBLedger(v){if(isStudent()&&Number.isFinite(+v))lsSet(bbLedKey(),+v)}
 async function refreshLedger(){if(!isStudent()||GAME.off)return null;try{const L=await API.call('hg_bb_lobby',{p_token:AUTH.token});setBBLedger(L.ledger);return L}catch(e){if(isAuthErr(e))authExpired();return null}}
-/* [T09] 선생님 숫자야구 앱과 같은 4단계. 하·중은 자리별 힌트(○△×), 중상·상은 진짜 야구처럼 S·B 개수만. 하는 판돈 최대 10포인트 */
+/* [T10] 선생님 숫자야구 앱과 같은 4단계. 하·중은 자리별 힌트(○△×), 중상·상은 진짜 야구처럼 S·B 개수만. 하는 판돈 최대 10포인트 */
 const BB_LV={easy:{k:'easy',nm:'하',len:2,min:1,max:6,oxa:true,d:'1~6 · 2자리 · ○△× 힌트',cap:10},
   mid:{k:'mid',nm:'중',len:3,min:1,max:9,oxa:true,d:'1~9 · 3자리 · ○△× 힌트'},
   mh:{k:'mh',nm:'중상',len:3,min:1,max:6,oxa:false,d:'1~6 · 3자리 · S/B'},

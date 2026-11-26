@@ -79,7 +79,14 @@ function viewTeacher(){
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   document.body.classList.add('t-wide');
   const ready=LESSONS.filter(l=>l.ready);
-  const TABS_T=[['now','🙋 지금 도울 학생'],['stat','📊 학습 현황'],['steps','🧩 막히는 단계 · 신고'],['people','👥 학생 관리'],['game','🎮 게임'],['set','⚙ 설정']];
+  const CBOSS=()=>typeof CLASS_BOSS_ON==='undefined'||!!CLASS_BOSS_ON;   // 반 보스전을 숨겼으면 교사 화면에서도 접어 둬요
+  /* 표 머리줄: 단원별로 묶어 '1차시 2차시 … 1차시'가 겹쳐 보이지 않게 */
+  const unitNm=u=>(typeof UNIT_INFO!=='undefined'&&UNIT_INFO[u]&&UNIT_INFO[u].name)||'단원';
+  const unitGroups=()=>{const g=[];ready.forEach(l=>{const u=l.unit||'solid';if(g.length&&g[g.length-1][0]===u)g[g.length-1][1]++;else g.push([u,1])});return g};
+  const unitIdx=l=>{const u=l.unit||'solid';return unitGroups().findIndex(x=>x[0]===u)};
+  const shortT=t=>{t=String(t||'').split(/\s*·\s*/)[0];return t.length>7?t.slice(0,7)+'…':t};
+  const lesTip=l=>`${unitNm(l.unit||'solid')} · ${l.no}차시 ${l.title}`;
+  const TABS_T=[['now','🙋 지금 도울 학생'],['week','📅 이번 주'],['stat','📊 학습 현황'],['steps','🧩 막히는 단계 · 신고'],['people','👥 학생 관리'],['game','🎮 게임'],['set','⚙ 설정']];
   app.innerHTML=`<div class="t-top"><div><h1>교사 화면</h1><p class="muted">방과후 반을 만들어 학년·반이 다른 학생들을 한 화면에서 봐요. 이름은 이 기기에만 저장돼요.</p></div>
      <div class="t-topb"><span class="t-at muted tLiveAt"></span><label class="t-sel t-auto"><input type="checkbox" class="tAuto" checked> 10초마다 새로 고침</label><a class="btn ghost" href="#print">🖨 점검 학습지</a><a class="btn ghost" href="#scan">📷 사진 채점</a><button type="button" class="btn ghost tRefresh">새로 고침</button><button type="button" class="btn ghost tOut">로그아웃</button></div></div>${demoBanner()}
    <div class="t-scope" role="tablist" aria-label="볼 학생 고르기"></div>
@@ -93,17 +100,28 @@ function viewTeacher(){
        <p class="muted t-lead">손든 학생, 단계 정답을 보고 넘어간 학생, 같은 유형을 3번 연속 틀린 학생, ${STALL_MIN}분 넘게 답을 내지 않은 학생이 모여요. 도와준 뒤 [✓ 도왔어요]를 누르면 정리돼요.</p><div class="together tTogether"></div><div class="tHelp"></div></div>
       <div class="card panel tNow"><div class="t-head"><h2>오늘 학생 현황</h2><span class="muted tNowSum"></span></div><div class="lvgrid tNowGrid"></div>
        <p class="muted t-lead" style="margin:10px 0 0">점: <i class="lvk o"></i>처음에 맞힘 <i class="lvk t"></i>틀린 뒤 맞힘 <i class="lvk x"></i>틀림·정답 확인 (최근 12문제)</p></div></div>
+     <div class="t-pane" data-p="week">
+      <div class="card panel"><div class="t-head"><h2>📅 이번 주 한눈에 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tWkCopy">수업 메모로 복사</button></div>
+       <p class="muted t-lead">대면 수업 전에 지난 7일 동안 누가 며칠 공부했는지, 무엇을 챙길지 한 번에 봐요. 🎫 쿠폰은 학생이 보여 주면 [사용함]을 눌러 주세요(이 기기에 기록돼요).</p>
+       <div class="t-tiles tWkTiles"></div>
+       <div class="tablewrap"><table class="t t-week"><thead><tr><th>학생</th><th>지난 7일 공부한 날</th><th>최근 접속</th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>포인트</small></th><th>보스 도전<br><small>승 / 판</small></th><th>🎫 쿠폰<br><small>남은 장수</small></th><th class="l">챙길 점</th></tr></thead><tbody class="tWkRows"></tbody></table></div>
+       <p class="muted t-lead" style="margin:10px 0 0">공부한 날은 포인트를 받은 날이에요. 이번 주 포인트는 월요일부터 센 값이에요. 쿠폰 사용 기록은 학생 이름표처럼 이 기기에만 저장돼서, 학생 화면의 쿠폰 수는 그대로 보여요.</p></div></div>
      <div class="t-pane" data-p="stat">
-      <div class="card panel"><div class="t-head"><h2>학습 현황 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tCsv">엑셀로 받기</button></div><div class="t-tiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div>
-       <div class="tablewrap"><table class="t t-roster"><thead><tr><th>학생</th><th>최근 접속</th><th>포인트</th><th>연속</th>${ready.map(l=>`<th>${l.no}차시</th>`).join('')}<th>연습<br><small>푼 문제</small></th><th>기초 연산<br><small>별 · 구구단 익힘</small></th><th>복습<br><small>대기</small></th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>데미지</small></th></tr></thead><tbody class="tRows"></tbody></table></div><div class="tOmr"></div>
-       <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 개념 · 탐구 · 단계 문제 · 연습(5문제 이상)이에요.</p></div></div>
+      <div class="card panel"><div class="t-head"><h2>학습 현황 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tCsv">엑셀로 받기</button></div><div class="t-tiles tStTiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div><p class="t-pipkey muted">차시 칸 점 4개: <span class="pips"><span class="pip on"></span></span> 개념 · <span class="pips"><span class="pip on"></span></span> 탐구 · <span class="pips"><span class="pip on"></span></span> 단계 문제 · <span class="pips"><span class="pip on"></span></span> 연습 5문제 · <span class="pips"><span class="pip"></span></span> 아직</p>
+       <div class="tablewrap"><table class="t t-roster"><thead><tr class="t-unitrow"><th rowspan="2">학생</th><th rowspan="2">최근 접속</th><th rowspan="2">포인트</th><th rowspan="2">연속</th>${unitGroups().map(([u,n],i)=>`<th colspan="${n}" class="t-unit u${i%3}">${esc(unitNm(u))}</th>`).join('')}<th rowspan="2">연습<br><small>푼 문제</small></th><th rowspan="2">기초 연산<br><small>별 · 구구단 익힘</small></th><th rowspan="2">복습<br><small>대기</small></th><th rowspan="2">7일<br><small>풀이</small></th><th rowspan="2">이번 주<br><small>데미지</small></th></tr>
+        <tr>${ready.map(l=>`<th class="t-lesh u${unitIdx(l)%3}" title="${esc(lesTip(l))}">${l.no}차시<br><small>${esc(shortT(l.title))}</small></th>`).join('')}</tr></thead><tbody class="tRows"></tbody></table></div><div class="tOmr"></div>
+       <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 <b>개념 · 탐구 · 단계 문제 · 연습(5문제 이상)</b>이에요. 점이나 차시 이름에 마우스를 올리면 자세히 나와요.</p></div></div>
      <div class="t-pane" data-p="steps">
       <div class="card panel tRep"></div>
       <div class="card panel"><div class="t-head"><h2>많이 막히는 단계 <span class="muted tScopeNm" style="font-size:17px"></span></h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
        <p class="muted t-lead">단계 문제와 ‘단계 따라 풀기’ 연습에서 단계마다 틀린 비율이에요. 다음 시간에 다시 짚을 곳을 찾을 때 써 보세요.</p><div class="tStatsNote"></div><div class="tStats"></div></div></div>
      <div class="t-pane" data-p="people"><div class="tPeople"></div></div>
      <div class="t-pane" data-p="game">
-      <div class="card panel t-gsel"><label class="t-sel">보스전과 숫자야구는 정규 반 단위예요. 반 <select class="inp sel tGClass" aria-label="게임을 볼 반"></select></label></div>
+      <div class="card panel tRaid"><div class="t-head"><h2>⚔️ 오늘의 보스 도전 <span class="muted tScopeNm" style="font-size:17px"></span></h2><span class="muted tRaidBoss"></span></div>
+       <p class="muted t-lead">학생 혼자 하는 보스 도전 기록이에요. 주요 학습에서 해결한 차시(같이 풀기 끝까지 1번 또는 혼자 풀기 3문제)가 <b class="tRaidNeed">3</b>개가 되면 문이 열려요. 🎫 쿠폰은 학생이 보여 주면 [사용함]을 눌러 주세요.</p>
+       <div class="t-tiles tRaidTiles"></div>
+       <div class="tablewrap"><table class="t t-week t-raid"><thead><tr><th>학생</th><th>문 열림<br><small>해결한 차시</small></th><th>오늘<br><small>도전</small></th><th>승 / 판<br><small>지금까지</small></th><th>물리친<br><small>보스</small></th><th>🎫 쿠폰<br><small>남은 장수</small></th></tr></thead><tbody class="tRaidRows"></tbody></table></div></div>
+      <div class="card panel t-gsel"><label class="t-sel">${CBOSS()?'숫자야구와 우리 반 보스전은':'숫자야구는'} 정규 반 단위예요. 반 <select class="inp sel tGClass" aria-label="게임을 볼 반"></select></label></div>
       <div class="card panel tBoss" hidden><div class="t-head"><h2>우리 반 보스전</h2><span class="t-tools tBossTools"><label class="t-sel">학생 1명당 보스 체력 <select class="inp sel tPer" aria-label="학생 1명당 보스 체력">${[20,30,50,80,120,200].map(v=>`<option value="${v}">${v}</option>`).join('')}</select></label><a class="btn ghost tBV" href="#teacher">크게 띄우기</a></span></div><div class="tBossBody"></div></div>
       <div class="card panel tBB" hidden><div class="t-head"><h2>숫자야구</h2><span class="t-tools tBBTools"><label class="t-sel"><input type="checkbox" class="tBBon"> 켜기</label><label class="t-sel">최대 판돈 <select class="inp sel tBBmax" aria-label="최대 판돈">${[0,5,10,20,50].map(v=>`<option value="${v}">${v?v+'포인트':'친선만'}</option>`).join('')}</select></label></span></div><div class="tBBbody"></div></div></div>
      <div class="t-pane" data-p="set">
@@ -119,6 +137,12 @@ function viewTeacher(){
   let SC=lsGet('hangeoreum-t-scope',null),TAB=lsGet('hangeoreum-t-tab','now'),GK=lsGet('hangeoreum-t-class',null);
   let NAMES=OBJ(lsGet('hangeoreum-t-names',{}));
   const saveNames=()=>lsSet('hangeoreum-t-names',NAMES);
+  /* 🎫 대면 수업 쿠폰: 학생 기록(DB._shop.couponPcs)은 늘어나기만 해서, 쓴 장수는 이 기기에 따로 적어요 */
+  let CPU=OBJ(lsGet('hangeoreum-t-coupons',{}));
+  const cpInfo=s=>{const sh=OBJ(OBJ(s.data)._shop),got=Math.floor(NUM(sh.couponPcs)/3),used=Math.min(got,NUM(CPU[s.sid]));return{got,used,left:got-used,pcs:NUM(sh.couponPcs)%3}};
+  const cpUse=(sid,d)=>{const s=bySid(sid);if(!s)return;const c=cpInfo(s),v=Math.max(0,Math.min(c.got,c.used+d));if(v)CPU[sid]=v;else delete CPU[sid];lsSet('hangeoreum-t-coupons',CPU);
+    toast(d>0?`${nameT(s)} 쿠폰 1장을 사용했어요.`:'쿠폰 사용을 되돌렸어요.');renderWeek();renderRaid()};
+  const raidInfo=s=>{const R=OBJ(OBJ(s.data)._raid);return{w:NUM(R.w),g:NUM(R.g)}};
   const fail=e=>{if(isAuthErr(e)){tSet(null);toast('교사 로그인이 끝났어요. 다시 로그인해 주세요.');viewTeacher();return true}toast(e.message);return false};
   const classes=()=>{const m=new Map();ROSTER.forEach(s=>m.set(`${s.grade}-${s.klass}`,{g:s.grade,k:s.klass,n:(m.get(`${s.grade}-${s.klass}`)||{n:0}).n+1}));return[...m.entries()]};
   const grp=()=>SC&&SC.startsWith('g:')?GROUPS.find(g=>String(g.id)===SC.slice(2)):null;
@@ -152,7 +176,7 @@ function viewTeacher(){
     try{GROUPS=(await API.call('hg_t_groups',{p_token:tTok()})||[]).map(g=>({id:g.id,name:g.name,sids:g.sids||[]}));groupsOff=false}
     catch(e){if(isMissingFn(e)){groupsOff=true;GROUPS=[]}else{fail(e);return}}
     render();loadLive();loadStats();loadReports()}
-  function render(){fixScope();renderScope();renderSide();renderRoster();renderPeople();$$('.tScopeNm',app).forEach(x=>x.textContent='· '+scopeNm());if(TAB==='game')loadGames()}
+  function render(){fixScope();renderScope();renderSide();renderRoster();renderWeek();renderRaid();renderPeople();$$('.tScopeNm',app).forEach(x=>x.textContent='· '+scopeNm());if(TAB==='game')loadGames()}
 
   /* ── 왼쪽 학생 목록 ── */
   function renderSide(){const L=curList(),now=Date.now(),ul=$('.tStu',app);
@@ -200,12 +224,50 @@ function viewTeacher(){
     {const nm=nameT,lst=a=>a.length>15?a.slice(0,15).join(', ')+` 외 ${a.length-15}명`:a.join(', ');
       const away=S.filter(x=>!x.s.last_seen||Date.parse(x.s.last_seen)<wk).map(x=>nm(x.s)),back=S.filter(x=>x.due>=5).map(x=>`${nm(x.s)}(${x.due})`),noc=S.filter(x=>x.s.last_seen&&Date.parse(x.s.last_seen)>=wk&&!x.calc&&!x.diag).map(x=>nm(x.s)),base0=S.filter(x=>x.plan.includes('facts')||x.plan.includes('add')).map(x=>`${nm(x.s)}(${x.plan.slice(0,2).map(id=>({add:'덧뺄',facts:'구구단',div:'나눗',order:'순서',fracbase:'분수'})[id]||id).join('·')})`),gdiff=S.filter(x=>x.goal&&x.goal.diff).map(x=>`${nm(x.s)}(${goalBy(x.goal.k).ic}→추천 ${goalBy(x.goal.rec).ic})`),gold=S.filter(x=>x.goal&&x.goal.old).map(x=>nm(x.s)),cerrs=S.filter(x=>x.calcErrs&&x.calcErrs.length&&NUM(x.calcErrs[0].n)>=2).map(x=>{const e=x.calcErrs[0],tp=CALC.find(c=>c.id===e.tid);return`${nm(x.s)}(${tp?tp.nm:e.tid}·${e.n}회)`});
       $('.t-watch',app).innerHTML=(away.length?`<div><b>7일 넘게 들어오지 않았어요</b> (${away.length}명) · ${esc(lst(away))}</div>`:'')+(back.length?`<div class="mid"><b>복습이 5문제 넘게 밀렸어요</b> · ${esc(lst(back))}</div>`:'')+(noc.length?`<div class="mid"><b>기초 연산을 아직 시작하지 않았어요</b> · ${esc(lst(noc))}</div>`:'')+(base0.length?`<div class="mid"><b>시작점 찾기에서 덧셈·뺄셈이나 곱셈구구부터 다지기로 나왔어요</b> · ${esc(lst(base0))}</div>`:'')+(gdiff.length?`<div class="mid"><b>고른 길과 기록 추천이 달라요</b> · ${esc(lst(gdiff))} <small>(왜 이 길을 골랐는지 1분만 이야기 나눠 보세요)</small></div>`:'')+(gold.length?`<div class="mid"><b>길을 고른 지 2주가 지났어요</b> · ${esc(lst(gold))} <small>(학생 화면에도 다시 고르자고 나와요)</small></div>`:'')+(cerrs.length?`<div class="mid"><b>기초 연산에서 같은 실수가 반복됐어요</b> · ${esc(lst(cerrs))} <small>(이름을 눌러 자세히 보기)</small></div>`:'')}
-    $('.t-tiles',app).innerHTML=`<div class="t-tile"><small>학생</small><b>${L.length}</b></div><div class="t-tile"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="t-tile"><small>평균 포인트</small><b>${avg}</b></div><div class="t-tile"><small>최근 7일 풀이 수</small><b>${tries}</b></div>${typeof GOALS==='undefined'?'':`<div class="t-tile t-goals"><small>나의 길</small><b>${GOALS.map(g=>`<span title="${g.nm}">${g.ic} ${S.filter(x=>x.goal&&x.goal.k===g.k).length}</span>`).join(' ')} <span class="muted" title="아직 길을 고르지 않았어요">· 미정 ${S.filter(x=>!x.goal||!x.goal.k).length}</span></b></div>`}`;
+    $('.tStTiles',app).innerHTML=`<div class="t-tile"><small>학생</small><b>${L.length}</b></div><div class="t-tile"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="t-tile"><small>평균 포인트</small><b>${avg}</b></div><div class="t-tile"><small>최근 7일 풀이 수</small><b>${tries}</b></div>${typeof GOALS==='undefined'?'':`<div class="t-tile t-goals"><small>나의 길</small><b>${GOALS.map(g=>`<span title="${g.nm}">${g.ic} ${S.filter(x=>x.goal&&x.goal.k===g.k).length}</span>`).join(' ')} <span class="muted" title="아직 길을 고르지 않았어요">· 미정 ${S.filter(x=>!x.goal||!x.goal.k).length}</span></b></div>`}`;
     $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td class="l"><button type="button" class="t-num">${nameH(s)}</button>${goalBadge(s.data)}${s.locked?' <span class="t-lock">잠김</span>':''}</td>
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
-      ${les.map(a=>`<td><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${TAB_NM[DATA_TABS[i]]}"></span>`).join('')}</span></td>`).join('')}
+      ${les.map((a,li)=>`<td title="${esc(lesTip(ready[li]))}"><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${esc(ready[li].no+'차시 '+shortT(ready[li].title))} · ${TAB_NM[DATA_TABS[i]]} ${x?'했어요':'아직'}"></span>`).join('')}</span></td>`).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td></tr>`).join('');
     $$('.tRows .t-num',app).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid));renderOmr(L)}
+  /* ── 📅 이번 주 한눈에 (주 1회 대면 수업 준비) ── */
+  function weekRows(){const L=curList(),t=today(),wk=Date.now()-7*864e5,D=range(7).map(i=>addDays(t,i-6));
+    return L.map(s=>{const x=dataSummary(s.data||{}),M=OBJ(OBJ(s.data)._me),days=new Set((Array.isArray(M.days)?M.days:[]).concat(M.last?[M.last]:[])),on=D.map(d=>days.has(d)),n=on.filter(Boolean).length,cp=cpInfo(s),rd=raidInfo(s),f=[];
+      if(!s.last_seen||Date.parse(s.last_seen)<wk)f.push(['hi','7일 넘게 안 들어왔어요']);else if(!n)f.push(['mid','들어왔지만 공부한 날이 없어요']);
+      if(x.due>=5)f.push(['mid',`복습 ${x.due}문제 밀림`]);
+      if(x.goal&&x.goal.diff)f.push(['mid',`고른 길 ${goalBy(x.goal.k).ic} ≠ 추천 ${goalBy(x.goal.rec).ic}`]);
+      if(x.calcErrs.length&&NUM(x.calcErrs[0].n)>=2){const e=x.calcErrs[0],tp=CALC.find(c=>c.id===e.tid);f.push(['mid',`같은 실수: ${tp?tp.nm:e.tid} ${e.n}회`])}
+      if(s.locked)f.push(['hi','비밀번호 잠김']);
+      return{s,x,D,on,n,cp,rd,f}})}
+  function renderWeek(){const body=$('.tWkRows',app);if(!body)return;const R=weekRows(),wd=d=>{const[y,m,dd]=d.split('-').map(Number);return'일월화수목금토'[new Date(y,m-1,dd).getDay()]};
+    const studied=R.filter(r=>r.n).length,avgD=R.length?(R.reduce((a,r)=>a+r.n,0)/R.length):0,cpLeft=R.reduce((a,r)=>a+r.cp.left,0),care=R.filter(r=>r.f.length).length;
+    $('.tWkTiles',app).innerHTML=`<div class="t-tile"><small>지난 7일 공부한 학생</small><b>${studied}<small class="t-of"> / ${R.length}</small></b></div><div class="t-tile"><small>평균 공부한 날</small><b>${avgD.toFixed(1)}<small class="t-of">일</small></b></div><div class="t-tile"><small>챙길 학생</small><b>${care}</b></div><div class="t-tile"><small>🎫 남은 쿠폰 (모두)</small><b>${cpLeft}</b></div>`;
+    body.innerHTML=R.length?R.map(({s,D,on,n,cp,rd,f})=>`<tr data-sid="${esc(s.sid)}"><td class="l"><button type="button" class="t-num">${nameH(s)}</button>${goalBadge(s.data)}</td>
+      <td><span class="t-wdays" aria-label="지난 7일 중 ${n}일">${D.map((d,i)=>`<span class="t-wd ${on[i]?'on':''} ${i===6?'td':''}" title="${d.slice(5).replace('-','/')} (${wd(d)}) ${on[i]?'공부했어요':'안 했어요'}">${wd(d)}</span>`).join('')}</span> <b class="rm t-wn">${n}일</b></td>
+      <td class="${!s.last_seen||Date.parse(s.last_seen)<Date.now()-7*864e5?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td>
+      <td class="rm">${rd.g?`${rd.w} / ${rd.g}`:'–'}</td>
+      <td class="t-cpc">${cpCell(s.sid,cp)}</td>
+      <td class="l t-care">${f.length?f.map(([k,v])=>`<span class="t-flag ${k}">${esc(v)}</span>`).join(''):'<span class="muted">괜찮아요 🙂</span>'}</td></tr>`).join('')
+      :`<tr><td colspan="8" class="muted">이 반에는 아직 학생이 없어요.</td></tr>`;
+    wireRows(body)}
+  const cpCell=(sid,cp)=>cp.got?`<b class="rm ${cp.left?'t-cpl':''}">${cp.left}장</b>${cp.left?` <button type="button" class="t-mini t-cpu" data-sid="${esc(sid)}">사용함</button>`:''}${cp.used?` <button type="button" class="t-mini t-cpb" data-sid="${esc(sid)}" title="사용 1장을 되돌려요">↶</button>`:''}<br><small class="muted">모은 ${cp.got} · 쓴 ${cp.used}${cp.pcs?` · 조각 ${cp.pcs}/3`:''}</small>`:`<span class="muted">${cp.pcs?`조각 ${cp.pcs}/3`:'–'}</span>`;
+  function wireRows(body){$$('.t-num',body).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid));
+    $$('.t-cpu',body).forEach(b=>b.onclick=()=>cpUse(b.dataset.sid,1));$$('.t-cpb',body).forEach(b=>b.onclick=()=>cpUse(b.dataset.sid,-1))}
+  $('.tWkCopy',app).onclick=async()=>{const R=weekRows();if(!R.length){toast('복사할 학생이 없어요.');return}
+    const txt=`[${scopeNm()}] ${today()} 이번 주 메모\n`+R.map(({s,n,cp,rd,f})=>`- ${nameT(s)}: ${n}일 공부 · 7일 풀이 ${s.attempts_7d||0} · 이번 주 ${NUM(s.week_pts)}포인트${rd.g?` · 보스 ${rd.w}승/${rd.g}판`:''}${cp.left?` · 쿠폰 ${cp.left}장`:''}${f.length?` · 챙길 점: ${f.map(x=>x[1]).join(', ')}`:''}`).join('\n');
+    try{await navigator.clipboard.writeText(txt);toast('수업 메모를 복사했어요. 메모장이나 카톡에 붙여 넣으세요.')}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('수업 메모를 복사했어요.')}catch(_){toast('복사하지 못했어요.')}ta.remove()}};
+  /* ── ⚔️ 오늘의 보스 도전: 학생별 기록 (방과후 반에서도 보여요) ── */
+  function renderRaid(){const body=$('.tRaidRows',app);if(!body)return;const t=today(),need=typeof RAID!=='undefined'?RAID.NEED_LES:3;
+    const lesOK=d=>ready.filter(l=>{const p=OBJ(OBJ(d)[l.id]);return NUM(p.steps)>0||NUM(OBJ(p.prac).solved)>=3}).length;
+    const R=curList().map(s=>{const r=OBJ(OBJ(s.data)._raid),td=OBJ(OBJ(r.days)[t]);return{s,les:lesOK(s.data),today:NUM(td.f)+NUM(td.p),w:NUM(r.w),g:NUM(r.g),beat:Object.keys(OBJ(r.beat)).length,cp:cpInfo(s)}});
+    $('.tRaidNeed',app).textContent=need;
+    {const b=typeof raidBoss==='function'?raidBoss():null;$('.tRaidBoss',app).textContent=b?`이번 주 보스 · ${b.nm}`:''}
+    $('.tRaidTiles',app).innerHTML=`<div class="t-tile"><small>문이 열린 학생</small><b>${R.filter(r=>r.les>=need).length}<small class="t-of"> / ${R.length}</small></b></div><div class="t-tile"><small>오늘 도전한 학생</small><b>${R.filter(r=>r.today).length}</b></div><div class="t-tile"><small>한 번이라도 이긴 학생</small><b>${R.filter(r=>r.w).length}</b></div><div class="t-tile"><small>🎫 남은 쿠폰 (모두)</small><b>${R.reduce((a,r)=>a+r.cp.left,0)}</b></div>`;
+    body.innerHTML=R.length?R.map(({s,les,today:n,w,g,beat,cp})=>`<tr data-sid="${esc(s.sid)}"><td class="l"><button type="button" class="t-num">${nameH(s)}</button></td>
+      <td>${les>=need?`<span class="t-flag ok">열림</span>`:`<span class="muted">${les} / ${need}</span>`}</td><td class="rm">${n||'–'}</td><td class="rm">${g?`${w} / ${g}`:'–'}</td><td class="rm">${beat||'–'}</td>
+      <td class="t-cpc">${cpCell(s.sid,cp)}</td></tr>`).join('')
+      :`<tr><td colspan="6" class="muted">이 반에는 아직 학생이 없어요.</td></tr>`;
+    wireRows(body)}
   /* ── 문제 신고 ── */
   let repAll=false,repMissing=false;
   async function loadReports(){const box=$('.tRep',app),nb=$('.tRepN',app);if(!box)return;
@@ -353,12 +415,14 @@ function viewTeacher(){
     body.innerHTML=`<div class="t-dh"><div><div class="t-dcode">${code(s)}</div><input class="inp t-dname" value="${esc(NAMES[sid]||'')}" placeholder="이름 적기 (이 기기에만 저장)" maxlength="20" aria-label="이름"></div><button type="button" class="t-dx" aria-label="닫기">✕</button></div>
       <div class="t-dstat"><div><small>최근 접속</small><b>${relTime(s.last_seen)}</b></div><div><small>포인트</small><b class="rm">${x.pts}</b></div><div><small>연속</small><b class="rm">${x.streak}일</b></div><div><small>7일 풀이</small><b class="rm">${s.attempts_7d||0}</b></div></div>
       ${goalStuHTML(x.goal)}
+      ${(()=>{const c=cpInfo(s),r=raidInfo(s);return c.got||c.pcs||r.g?`<p class="t-dcp">⚔️ 보스 도전 <b class="rm">${r.w}승 / ${r.g}판</b> · 🎫 쿠폰 남은 <b class="rm">${c.left}장</b> <small class="muted">(모은 ${c.got} · 쓴 ${c.used}${c.pcs?` · 조각 ${c.pcs}/3`:''})</small>${c.left?` <button type="button" class="t-mini t-dcpu">쿠폰 사용함</button>`:''}</p>`:''})()}
       ${lv.loc?`<p class="t-dloc">지금: ${esc(lv.loc)}${lv.help_at?' · <b class="t-due">✋ 손들었어요</b>':''}</p>`:''}
-      <div class="t-dles">${ready.map((l,i)=>`<div><span>${l.no}차시</span><span class="pips">${x.les[i].map((v,j)=>`<span class="pip ${v?'on':''}" title="${TAB_NM[DATA_TABS[j]]}"></span>`).join('')}</span></div>`).join('')}</div>
+      <div class="t-dles">${ready.map((l,i)=>`<div title="${esc(lesTip(l))}"><span>${l.no}차시 <small class="muted">${esc(shortT(l.title))}</small></span><span class="pips">${x.les[i].map((v,j)=>`<span class="pip ${v?'on':''}" title="${TAB_NM[DATA_TABS[j]]}"></span>`).join('')}</span></div>`).join('')}</div>
       ${groupsOff?'':`<h3>방과후 반</h3><div class="chips t-dg">${GROUPS.map(g=>`<button type="button" class="chip ${g.sids.includes(sid)?'on':''}" data-g="${g.id}">${g.sids.includes(sid)?CHECK+' ':''}${esc(g.name)}</button>`).join('')||'<span class="muted">아직 방과후 반이 없어요.</span>'}</div>`}
       <h3>기초 연산 취약점 · 오개념</h3><div class="t-calc-box"><div><b>시작점 찾기</b> ${x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?esc(t.nm):id}).join(' → '):'기초 튼튼'):'<span class="muted">아직 안 함</span>'} · 별 <b class="rm">${x.calc}</b> · 구구단 <b class="rm">${x.facts}/36</b></div>${x.weakFacts.length?`<div style="margin-top:6px"><b>취약 구구단</b> ${x.weakFacts.map(f=>`<span class="t-wchip">${esc(f.k)}${f.w?` · 틀림 ${f.w}`:''}</span>`).join('')}</div>`:''}${x.calcErrs.length?`<div style="margin-top:8px"><b>자주 나온 오개념 TOP 5</b><ul>${x.calcErrs.slice(0,5).map(e=>{const tp=CALC.find(c=>c.id===e.tid);return`<li><b>${esc(tp?tp.nm:e.tid)}</b> (${e.n}회): ${esc(stripTags(e.m))}</li>`}).join('')}</ul></div>`:'<div class="muted" style="margin-top:6px">아직 기록된 기초 연산 오개념이 없어요.</div>'}${(()=>{const cs=OBJ(OBJ(s.data)._calc),done=CALC.filter(t=>NUM(OBJ(cs[t.id]).stars)>0);return done.length?`<div style="margin-top:8px"><b>별 받은 주제</b> ${done.map(t=>`<span class="t-schip">${esc(t.nm)} ★${Math.min(3,NUM(cs[t.id].stars))}</span>`).join('')}</div>`:''})()}</div>
       <h3>최근 풀이</h3><div class="t-datt"><span class="muted">불러오는 중…</span></div>
       <h3>계정</h3><div class="t-dact"><button type="button" class="btn ghost t-reset">비밀번호 새로 만들기</button><button type="button" class="btn ghost t-del">기록 모두 지우기</button></div>${s.locked?'<p class="t-due" style="margin:6px 0 0">비밀번호를 여러 번 틀려 잠겨 있어요. 새 비밀번호를 만들면 풀려요.</p>':''}`;
+    {const u=$('.t-dcpu',body);if(u)u.onclick=()=>{cpUse(sid,1);openStu(sid)}}
     $('.t-dx',body).onclick=closeStu;$('.t-dx',body).focus({preventScroll:true});
     $('.t-dname',body).onchange=e=>{const v=e.target.value.trim().slice(0,20);if(v)NAMES[sid]=v;else delete NAMES[sid];saveNames();renderSide();renderRoster();renderPeople();toast('이름을 저장했어요 (이 기기).')};
     $$('.t-dg .chip',body).forEach(b=>b.onclick=async()=>{const gid=+b.dataset.g,G=GROUPS.find(g=>g.id===gid),on=!G.sids.includes(sid);b.disabled=true;
@@ -376,7 +440,7 @@ function viewTeacher(){
     sel.innerHTML=C.length?C.map(([k,v])=>`<option value="${k}"${k===GK?' selected':''}>${v.g}학년 ${v.k}반</option>`).join(''):'<option>학생 없음</option>';loadTBoss();loadTBB()}
   $('.tGClass',app).onchange=e=>{GK=e.target.value;lsSet('hangeoreum-t-class',GK);loadTBoss();loadTBB()};
   const gk=()=>GK&&/^\d+-\d+$/.test(GK)?GK.split('-').map(Number):null;
-  async function loadTBoss(){const box=$('.tBoss',app);if(!box)return;const G=gk();if(!G){box.hidden=true;return}
+  async function loadTBoss(){const box=$('.tBoss',app);if(!box)return;const G=gk();if(!G||!CBOSS()){box.hidden=true;return}
     const[g,k]=G,body=$('.tBossBody',box);box.hidden=false;$('.tBossTools',box).hidden=false;
     try{const st=await API.call('hg_t_class_status',{p_token:tTok(),p_grade:g,p_klass:k});if(!st)return;const pl=bossPlan(st),c=pl.cur,zero=(st.students||[]).filter(x=>!NUM(x.pts)).map(x=>x.num);
       const sel=$('.tPer',box);if(![...sel.options].some(o=>+o.value===st.per_student))sel.insertAdjacentHTML('beforeend',`<option value="${NUM(st.per_student)}">${NUM(st.per_student)}</option>`);sel.value=String(st.per_student);

@@ -303,7 +303,7 @@ const WORKED=[
 const TY_LABELS=['유형 1 · 몇 배','유형 2 · 비로 구하기','유형 3 · 세 호의 비(360°)','유형 4 · 도형·정비례 성질(반원 180°)'];
 
 function makeC1(seed){
-  const r=seed*1664525+1013904223>>>0;
+  const r=(seed*1664525+1013904223)>>>0;
   const sets=[[1,2,3],[1,3,2],[2,3,4],[2,2,5],[1,4,5],[2,3,5],[3,4,5],[3,3,6]];
   const[a,b,c]=sets[r%sets.length],t=a+b+c,one=360/t;
   const targets=[['AB',a],['BC',b],['CA',c]];
@@ -325,7 +325,7 @@ function makeC1(seed){
 }
 
 function makeC2(seed){
-  const r=seed*22695477+1>>>0;
+  const r=(seed*22695477+1)>>>0;
   const specs=[
     {abc:[2,3,4],want:'AB',wv:2,refAng:60,p:3,q:4},   // t=9, one=40, want=80°, 60:80=3:4
     {abc:[1,3,5],want:'BC',wv:3,refAng:80,p:2,q:3},   // t=9, one=40, want=120°, 80:120=2:3
@@ -349,7 +349,7 @@ function makeC2(seed){
 }
 
 function makeC3(seed){
-  const r=seed*1103515245+12345>>>0;
+  const r=(seed*1103515245+12345)>>>0;
   const specs=[
     {a:72,b:108,p:2,q:3},
     {a:80,b:100,p:4,q:5},

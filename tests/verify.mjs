@@ -306,7 +306,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     errors.push('Missing CENT_T08.GEN_COMPOUND');
   } else {
     for (const cid of ['C1', 'C2', 'C3']) {
-      for (let sd = 1; sd <= 40; sd++) {
+      for (const sd of [...Array.from({ length: 40 }, (_, i) => i + 1), 0x80000001, 0x7fffffff, 1234567891]) {
         const P = CENT_T08.GEN_COMPOUND[cid](sd);
         if (!P || !Array.isArray(P.combo) || P.combo.length !== 2 || !P.fig || !/<svg/.test(P.fig.svg())) {
           errors.push(`Bad compound ${cid} seed ${sd}`); break;
