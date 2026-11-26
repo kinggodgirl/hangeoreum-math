@@ -16,6 +16,7 @@
 | `js/05-calc.js` | 기초 연산 28개 주제(`CALC`, 5갈래 사다리 `CALC_PATHS`), `EXAM_FOCUS`, `KEYS`, `LINKS`, `DIAG`, 5/10문제 미니 모드, 오늘의 계산(`viewDrill`), 오늘의 길잡이 | 시험 범위 변경 시 `EXAM_FOCUS`와 `EXAM_TAG`만 우선 수정 |
 | `js/06-unit-int.js` | 정수와 유리수 단원(`unit: 'int'`) | `LESSONS`, `STEPGEN`, `CALC_FOR`, `TERMS`, `BADGES` 확장 블록 |
 | `js/06c-unit-circle.js` | 원과 부채꼴 단원(`unit: 'circle'`, 차시 `arc` · `cent` · `sector`). 입체도형 사이트에서 함께 열림(`OPEN_UNITS`) | 함수 안에 넣어 전역 이름을 만들지 않음 · 그림은 SVG(`fig.svg`) |
+| `js/06g-goal.js` | 나의 길: 학생이 고르는 목표 3갈래(`GOALS`: 🌱 `calc` · 🌿 `base` · 🌳 `up`), 기록 추천(`goalRec`), 홈 카드·길잡이·기초 연산 화면 연결. 교사 화면은 `goalOf`·`goalBadge`로 표시 | `viewHome`·`viewCalc`·`guideSteps`를 감싸서 덧붙여요. 추천 규칙을 바꿀 땐 `goalRec`만 고쳐요 |
 | `js/07-print-omr-boot.js` | 단원 필터링, 점검 학습지 인쇄, OMR 사진 채점, 라우터(`route`) 및 초기 실행 | 마지막에 로드되어야 함 |
 | `tests/verify.mjs` | 문법 검사 및 전체 연산 2,580문항 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
 
@@ -27,6 +28,7 @@
 - `DB._calcDiag`: 시작점 찾기 결과(`d`, `res`, `lvRes`, `plan`)
 - `DB._calcErrs`: 기초 연산 오개념 누적(`{tid, m, n, d}`, `tidyDB()`에서 상위 25건 유지)
 - `DB._facts[key]`: 곱셈구구 36칸 익힘 상태(`lv`, `d`, `n`, `w`)
+- `DB._goal`: 나의 길(`k`: `calc`|`base`|`up`, 고른 날 `d`, 그때 추천 `rec`, 최근 6번 기록 `h`)
 - `DB._rev`, `DB._omr`: 복습 노트, 학생 OMR 자가 채점 기록
 
 ## 3. 멀티-AI 작업 원칙

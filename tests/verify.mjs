@@ -12,6 +12,7 @@ const jsFiles = [
   'js/05-calc.js',
   'js/06-unit-int.js',
   'js/06c-unit-circle.js',
+  'js/06g-goal.js',
   'js/07-print-omr-boot.js',
 ];
 
@@ -151,8 +152,25 @@ for (const lid of ['arc', 'cent', 'sector']) {
   }
 }
 
+// 나의 길(06g-goal.js): 기록으로 추천하는 규칙과 교사 화면 요약
+{
+  const { goalRec, goalOf, GOALS } = vm.runInContext('({goalRec,goalOf,GOALS})', sandbox);
+  const day = new Date().toISOString().slice(0, 10);
+  const recK = d => (goalRec(d) || {}).k || null;
+  if (GOALS.length !== 3) errors.push('GOALS should have 3 paths');
+  if (recK({}) !== null) errors.push('goalRec: no diag should give null');
+  if (recK({ _calcDiag: { d: day, res: { add: true, facts: false } } }) !== 'calc') errors.push('goalRec: weak facts → calc');
+  if (recK({ _calcDiag: { d: day, res: { facts: false } }, _calc: { facts: { stars: 1 } } }) === 'calc') errors.push('goalRec: recovered facts should not stay calc');
+  if (recK({ _calcDiag: { d: day, res: { add: true, facts: true, order: false } } }) !== 'base') errors.push('goalRec: weak order → base');
+  const full = Object.fromEntries(EXAM_FOCUS.map(id => [id, { stars: 5 }]));
+  if (recK({ _calcDiag: { d: day, res: { add: true } }, _calc: full }) !== 'up') errors.push('goalRec: exam stars → up');
+  const G = goalOf({ _goal: { k: 'up', d: '2000-01-01', h: [['up', '2000-01-01']] }, _calcDiag: { d: day, res: { facts: false } } });
+  if (!(G.k === 'up' && G.rec === 'calc' && G.diff && G.old)) errors.push('goalOf: mismatch/old flags wrong');
+  if (!dataSummary({ _goal: { k: 'calc', d: day } }).goal) errors.push('dataSummary: missing goal');
+}
+
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);
 }
-console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, circle ${circleProbs} problems`);
+console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, goals OK, circle ${circleProbs} problems`);
