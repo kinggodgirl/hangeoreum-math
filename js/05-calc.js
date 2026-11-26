@@ -10,6 +10,18 @@ const M_=v=>`<span class="rm">${v}</span>`,N_=`<span class="math">n</span>`;
 const J=(n,a,b)=>josa(String(n),a,b),IY=n=>J(n,'이에요','예요'),IYs=n=>IY(n).slice(String(n).length);
 const S_=(t,q,ans,type,choices)=>({t,q,ans,type:type||'num',choices});
 const E_=(a,m,pi)=>({a,m,pi});
+/* 그림 보고 원의 둘레·넓이: 공식을 주지 않고 그림(반지름 또는 지름)만 보여 줘요 */
+function piFig(r){const area=r()<0.5,useD=r()<0.4,rr=ri(r,2,8),d=2*rr,u=area?'cm²':'cm',w=area?'넓이':'둘레의 길이';
+  const C=80,R=58,lab=useD?`${d} cm`:`${rr} cm`;
+  const svg=`<svg class="pifig" viewBox="0 0 160 160" width="150" height="150" role="img" aria-label="${useD?'지름':'반지름'} ${lab}인 원"><circle cx="${C}" cy="${C}" r="${R}" fill="${area?'#e8eefb':'none'}" stroke="#1d2433" stroke-width="2.4"/><circle cx="${C}" cy="${C}" r="3" fill="#1d2433"/>`+
+    (useD?`<line x1="${C-R}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`:`<line x1="${C}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`)+
+    `<text x="${useD?C:C+R/2}" y="${C-9}" text-anchor="middle" font-size="17" font-family="Times New Roman,serif" fill="#1d2433">${lab}</text>${area?'':`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#e0832a" stroke-width="4" stroke-dasharray="7 5"/>`}</svg>`;
+  const ans=area?rr*rr:2*rr,st=[];
+  if(useD)st.push(S_('지름을 반지름으로',M_(`${d} ÷ 2`),rr));
+  st.push(area?S_('반지름 × 반지름',M_(`${rr} × ${rr}`),rr*rr):S_('2 × 반지름',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${ans} × π`),ans,'pi'));
+  const errs=area?[E_(2*rr,'둘레 공식을 썼어요. 넓이는 π × 반지름 × 반지름이에요.',true)]:[E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)];
+  if(useD)errs.push(E_(area?d*d:2*d,'지름을 그대로 썼어요. 반지름은 지름 ÷ 2예요.',true));
+  return{q:`<div class="pifigw">${svg}</div>그림의 원의 <b>${w}</b>`,ans,type:'pi',suffix:u,steps:st,errs:errs.filter((e,i)=>e.a!==ans&&errs.findIndex(x=>x.a===e.a)===i)}}
 const BOX='<span class="cbox">?</span>';
 const FR=(n,d)=>`<span class="frs"><span>${n}</span><span>${d}</span></span>`;
 let SVGID=0;
@@ -378,6 +390,7 @@ const CALC=[
   gen(L,r){if(L===1){const k=ri(r,0,2);if(k===0){const a=ri(r,2,15),b=ri(r,2,10);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',steps:[S_('수끼리 더해요',M_(`${a} + ${b}`),a+b),S_('π를 붙여요',M_(`${a+b} × π`),a+b,'pi')],errs:[E_(a*b,'곱했어요. π 앞의 수끼리 더해요.',true)]}}
      if(k===1){const a=ri(r,10,20),b=ri(r,2,9);return{q:M_(`${a}π − ${b}π`),ans:a-b,type:'pi',steps:[S_('수끼리 빼요',M_(`${a} − ${b}`),a-b),S_('π를 붙여요',M_(`${a-b} × π`),a-b,'pi')],errs:[E_(a+b,'더했어요. 빼기예요.',true)]}}
      const a=ri(r,2,5),b=ri(r,2,9);return{q:M_(`${a} × ${b}π`),ans:a*b,type:'pi',steps:[S_('수끼리 곱해요',M_(`${a} × ${b}`),a*b),S_('π를 붙여요',M_(`${a*b} × π`),a*b,'pi')],errs:[E_(a+b,'더했어요. 곱해요.',true)]}}
+   if(L===2&&r()<0.5)return piFig(r);
    if(L===2){const rr=ri(r,2,8);if(r()<0.5)return{q:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`,ans:2*rr,type:'pi',suffix:'cm',steps:[S_('수끼리 곱해요',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${2*rr} × π`),2*rr,'pi')],errs:[E_(rr,'2를 곱하지 않았어요.',true),E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)]};
      return{q:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`,ans:rr*rr,type:'pi',suffix:'cm²',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('π를 붙여요',M_(`${rr*rr} × π`),rr*rr,'pi')],errs:[E_(2*rr,`${M_(`${rr} × 2`)}를 했어요. ${M_(`${rr}²`)}${J(rr,'은','는').slice(String(rr).length)} ${M_(`${rr} × ${rr}`)}${IYs(rr)}.`,true)]}}
    const rr=ri(r,2,5),h=ri(r,2,6);if(r()<0.5)return{q:`원기둥의 부피<br>${M_(`π × ${rr}² × ${h}`)}`,ans:rr*rr*h,type:'pi',suffix:'cm³',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('높이를 곱해요',M_(`${rr*rr} × ${h}`),rr*rr*h),S_('π를 붙여요',M_(`${rr*rr*h} × π`),rr*rr*h,'pi')],errs:[E_(2*rr*h,'제곱을 × 2로 했어요.',true),E_(rr*h,'제곱을 빠뜨렸어요.',true)]};
