@@ -50,10 +50,14 @@ function prog(id){DB[id]=DB[id]||{concept:false,explore:false,steps:0,prac:{solv
 function today(d=new Date()){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
 function addDays(ds,n){const[y,m,d]=ds.split('-').map(Number);return today(new Date(y,m-1,d+n))}
 function me(){DB._me=DB._me||{pts:0,last:null,streak:0,once:{},cnt:{},badges:{}};const M=DB._me;M.once=M.once||{};M.cnt=M.cnt||{};M.badges=M.badges||{};return M}
+/* 이번 주(월요일부터) 공부한 날 수. 연속이 끊겨도 주간 기록은 남아요 */
+function weekDays(M=me()){const t=today(),[y,m,d]=t.split('-').map(Number),mon=addDays(t,-((new Date(y,m-1,d).getDay()+6)%7));return(Array.isArray(M.days)?M.days:[]).filter(x=>x>=mon&&x<=t).length}
 function liveStreak(){const M=me(),t=today();return(M.last===t||M.last===addDays(t,-1))?M.streak:0}
-function award(n,onceKey){if(onceKey&&/^(face:|floor:|dup:|rule:|net:|reduce|cls|cut|i:)/.test(onceKey))dayBump('explore');const M=me();if(onceKey){if(M.once[onceKey])return false;M.once[onceKey]=1}
+/* why: 포인트가 뜰 때 같이 보여 줄 이유(학생이 무엇을 하면 포인트를 받는지 알게) */
+function award(n,onceKey,why){if(onceKey&&/^(face:|floor:|dup:|rule:|net:|reduce|cls|cut|i:)/.test(onceKey))dayBump('explore');const M=me();if(onceKey){if(M.once[onceKey])return false;M.once[onceKey]=1}
   const t=today();if(M.last!==t){M.streak=(M.last===addDays(t,-1))?M.streak+1:1;M.last=t}
-  M.pts+=n;save();updatePill();popPts(n);checkBadges();queuePts(n);return true}
+  if(!Array.isArray(M.days))M.days=[];if(M.days[M.days.length-1]!==t){M.days.push(t);if(M.days.length>14)M.days=M.days.slice(-14)}
+  M.pts+=n;save();updatePill();popPts(n,why);checkBadges();queuePts(n);return true}
 function bump(k,n=1){const M=me();M.cnt[k]=(M.cnt[k]||0)+n;save();checkBadges()}
 const onceCount=(M,pre)=>Object.keys(M.once).filter(k=>k.startsWith(pre)).length;
 const BADGES=[
@@ -74,8 +78,9 @@ function badgeOn(b){return(!b.unit||OPEN_UNITS.includes(b.unit))&&!(b.server&&ST
 function checkBadges(){const M=me();BADGES.forEach(b=>{if(!M.badges[b.k]&&b.ok(M)){M.badges[b.k]=today();save();setTimeout(()=>toast(`배지를 받았어요 · ${b.nm}`),400)}})}
 function badgeIcon(i,on){const n=3+(i%4),R=17,c=22;const pts=regPoly(n,R,-Math.PI/2).map(p=>`${(c+p[0]).toFixed(1)},${(c+p[1]).toFixed(1)}`).join(' ');
   return`<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><polygon points="${pts}" fill="${on?FC[i%5]:'#eef0f4'}" stroke="${on?'#1d2640':'#c3c8d2'}" stroke-width="2" stroke-linejoin="round"/>${on?`<text x="22" y="27" text-anchor="middle" font-size="13" font-weight="700" fill="#1d2640" font-family="IBM Plex Sans KR,sans-serif">${n}</text>`:''}</svg>`}
-function updatePill(){applyTheme();const P=$('#mePts'),S=$('#meStreak');if(P)P.textContent=me().pts;if(S)S.textContent=liveStreak()}
-function popPts(n){const pill=$('#mePill');if(!pill||n<=0)return;const r=pill.getBoundingClientRect();const f=el(`<div class="ptpop">+${n}</div>`);f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+4)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),1100)}
+function updatePill(){applyTheme();const P=$('#mePts'),S=$('#meStreak');if(P)P.textContent=me().pts;if(S){const k=liveStreak();S.textContent=k>=2?`${k}일 연속`:`이번 주 ${weekDays()}일`}}
+function popPts(n,why){const pill=$('#mePill');if(!pill||n<=0)return;const r=pill.getBoundingClientRect(),k=$$('.ptpop').length;const f=el(`<div class="ptpop${why?' why':''}">+${n}${why?` <small>${why}</small>`:''}</div>`);
+  if(why)f.style.right=Math.max(8,innerWidth-r.right)+'px';else f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+4+k*34)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),why?2400:1100)}
 /* 복습 노트: 틀리거나 헤맨 문제를 1·3·7일 뒤에 다시 */
 function addReview(g,seed,lid){DB._rev=DB._rev||[];if(DB._rev.some(x=>x.g===g&&x.seed===seed))return;DB._rev.push({g,seed,lid,due:addDays(today(),1),stage:0,added:today()});save()}
 function dueReviews(){return(DB._rev||[]).filter(x=>x.due<=today())}
