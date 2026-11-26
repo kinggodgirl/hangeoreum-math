@@ -1083,3 +1083,30 @@ body.t-dopen{overflow:hidden}
 .kfigw{display:flex;justify-content:center;margin:2px 0 8px}.zigfig{max-width:100%;height:auto}
 .calc-chip.now{border-color:#2a4d9e;background:#eef3fd;box-shadow:0 0 0 2px #2a4d9e33}.calc-chip small.now{color:#2a4d9e;font-weight:700}
 .arcs{position:relative;display:inline-block;padding-top:.2em;font-family:var(--math,"Times New Roman"),serif;font-style:italic;font-size:1.1em;line-height:1.2}.arcs::before{content:"";position:absolute;left:6%;right:6%;top:-.02em;height:.4em;border:1.6px solid currentColor;border-bottom:none;border-radius:50% 50% 0 0/100% 100% 0 0}
+/* 기초 연산 사다리 (4갈래) */
+.lad-intro{margin:18px 0 10px;font-size:15px;color:var(--ink-soft)}.lad-intro .ctag{vertical-align:1px}
+.ladders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.ladders .panel+.panel{margin-top:0}
+.ladder{padding:16px 16px 12px}
+.lad-h{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}.lad-ic{font-size:26px;line-height:1.2}
+.lad-h h2{margin:0;font-size:20px}.lad-h h2 small{font-size:14px;font-weight:600}.lad-h p{margin:2px 0 0;font-size:14px}
+.lad{list-style:none;margin:0;padding:0;position:relative}
+.lad li{position:relative;padding-left:0}
+.lad li+li::before{content:'';position:absolute;left:18px;top:-8px;height:8px;border-left:2.5px dotted var(--line)}
+.lad li+li{margin-top:8px}
+.lad a{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);text-decoration:none;min-height:52px}
+.lad a:hover{background:var(--hi-soft)}
+.lad-no{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;background:#eef0f4;color:var(--ink-soft)}
+.lad-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.lad-b b{font-size:17px}.lad-b .kw{font-size:13px;font-weight:700;color:#8a5a00}
+.lad .calc-tags{position:static;display:flex;flex-wrap:wrap;gap:4px}
+.lad .stars{flex:none;font-size:13px}
+.lad li.fin .lad-no{background:var(--ok-soft);color:var(--ok)}
+.lad li.fin a{border-color:#bfe0cb}
+.lad li.now a{border:2.5px solid var(--accent);background:var(--accent-soft)}
+.lad li.now .lad-no{background:var(--accent);color:#fff}
+.ctag.now{background:var(--accent);color:#fff}
+.lad-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 14px;padding:10px 14px;border:1.5px dashed var(--line);border-radius:12px;background:var(--card)}
+.lad-where{font-size:15px;color:var(--ink-soft)}.lad-nav{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}.lad-nav .chip{text-decoration:none;color:var(--ink);font-size:14px;display:inline-flex;align-items:center}
+.lad-tip{flex-basis:100%;margin:2px 0 0;font-size:15px;background:var(--hi-soft);border-radius:8px;padding:8px 10px}
+@media (max-width:760px){.ladders{grid-template-columns:1fr}}
+@media (max-width:520px){.lad-nav{margin-left:0}.lad-b b{font-size:16px}}
