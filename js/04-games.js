@@ -364,33 +364,47 @@ const bbLedKey=()=>'hangeoreum-bbled:'+(AUTH?AUTH.sid:'');
 const bbLedger=()=>isStudent()?(Number(lsGet(bbLedKey(),0))||0):0;
 function setBBLedger(v){if(isStudent()&&Number.isFinite(+v))lsSet(bbLedKey(),+v)}
 async function refreshLedger(){if(!isStudent()||GAME.off)return null;try{const L=await API.call('hg_bb_lobby',{p_token:AUTH.token});setBBLedger(L.ledger);return L}catch(e){if(isAuthErr(e))authExpired();return null}}
-function bbAll(d){const out=[],rec=s=>{if(s.length===d){out.push(s);return}for(let k=1;k<=9;k++){const c=String(k);if(!s.includes(c))rec(s+c)}};rec('');return out}
+/* [T09] 선생님 숫자야구 앱과 같은 4단계. 하·중은 자리별 힌트(○△×), 중상·상은 진짜 야구처럼 S·B 개수만. 하는 판돈 최대 10포인트 */
+const BB_LV={easy:{k:'easy',nm:'하',len:2,min:1,max:6,oxa:true,d:'1~6 · 2자리 · ○△× 힌트',cap:10},
+  mid:{k:'mid',nm:'중',len:3,min:1,max:9,oxa:true,d:'1~9 · 3자리 · ○△× 힌트'},
+  mh:{k:'mh',nm:'중상',len:3,min:1,max:6,oxa:false,d:'1~6 · 3자리 · S/B'},
+  hard:{k:'hard',nm:'상',len:3,min:0,max:9,oxa:false,d:'0~9 · 3자리 · S/B'}};
+const BB_EASY_MAX=10;
+/* 경기 정보로 단계 찾기: lv가 없으면 예전 방식(1~9, 3·4자리, S/B) */
+const bbLv=st=>(st&&BB_LV[st.lv])||{k:'',nm:`${NUM(st&&st.digits)||3}자리`,len:NUM(st&&st.digits)||3,min:1,max:9,oxa:false,d:''};
+const bbRange=lv=>{const a=[];for(let k=lv.min;k<=lv.max;k++)a.push(k);return a};
+function bbAll(lv){if(typeof lv==='number')lv={len:lv,min:1,max:9};const out=[],R=bbRange(lv).map(String),rec=s=>{if(s.length===lv.len){out.push(s);return}for(const c of R)if(!s.includes(c))rec(s+c)};rec('');return out}
 function bbScore(sec,g){let s=0,b=0;for(let i=0;i<g.length;i++){if(sec[i]===g[i])s++;else if(sec.includes(g[i]))b++}return{s,b}}
-function bbBotGuess(d,clues,useLast){const done=new Set(clues.map(q=>q.guess)),use=clues.filter(q=>q.guess).slice(-useLast);
-  let C=bbAll(d).filter(c=>!done.has(c)&&use.every(q=>{const r=bbScore(c,q.guess);return r.s===q.s&&r.b===q.b}));if(!C.length)C=bbAll(d).filter(c=>!done.has(c));return C[Math.floor(Math.random()*C.length)]}
+const bbHint=(sec,g)=>g.split('').map((c,i)=>sec[i]===c?'O':sec.includes(c)?'A':'X').join('');
+function bbBotGuess(lv,clues,useLast){const all=bbAll(lv),done=new Set(clues.map(q=>q.guess)),use=useLast?clues.filter(q=>q.guess).slice(-useLast):[];
+  let C=all.filter(c=>!done.has(c)&&use.every(q=>q.h?bbHint(c,q.guess)===q.h:(r=>r.s===q.s&&r.b===q.b)(bbScore(c,q.guess))));if(!C.length)C=all.filter(c=>!done.has(c));return C[Math.floor(Math.random()*C.length)]}
+const BB_SYM={O:'○',A:'△',X:'✕'};
+const oxaHTML=(g,h)=>`<span class="bb-oxa">${String(g).split('').map((c,i)=>`<span class="t ${h[i]}"><b>${esc(c)}</b><i>${BB_SYM[h[i]]||''}</i></span>`).join('')}</span>`;
 const bbSpaced=v=>String(v||'').split('').join(' ');
 const bbWho=(p,me)=>!p?'상대':(me&&p.grade===me.grade&&p.klass===me.klass?`${p.num}번`:`${p.grade}학년 ${p.klass}반 ${p.num}번`);
 function sbHTML(s,b){if(!s&&!b)return'<span class="sb out">아웃</span>';return`<span class="sb">${'<i class="s"></i>'.repeat(s)}${'<i class="b"></i>'.repeat(b)}<b>${s?s+'S':''}${s&&b?' ':''}${b?b+'B':''}</b></span>`}
 /* 숫자 누르개: 비밀 숫자·추리(1~9, 서로 다르게)와 방 번호(0~9) */
-function digitPad({len,distinct=false,zero=true,btn='확인',auto=false,onSubmit}){
+function digitPad({len,distinct=false,zero=true,btn='확인',auto=false,min=0,max=9,onSubmit}){
+  const out=k=>/^[0-9]$/.test(k)&&(+k<min||+k>max);
   const keys=[1,2,3,4,5,6,7,8,9].map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')+`<button type="button" data-k="⌫" aria-label="지우기">⌫</button>`+(zero?'<button type="button" data-k="0">0</button>':'<span></span>')+(auto?'<span></span>':`<button type="button" class="dgo" data-k="go">${btn}</button>`);
   const w=el(`<div class="dpad"><div class="dslots">${'<span class="dslot"></span>'.repeat(len)}</div><div class="dkeys">${keys}</div></div>`);
   let v='',lock=false;
   const draw=()=>{$$('.dslot',w).forEach((d,i)=>{d.textContent=v[i]||'';d.classList.toggle('on',i<v.length)});
-    $$('.dkeys button',w).forEach(b=>{const k=b.dataset.k;if(k==='go')b.disabled=lock||v.length!==len;else if(k==='⌫')b.disabled=lock||!v.length;else b.disabled=lock||v.length>=len||(distinct&&v.includes(k))})};
+    $$('.dkeys button',w).forEach(b=>{const k=b.dataset.k;if(k==='go')b.disabled=lock||v.length!==len;else if(k==='⌫')b.disabled=lock||!v.length;else b.disabled=lock||out(k)||v.length>=len||(distinct&&v.includes(k))})};
   const submit=()=>{if(lock||v.length!==len)return;lock=true;draw();const val=v;onSubmit(val,ok=>{lock=false;if(ok!==false)v='';draw()})};
-  const press=k=>{if(lock)return;if(k==='go')return submit();if(k==='⌫')v=v.slice(0,-1);else if(v.length<len&&!(distinct&&v.includes(k))&&(zero||k!=='0'))v+=k;draw();if(auto&&v.length===len)setTimeout(submit,120)};
+  const press=k=>{if(lock)return;if(k==='go')return submit();if(k==='⌫')v=v.slice(0,-1);else if(v.length<len&&!out(k)&&!(distinct&&v.includes(k))&&(zero||k!=='0'))v+=k;draw();if(auto&&v.length===len)setTimeout(submit,120)};
   $$('.dkeys button',w).forEach(b=>b.onclick=()=>press(b.dataset.k));w._press=press;w._lock=on=>{lock=on;draw()};draw();return w}
 function bbKeys(pad){pinKeyHandler=e=>{if(!pad.isConnected||e.target.closest('input,select,textarea'))return;if(/^[0-9]$/.test(e.key))pad._press(e.key);else if(e.key==='Backspace'){e.preventDefault();pad._press('⌫')}else if(e.key==='Enter')pad._press('go')}}
 const BB_RULES=`<ul class="bb-rule">
-  <li>1~9 중 <b>서로 다른 숫자 3개</b>(어려움은 4개)로 내 비밀 숫자를 정해요.</li>
-  <li>번갈아 가며 상대의 숫자를 추리해요. 숫자와 자리가 모두 맞으면 <b>스트라이크(S)</b>, 숫자는 있지만 자리가 다르면 <b>볼(B)</b>, 하나도 없으면 <b>아웃</b>이에요.<br><span class="muted">예) 상대 숫자가 3 7 1일 때 3 1 5를 부르면 1S 1B</span></li>
+  <li>난이도는 4단계예요. <b>하</b> 1~6 · 2자리, <b>중</b> 1~9 · 3자리, <b>중상</b> 1~6 · 3자리, <b>상</b> 0~9 · 3자리. 그 범위에서 <b>서로 다른 숫자</b>로 내 비밀 숫자를 정해요.</li>
+  <li><b>하·중</b>은 자리마다 힌트가 나와요. ○ 숫자와 자리 모두 맞음, △ 숫자는 있지만 자리가 다름, ✕ 없는 숫자.<br><span class="muted">예) 상대 숫자가 3 7 1일 때 3 1 5를 부르면 ○ △ ✕</span></li>
+  <li><b>중상·상</b>은 진짜 야구 규칙이에요. 자리별 힌트 없이 <b>스트라이크(S)</b>·<b>볼(B)</b> 개수만 알려 줘요. 하나도 없으면 <b>아웃</b>.<br><span class="muted">예) 같은 경우 1S 1B</span></li>
   <li>방장이 먼저 불러요. 방장이 맞혀도 상대에게 같은 횟수만큼 기회가 있어서, 둘 다 맞히면 비겨요.</li>
   <li>한 번에 90초 안에 불러야 해요. 두 번 연속 시간을 넘기면 져요.</li>
-  <li>이기면 건 포인트의 2배를 받고, 지면 건 포인트를 잃어요. 비기면 돌려받아요. <b>모은 포인트 기록과 보스 데미지는 바뀌지 않아요.</b></li>
+  <li>이기면 건 포인트의 2배를 받고, 지면 건 포인트를 잃어요. 비기면 돌려받아요. <b>하</b> 단계는 <b>10포인트까지만</b> 걸 수 있어요. <b>모은 포인트 기록과 보스 데미지는 바뀌지 않아요.</b></li>
   <li>하루 10판까지 할 수 있어요.</li></ul>`;
 const bbOffHTML=()=>`<div class="card panel"><p style="margin:0">친구와 대결은 선생님이 서버에 게임 설정을 추가하면 열려요. 그동안 컴퓨터와 연습할 수 있어요.</p></div>`;
-const bbPracticeHTML=()=>`<div class="card panel"><h2>컴퓨터와 연습</h2><p class="muted" style="margin-top:0">포인트 없이 혼자 연습해요. 인터넷이 없어도 돼요.</p><div class="next-row" style="justify-content:flex-start;margin:0"><a class="btn" href="#bb-cpu-easy">쉬움</a><a class="btn" href="#bb-cpu-hard">어려움</a><a class="btn ghost" href="#bb-cpu-easy4">4자리 쉬움</a></div></div>`;
+const bbPracticeHTML=()=>`<div class="card panel"><h2>컴퓨터와 연습</h2><p class="muted" style="margin-top:0">포인트 없이 혼자 연습해요. 인터넷이 없어도 돼요.</p><div class="next-row" style="justify-content:flex-start;margin:0">${Object.values(BB_LV).map(l=>`<a class="btn" href="#bb-cpu-${l.k}">${l.nm} <small class="muted">${l.d}</small></a>`).join('')}</div></div>`;
 let bbLobbyT=null;
 function viewBaseball(){
   crumbs.innerHTML=`<span class="sep">›</span><span>숫자야구</span>`;
@@ -400,10 +414,10 @@ function viewBaseball(){
   if(!isStudent()){host.innerHTML=`<div class="card panel"><p style="margin-top:0">친구와 대결하려면 로그인해 주세요.</p><a class="btn primary" href="#login">로그인하기</a></div>`+bbPracticeHTML();return}
   if(GAME.off){host.innerHTML=bbOffHTML()+bbPracticeHTML();return}
   host.innerHTML='<div class="card panel"><p class="muted" style="margin:0">불러오는 중…</p></div>';
-  let stake=null,digits=3;
+  let stake=null,digits=3,lvk='easy';
   const load=async()=>{try{const L=await API.call('hg_bb_lobby',{p_token:AUTH.token});if(!host.isConnected)return;setBBLedger(L.ledger);render(L)}
     catch(e){if(!host.isConnected)return;if(isMissingFn(e)){GAME.off=true;host.innerHTML=bbOffHTML()+bbPracticeHTML()}else if(isAuthErr(e))authExpired();else host.innerHTML=`<div class="card panel"><p style="margin:0">${esc(e.message)}</p></div>`}};
-  function render(L){const stakes=[0,5,10,20,50].filter(v=>v<=NUM(L.max));if(stake==null||!stakes.includes(stake)||stake>NUM(L.available))stake=0;
+  function render(L){const LVS=!!L.lvs,stakes=[0,5,10,20,50].filter(v=>v<=NUM(L.max)&&!(LVS&&lvk==='easy'&&v>BB_EASY_MAX));if(stake==null||!stakes.includes(stake)||stake>NUM(L.available))stake=0;
     const rec=L.record||{},R=Array.isArray(L.recent)?L.recent:[],O=Array.isArray(L.open)?L.open:[],me={grade:L.grade,klass:L.klass};
     const left=Math.max(0,NUM(L.limit)-NUM(L.today));
     host.innerHTML=`${L.mine?`<div class="card panel bb-mine"><b>진행 중인 경기</b> · 방 ${esc(L.mine.code)} · ${({waiting:'친구를 기다리는 중',setup:'비밀 숫자 정하는 중',playing:'경기 중'})[L.mine.status]||''} <a class="btn primary" href="#bb-${NUM(L.mine.id)}">돌아가기</a></div>`:''}
@@ -411,18 +425,20 @@ function viewBaseball(){
      ${!L.on?`<div class="card panel"><p style="margin:0"><b>선생님이 지금은 숫자야구를 꺼 두었어요.</b> 나중에 다시 와 주세요.</p></div>`:`
      <div class="bb-grid">
       <div class="card panel"><h2>방 만들기</h2><div class="cap">판돈 <span class="muted" style="font-weight:400">(포인트)</span></div><div class="seg bbStake">${stakes.map(v=>`<button type="button" data-v="${v}" class="${v===stake?'on':''}" ${v>Number(L.available)?'disabled':''}>${v?v:'친선'}</button>`).join('')}</div>
-        <div class="cap" style="margin-top:12px">숫자 개수</div><div class="seg bbDig"><button type="button" data-v="3" class="${digits===3?'on':''}">3자리 · 쉬움</button><button type="button" data-v="4" class="${digits===4?'on':''}">4자리 · 어려움</button></div>
+        ${LVS?`<div class="cap" style="margin-top:12px">난이도</div><div class="seg bbLv">${Object.values(BB_LV).map(l=>`<button type="button" data-v="${l.k}" class="${lvk===l.k?'on':''}">${l.nm}</button>`).join('')}</div><p class="muted bbLvD" style="margin:6px 0 0;font-size:14px">${BB_LV[lvk].d}${lvk==='easy'?` · 판돈 최대 ${BB_EASY_MAX}포인트`:''}</p>`
+         :`<div class="cap" style="margin-top:12px">숫자 개수</div><div class="seg bbDig"><button type="button" data-v="3" class="${digits===3?'on':''}">3자리 · 쉬움</button><button type="button" data-v="4" class="${digits===4?'on':''}">4자리 · 어려움</button></div>`}
         <p style="margin:14px 0 0"><button type="button" class="btn primary bbMake" ${left?'':'disabled'}>방 만들기</button></p><div class="flmsg bbMakeMsg" role="status"></div></div>
       <div class="card panel"><h2>방 번호로 들어가기</h2><p class="muted" style="margin-top:0">친구가 알려 준 방 번호 4자리를 누르세요.</p><div class="bbCodePad"></div><div class="flmsg bbJoinMsg" role="status"></div></div>
      </div>
-     <div class="card panel"><h2>우리 반 열린 방</h2>${O.length?`<ul class="bb-open">${O.map(o=>`<li><span><b>${NUM(o.num)}번</b>의 방 · ${NUM(o.stake)?`판돈 <b class="rm">${NUM(o.stake)}</b>`:'친선'} · ${NUM(o.digits)}자리</span><button type="button" class="btn bbJoin" data-code="${esc(o.code)}" ${NUM(o.stake)>Number(L.available)||!left?'disabled':''}>들어가기</button></li>`).join('')}</ul>`:'<p class="muted" style="margin:0">지금 열린 방이 없어요. 방을 만들어 친구에게 번호를 알려 주세요.</p>'}</div>`}
-     ${R.length?`<div class="card panel"><h2>최근 경기</h2><ul class="bb-recent">${R.map(g=>{const res=g.winner==='draw'?'무':g.winner===g.me?'승':'패';return`<li><span class="bb-res ${res==='승'?'w':res==='패'?'l':'d'}">${res}</span><span>${josa(bbWho(g.opp,me),'과','와')} ${NUM(g.digits)}자리${NUM(g.stake)?` · 판돈 ${NUM(g.stake)}`:' · 친선'}</span><span class="rm ${Number(g.delta)>0?'up':Number(g.delta)<0?'down':''}">${Number(g.delta)>0?'+':''}${Number(g.delta)||0}</span></li>`}).join('')}</ul></div>`:''}
+     <div class="card panel"><h2>우리 반 열린 방</h2>${O.length?`<ul class="bb-open">${O.map(o=>`<li><span><b>${NUM(o.num)}번</b>의 방 · ${NUM(o.stake)?`판돈 <b class="rm">${NUM(o.stake)}</b>`:'친선'} · ${BB_LV[o.lv]?`난이도 ${BB_LV[o.lv].nm}`:`${NUM(o.digits)}자리`}</span><button type="button" class="btn bbJoin" data-code="${esc(o.code)}" ${NUM(o.stake)>Number(L.available)||!left?'disabled':''}>들어가기</button></li>`).join('')}</ul>`:'<p class="muted" style="margin:0">지금 열린 방이 없어요. 방을 만들어 친구에게 번호를 알려 주세요.</p>'}</div>`}
+     ${R.length?`<div class="card panel"><h2>최근 경기</h2><ul class="bb-recent">${R.map(g=>{const res=g.winner==='draw'?'무':g.winner===g.me?'승':'패';return`<li><span class="bb-res ${res==='승'?'w':res==='패'?'l':'d'}">${res}</span><span>${josa(bbWho(g.opp,me),'과','와')} ${bbLv(g).nm}${BB_LV[g.lv]?' 단계':''}${NUM(g.stake)?` · 판돈 ${NUM(g.stake)}`:' · 친선'}</span><span class="rm ${Number(g.delta)>0?'up':Number(g.delta)<0?'down':''}">${Number(g.delta)>0?'+':''}${Number(g.delta)||0}</span></li>`}).join('')}</ul></div>`:''}
      ${L.on?bbPracticeHTML():''}`;
     if(!L.on)return;
     $$('.bbStake button',host).forEach(b=>b.onclick=()=>{stake=+b.dataset.v;$$('.bbStake button',host).forEach(x=>x.classList.toggle('on',x===b))});
     $$('.bbDig button',host).forEach(b=>b.onclick=()=>{digits=+b.dataset.v;$$('.bbDig button',host).forEach(x=>x.classList.toggle('on',x===b))});
+    $$('.bbLv button',host).forEach(b=>b.onclick=()=>{lvk=b.dataset.v;if(lvk==='easy'&&stake>BB_EASY_MAX)stake=BB_EASY_MAX;render(L)});
     $('.bbMake',host).onclick=async e=>{const m=$('.bbMakeMsg',host);e.currentTarget.disabled=true;m.textContent='방을 만드는 중…';
-      try{await settleSync();const r=await API.call('hg_bb_create',{p_token:AUTH.token,p_stake:stake,p_digits:digits});if(r&&r.ok)location.hash='#bb-'+r.game;else{m.textContent=(r&&r.msg)||'방을 만들지 못했어요.';if(r&&r.game)m.innerHTML+=` <a href="#bb-${NUM(r.game)}">경기로 가기</a>`;e.target.disabled=false}}
+      try{await settleSync();const r=await API.call('hg_bb_create',LVS?{p_token:AUTH.token,p_stake:stake,p_digits:BB_LV[lvk].len,p_lv:lvk}:{p_token:AUTH.token,p_stake:stake,p_digits:digits});if(r&&r.ok)location.hash='#bb-'+r.game;else{m.textContent=(r&&r.msg)||'방을 만들지 못했어요.';if(r&&r.game)m.innerHTML+=` <a href="#bb-${NUM(r.game)}">경기로 가기</a>`;e.target.disabled=false}}
       catch(er){m.textContent=er.message;e.target.disabled=false}};
     const join=async(code,reset)=>{const m=$('.bbJoinMsg',host);m.textContent='들어가는 중…';
       try{await settleSync();const r=await API.call('hg_bb_join',{p_token:AUTH.token,p_code:code});if(r&&r.ok){location.hash='#bb-'+r.game;return}
@@ -447,32 +463,32 @@ async function bbPoll(){if(BB.busy||BB.cpu)return;BB.busy=true;const id=BB.id;
   finally{BB.busy=false}}
 const BB_REASON={expired:'15분 동안 아무도 들어오지 않아 방이 닫혔어요.',setup_timeout:'3분 안에 비밀 숫자를 정하지 않아 경기가 취소됐어요.',replaced:'새 경기를 시작해서 이 방은 닫혔어요.',points:'포인트가 모자란 사람이 있어서 경기가 취소됐어요.',left:'방이 닫혔어요.'};
 function bbLogHTML(st,who){const L=(st.guesses||[]).filter(g=>g.who===who);if(!L.length)return'<li class="empty muted">아직 없어요</li>';
-  return L.map(g=>`<li><span class="rn">${NUM(g.rnd)}</span><span class="gs rm">${g.guess?bbSpaced(g.guess):'<span class="muted">시간 초과</span>'}</span>${g.guess?sbHTML(NUM(g.s),NUM(g.b)):''}</li>`).join('')}
+  return L.map(g=>`<li><span class="rn">${NUM(g.rnd)}</span>${g.guess&&g.h?oxaHTML(g.guess,g.h):`<span class="gs rm">${g.guess?bbSpaced(g.guess):'<span class="muted">시간 초과</span>'}</span>${g.guess?sbHTML(NUM(g.s),NUM(g.b)):''}`}</li>`).join('')}
 function bbHead(st){const meP=st.me==='host'?st.host:st.guest,opP=st.me==='host'?st.guest:st.host;
   return`<div class="bb-top"><div class="bb-p"><span class="bb-av">${avatarThumb(myEq(),54)}</span><span><b>나</b><small>${st.cpu?'':esc(bbWho(meP,meP))}</small></span></div>
-   <div class="bb-vs"><b>VS</b><small>${st.cpu?'연습 · 포인트 없음':NUM(st.stake)?`판돈 ${NUM(st.stake)}포인트`:'친선 경기'} · ${NUM(st.digits)}자리</small></div>
-   <div class="bb-p opp"><span><b>${st.cpu?'컴퓨터':esc(bbWho(opP,meP))}</b><small>${st.cpu?(st.cpu==='hard'?'어려움':'쉬움'):'상대'}</small></span><span class="bb-av">${st.cpu?bossSVG(BOSSES[0],54,0.5):BB_ICON}</span></div></div>`}
+   <div class="bb-vs"><b>VS</b><small>${st.cpu?'연습 · 포인트 없음':NUM(st.stake)?`판돈 ${NUM(st.stake)}포인트`:'친선 경기'} · ${BB_LV[st.lv]?`난이도 ${BB_LV[st.lv].nm}`:`${NUM(st.digits)}자리`}</small></div>
+   <div class="bb-p opp"><span><b>${st.cpu?'컴퓨터':esc(bbWho(opP,meP))}</b><small>${st.cpu?(st.cpu==='hard'?'똑똑한 컴퓨터':'연습 상대'):'상대'}</small></span><span class="bb-av">${st.cpu?bossSVG(BOSSES[0],54,0.5):BB_ICON}</span></div></div>`}
 function renderBB(st){const host=$('#bbHost');if(!host)return;const prev=BB.st;BB.st=st;const key=st.status+'|'+(st.status==='setup'?(st.my_secret?'set':'unset'):'');
   if(key!==BB.shown){BB.shown=key;bbFull(host,st,prev)}else bbUpdate(host,st,prev)}
-function bbFull(host,st,prev){pinKeyHandler=null;clearInterval(BB.tick);
+function bbFull(host,st,prev){pinKeyHandler=null;clearInterval(BB.tick);const lv=bbLv(st);
   const leaveBtn=t=>`<button type="button" class="btn ghost bbLeave">${t}</button>`;
   if(st.status==='waiting'){host.innerHTML=`<div class="card panel bb-wait"><div class="muted">방 번호</div><div class="bb-code rm">${bbSpaced(st.code)}</div>
-    <p>친구에게 방 번호를 알려 주세요. 친구가 「방 번호로 들어가기」에서 이 번호를 누르면 시작해요.</p><p class="muted">${NUM(st.stake)?`판돈 ${NUM(st.stake)}포인트`:'친선 경기'} · ${NUM(st.digits)}자리 · 15분 동안 아무도 안 들어오면 방이 닫혀요</p>${leaveBtn('방 닫기')}</div>`;bbWireLeave(host,false);return}
+    <p>친구에게 방 번호를 알려 주세요. 친구가 「방 번호로 들어가기」에서 이 번호를 누르면 시작해요.</p><p class="muted">${NUM(st.stake)?`판돈 ${NUM(st.stake)}포인트`:'친선 경기'} · ${BB_LV[st.lv]?`난이도 ${lv.nm}(${lv.d})`:`${NUM(st.digits)}자리`} · 15분 동안 아무도 안 들어오면 방이 닫혀요</p>${leaveBtn('방 닫기')}</div>`;bbWireLeave(host,false);return}
   if(st.status==='setup'){host.innerHTML=`<div class="card panel">${bbHead(st)}<h2 style="margin-top:14px">내 비밀 숫자 정하기</h2>
-    <p style="margin-top:0">1~9 중 <b>서로 다른 숫자 ${NUM(st.digits)}개</b>를 골라요. 상대가 이 숫자를 맞히려고 해요. 경기가 끝날 때까지 상대에게 보이지 않아요.</p>
+    <p style="margin-top:0">${lv.min}~${lv.max} 중 <b>서로 다른 숫자 ${lv.len}개</b>를 골라요. 상대가 이 숫자를 맞히려고 해요. 경기가 끝날 때까지 상대에게 보이지 않아요.</p>
     ${st.my_secret?`<div class="bb-secret">내 숫자 <b class="rm">${bbSpaced(st.my_secret)}</b> ${CHECK}</div><p class="muted bbOppReady">${st.opp_ready?'상대도 정했어요. 곧 시작해요!':'상대가 숫자를 정하는 중이에요…'}</p>`:'<div class="bbSecretPad"></div><div class="flmsg bbSecMsg" role="status"></div>'}
     <p style="margin-bottom:0">${leaveBtn('나가기')}</p></div>`;
-    if(!st.my_secret){const pad=digitPad({len:NUM(st.digits),distinct:true,zero:false,btn:'이 숫자로 정하기',onSubmit:async(v,done)=>{const m=$('.bbSecMsg',host);try{const r=await BB.act.secret(v);if(r&&r.ok===false){m.textContent=r.msg;done(false);return}done();if(BB.cpu)renderBB(BB.cpu.state());else bbPoll()}catch(e){m.textContent=e.message;done(false)}}});$('.bbSecretPad',host).appendChild(pad);bbKeys(pad)}
+    if(!st.my_secret){const pad=digitPad({len:lv.len,distinct:true,zero:lv.min===0,min:lv.min,max:lv.max,btn:'이 숫자로 정하기',onSubmit:async(v,done)=>{const m=$('.bbSecMsg',host);try{const r=await BB.act.secret(v);if(r&&r.ok===false){m.textContent=r.msg;done(false);return}done();if(BB.cpu)renderBB(BB.cpu.state());else bbPoll()}catch(e){m.textContent=e.message;done(false)}}});$('.bbSecretPad',host).appendChild(pad);bbKeys(pad)}
     bbWireLeave(host,false);return}
-  if(st.status==='playing'){const memo=[1,2,3,4,5,6,7,8,9].map(k=>`<button type="button" data-k="${k}" class="m${BB.memo[k]||0}">${k}</button>`).join('');
+  if(st.status==='playing'){const memo=bbRange(lv).map(k=>`<button type="button" data-k="${k}" class="m${BB.memo[k]||0}">${k}</button>`).join('');
     host.innerHTML=`<div class="card panel bb-board">${bbHead(st)}<div class="bb-turn" aria-live="polite"></div>
      <div class="bb-cols"><div class="bb-col"><h3>내 추리 <small>상대 숫자 맞히기</small></h3><ol class="bb-log mineLog"></ol></div>
       <div class="bb-col"><h3>상대의 추리 <small>내 숫자 <b class="rm">${bbSpaced(st.my_secret)}</b></small></h3><ol class="bb-log oppLog"></ol></div></div>
      <div class="bb-play"><div class="bb-in"><div class="bbGuessPad"></div><div class="flmsg bbGMsg" role="status"></div></div>
-      <div class="bb-memo"><b>추론 메모</b><small>눌러서 표시: ○ 있다 → ✕ 없다 → 빈칸</small><div class="memo-keys">${memo}</div><button type="button" class="t-mini memoClear">메모 지우기</button></div></div>
+      <div class="bb-memo"><b>추론 메모</b><small>${lv.oxa?'○ 맞음 · △ 자리 다름 · ✕ 없음':'S 스트라이크 · B 볼'} | 메모: 눌러서 ○ 있다 → ✕ 없다 → 빈칸</small><div class="memo-keys">${memo}</div><button type="button" class="t-mini memoClear">메모 지우기</button></div></div>
      <p style="margin:12px 0 0">${leaveBtn(st.cpu?'연습 그만하기':'기권하기')}</p></div>`;
-    const pad=digitPad({len:NUM(st.digits),distinct:true,zero:false,btn:'부르기',onSubmit:async(v,done)=>{const m=$('.bbGMsg',host);m.textContent='';
-      try{const r=await BB.act.guess(v);if(r&&r.ok===false){m.textContent=r.msg;done(false);return}done();if(r&&NUM(r.s)===NUM(st.digits))celebrate('');if(BB.cpu)renderBB(BB.cpu.state());else bbPoll()}catch(e){m.textContent=e.message;done(false)}}});
+    const pad=digitPad({len:lv.len,distinct:true,zero:lv.min===0,min:lv.min,max:lv.max,btn:'부르기',onSubmit:async(v,done)=>{const m=$('.bbGMsg',host);m.textContent='';
+      try{const r=await BB.act.guess(v);if(r&&r.ok===false){m.textContent=r.msg;done(false);return}done();if(r&&NUM(r.s)===lv.len)celebrate('');if(BB.cpu)renderBB(BB.cpu.state());else bbPoll()}catch(e){m.textContent=e.message;done(false)}}});
     BB.pad=pad;$('.bbGuessPad',host).appendChild(pad);bbKeys(pad);
     $$('.memo-keys button',host).forEach(b=>b.onclick=()=>{const k=b.dataset.k,v=((BB.memo[k]||0)+1)%3;BB.memo[k]=v;b.className='m'+v;if(!BB.cpu)lsSet('hangeoreum-bbmemo:'+BB.id,BB.memo)});
     $('.memoClear',host).onclick=()=>{BB.memo={};$$('.memo-keys button',host).forEach(b=>b.className='m0');if(!BB.cpu)lsSet('hangeoreum-bbmemo:'+BB.id,{})};
@@ -503,17 +519,17 @@ function bbUpdate(host,st,prev){if(st.status!=='playing')return;
 
 /* 컴퓨터와 연습 (서버 없이 이 기기에서만) */
 function viewBBCpu(key){crumbs.innerHTML=`<span class="sep">›</span><a href="#baseball">숫자야구</a><span class="sep">›</span><span>컴퓨터와 연습</span>`;
-  bbStop();const level=/hard/.test(key)?'hard':'easy',digits=/4/.test(key)?4:3;
-  const S={status:'setup',me:'host',cpu:level,cpuKey:key,digits,stake:0,round:1,turn:null,my_secret:null,opp_secret:null,guesses:[],winner:null,reason:null,host:null,guest:null,paused:false,delta:0,opp_ready:true,hostSolved:null,bot:bbAll(digits)[Math.floor(Math.random()*bbAll(digits).length)]};
+  bbStop();const lvk=BB_LV[key]?key:key==='easy4'?'':'easy',lv=lvk?BB_LV[lvk]:bbLv({digits:4}),digits=lv.len,level=lvk==='mh'||lvk==='hard'?'hard':'easy';
+  const S={status:'setup',me:'host',cpu:level,cpuKey:key,lv:lvk||null,digits,stake:0,round:1,turn:null,my_secret:null,opp_secret:null,guesses:[],winner:null,reason:null,host:null,guest:null,paused:false,delta:0,opp_ready:true,hostSolved:null,bot:(A=>A[Math.floor(Math.random()*A.length)])(bbAll(lv))};
   const state=()=>Object.assign({},S,{my_turn:S.status==='playing'&&S.turn==='host',opp_secret:S.status==='done'?S.bot:null,guesses:S.guesses.slice(),turn_left:0});
   const finish=w=>{S.status='done';S.winner=w;S.reason='solved';S.turn=null};
   const step=(who,solved)=>{if(who==='host'){if(solved)S.hostSolved=S.round;S.turn='guest';setTimeout(botMove,900+Math.random()*700)}
     else if(solved)finish(S.hostSolved===S.round?'draw':'guest');else if(S.hostSolved===S.round)finish('host');else if(S.round>=15){S.status='done';S.winner='draw';S.reason='rounds'}else{S.round++;S.turn='host'}};
   const botMove=()=>{if(S.status!=='playing'||S.turn!=='guest'||BB.cpu!==C)return;const mine=S.guesses.filter(g=>g.who==='guest');
-    const g=level==='hard'?bbBotGuess(digits,mine,99):(Math.random()<0.25?bbBotGuess(digits,mine,0):bbBotGuess(digits,mine,1));const r=bbScore(S.my_secret,g);
-    S.guesses.push({who:'guest',rnd:S.round,guess:g,s:r.s,b:r.b});step('guest',r.s===digits);if($('#bbHost'))renderBB(state())};
-  const C={state,act:{secret:async v=>{if(!/^[1-9]+$/.test(v)||new Set(v).size!==digits||v.length!==digits)return{ok:false,msg:`1~9 중 서로 다른 숫자 ${digits}개로 정해 주세요.`};S.my_secret=v;S.status='playing';S.turn='host';return{ok:true}},
-    guess:async v=>{if(S.status!=='playing'||S.turn!=='host')return{ok:false,msg:'컴퓨터 차례예요.'};const r=bbScore(S.bot,v);S.guesses.push({who:'host',rnd:S.round,guess:v,s:r.s,b:r.b});step('host',r.s===digits);return{ok:true,s:r.s,b:r.b}},
+    const g=level==='hard'?bbBotGuess(lv,mine,99):(Math.random()<0.25?bbBotGuess(lv,mine,0):bbBotGuess(lv,mine,1));const r=bbScore(S.my_secret,g);
+    S.guesses.push({who:'guest',rnd:S.round,guess:g,s:r.s,b:r.b,h:lv.oxa?bbHint(S.my_secret,g):null});step('guest',r.s===digits);if($('#bbHost'))renderBB(state())};
+  const C={state,act:{secret:async v=>{if(!new RegExp(`^[${lv.min}-${lv.max}]+$`).test(v)||new Set(v).size!==digits||v.length!==digits)return{ok:false,msg:`${lv.min}~${lv.max} 중 서로 다른 숫자 ${digits}개로 정해 주세요.`};S.my_secret=v;S.status='playing';S.turn='host';return{ok:true}},
+    guess:async v=>{if(S.status!=='playing'||S.turn!=='host')return{ok:false,msg:'컴퓨터 차례예요.'};const r=bbScore(S.bot,v),h=lv.oxa?bbHint(S.bot,v):null;S.guesses.push({who:'host',rnd:S.round,guess:v,s:r.s,b:r.b,h});step('host',r.s===digits);return{ok:true,s:r.s,b:r.b}},
     leave:async()=>({ok:true})}};
   BB.cpu=C;BB.act=C.act;BB.st=null;BB.shown=null;BB.memo={};
   app.innerHTML='<div id="bbHost"></div>';renderBB(state())}

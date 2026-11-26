@@ -307,10 +307,10 @@ function makeC1(seed){
   const sets=[[1,2,3],[1,3,2],[2,3,4],[2,2,5],[1,4,5],[2,3,5],[3,4,5],[3,3,6]];
   const[a,b,c]=sets[r%sets.length],t=a+b+c,one=360/t;
   const targets=[['AB',a],['BC',b],['CA',c]];
-  const[wn,wv]=targets[(r>>3)%3];
+  const[wn,wv]=targets[(r>>>3)%3];
   const wantAng=one*wv;
-  const k=(one%3===0&&wantAng/3>=15&&(r>>5)%2)?3:2;
-  const d=Math.round(wantAng/k),L=2+((r>>7)%6),ans=L*k;
+  const k=(one%3===0&&wantAng/3>=15&&(r>>>5)%2)?3:2;
+  const d=Math.round(wantAng/k),L=2+((r>>>7)%6),ans=L*k;
   return{
     id:'C1',combo:[3,1],comboWhy:'① 세 호의 비로 목표 중심각을 먼저 구하고(유형 3) → ② 기준 부채꼴의 몇 배인지 적용(유형 1)',
     ptype:'cent:c1',
@@ -334,7 +334,7 @@ function makeC2(seed){
     {abc:[3,4,8],want:'BC',wv:4,refAng:72,p:3,q:4}    // t=15, one=24, want=96°, 72:96=3:4
   ];
   const sp=specs[r%specs.length],[a,b,c]=sp.abc,t=a+b+c,one=360/t,wantAng=one*sp.wv;
-  const m=2+((r>>4)%4),refVal=sp.p*m,ans=sp.q*m;
+  const m=2+((r>>>4)%4),refVal=sp.p*m,ans=sp.q*m;
   return{
     id:'C2',combo:[3,2],comboWhy:'① 세 호의 비로 목표 중심각을 찾고(유형 3) → ② 기준 중심각과 간단한 비로 넓이 구하기(유형 2)',
     ptype:'cent:c2',
@@ -357,7 +357,7 @@ function makeC3(seed){
     {a:75,b:105,p:5,q:7},
     {a:108,b:72,p:3,q:2}
   ];
-  const sp=specs[r%specs.length],m=2+((r>>4)%4),L=sp.p*m,ans=sp.q*m;
+  const sp=specs[r%specs.length],m=2+((r>>>4)%4),L=sp.p*m,ans=sp.q*m;
   return{
     id:'C3',combo:[4,2],comboWhy:'① 반원의 성질(평각 180°)로 빈 중심각을 먼저 구하고(유형 4) → ② 중심각의 비로 호 구하기(유형 2)',
     ptype:'cent:c3',

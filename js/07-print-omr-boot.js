@@ -357,7 +357,7 @@ function route(soft){SUB_BACK=null;
   else if(/^calc-[a-z]+$/.test(h))viewCalcTopic(h.slice(5));
   else if(h==='baseball')viewBaseball();
   else if(/^bb-\d+$/.test(h))viewBBGame(+h.slice(3));
-  else if(/^bb-cpu-(easy|hard|easy4)$/.test(h))viewBBCpu(h.slice(7));
+  else if(/^bb-cpu-(easy|mid|mh|hard|easy4)$/.test(h))viewBBCpu(h.slice(7));
   else if(h==='boss')viewBoss();
   else if(/^bossview-\d+-\d+$/.test(h)){const[,g,k]=h.split('-');viewBossView(+g,+k)}
   else{let[id,tab]=h.split('-');if(id==='types')id='poly';const L=LESSONS.find(l=>l.id===id&&l.ready);if(L)viewLesson(id,TABS.some(t=>t.id===tab)?tab:'concept');else viewHome()}

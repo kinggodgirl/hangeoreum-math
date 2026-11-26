@@ -150,7 +150,8 @@ create table if not exists public.hg_bb_games (
   host_sid    text not null references public.hg_students(sid) on delete cascade,
   guest_sid   text references public.hg_students(sid) on delete cascade,
   stake       int  not null default 0 check (stake between 0 and 100),
-  digits      smallint not null default 3 check (digits in (3, 4)),
+  digits      smallint not null default 3 check (digits in (2, 3, 4)),
+  lv          text check (lv in ('easy', 'mid', 'mh', 'hard')),   -- [T09] 숫자야구 앱과 같은 4단계(하·중·중상·상). 비어 있으면 예전 방식
   host_secret text, guest_secret text,
   status      text not null default 'waiting' check (status in ('waiting', 'setup', 'playing', 'done', 'cancelled')),
   turn        text check (turn in ('host', 'guest')),
@@ -164,6 +165,10 @@ create table if not exists public.hg_bb_games (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+-- [T09] 이미 만든 표에도 4단계 칸 더하기
+alter table public.hg_bb_games add column if not exists lv text check (lv in ('easy', 'mid', 'mh', 'hard'));
+alter table public.hg_bb_games drop constraint if exists hg_bb_games_digits_check;
+alter table public.hg_bb_games add constraint hg_bb_games_digits_check check (digits in (2, 3, 4));
 create index if not exists hg_bb_games_code  on public.hg_bb_games (code) where status in ('waiting', 'setup', 'playing');
 create index if not exists hg_bb_games_host  on public.hg_bb_games (host_sid, created_at desc);
 create index if not exists hg_bb_games_guest on public.hg_bb_games (guest_sid, created_at desc);
@@ -176,8 +181,10 @@ create table if not exists public.hg_bb_guesses (
   guess      text,                       -- 비어 있으면 시간 초과
   s          smallint not null default 0,
   b          smallint not null default 0,
+  h          text,                       -- [T09] 하·중 단계 자리별 힌트(O 맞음 · A 자리 다름 · X 없음)
   created_at timestamptz not null default now()
 );
+alter table public.hg_bb_guesses add column if not exists h text;
 create index if not exists hg_bb_guesses_game on public.hg_bb_guesses (game_id, id);
 
 create table if not exists public.hg_bb_ledger (
@@ -248,6 +255,32 @@ begin
     elsif strpos(p_secret, substr(p_guess, i, 1)) > 0 then b := b + 1;
     end if;
   end loop;
+end $$;
+
+-- [T09] 단계별 숫자 범위: 하 1~6·2자리 / 중 1~9·3자리 / 중상 1~6·3자리 / 상 0~9·3자리 (lv가 비면 예전 1~9)
+create or replace function public.hg_bb_ok(p text, p_lv text, d int) returns boolean
+language sql immutable set search_path = public, extensions as $$
+  select p is not null and length(p) = d
+     and p ~ ('^[' || case p_lv when 'easy' then '1-6' when 'mh' then '1-6' when 'hard' then '0-9' else '1-9' end || ']+$')
+     and (select count(distinct c) from regexp_split_to_table(p, '') c) = d
+$$;
+
+create or replace function public.hg_bb_need(p_lv text, d int) returns text
+language sql immutable set search_path = public, extensions as $$
+  select (case p_lv when 'easy' then '1~6' when 'mh' then '1~6' when 'hard' then '0~9' else '1~9' end) || ' 중 서로 다른 숫자 ' || d || '개'
+$$;
+
+-- [T09] 하·중 단계 자리별 힌트: O(숫자·자리 맞음) A(숫자는 있지만 자리 다름) X(없음)
+create or replace function public.hg_bb_hint(p_secret text, p_guess text) returns text
+language plpgsql immutable set search_path = public, extensions as $$
+declare i int; h text := '';
+begin
+  for i in 1 .. length(p_guess) loop
+    if substr(p_secret, i, 1) = substr(p_guess, i, 1) then h := h || 'O';
+    elsif strpos(p_secret, substr(p_guess, i, 1)) > 0 then h := h || 'A';
+    else h := h || 'X'; end if;
+  end loop;
+  return h;
 end $$;
 
 create or replace function public.hg_bb_paused(p_host text, p_guest text) returns boolean
@@ -356,7 +389,7 @@ begin
   select json_build_object('id', g.id, 'code', g.code, 'status', g.status) into v_mine
     from public.hg_bb_games g where g.status in ('waiting', 'setup', 'playing') and (g.host_sid = v_sid or g.guest_sid = v_sid)
    order by g.id desc limit 1;
-  select coalesce(json_agg(json_build_object('code', g.code, 'num', hs.num, 'stake', g.stake, 'digits', g.digits) order by g.id desc), '[]'::json) into v_open
+  select coalesce(json_agg(json_build_object('code', g.code, 'num', hs.num, 'stake', g.stake, 'digits', g.digits, 'lv', g.lv) order by g.id desc), '[]'::json) into v_open
     from (select * from public.hg_bb_games g where g.status = 'waiting' and g.host_sid <> v_sid order by g.id desc limit 40) g
     join public.hg_students hs on hs.sid = g.host_sid
    where hs.grade = s.grade and hs.klass = s.klass;
@@ -366,7 +399,7 @@ begin
            'd', count(*) filter (where winner = 'draw')) into v_rec
     from public.hg_bb_games where status = 'done' and (host_sid = v_sid or guest_sid = v_sid);
   select coalesce(json_agg(x order by x.id desc), '[]'::json) into v_recent from (
-    select g.id, g.updated_at as at, g.stake, g.digits, g.winner, g.reason,
+    select g.id, g.updated_at as at, g.stake, g.digits, g.lv, g.winner, g.reason,
            case when g.host_sid = v_sid then 'host' else 'guest' end as me,
            (select json_build_object('grade', o.grade, 'klass', o.klass, 'num', o.num) from public.hg_students o
              where o.sid = case when g.host_sid = v_sid then g.guest_sid else g.host_sid end) as opp,
@@ -374,21 +407,25 @@ begin
       from public.hg_bb_games g where g.status = 'done' and (g.host_sid = v_sid or g.guest_sid = v_sid)
      order by g.id desc limit 8) x;
   return json_build_object('available', public.hg_bb_avail(v_sid), 'ledger', public.hg_bb_ledger_sum(v_sid),
-    'on', c.bb_on, 'max', c.bb_max, 'today', public.hg_bb_today(v_sid), 'limit', 10,
+    'on', c.bb_on, 'max', c.bb_max, 'lvs', true, 'easy_max', 10, 'today', public.hg_bb_today(v_sid), 'limit', 10,
     'grade', s.grade, 'klass', s.klass, 'num', s.num,
     'mine', v_mine, 'open', v_open, 'record', v_rec, 'recent', v_recent);
 end $$;
 
 -- 학생: 방 만들기
-create or replace function public.hg_bb_create(p_token text, p_stake int, p_digits int default 3) returns json
+drop function if exists public.hg_bb_create(text, int, int);
+create or replace function public.hg_bb_create(p_token text, p_stake int, p_digits int default 3, p_lv text default null) returns json
 language plpgsql volatile security definer set search_path = public, extensions as $$
-declare v_sid text; c record; v_avail int; v_code text; v_id bigint; v_play bigint; i int;
+declare v_sid text; c record; v_avail int; v_code text; v_id bigint; v_play bigint; i int; v_d int;
 begin
   v_sid := public.hg_sid_of(p_token);
   select * into c from public.hg_bb_conf(v_sid);
   if not c.bb_on then return json_build_object('ok', false, 'msg', '선생님이 지금은 숫자야구를 꺼 두었어요.'); end if;
   if p_stake is null or p_stake not in (0, 5, 10, 20, 50) then return json_build_object('ok', false, 'msg', '판돈은 0, 5, 10, 20, 50 중에서 골라 주세요.'); end if;
   if p_stake > c.bb_max then return json_build_object('ok', false, 'msg', format('지금은 판돈을 %s포인트까지만 걸 수 있어요.', c.bb_max)); end if;
+  if p_lv is not null and p_lv not in ('easy', 'mid', 'mh', 'hard') then return json_build_object('ok', false, 'msg', '난이도를 다시 골라 주세요.'); end if;
+  if p_lv = 'easy' and p_stake > 10 then return json_build_object('ok', false, 'msg', '하 단계는 10포인트까지만 걸 수 있어요.'); end if;
+  v_d := case when p_lv = 'easy' then 2 when p_lv is not null then 3 when p_digits = 4 then 4 else 3 end;
   if public.hg_bb_today(v_sid) >= 10 then return json_build_object('ok', false, 'msg', '오늘은 숫자야구를 10판 다 했어요. 내일 또 해요!'); end if;
   v_avail := public.hg_bb_avail(v_sid);
   if p_stake > v_avail then return json_build_object('ok', false, 'msg', format('쓸 수 있는 포인트가 %s점이라 %s점을 걸 수 없어요.', greatest(v_avail, 0), p_stake)); end if;
@@ -400,7 +437,7 @@ begin
     v_code := (1000 + floor(random() * 9000))::int::text;
     exit when not exists (select 1 from public.hg_bb_games where code = v_code and status in ('waiting', 'setup', 'playing'));
   end loop;
-  insert into public.hg_bb_games (code, host_sid, stake, digits) values (v_code, v_sid, p_stake, case when p_digits = 4 then 4 else 3 end)
+  insert into public.hg_bb_games (code, host_sid, stake, digits, lv) values (v_code, v_sid, p_stake, v_d, p_lv)
   returning id into v_id;
   return json_build_object('ok', true, 'game', v_id, 'code', v_code);
 end $$;
@@ -436,7 +473,7 @@ begin
   v_sid := public.hg_sid_of(p_token);
   g := public.hg_bb_mine(v_sid, p_game);
   if g.status <> 'setup' then return json_build_object('ok', false, 'msg', '지금은 숫자를 정할 수 없어요.'); end if;
-  if not public.hg_bb_valid(p_secret, g.digits) then return json_build_object('ok', false, 'msg', format('1~9 중 서로 다른 숫자 %s개로 정해 주세요.', g.digits)); end if;
+  if not public.hg_bb_ok(p_secret, g.lv, g.digits) then return json_build_object('ok', false, 'msg', public.hg_bb_need(g.lv, g.digits) || '로 정해 주세요.'); end if;
   if g.host_sid = v_sid then update public.hg_bb_games set host_secret = p_secret, updated_at = now() where id = g.id;
   else update public.hg_bb_games set guest_secret = p_secret, updated_at = now() where id = g.id; end if;
   select * into g from public.hg_bb_games where id = g.id;
@@ -456,7 +493,7 @@ end $$;
 -- 학생: 추리하기 (서버가 스트라이크·볼을 계산해요)
 create or replace function public.hg_bb_guess(p_token text, p_game bigint, p_guess text) returns json
 language plpgsql volatile security definer set search_path = public, extensions as $$
-declare v_sid text; g public.hg_bb_games; v_me text; v_opp text; r record;
+declare v_sid text; g public.hg_bb_games; v_me text; v_opp text; r record; v_h text;
 begin
   v_sid := public.hg_sid_of(p_token);
   g := public.hg_bb_mine(v_sid, p_game);
@@ -464,13 +501,14 @@ begin
   if g.status <> 'playing' then return json_build_object('ok', false, 'msg', '경기가 끝났어요.'); end if;
   if public.hg_bb_paused(g.host_sid, g.guest_sid) then return json_build_object('ok', false, 'msg', '선생님이 잠시 멈췄어요.'); end if;
   if g.turn <> v_me then return json_build_object('ok', false, 'msg', '상대 차례예요.'); end if;
-  if not public.hg_bb_valid(p_guess, g.digits) then return json_build_object('ok', false, 'msg', format('1~9 중 서로 다른 숫자 %s개를 골라 주세요.', g.digits)); end if;
+  if not public.hg_bb_ok(p_guess, g.lv, g.digits) then return json_build_object('ok', false, 'msg', public.hg_bb_need(g.lv, g.digits) || '를 골라 주세요.'); end if;
   v_opp := case when v_me = 'host' then g.guest_secret else g.host_secret end;
   select * into r from public.hg_bb_score(v_opp, p_guess);
-  insert into public.hg_bb_guesses (game_id, who, rnd, guess, s, b) values (g.id, v_me, g.round, p_guess, r.s, r.b);
+  v_h := case when g.lv in ('easy', 'mid') then public.hg_bb_hint(v_opp, p_guess) end;
+  insert into public.hg_bb_guesses (game_id, who, rnd, guess, s, b, h) values (g.id, v_me, g.round, p_guess, r.s, r.b, v_h);
   if v_me = 'host' then update public.hg_bb_games set host_to = 0 where id = g.id; else update public.hg_bb_games set guest_to = 0 where id = g.id; end if;
   perform public.hg_bb_step(g.id, v_me, r.s = g.digits);
-  return json_build_object('ok', true, 's', r.s, 'b', r.b);
+  return json_build_object('ok', true, 's', r.s, 'b', r.b, 'h', v_h);
 end $$;
 
 -- 학생: 경기 화면 (내 비밀 숫자만 보이고, 상대 숫자는 끝나야 보여요)
@@ -483,9 +521,9 @@ begin
   v_me := case when g.host_sid = v_sid then 'host' else 'guest' end;
   select json_build_object('grade', grade, 'klass', klass, 'num', num) into v_host from public.hg_students where sid = g.host_sid;
   select json_build_object('grade', grade, 'klass', klass, 'num', num) into v_guest from public.hg_students where sid = g.guest_sid;
-  select coalesce(json_agg(json_build_object('who', who, 'rnd', rnd, 'guess', guess, 's', s, 'b', b) order by id), '[]'::json) into v_guesses
+  select coalesce(json_agg(json_build_object('who', who, 'rnd', rnd, 'guess', guess, 's', s, 'b', b, 'h', h) order by id), '[]'::json) into v_guesses
     from public.hg_bb_guesses where game_id = g.id;
-  return json_build_object('id', g.id, 'code', g.code, 'status', g.status, 'me', v_me, 'stake', g.stake, 'digits', g.digits,
+  return json_build_object('id', g.id, 'code', g.code, 'status', g.status, 'me', v_me, 'stake', g.stake, 'digits', g.digits, 'lv', g.lv,
     'round', g.round, 'turn', g.turn, 'my_turn', g.status = 'playing' and g.turn = v_me,
     'turn_left', case when g.status = 'playing' then greatest(0, 90 - floor(extract(epoch from (now() - g.turn_at)))::int) end,
     'my_secret', case when v_me = 'host' then g.host_secret else g.guest_secret end,
@@ -556,11 +594,12 @@ end $$;
 
 revoke execute on function public.hg_bb_avail(text), public.hg_bb_ledger_sum(text), public.hg_bb_conf(text), public.hg_bb_today(text),
   public.hg_bb_paused(text, text), public.hg_bb_finish(bigint, text, text), public.hg_bb_step(bigint, text, boolean),
-  public.hg_bb_tick(bigint), public.hg_bb_mine(text, bigint), public.hg_bb_valid(text, int), public.hg_bb_score(text, text) from public, anon, authenticated;
-revoke execute on function public.hg_bb_lobby(text), public.hg_bb_create(text, int, int), public.hg_bb_join(text, text),
+  public.hg_bb_tick(bigint), public.hg_bb_mine(text, bigint), public.hg_bb_valid(text, int), public.hg_bb_score(text, text),
+  public.hg_bb_ok(text, text, int), public.hg_bb_need(text, int), public.hg_bb_hint(text, text) from public, anon, authenticated;
+revoke execute on function public.hg_bb_lobby(text), public.hg_bb_create(text, int, int, text), public.hg_bb_join(text, text),
   public.hg_bb_secret(text, bigint, text), public.hg_bb_guess(text, bigint, text), public.hg_bb_state(text, bigint),
   public.hg_bb_leave(text, bigint), public.hg_t_bb(text, int, int), public.hg_t_bb_set(text, int, int, boolean, int) from public;
-grant execute on function public.hg_bb_lobby(text), public.hg_bb_create(text, int, int), public.hg_bb_join(text, text),
+grant execute on function public.hg_bb_lobby(text), public.hg_bb_create(text, int, int, text), public.hg_bb_join(text, text),
   public.hg_bb_secret(text, bigint, text), public.hg_bb_guess(text, bigint, text), public.hg_bb_state(text, bigint),
   public.hg_bb_leave(text, bigint), public.hg_t_bb(text, int, int), public.hg_t_bb_set(text, int, int, boolean, int) to anon, authenticated;
 

@@ -177,3 +177,10 @@ body.raid-lock{overflow:hidden}
 .rc-res{display:flex;flex-direction:column;align-items:center;gap:4px}
 @media (max-width:520px){.rc-row{gap:8px}.rc-chest{padding:8px}.rc-chest svg{width:72px;height:72px}}
 .raid-lobby .rl-les{margin:4px 0 10px;font-size:14px;color:#e6e9f5}.raid-lobby .rl-les b{color:#ffe266}.rp-mode:disabled{opacity:.45;cursor:default}
+
+/* [T09] 숫자야구 하·중 단계 자리별 힌트(○△×) 칸 */
+.bb-oxa{display:inline-flex;gap:6px}
+.bb-oxa .t{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:40px;height:46px;border-radius:9px;border:2px solid var(--ink);font-family:var(--math);line-height:1.05}
+.bb-oxa .t b{font-size:20px}.bb-oxa .t i{font-style:normal;font-size:14px;font-weight:700}
+.bb-oxa .t.O{background:#d9f2df;border-color:#1f8a43;color:#145c2d}.bb-oxa .t.A{background:#fff1c9;border-color:#c78a00;color:#7a5400}.bb-oxa .t.X{background:#eef0f4;border-color:#9aa1ad;color:#59606c}
+.bbLv button{min-width:56px}

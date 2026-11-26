@@ -18,6 +18,7 @@
 | **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T07** | 열린 차시 개념 학습 교육학적 보완 시범 적용 (`area`·`sector`: 공식 통일·전개도/부채꼴 인터랙티브 발견 활동·인지 부하 축소·전략 선택 가이드) | Antigravity | `concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T08** | 『교과서 한 걸음』 3탭 × 3트랙 시범 전면 개편 (`cent` 중심각과 호: 첫걸음·한걸음·두걸음 루프, 대표 예제, 복합 유형, 적응형 마무리, 기초 연산 연계) | Antigravity | `tracks-cent.css`(신규), `js/02t-tracks-cent.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T09** | 숫자야구 4단계 난이도(하·중·중상·상, 선생님 숫자야구 앱과 같은 규칙) + 하 단계 판돈 최대 10포인트 · 보드게임 후보 제안 | Claude Code | `js/04-games.js`(숫자야구 부분), `boss-raid.css`(끝에 몇 줄), `js/07-print-omr-boot.js`(라우터 1줄), `supabase/game.sql`(숫자야구 함수) + 운영 DB 적용, `COLLAB.md` | **완료** |
 
 ---
 
@@ -54,6 +55,12 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 ---
 
 ## 4. 인계 로그 (Handoff Log)
+
+* **2026-11-26 (`T09` 완료, Claude Code)**
+  * 숫자야구에 선생님 앱(`kinggodgirl/number-baseball`)과 같은 4단계 추가: **하** 1~6·2자리·○△× / **중** 1~9·3자리·○△× / **중상** 1~6·3자리·S/B / **상** 0~9·3자리·S/B. **하는 판돈 최대 10포인트**(화면과 서버 둘 다 막음). 컴퓨터와 연습도 4단계(`#bb-cpu-easy|mid|mh|hard`).
+  * 서버: `hg_bb_games.lv`(비면 예전 3·4자리 방식), `digits`에 2 허용, `hg_bb_guesses.h`(자리별 힌트 O/A/X), 새 함수 `hg_bb_ok`·`hg_bb_need`·`hg_bb_hint`, `hg_bb_create`에 `p_lv` 인자(기본 null이라 옛 화면도 그대로 동작). 운영 DB에 마이그레이션 `t09_bb_levels` 적용.
+  * 화면은 로비 응답의 `lvs`가 있을 때만 4단계를 보여 줘서, DB 적용 전·후 어느 쪽에서도 깨지지 않아요. 교사 화면(`03-teacher.js`)은 건드리지 않았어요(경기 목록의 `digits`가 2로 보일 수 있음).
+  * 덤: `js/02t-tracks-cent.js` 두걸음 생성기의 `(r>>n)`이 음수가 되어 `verify.mjs`가 가끔 실패하던 문제를 `(r>>>n)`로 고침(5곳, 다른 코드 변경 없음).
 
 * **2026-11-26 (`T08` 완료, Antigravity)**
   * `[T08]` 메인 학습 공식 명칭을 **『교과서 한 걸음』**으로 정리하고, 2차시(`cent`: 중심각과 호)에 **3탭(`개념 보기 · 유형 익히기 · 차시 마무리`) × 3트랙(`🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음`)** 시범 구조를 전면 적용 (`tracks-cent.css`, `js/02t-tracks-cent.js`, `index.html`, `tests/verify.mjs`, `COLLAB.md`만 수정).
