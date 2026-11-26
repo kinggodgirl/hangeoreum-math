@@ -2,7 +2,7 @@
    window.BOSS_BANK = { normal: [...], hard: [...] }
    한 칸은 고정 문제 객체이거나, 난수 함수 r(0 이상 1 미만)을 받아 문제를 돌려주는 함수 r => ({...}) 예요.
    문제 규격: { unit, q, ans, type, suffix?, choices?, tip }
-     unit   : '원과 부채꼴' | '입체도형' | '정비례와 반비례'
+     unit   : '원과 부채꼴'(Ⅵ-04·05) | '입체도형'(Ⅶ-01~04, 구 제외) | '좌표평면과 그래프'(Ⅳ 전체)
      q      : 문제 HTML
      ans    : 정답 (type 'pi'면 π의 계수, 'choice'면 보기 문자열)
      type   : 'num' | 'pi' | 'sn'(부호 있는 수) | 'choice'
@@ -14,7 +14,7 @@
   const P = (r, a) => a[Math.floor(r() * a.length)];
   const pi = k => (k === 1 ? '' : k) + 'π';
   const neg = n => (n < 0 ? '−' + (-n) : String(n));
-  const C = '원과 부채꼴', S = '입체도형', V = '정비례와 반비례';
+  const C = '원과 부채꼴', S = '입체도형', V = '좌표평면과 그래프';
   const POLY = { 3: '삼', 4: '사', 5: '오', 6: '육', 7: '칠', 8: '팔', 9: '구', 10: '십' };
 
   /* 부채꼴: 반지름 r, 중심각 x에서 호와 넓이가 π의 정수배가 되는 짝 */
@@ -73,6 +73,12 @@
     r => { const a = R(r, 2, 6);
       return { unit: S, q: `한 모서리가 <b>${a} cm</b>인 정육면체의 <b>겉넓이</b>는?`, ans: 6 * a * a, type: 'num', suffix: 'cm²',
         tip: `면 6개가 모두 넓이 ${a * a}인 정사각형: ${a * a} × 6 = ${6 * a * a} cm²` }; },
+    r => { const it = P(r, [['직사각형', '한 변', '원기둥'], ['직각삼각형', '직각을 낀 한 변', '원뿔'], ['반원', '지름', '구'], ['사다리꼴(두 각이 직각)', '직각을 낀 변', '원뿔대']]);
+      return { unit: S, q: `<b>${it[0]}</b>을 <b>${it[1]}</b>을 축으로 하여 한 바퀴 돌리면 생기는 회전체는?`, ans: it[2], type: 'choice', choices: ['원기둥', '원뿔', '구', '원뿔대'],
+        tip: `${it[0]}을 ${it[1]}을 축으로 돌리면 ${it[2]}가 돼요.` }; },
+    r => { const rad = P(r, [3, 6]), h = R(r, 2, 8);
+      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원뿔의 <b>부피</b>는?`, ans: rad * rad * h / 3, type: 'pi', suffix: 'cm³',
+        tip: `뿔의 부피 = ⅓ × 밑넓이 × 높이 = ⅓ × ${pi(rad * rad)} × ${h} = ${pi(rad * rad * h / 3)} cm³` }; },
     r => { const a = R(r, 2, 8), b = R(r, 2, 8), c = R(r, 2, 10);
       return { unit: S, q: `가로 <b>${a} cm</b>, 세로 <b>${b} cm</b>, 높이 <b>${c} cm</b>인 직육면체의 <b>부피</b>는?`, ans: a * b * c, type: 'num', suffix: 'cm³',
         tip: `부피 = 밑넓이 × 높이 = ${a * b} × ${c} = ${a * b * c} cm³` }; },
@@ -87,6 +93,17 @@
       return { unit: S, q: `밑면이 가로 <b>${b[0]} cm</b>, 세로 <b>${b[1]} cm</b>인 직사각형이고 높이가 <b>${h} cm</b>인 사각뿔의 <b>부피</b>는?`, ans: base * h / 3, type: 'num', suffix: 'cm³',
         tip: `뿔의 부피 = ⅓ × ${base} × ${h} = ${base * h / 3} cm³ (같은 기둥의 ⅓)` }; },
 
+    /* ── 순서쌍과 좌표 · 그래프 ── */
+    r => { const x = P(r, [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]), y = P(r, [-5, -4, -3, -2, 0, 1, 2, 3, 4, 5]);
+      const q = x === 0 || y === 0 ? '어느 사분면에도 속하지 않아요' : x > 0 ? (y > 0 ? '제1사분면' : '제4사분면') : (y > 0 ? '제2사분면' : '제3사분면');
+      return { unit: V, q: `점 <b>(${neg(x)}, ${neg(y)})</b>는 어디에 있을까요?`, ans: q, type: 'choice', choices: ['제1사분면', '제2사분면', '제3사분면', '제4사분면', '어느 사분면에도 속하지 않아요'],
+        tip: x === 0 || y === 0 ? '좌표축 위의 점은 어느 사분면에도 속하지 않아요.' : `x ${x > 0 ? '+' : '−'}, y ${y > 0 ? '+' : '−'} → ${q}` }; },
+    r => { const a = P(r, [2, 4, 6, 8]), b = R(r, 2, 8);
+      return { unit: V, q: `세 점 O(0, 0), A(${a}, 0), B(0, ${b})를 꼭짓점으로 하는 삼각형 OAB의 <b>넓이</b>는?`, ans: a * b / 2, type: 'num',
+        tip: `밑변 ${a}, 높이 ${b}인 직각삼각형: ${a} × ${b} ÷ 2 = ${a * b / 2}` }; },
+    r => { const x = R(r, -6, 6), y = R(r, -6, 6), ax = P(r, ['x', 'y']);
+      return { unit: V, q: `점 (${neg(x)}, ${neg(y)})의 <b>${ax}좌표</b>는?`, ans: ax === 'x' ? x : y, type: 'sn',
+        tip: `(x좌표, y좌표) 순서로 써요 → ${ax}좌표는 ${neg(ax === 'x' ? x : y)}` }; },
     /* ── 정비례와 반비례 ── */
     r => { const a = P(r, [-4, -3, -2, 2, 3, 4, 5]), x = P(r, [-3, -2, 2, 3, 4]);
       return { unit: V, q: `y가 x에 정비례하고, x = ${neg(x)}일 때 y = ${neg(a * x)}예요. <b>y = ax</b>에서 <b>a</b>의 값은?`, ans: a, type: 'sn',
@@ -156,10 +173,24 @@
     r => { const a = R(r, 2, 6), b = R(r, 2, 6), V = a * b * R(r, 2, 8);
       return { unit: S, q: `밑면이 가로 <b>${a} cm</b>, 세로 <b>${b} cm</b>인 직육면체의 부피가 <b>${V} cm³</b>예요. 이 직육면체의 <b>겉넓이</b>는?`, ans: 2 * (a * b + (a + b) * (V / (a * b))), type: 'num', suffix: 'cm²',
         tip: `높이 = ${V} ÷ ${a * b} = ${V / (a * b)} → 겉넓이 = ${a * b} × 2 + ${2 * (a + b)} × ${V / (a * b)} = ${2 * (a * b + (a + b) * (V / (a * b)))} cm²` }; },
+    r => { const [rad, l] = P(r, [[3, 5], [5, 13], [6, 10], [4, 9], [2, 7], [3, 8]]), s = rad * rad + rad * l;
+      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 모선의 길이가 <b>${l} cm</b>인 원뿔의 <b>겉넓이</b>는?`, ans: s, type: 'pi', suffix: 'cm²',
+        tip: `밑넓이 ${pi(rad * rad)} + 옆넓이 π×${rad}×${l} = ${pi(rad * l)} → ${pi(s)} cm²` }; },
+    r => { const rad = P(r, [3, 6]), h = P(r, [4, 8, 10]), cyl = rad * rad * h, cone = rad * rad * h / 3;
+      return { unit: S, q: `밑면의 반지름이 <b>${rad} cm</b>, 높이가 <b>${h} cm</b>인 원기둥 모양 그릇에서, 밑면과 높이가 같은 <b>원뿔 모양을 파냈어요</b>. 남은 부분의 부피는?`, ans: cyl - cone, type: 'pi', suffix: 'cm³',
+        tip: `${pi(cyl)} − ${pi(cone)} = ${pi(cyl - cone)} cm³` }; },
     r => { const a = P(r, [3, 6, 9]), h = P(r, [4, 5, 8]);
       return { unit: S, q: `한 모서리가 <b>${a} cm</b>인 정사각형을 밑면으로 하는 사각기둥과 사각뿔의 높이가 모두 <b>${h} cm</b>예요. 두 부피의 <b>차</b>는?`, ans: a * a * h * 2 / 3, type: 'num', suffix: 'cm³',
         tip: `기둥 ${a * a * h} − 뿔 ${a * a * h / 3} = ${a * a * h * 2 / 3} cm³ (기둥의 ⅔)` }; },
 
+    /* ── 순서쌍과 좌표 (고난도) ── */
+    r => { const qd = P(r, [1, 2, 3, 4]), sa = qd === 1 || qd === 4 ? 1 : -1, sb = qd <= 2 ? 1 : -1, f = P(r, [['(b, a)', (x, y) => [y, x]], ['(−a, b)', (x, y) => [-x, y]], ['(ab, b)', (x, y) => [x * y, y]], ['(a − b, ab)', (x, y) => [x - y, x * y]]]);
+      const [X, Y] = f[1](sa * 2, sb * 3), name = X > 0 ? (Y > 0 ? '제1사분면' : '제4사분면') : (Y > 0 ? '제2사분면' : '제3사분면');
+      return { unit: V, q: `점 P(a, b)가 <b>제${qd}사분면</b> 위의 점일 때, 점 <b>${f[0]}</b>은 어디에 있을까요?`, ans: name, type: 'choice', choices: ['제1사분면', '제2사분면', '제3사분면', '제4사분면'],
+        tip: `a ${sa > 0 ? '> 0' : '< 0'}, b ${sb > 0 ? '> 0' : '< 0'} → ${f[0]}의 부호를 따지면 x ${X > 0 ? '+' : '−'}, y ${Y > 0 ? '+' : '−'} → ${name}` }; },
+    r => { const a = R(r, 1, 4), c = R(r, 1, 5), b = R(r, 1, 4), d = R(r, 1, 4);
+      return { unit: V, q: `네 점 A(−${a}, ${b}), B(${c}, ${b}), C(${c}, −${d}), D(−${a}, −${d})를 꼭짓점으로 하는 사각형의 <b>넓이</b>는?`, ans: (a + c) * (b + d), type: 'num',
+        tip: `가로 ${c} − (−${a}) = ${a + c}, 세로 ${b} − (−${d}) = ${b + d} → ${(a + c) * (b + d)}` }; },
     /* ── 정비례와 반비례 (고난도) ── */
     r => { const a = P(r, [-4, -3, -2, 2, 3, 5]), x1 = P(r, [-3, -2, 2, 4]), x2 = P(r, [-5, 3, 5, 6, -6].filter(v => v !== x1));
       return { unit: V, q: `y가 x에 정비례하고, x = ${neg(x1)}일 때 y = ${neg(a * x1)}예요. x = ${neg(x2)}일 때 y의 값은?`, ans: a * x2, type: 'sn',

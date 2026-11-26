@@ -562,7 +562,7 @@ function raidLobby(host){if(!host)return;const b=raidBoss(),t=raidTix(),{R}=raid
     <div class="rl-top"><div class="rl-pic"></div><div class="rl-info"><span class="stage-tag">이번 주 보스 · ${mode.nm}</span><h2>${esc(b.nm)}</h2>
       <p>${mode.d} 정답을 맞히면 <b>타이밍 게이지</b>를 눌러 더 세게! 틀리면 번쩍 뜨는 <b>🛡️ 막기</b>를 재빨리 눌러요.</p>
       <div class="rl-act">${btns}</div>
-      <small class="muted">하루 최대 3판 · 시험 범위: 원과 부채꼴 · 입체도형 · 정비례와 반비례${R.g?` · 내 전적 ${R.w}승 / ${R.g}판`:''}</small></div></div>
+      <small class="muted">하루 최대 3판 · 시험 범위: 원과 부채꼴 · 입체도형(구 빼고) · 좌표평면과 그래프${R.g?` · 내 전적 ${R.w}승 / ${R.g}판`:''}</small></div></div>
     <div class="rl-loot">
       <a href="#shop" title="상점에서 쓸 수 있어요">🎟️ 캡슐 뽑기권 <b class="rm">${L.tix}</b></a>
       <span title="하루 빠져도 연속 일수를 지켜 줘요">🛡️ 연속 보호 방패 <b class="rm">${L.shield}</b></span>
@@ -731,4 +731,4 @@ function raidOpen(paid,onClose){
       btn.onclick=()=>{btn.remove();$('.rs-tip',li).classList.add('hide');const q=Object.assign({},m.q);bx.appendChild(answerUI(q,v=>{const ok=check(q,v);if(ok==='nopi'){toast('답 끝에 π를 붙여요.');return false}if(ok!==true)return false;
         bx.innerHTML=`<p class="rs-ok">맞혔어요! ${retry<2?'':'(포인트는 이번 판 2문제까지)'}</p>`;$('.rs-tip',li).classList.remove('hide');if(retry<2){retry++;award(2,null,'놓친 문제를 다시 풀어 맞혔어요')}activeBox=null;return true}))}})}
   prep()}
-const BOSS_BANK_UNITS=()=>((window.BOSS_BANK||{}).units||['원과 부채꼴','입체도형','정비례와 반비례']).slice();
+const BOSS_BANK_UNITS=()=>((window.BOSS_BANK||{}).units||['원과 부채꼴','입체도형','좌표평면과 그래프']).slice();
