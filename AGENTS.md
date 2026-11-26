@@ -23,7 +23,7 @@
 | `js/08-deco.js` | 화면에 Fluent Emoji 3D 아이콘과 색종이 축하 효과 덧붙이기 | 화면 로직은 건드리지 않고 DOM 후처리만 담당 |
 | `COLLAB.md` | **공용 작업 보드 및 인계장** | 현재 진행 중인 작업 ID(`Txx`), 담당 AI, 허용 파일(`Scope`), 인계 메모 기록 |
 | `docs/specs/` | 작업별 교과서 스펙·설계 문서(`Txx-*.md`) | 저작권 원문 대신 요약 스펙·유형·완료 조건을 공유하는 폴더 |
-| `tests/verify.mjs` | 문법 검사 및 전체 연산·연결맵·원과 부채꼴·나의 길 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
+| `tests/verify.mjs` | 문법 검사 및 전체 연산·연결맵·원과 부채꼴·나의 길 자동 검증 스크립트 | `main` 반영/PR 전 반드시 `node tests/verify.mjs` 실행 |
 
 ## 2. 공유 데이터 계약 (`DB` JSON)
 
@@ -39,38 +39,34 @@
 
 ## 3. Antigravity ↔ Claude Code 클라우드 협업 프로토콜
 
-두 AI가 GitHub 저장소(`kinggodgirl/hangeoreum-math`)를 중심으로 충돌 없이 병렬 협업하기 위한 필수 규칙입니다.
+두 AI가 GitHub 저장소(`kinggodgirl/hangeoreum-math`)를 중심으로 사용자(비전공자 선생님)의 코드 리뷰 부담 없이 **자동 검증 후 자율적으로 반영·머지**하기 위한 규칙입니다.
 
-1. **작업 시작 전 필독**: 작업을 시작하기 전에 반드시 `AGENTS.md`, `COLLAB.md`, 그리고 해당 작업의 스펙 문서(`docs/specs/Txx-*.md`, 있는 경우)를 먼저 읽고 내 담당 작업과 허용 파일(`Scope`)을 확인하세요.
-2. **브랜치 & PR 전용 워크플로우**:
-   - `main` 브랜치에 직접 푸시하지 마세요. 반드시 `main`에서 새 브랜치를 따서 작업한 뒤 **Pull Request(PR)** 를 생성합니다.
-   - 브랜치 이름 규칙: Antigravity는 `agy/t<번호>-<요약>`, Claude Code는 `claude/t<번호>-<요약>` (클라우드 앱이 자동 생성한 `claude/...` 브랜치명을 쓸 경우 PR 제목 맨 앞에 `[Txx]`를 반드시 표기하세요).
-   - **자동 머지**: 선생님 확인을 기다리지 않아요. `node tests/verify.mjs`(GitHub Actions 포함)가 통과하면 PR을 올린 AI가 스스로 머지합니다. 단, Supabase SQL 실행처럼 선생님 손이 필요한 단계는 PR 본문과 대화에 따로 알립니다.
-   - **머지 전 안전장치** (셋 다 지킨 뒤에만 머지):
-     1. 머지 직전에 최신 `main`을 내 브랜치에 합치고(`git fetch origin main && git merge origin/main`), 충돌이 나면 상대 AI 코드를 덮어쓰지 말고 멈춰서 선생님께 원인만 알립니다. 합친 뒤 `node tests/verify.mjs`를 다시 통과시킵니다.
-     2. PR이 바꾼 파일이 내 작업의 허용 파일(`Scope`) 안에만 있는지 확인합니다. 상대 AI가 `COLLAB.md`에서 '진행 중'으로 맡은 파일이 섞여 있으면 머지하지 않고 그 부분을 빼거나 상대에게 넘깁니다.
-     3. 상대 AI의 PR이나 브랜치는 머지·푸시·삭제하지 않습니다. 각자 자기 PR만 머지합니다.
-   - **브랜치 삭제**: `main`에 머지가 끝난 브랜치(`git branch -r --merged origin/main`으로 확인)만 지웁니다. 열린 PR이 있거나 아직 머지되지 않은 브랜치, 지금 다른 세션이 쓰는 브랜치는 지우지 않습니다.
-3. **충돌 방지 (파일 소유권 & 신규 차시 분리)**:
-   - `COLLAB.md`에 지정된 **허용 파일(`Scope`)** 만 수정하고, 다른 AI가 진행 중인 파일은 건드리지 마세요.
-   - 새 입체도형 차시는 이미 비대한 `js/02-unit-solid.js`(214KB)에 직접 누적하지 말고, `js/06c-unit-circle.js` 패턴처럼 **IIFE(`(() => { ... })()`)로 감싼 독립 파일**(`js/02r-solid-rot.js`, `js/02v-solid-vol.js` 등)로 분리하세요.
-   - 공용 파일(`index.html`, `js/02-unit-solid.js`, `styles.css`, `tests/verify.mjs`) 수정은 최소 1~3줄 훅으로 제한하고 동시 편집을 피하세요.
-4. **PR 본문 인계 양식**: PR을 올릴 때 아래 4가지를 반드시 포함하세요.
-   - **작업 ID**: 예) `[T03]`
+1. **작업 시작 전 필독**: 작업을 시작하기 전에 반드시 `AGENTS.md`, `COLLAB.md`, 그리고 해당 작업의 스펙 문서(`docs/specs/Txx-*.md`, 있는 경우)를 `main` 최신 기준으로 먼저 읽고, 내 담당 작업과 허용 파일(`Scope`)을 확인하세요.
+2. **자동 검증 후 AI 자율 반영 (사용자 코드 리뷰 생략)**:
+   - 코드 수정 시 반드시 `node tests/verify.mjs` 통과를 먼저 확인한 뒤 `main`에 반영하세요(문서 전용 수정은 즉시 반영 가능).
+   - **Antigravity**: 검증 통과 후 `main`에 직접 반영하고 `COLLAB.md` 상태를 갱신합니다.
+   - **Claude Code 클라우드 앱**: `verify.mjs` 통과 후 `main` 직접 반영 또는 머지가 가능하면 바로 반영합니다. 클라우드 환경 제약으로 `claude/*` 브랜치 PR만 생성할 수 있는 경우, PR 제목 맨 앞에 `[Txx]`를 붙여 올리면 **Antigravity가 교차 검토와 GitHub Actions(`Verify Hangeoreum Math`) 통과를 확인한 뒤 대신 머지**합니다(선생님이 직접 코드를 보고 머지할 필요 없음).
+3. **비전공자 선생님을 위한 3대 안전장치**:
+   - **테스트 게이트**: `node tests/verify.mjs` 통과 없이 `main`에 코드를 반영하지 않습니다.
+   - **충돌 방지 (파일 소유권 & 신규 차시 분리)**: `COLLAB.md`에 지정된 **허용 파일(`Scope`)** 만 수정합니다. 새 입체도형 차시는 이미 비대한 `js/02-unit-solid.js`(214KB)에 직접 누적하지 말고 `js/06c-unit-circle.js`처럼 **IIFE(`(() => { ... })()`)로 감싼 독립 파일**(`js/02r-solid-rot.js`, `js/02v-solid-vol.js` 등)로 분리하며, 공용 파일(`index.html`, `js/02-unit-solid.js`, `styles.css`, `tests/verify.mjs`) 수정은 1~3줄 최소 훅으로 제한합니다.
+   - **즉시 롤백 가능한 커밋 단위**: 모든 커밋 메시지와 PR 제목에 `[Txx]` 작업 ID를 명시해(`예: feat(solid): [T04] 기둥·뿔 차시 구현`), 문제 발생 시 해당 작업 커밋만 즉시 되돌릴 수 있게 유지합니다.
+4. **PR/커밋 인계 양식**: PR을 올리거나 커밋을 남길 때 아래 항목을 명확히 적습니다.
+   - **작업 ID**: 예) `[T04]`
    - **변경 파일 목록**: 수정/신규 파일 요약
-   - **검증 결과**: `node tests/verify.mjs` 실행 결과 (또는 변경이 문서뿐일 경우 그 사유)
-   - **상대 AI 인계 메모**: 다음 작업자나 리뷰어가 주의할 점, DB/HTML 훅 변경 여부 등
+   - **검증 결과**: `node tests/verify.mjs` 통과 여부(문서 전용일 경우 그 사유)
+   - **상대 AI 인계 메모**: 다음 작업자나 머지 담당 AI가 주의할 점, DB/HTML 훅 변경 여부 등
 5. **역할 강점 분담**:
-   - **Antigravity**: Supabase DB 마이그레이션·어드바이저 점검(MCP 직결), `tests/verify.mjs` 확장·문서·저장소 정비, 교과서 PDF 기반 스펙 작성(`docs/specs/`), 교차 PR 리뷰, 독립 차시 구현.
+   - **Antigravity**: Supabase DB 마이그레이션·어드바이저 점검(MCP 직결), `tests/verify.mjs` 확장·문서·저장소 정비, 교과서 PDF 기반 스펙 작성(`docs/specs/`), Claude Code PR 교차 검증·대리 머지, 독립 차시 구현.
    - **Claude Code 클라우드**: 기존 차시·기초 연산의 선생님 풀이 톤에 맞춘 신규 차시 구현, UI/문제 생성기 고도화, 교차 리뷰.
 6. **공통 기술·문체 원칙**:
    - **빌드 도구 금지**: Webpack, Vite, TypeScript 컴파일 단계를 추가하지 마세요.
    - **검증 필수**: 코드 수정 후 반드시 `node tests/verify.mjs`를 실행해 모든 JS 문법과 문제 생성기·채점·오개념 진단이 통과하는지 확인하세요.
    - **어조 유지**: 학생에게 보이는 모든 안내 문구는 따뜻하고 쉬운 한국어 해요체를 사용합니다.
+7. **작업 종료 시 인계**: 작업 반영이 끝나면 `COLLAB.md`의 작업 상태를 `완료`로 바꾸고 인계 로그에 한 줄 요약을 남깁니다.
 
 ## 4. 패치 zip 적용 절차 (오프라인/비상용 구 절차: `hg-patch_*.zip`)
 
-기본 협업 방식은 **3절의 GitHub PR + `COLLAB.md`** 입니다. 아래 절차는 오프라인 환경에서 수동 zip 패치를 전달받았을 때만 예외적으로 사용합니다.
+기본 협업 방식은 **3절의 GitHub 자율 반영·머지 + `COLLAB.md`** 입니다. 아래 절차는 오프라인 환경에서 수동 zip 패치를 전달받았을 때만 예외적으로 사용합니다.
 
 - **작업 폴더 위치(2026-11 변경)**: 최상위 폴더는 `C:\Users\<계정>\OneDrive - 대청중학교\ai`이고, 한걸음 수학 자료와 패치 zip은 그 안의 `한걸음 수학` 폴더에서 찾아요. 없으면 `~/Downloads/`도 확인해요.
 
