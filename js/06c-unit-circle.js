@@ -111,11 +111,11 @@ CONCEPT.sector=body=>{
      <p>부채꼴을 아주 잘게 잘라 모으면 <b>밑변이 호의 길이, 높이가 반지름인 삼각형</b>과 넓이가 같아요.</p>
      <div class="box" style="margin:0">(넓이) = ${FR(1,2)} × (호의 길이) × (반지름) → 중심각을 몰라도 돼요!<br>예) 반지름 6 cm, 호 4π cm → ${FR(1,2)} × 4π × 6 = <b class="rm">12π cm²</b></div>`));
   wireFolds(body,'sector')};
-PREVIEW.arc={tb:'원과 부채꼴',core:[{h:'호와 현',b:'원 위의 두 점을 <b>굽게</b> 이으면 호, <b>곧게</b> 이으면 현<small>지름은 중심을 지나는 현 · 가장 긴 현</small>'},{h:'부채꼴과 활꼴',b:'<b>반지름 2개 + 호</b> → 부채꼴<br><b>현 + 호</b> → 활꼴<small>반원은 둘 다예요</small>'},{h:'중심각',b:'부채꼴에서 <b>두 반지름이 이루는 각</b><small>꼭짓점이 원의 중심 O</small>'}],
+PREVIEW.arc={tb:'194~195쪽',core:[{h:'호와 현',b:'원 위의 두 점을 <b>굽게</b> 이으면 호, <b>곧게</b> 이으면 현<small>지름은 중심을 지나는 현 · 가장 긴 현</small>'},{h:'부채꼴과 활꼴',b:'<b>반지름 2개 + 호</b> → 부채꼴<br><b>현 + 호</b> → 활꼴<small>반원은 둘 다예요</small>'},{h:'중심각',b:'부채꼴에서 <b>두 반지름이 이루는 각</b><small>꼭짓점이 원의 중심 O</small>'}],
   words:['원','반지름','지름','호','현','부채꼴','중심각','활꼴'],ex:'꼭짓점이 원의 중심이 <b>아닌</b> 부채꼴 모양 → 부채꼴 ✕ · 반원 → 부채꼴 ○, 활꼴 ○'};
-PREVIEW.cent={tb:'원과 부채꼴',core:[{h:'정비례',b:'중심각이 <b>2배, 3배</b>가 되면 호의 길이와 넓이도 <b>2배, 3배</b>'},{h:'비로 구하기',b:'중심각의 비 = 호의 길이의 비 = 넓이의 비<small>50 : 70 = 5 : 7</small>'},{h:'현은 예외',b:'현의 길이는 중심각에 <b>정비례하지 않아요</b>'}],
+PREVIEW.cent={tb:'195~197쪽',core:[{h:'정비례',b:'중심각이 <b>2배, 3배</b>가 되면 호의 길이와 넓이도 <b>2배, 3배</b>'},{h:'비로 구하기',b:'중심각의 비 = 호의 길이의 비 = 넓이의 비<small>50 : 70 = 5 : 7</small>'},{h:'현은 예외',b:'현의 길이는 중심각에 <b>정비례하지 않아요</b>'}],
   words:['중심각','호의 길이','넓이','정비례','비'],ex:'40° → 3 cm 이면 120°(= 40° × 3) → 3 × 3 = <b>9 cm</b>'};
-PREVIEW.sector={tb:'원과 부채꼴',core:[{h:'원 전체',b:'둘레 <b>2πr</b> · 넓이 <b>πr²</b>'},{h:'몇 조각?',b:'부채꼴 = 원의 <b>(중심각)/360</b> 조각<small>60° → 6조각 중 1조각</small>'},{h:'호로 넓이',b:'넓이 = <b>½ × 호의 길이 × 반지름</b>'}],
+PREVIEW.sector={tb:'198~201쪽',core:[{h:'원 전체',b:'둘레 <b>2πr</b> · 넓이 <b>πr²</b>'},{h:'몇 조각?',b:'부채꼴 = 원의 <b>(중심각)/360</b> 조각<small>60° → 6조각 중 1조각</small>'},{h:'호로 넓이',b:'넓이 = <b>½ × 호의 길이 × 반지름</b>'}],
   words:['원의 둘레','원의 넓이','π','호의 길이','부채꼴의 넓이'],ex:'반지름 6 cm, 중심각 60° → 호 12π ÷ 6 = <b>2π cm</b> · 넓이 36π ÷ 6 = <b>6π cm²</b>'};
 
 /* ── 문제 생성기 ── */
@@ -214,13 +214,13 @@ Object.assign(PTYPES,{
     {no:3,nm:'옳지 않은 것 고르기',tb:'기초',key:'지름도 <b>현</b> · 반원은 <b>부채꼴이면서 활꼴</b> · 부채꼴의 꼭짓점은 <b>중심</b>',pt:['arc:tf'],src:['arcTF']}],
   cent:[{no:1,nm:'중심각 비교 ① 몇 배',tb:'기초',key:'중심각이 <b>몇 배</b>면 호의 길이·넓이도 <b>몇 배</b> (작아지면 나누기)',pt:['cent:mul'],src:['centMul']},
     {no:2,nm:'중심각 비교 ② 비',tb:'기초',key:'중심각의 비 = 호의 길이의 비 = 넓이의 비 → <b>1칸</b>을 구하고 칸 수만큼 곱하기',pt:['cent:ratio'],src:['centRatio']},
-    {no:3,nm:'호의 비로 중심각 구하기',tb:'대단원 마무리',key:'호의 비 = 중심각의 비 · 한 바퀴 <b>360°</b>를 전체 칸 수로 나누기',pt:['cent:three'],src:['centThree']},
+    {no:3,nm:'호의 비로 중심각 구하기',tb:'204쪽 · 스스로 마무리하기',key:'호의 비 = 중심각의 비 · 한 바퀴 <b>360°</b>를 전체 칸 수로 나누기',pt:['cent:three'],src:['centThree']},
     {no:4,nm:'정비례 ○× (현은 예외)',tb:'기초',key:'호의 길이·넓이는 중심각에 <b>정비례</b> · <b>현</b>의 길이는 정비례하지 않아요',pt:['cent:tf'],src:['centTF']}],
   sector:[{no:1,nm:'원의 둘레와 넓이',tb:'기초',key:'둘레 <b>2πr</b> · 넓이 <b>πr²</b> · 지름이 주어지면 먼저 ÷ 2',pt:['sector:circ'],src:['sectorCirc']},
     {no:2,nm:'반지름 · 중심각 → 호의 길이',tb:'기초',key:'원의 둘레 × <b>(중심각)/360</b>',pt:['sector:arc'],src:['sectorArc']},
     {no:3,nm:'반지름 · 중심각 → 넓이',tb:'기초',key:'원의 넓이 × <b>(중심각)/360</b>',pt:['sector:area'],src:['sectorArea']},
     {no:4,nm:'반지름 · 호의 길이 → 넓이',tb:'기초',key:'넓이 = <b>½ × 호의 길이 × 반지름</b> (중심각 몰라도 OK)',pt:['sector:la'],src:['sectorLA']},
-    {no:5,nm:'반지름 · 호의 길이 → 중심각',tb:'대단원 마무리',key:'호 ÷ 원의 둘레 = 원의 몇 분의 몇 → <b>360° ×</b> 그 분수',pt:['sector:ang'],src:['sectorAng']}]});
+    {no:5,nm:'반지름 · 호의 길이 → 중심각',tb:'201쪽 · 스스로 점검하기',key:'호 ÷ 원의 둘레 = 원의 몇 분의 몇 → <b>360° ×</b> 그 분수',pt:['sector:ang'],src:['sectorAng']}]});
 ['arc','cent','sector'].forEach(lid=>{PTYPES[lid].forEach(T_=>{const g=tyKey(lid,T_.no);GEN[g]=seed=>GEN[T_.src[0]](seed);LESSON_OF[g]=lid});
   GEN['mix_'+lid]=seed=>{const L=PTYPES[lid];return GEN[tyKey(lid,L[seed%L.length].no)](Math.floor(seed/L.length)+1)};LESSON_OF['mix_'+lid]=lid});
 Object.assign(STEPGEN,{arc:GEN.arcName,cent:GEN.centMul,sector:GEN.sectorArc});
@@ -268,9 +268,9 @@ EXPLORE.sector=body=>actNav(body,'sector',[{key:'pieces',t:'원의 몇 조각?',
 
 /* ── 등록 ── */
 LESSONS.push(
-  {id:'arc',no:1,title:'원과 부채꼴',sub:'호 · 현 · 부채꼴 · 중심각 · 활꼴',tb:'원과 부채꼴 · 뜻',ready:true,unit:'circle'},
-  {id:'cent',no:2,title:'중심각과 호',sub:'중심각이 몇 배면 호도 몇 배',tb:'원과 부채꼴 · 성질',ready:true,unit:'circle'},
-  {id:'sector',no:3,title:'부채꼴의 호의 길이와 넓이',sub:'원의 (중심각)/360 조각',tb:'원과 부채꼴 · 호의 길이와 넓이',ready:true,unit:'circle'});
+  {id:'arc',no:1,title:'원과 부채꼴',sub:'호 · 현 · 부채꼴 · 중심각 · 활꼴',tb:'04 원과 부채꼴 · 194~195쪽',ready:true,unit:'circle'},
+  {id:'cent',no:2,title:'중심각과 호',sub:'중심각이 몇 배면 호도 몇 배',tb:'04 원과 부채꼴 · 195~197쪽',ready:true,unit:'circle'},
+  {id:'sector',no:3,title:'부채꼴의 호의 길이와 넓이',sub:'원의 (중심각)/360 조각',tb:'05 부채꼴의 호의 길이와 넓이 · 198~201쪽',ready:true,unit:'circle'});
 BADGES.push({k:'cname',unit:'circle',nm:'원 이름 박사',d:'이름 맞히기 6개 끝내기',ok:M=>!!M.once['c:name']},{k:'cpiece',unit:'circle',nm:'조각 탐정',d:'원의 몇 조각 탐구 끝내기',ok:M=>!!M.once['c:pieces']});
 window.CIRCLE_GENS=['arcDef','arcName','arcTF','centMul','centRatio','centThree','centTF','sectorCirc','sectorArc','sectorArea','sectorLA','sectorAng'];
 })();
