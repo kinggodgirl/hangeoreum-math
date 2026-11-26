@@ -53,6 +53,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (`T05` 후속 2, Claude Code)**: 선생님 확인으로 `js/boss-bank.js`에서 시험 범위 밖 문제 제거(원뿔 부피·겉넓이, 구·반구, 회전체 이름, 원뿔·구·원기둥 비). 대신 삼각기둥 부피, 원기둥 옆넓이, 정육면체 겉넓이, 구멍 뚫린 원기둥 부피, 부피로 높이 구하기, 부피로 겉넓이 구하기 추가. 각뿔 부피 2문항은 남겨 둠.
 * **2026-11-26 (`T06` 완료, Antigravity)**
   * `[T06]` 열린 6차시(`poly`·`regular`·`area`·`arc`·`cent`·`sector`) 개념 학습 전반을 `concept-plus.css` + `js/02c-concept-plus.js` 독립 모듈로 보완. (`js/04-games.js`, `styles.css`, `supabase/*` 미수정)
   * `PREVIEW.area` 및 누락 차시 4종(`area` 4장, `arc` 4장, `cent` 3장, `sector` 4장)의 `PV_CARDS`를 추가하고, 카드·접기 본 진도(`DB[id].seenCards`), 슬라이드 확대 모달(`◀ 이전`/`다음 ▶`, `←`/`→`, `🔊 듣기`), 열린 `.fold` 내부 이전·다음·듣기 바, 클릭 가능한 핵심 낱말 칩(`T(w)`), `TERMS` 선생님 방식(`지름 × π`, `반둘레 × 반지름`) 정렬을 구현.
