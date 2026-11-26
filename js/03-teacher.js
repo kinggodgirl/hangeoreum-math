@@ -74,7 +74,21 @@ function goalStuHTML(G){if(!G)return'';const nm=k=>{const g=goalBy(k);return g?`
    <div style="margin-top:6px"><b>기록 추천</b> ${G.rec?`${nm(G.rec)} <span class="muted">· ${esc(G.why)}</span>`:'<span class="muted">시작점 찾기 전이라 아직 몰라요</span>'}</div>
    ${G.diff?`<div class="t-due" style="margin-top:6px">고른 길이 추천보다 ${GOAL_RANK[G.k]>GOAL_RANK[G.rec]?'높아요. 기초가 흔들리지 않는지':'낮아요. 자신감이 부족한 건 아닌지'} 이야기 나눠 보세요.</div>`:''}
    ${G.h.length>1?`<div class="muted" style="margin-top:6px">바꾼 기록 ${G.h.map(([k,d])=>`${(goalBy(k)||{}).ic||''} ${esc(String(d).slice(5))}`).join(' → ')}</div>`:''}</div>`}
+/* ───────── 👀 학생 화면 보기 (보기 전용) ─────────
+   교사 화면이 받아 온 학생 기록(s.data)을 잠깐 DB 자리에 두고 학생 화면을 그대로 보여 줘요.
+   이때 save()는 아무것도 저장하지 않아요. 교사 화면으로 돌아오면 원래 DB로 되돌려요. */
+const PEEK={on:false,bak:null,save:null};
+function peekStart(data,label){if(PEEK.on)peekEnd();PEEK.bak=DB;PEEK.save=save;PEEK.on=true;
+  DB=JSON.parse(JSON.stringify(OBJ(data)));save=function(){};
+  document.body.classList.remove('t-wide','t-dopen');document.body.classList.add('peek-mode');
+  let b=$('#peekBar');if(!b){b=document.createElement('div');b.id='peekBar';b.className='peek-bar';b.setAttribute('role','status');document.body.prepend(b)}
+  b.innerHTML=`<span>👀 <b>${esc(label)}</b> 학생 화면이에요 <small>(보기 전용 · 눌러도 학생 기록은 바뀌지 않아요)</small></span><button type="button" class="btn peekOut">교사 화면으로 돌아가기</button>`;
+  $('.peekOut',b).onclick=()=>{peekEnd();location.hash='#teacher'};
+  updatePill();if((location.hash||'#home')==='#home')route();else location.hash='#home'}
+function peekEnd(){if(!PEEK.on)return;DB=PEEK.bak;save=PEEK.save;PEEK.on=false;PEEK.bak=null;
+  document.body.classList.remove('peek-mode');const b=$('#peekBar');if(b)b.remove();updatePill()}
 function viewTeacher(){
+  if(PEEK.on)peekEnd();
   crumbs.innerHTML=`<span class="sep">›</span><span>교사 화면</span>`;const tok=tTok();document.body.classList.remove('t-wide');
   if(!tok){app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card"><h1 style="font-size:28px">교사 화면</h1><p class="muted">학생 번호와 비밀번호를 만들고, 진도와 많이 막히는 단계를 볼 수 있어요.</p>${teacherForm()}</div></div>`;wireTeacherForm(app);return}
   document.body.classList.add('t-wide');
@@ -413,6 +427,7 @@ function viewTeacher(){
   async function openStu(sid){const s=bySid(sid);if(!s)return;const x=dataSummary(s.data||{}),lv=LVS[sid]||{},body=$('.t-dbody',dr);
     dr.hidden=false;document.body.classList.add('t-dopen');
     body.innerHTML=`<div class="t-dh"><div><div class="t-dcode">${code(s)}</div><input class="inp t-dname" value="${esc(NAMES[sid]||'')}" placeholder="이름 적기 (이 기기에만 저장)" maxlength="20" aria-label="이름"></div><button type="button" class="t-dx" aria-label="닫기">✕</button></div>
+      <button type="button" class="btn primary t-peek">👀 이 학생 화면 보기 <small>(보기 전용)</small></button>
       <div class="t-dstat"><div><small>최근 접속</small><b>${relTime(s.last_seen)}</b></div><div><small>포인트</small><b class="rm">${x.pts}</b></div><div><small>연속</small><b class="rm">${x.streak}일</b></div><div><small>7일 풀이</small><b class="rm">${s.attempts_7d||0}</b></div></div>
       ${goalStuHTML(x.goal)}
       ${(()=>{const c=cpInfo(s),r=raidInfo(s);return c.got||c.pcs||r.g?`<p class="t-dcp">⚔️ 보스 도전 <b class="rm">${r.w}승 / ${r.g}판</b> · 🎫 쿠폰 남은 <b class="rm">${c.left}장</b> <small class="muted">(모은 ${c.got} · 쓴 ${c.used}${c.pcs?` · 조각 ${c.pcs}/3`:''})</small>${c.left?` <button type="button" class="t-mini t-dcpu">쿠폰 사용함</button>`:''}</p>`:''})()}
@@ -423,6 +438,7 @@ function viewTeacher(){
       <h3>최근 풀이</h3><div class="t-datt"><span class="muted">불러오는 중…</span></div>
       <h3>계정</h3><div class="t-dact"><button type="button" class="btn ghost t-reset">비밀번호 새로 만들기</button><button type="button" class="btn ghost t-del">기록 모두 지우기</button></div>${s.locked?'<p class="t-due" style="margin:6px 0 0">비밀번호를 여러 번 틀려 잠겨 있어요. 새 비밀번호를 만들면 풀려요.</p>':''}`;
     {const u=$('.t-dcpu',body);if(u)u.onclick=()=>{cpUse(sid,1);openStu(sid)}}
+    $('.t-peek',body).onclick=()=>{closeStu();peekStart(s.data,nameT(s))};
     $('.t-dx',body).onclick=closeStu;$('.t-dx',body).focus({preventScroll:true});
     $('.t-dname',body).onchange=e=>{const v=e.target.value.trim().slice(0,20);if(v)NAMES[sid]=v;else delete NAMES[sid];saveNames();renderSide();renderRoster();renderPeople();toast('이름을 저장했어요 (이 기기).')};
     $$('.t-dg .chip',body).forEach(b=>b.onclick=async()=>{const gid=+b.dataset.g,G=GROUPS.find(g=>g.id===gid),on=!G.sids.includes(sid);b.disabled=true;
