@@ -242,20 +242,22 @@ function mountOwlShow(host,lid,spec,opt={}){
 }
 
 /* ── 4. 🌱 첫걸음 렌더러 ── */
+/* [T20] 규칙 총정리 3절 6: 3초 안에 틀리면 서두르지 않게 안내해요. */
+const FAST_MS=3000,FAST_MSG='🐢 잠깐! 급하게 누르면 함정에 빠지기 쉬워요. 무엇을 묻고 있는지 먼저 확인해 봐요.';
 function renderT1Steps(body,lid,spec){
   const p=lesProg(lid);
   const schemaList=spec.schemaQs||[];
   const guideList=spec.firstGuide||[];
-  let sub=p.t1SchemaDone?'guide':'schema';
+  let sub=p.t1SchemaDone&&guideList.length?'guide':'schema';
   const drawSub=()=>{
     clearAutoNav();
     body.innerHTML=`<div class="ct-subtabs">
       <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 맞는지 · 아닌지 구별하기 (${p.t1SchemaDone?'완료 ✓':(spec.schemaRapid?spec.schemaRapid.n:schemaList.length)+'문항'})</button>
-      <button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${guideList.length}유형)</button>
+      ${guideList.length?`<button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${guideList.length}유형)</button>`:''}
     </div><div id="t1SubHost"></div>`;
     $$('.ct-subtab',body).forEach(b=>b.onclick=()=>{sub=b.dataset.s;drawSub()});
     const host=$('#t1SubHost',body);
-    if(sub==='schema')renderT1Schema(host,lid,spec,()=>{sub='guide';drawSub()});
+    if(sub==='schema')renderT1Schema(host,lid,spec,()=>{if(guideList.length){sub='guide';drawSub()}else if(typeof location==='object')location.hash='#'+lid+'-'+(spec.kind==='concept'?'concept':'practice')});
     else renderT1Guide(host,lid,spec);
   };
   drawSub();
@@ -277,7 +279,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
     p.t1SchemaDone=true;if(typeof save==='function')save();
     if(typeof award==='function')award(5,lid+':t1schema','주황색 표시를 모두 구별했어요');
     host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별하기 ${queue.length}문제 완료!</b> 한 번에 맞힌 문제 ${good}개예요. ${spec.kind==='concept'?'방금 본 모양의 이름을 <b>개념 보기</b>에서 다시 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
-      <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button></div></div>`;
+      <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}${(spec.firstGuide||[]).length?`<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button>`:spec.kind==='concept'?'':`<a class="btn primary" href="#${lid}-practice">첫걸음 차시 마무리 →</a>`}</div></div>`;
     const gb=$('#toGuideBtn',host);if(gb)gb.onclick=onNextPart;
   };
   const draw=()=>{
@@ -287,7 +289,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
     const cur=queue[idx],it=R.make(cur.k,cur.seed),shownAt=Date.now();
     let missed=false;
     host.innerHTML=`<div class="ct-card ct-schema ct-rapid">
-      <div class="ct-card-h"><h2>주황색은 무엇일까요?</h2><div class="ct-schema-prog">${queue.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${queue.length}</span></div></div>
+      <div class="ct-card-h"><h2>${R.title||'주황색은 무엇일까요?'}</h2><div class="ct-schema-prog">${queue.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${queue.length}</span></div></div>
       <div class="ct-stage">
         <div class="ct-fig ct-rapid-fig">${it.fig}</div>
         <div>
@@ -309,10 +311,10 @@ function renderT1Rapid(host,lid,spec,onNextPart){
         idx++;nextT=setTimeout(draw,missed?1400:900);
       }else{
         missed=true;
-        recordMetric(ms,ms<1500?'schema_fast_wrong':'schema_wrong');
+        recordMetric(ms,ms<FAST_MS?'schema_fast_wrong':'schema_wrong');
         btn.classList.add('bad');
         const ok=btns.find(b=>b.dataset.v===it.ans);if(ok)ok.classList.add('ok');
-        msg.innerHTML=`<div class="ct-cool">${ms<1500?'🐢 너무 빨리 골랐어요. 주황색 부분을 먼저 봐요.<br>':''}정답: <b>${it.ans}</b><br>${it.why}</div>
+        msg.innerHTML=`<div class="ct-cool">${ms<FAST_MS?FAST_MSG+'<br>':''}정답: <b>${it.ans}</b><br>${it.why}</div>
           <div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="rqAgain">${queue.length<total+4?'같은 종류 한 번 더 →':'다음 그림 →'}</button></div>`;
         if(queue.length<total+4)queue.splice(idx+1,0,{k:cur.k,seed:newSeedFor(cur.k)});
         const ab=$('#rqAgain',host);if(ab)ab.onclick=()=>{idx++;draw()};
@@ -531,7 +533,12 @@ function renderT1Concept(body,lid,spec){
 
 function renderT1Practice(body,lid,spec){
   const p=lesProg(lid);
-  const pool=spec.t1Check&&spec.t1Check.length?spec.t1Check:(spec.schemaQs||[]).map((q,i)=>({id:'t1q'+i,kind:'k'+i,q:q.q,fig:q.fig,choices:q.choices,ans:q.ans,hint:q.hint}));
+  /* [T20] schemaRapid.check = 마무리에 섞을 빠른 구별 종류 번호들. 틀리면 같은 종류의 다른 그림(make)으로 다시 확인해요. */
+  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:R.q,fig:()=>it.fig,choices:R.choices,ans:it.ans,also:it.also,why:it.why,hint:`정답은 <b>${it.ans}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
+  const rapidPool=R&&Array.isArray(R.check)?R.check.map(rapidItem):[];
+  const basePool=spec.t1Check&&spec.t1Check.length?spec.t1Check:(rapidPool.length?[]:(spec.schemaQs||[]).map((q,i)=>({id:'t1q'+i,kind:'k'+i,q:q.q,fig:q.fig,choices:q.choices,ans:q.ans,hint:q.hint})));
+  const pool=rapidPool.concat(basePool);
+  if(rapidPool.length)for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
   let qQueue=pool.slice(),idx=0,recheckKind=null,consecKind=null,rescued=false,doneSet=new Set();
   const draw=()=>{
     if(rescued){
@@ -567,20 +574,22 @@ function renderT1Practice(body,lid,spec){
       </div></div>`;
     $$('#t1Ch .ct-hit',body).forEach(b=>b.onclick=()=>{
       const ms=Date.now()-shownAt;
+      if(item.also&&item.also[b.dataset.v]){b.disabled=true;$('#t1Msg',body).innerHTML=`<div class="ct-cool">💡 ${item.also[b.dataset.v]}</div>`;return}
       if(b.dataset.v===item.ans){
         recordMetric(ms,null);
         doneSet.add(item.kind);consecKind=null;recheckKind=null;
         b.classList.add('ok');$$('#t1Ch .ct-hit',body).forEach(x=>x.disabled=true);
-        $('#t1Msg',body).innerHTML=`<div class="feedback ok" style="margin-top:8px">정답이에요!</div><div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="t1Nxt">${idx+1<qQueue.length?'다음 문제 →':'결과 보기 →'}</button></div>`;
+        $('#t1Msg',body).innerHTML=`<div class="feedback ok" style="margin-top:8px">${item.why||'정답이에요!'}</div><div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="t1Nxt">${idx+1<qQueue.length?'다음 문제 →':'결과 보기 →'}</button></div>`;
         const nb=$('#t1Nxt',body);if(nb)nb.onclick=()=>{idx++;draw()};
       }else{
-        recordMetric(ms,'t1_check_wrong');
+        recordMetric(ms,ms<FAST_MS?'t1_check_fast_wrong':'t1_check_wrong');
         if(consecKind===item.kind){rescued=true;draw();return}
         consecKind=item.kind;recheckKind=item.kind;
-        const alt=pool.find(x=>x.kind===item.kind)||item;
+        /* [T20] 틀린 직후 같은 문제를 다시 내지 않아요: make가 있으면 숫자·그림을 바꾼 비슷한 문제를 만들어요. */
+        const alt=typeof item.make==='function'?Object.assign(item.make(Math.floor(Math.random()*9000)+11),{kind:item.kind,make:item.make}):(pool.find(x=>x.kind===item.kind&&x!==item)||item);
         qQueue.splice(idx+1,0,alt);
         b.classList.add('bad');$$('#t1Ch .ct-hit',body).forEach(x=>x.disabled=true);
-        $('#t1Msg',body).innerHTML=`<div class="ct-cool">💡 ${item.hint}</div><div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="t1Nxt">확인 문제 하나 더 →</button></div>`;
+        $('#t1Msg',body).innerHTML=`<div class="ct-cool">${ms<FAST_MS?FAST_MSG+'<br>':''}💡 ${item.hint}</div><div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="t1Nxt">확인 문제 하나 더 →</button></div>`;
         const nb=$('#t1Nxt',body);if(nb)nb.onclick=()=>{idx++;draw()};
       }
     });

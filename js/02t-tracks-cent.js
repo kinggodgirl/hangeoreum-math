@@ -32,22 +32,24 @@ function ctTwoSec(opt){
   const C=[190,145],R=90,gap=semi?0:24,A0=semi?180-a:90-(a+gap+b)/2,A1=A0+a,B0=A1+gap,B1=B0+b;
   let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#b5bece" stroke-width="1.8"/>`;
   if(semi)s+=svgLn(pol(C,R,180),pol(C,R,0),INK,2.6);
-  const fill1=mode==='area'?(has('val1')?'#f9c88c':HLs):'none',fill2=mode==='area'?(has('val2')?'#b7cdf7':BLs):'none';
+  const fill1=mode==='area'?(/x|\?/.test(String(l1||''))?HLs:BLs):'none',fill2=mode==='area'?(/x|\?/.test(String(l2||''))?HLs:BLs):'none';
   s+=`<path d="${secD(C,R,A0,A1)}" fill="${fill1}" stroke="${INK}" stroke-width="2.4"/>`;
   s+=`<path d="${secD(C,R,B0,B1)}" fill="${fill2}" stroke="${INK}" stroke-width="2.4"/>`;
+  /* [T20] 주황 = 구할 것(x, ?), 파랑 = 주어진 것 */
+  const askC=l=>/x|\?/.test(String(l||''))?HL:BL;
   if(mode==='arc'){
-    s+=`<path d="${arcD(C,R,A0,A1)}" fill="none" stroke="${has('val1')?HL:INK}" stroke-width="${has('val1')?6:3}" stroke-linecap="round"/>`;
-    s+=`<path d="${arcD(C,R,B0,B1)}" fill="none" stroke="${has('val2')?BL:INK}" stroke-width="${has('val2')?6:3}" stroke-linecap="round"/>`;
+    s+=`<path d="${arcD(C,R,A0,A1)}" fill="none" stroke="${has('val1')?askC(l1):INK}" stroke-width="${has('val1')?6:3}" stroke-linecap="round"/>`;
+    s+=`<path d="${arcD(C,R,B0,B1)}" fill="none" stroke="${has('val2')?askC(l2):INK}" stroke-width="${has('val2')?6:3}" stroke-linecap="round"/>`;
   }
   if(showChord){
     const P0=pol(C,R,A0),P1=pol(C,R,A1),P2=pol(C,R,A0+a/2);
     s+=svgLn(P0,P2,HL,3.2)+svgLn(P2,P1,HL,3.2)+svgLn(P0,P1,RD,3.5,'6 4');
     if(a>=60)s+=svgLn(C,P2,'#9aa3b5',1.3,'4 4');
   }
-  s+=svgAng(C,A0,A1,a+'°',{col:has('ang1')?HL:INK,w:has('ang1')?3.2:2,size:16});
-  s+=svgAng(C,B0,B1,b==null?'?°':b+'°',{col:has('ang2')?BL:INK,w:has('ang2')?3.2:2,size:16});
-  if(l1)s+=svgTx(pol(C,R+24,(A0+A1)/2),l1,{size:16,sans:true,col:has('val1')?HL:INK});
-  if(l2)s+=svgTx(pol(C,R+24,(B0+B1)/2),l2,{size:16,sans:true,col:has('val2')?BL:INK});
+  s+=svgAng(C,A0,A1,a+'°',{col:has('ang1')?BL:INK,w:has('ang1')?3.2:2,size:16});
+  s+=svgAng(C,B0,B1,b==null?'?°':b+'°',{col:has('ang2')?(b==null?HL:BL):INK,w:has('ang2')?3.2:2,size:16});
+  if(l1)s+=svgTx(pol(C,R+24,(A0+A1)/2),l1,{size:16,sans:true,col:has('val1')?askC(l1):INK});
+  if(l2)s+=svgTx(pol(C,R+24,(B0+B1)/2),l2,{size:16,sans:true,col:has('val2')?askC(l2):INK});
   s+=svgDot(C,4)+svgTx([C[0],C[1]+16],'O',{size:16});
   return svgBox(380,285,s,'한 원 안의 두 부채꼴');
 }
@@ -65,7 +67,7 @@ function ctThreeArcs(a,b,c,opt={}){
     }
     s+=svgLn(C,pol(C,R,p0),INK,1.6,'4 4');
   });
-  if(hl.includes('ang')){const tg=segs.find(x=>x[0]===want);if(tg)s+=svgAng(C,tg[1],tg[2],'?°',{col:BL,w:3})}
+  if(hl.includes('ang')){const tg=segs.find(x=>x[0]===want);if(tg)s+=svgAng(C,tg[1],tg[2],'?°',{col:HL,w:3})}
   s+=svgDot(pol(C,R,aA),4.5)+svgDot(pol(C,R,aB),4.5)+svgDot(pol(C,R,aC),4.5)+svgDot(C,4);
   s+=svgTx(pol(C,R+20,aA),'A',{it:true})+svgTx(pol(C,R+20,aB),'B',{it:true})+svgTx(pol(C,R+20,aC),'C',{it:true})+svgTx([C[0]+14,C[1]+10],'O',{size:16});
   return svgBox(330,276,s,'원 위의 세 점');
@@ -87,16 +89,28 @@ function ctSliceStack(baseDeg,count,unitArc,opt={}){
 }
 
 function ctIsosExtSVG(a,lDeg){
-  const C=[165,165],R=95;
-  const B=pol(C,R,180),D=pol(C,R,180-a),E=pol(C,R,3*a),A=pol(C,R,0);
-  const ext=[C[0]-R-36,C[1]];
-  let s=`<path d="M ${pt(B)} A ${R} ${R} 0 1 1 ${pt(A)}" fill="none" stroke="#b5bece" stroke-width="2"/>`+
-    svgLn(B,A,INK,2.2)+svgLn(C,D,HL,2.2)+svgLn(C,E,BL,2.4)+svgLn(ext,D,RD,2.2);
-  s+=svgDot(C)+svgDot(D)+svgDot(E)+svgDot(B)+svgDot(A);
-  s+=svgTx([C[0],C[1]+16],'O',{size:16})+svgTx([D[0]-10,D[1]-14],'D',{it:true})+svgTx([E[0]+14,E[1]-10],'E',{it:true})+svgTx([ext[0]-10,ext[1]],'C',{it:true})+svgTx([A[0]+14,A[1]],'A',{it:true});
-  s+=svgAng(C,180-a,180,a+'°',{col:HL,size:14});
-  s+=svgTx(pol(C,R+22,180-a/2),`${lDeg} cm`,{size:14,sans:true,col:HL});
-  return svgBox(340,220,s,'반지름 이등변삼각형과 외각');
+  /* [T20] 실제 비율: CO = 2R·cos a, 직선 C→D→E, ∠AOE = 3a. 주어진 호 BD = 파랑, 구할 호 AE = 주황 */
+  const O=[232,170],R=84,B=pol(O,R,180),A=pol(O,R,0),D=pol(O,R,180-a),E=pol(O,R,3*a),Cx=[O[0]-2*R*Math.cos(rad(a)),O[1]];
+  let s=`<path d="M ${pt(B)} A ${R} ${R} 0 1 1 ${pt(A)}" fill="none" stroke="#9aa3b5" stroke-width="2"/>`+
+    svgLn(Cx,A,INK,2.2)+svgLn(Cx,E,INK,2.2)+svgLn(O,D,INK,1.8)+svgLn(O,E,INK,1.8)+
+    `<path d="${arcD(O,R,180-a,180)}" fill="none" stroke="${BL}" stroke-width="5" stroke-linecap="round"/>`+
+    `<path d="${arcD(O,R,0,3*a)}" fill="none" stroke="${HL}" stroke-width="6" stroke-linecap="round"/>`;
+  s+=[O,D,E,B,A,Cx].map(P=>svgDot(P,3.6)).join('');
+  s+=svgTx([O[0],O[1]+16],'O',{size:16})+svgTx(pol(O,R-16,180-a-8),'D',{it:true})+svgTx(pol(O,R+16,3*a),'E',{it:true})+svgTx([Cx[0]-6,Cx[1]+16],'C',{it:true})+svgTx([A[0]+6,A[1]+16],'A',{it:true})+svgTx([B[0]+2,B[1]+16],'B',{it:true});
+  s+=svgAng(O,180-a,180,a+'°',{col:BL,size:14,r:20,lr:34});
+  s+=svgTx(pol(O,R-24,180-a/2+2),`${lDeg} cm`,{size:14,sans:true,col:BL})+svgTx(pol(O,R+12,1.5*a),'? cm',{size:14,sans:true,col:HL,anchor:'start'});
+  return svgBox(360,210,s,'반지름 이등변삼각형과 외각');
+}
+/* [T20] 반원에서 AC ∥ OD: D는 ∠BOD = b, C는 ∠BOC = 2b 자리 */
+function ctParallelSVG(b,L){
+  const O=[170,175],R=120,A=pol(O,R,180),B=pol(O,R,0),D=pol(O,R,b),Cc=pol(O,R,2*b);
+  let s=`<path d="M ${pt(B)} A ${R} ${R} 0 0 0 ${pt(A)}" fill="none" stroke="#9aa3b5" stroke-width="2"/>`+svgLn(A,B,INK,2.4)+svgLn(O,D,INK,2.2)+svgLn(A,Cc,INK,2.2)+
+    `<path d="${arcD(O,R,0,b)}" fill="none" stroke="${BL}" stroke-width="5" stroke-linecap="round"/>`+
+    `<path d="${arcD(O,R,2*b,180)}" fill="none" stroke="${HL}" stroke-width="6" stroke-linecap="round"/>`;
+  s+=[O,A,B,D,Cc].map(P=>svgDot(P,3.6)).join('');
+  s+=svgTx([O[0],O[1]+16],'O',{size:16})+svgTx([A[0]-4,A[1]+16],'A',{it:true})+svgTx([B[0]+4,B[1]+16],'B',{it:true})+svgTx(pol(O,R+16,b),'D',{it:true})+svgTx(pol(O,R+16,2*b),'C',{it:true});
+  s+=svgAng(O,0,b,b+'°',{col:BL,size:14,r:22,lr:38})+svgTx(pol(O,R+30,b/2),`${L} cm`,{size:14,sans:true,col:BL})+svgTx(pol(O,R+26,90+b),'? cm',{size:14,sans:true,col:HL});
+  return svgBox(340,215,s,'반원에서 평행한 현과 반지름');
 }
 
 const SCHEMA_QS=[
@@ -209,28 +223,26 @@ function makeC4(seed){
   const r=(seed*1664525+1013904223)>>>0;
   const a=[18,20,24,25,30][r%5],L=3+((r>>>4)%5),ans=3*L;
   return{id:'C4',combo:[4,1],comboWhy:'① 반지름이 같아 생긴 이등변삼각형과 외각으로 중심각 3배를 찾고(유형 4) → ② 호의 길이 몇 배 적용(유형 1)',ptype:'cent:c4',
-    title:`원 O의 지름 BA의 연장선 위의 점 C에서 그은 선분이 원과 D, E에서 만나고 <b>CD = OD</b>, ∠BOD = ${a}°, 호 BD = ${L} cm일 때, 호 AE의 길이를 구하시오.`,
+    title:`그림과 같이 원 O의 지름 AB의 연장선과 현 DE의 연장선이 만나는 점을 C라 하자. CD = OD이고 ∠BOD = ${a}°, 호 BD의 길이가 ${L} cm일 때, 호 AE의 길이를 구하시오.`,
     fig:{svg:()=>ctIsosExtSVG(a,L)},finalQ:'호 AE의 길이는 몇 cm인가요?',
     steps:[
-      {tag:'1단계 · 이등변삼각형 밑각 & 외각',q:`△CDO가 CD=OD인 이등변삼각형이므로 ∠C=∠COD=${a}°예요. 외각 ∠EDO = ${a}° + ${a}° = ?`,type:'num',ans:2*a,suffix:'°',hint:'삼각형 한 외각은 이웃하지 않는 두 내각의 합이에요.'},
-      {tag:'2단계 · 큰 이등변삼각형 △ODE에서 중심각 ∠AOE',q:`OD=OE라 ∠DEO=${2*a}°예요. ∠AOE는 △CEO의 외각이므로 ∠C + ∠DEO = ${a}° + ${2*a}° = ?`,type:'num',ans:3*a,suffix:'°',hint:`${a} + ${2*a}`},
-      {tag:'3단계 · 몇 배로 호 구하기',q:`∠AOE(${3*a}°)는 ∠BOD(${a}°)의 3배예요. 호 AE의 길이는?`,type:'num',ans,suffix:'cm',hint:`${L} × 3`,ok:`${L} × 3 = ${ans} cm`}
+      {tag:'1단계 · 이등변삼각형 CDO의 외각',q:`CD = OD이므로 ∠DCO = ∠DOC = ${a}°예요. 삼각형 CDO의 외각 ∠ODE의 크기는?`,type:'num',ans:2*a,suffix:'°',hint:'삼각형의 한 외각은 이웃하지 않는 두 내각의 합이에요.'},
+      {tag:'2단계 · 이등변삼각형 ODE와 외각으로 ∠AOE',q:`OD = OE이므로 ∠OED = ∠ODE예요. ∠AOE는 삼각형 OCE의 외각이에요. ∠AOE의 크기는?`,type:'num',ans:3*a,suffix:'°',hint:'외각 = 이웃하지 않는 두 내각(∠OCE + ∠OEC)의 합이에요.'},
+      {tag:'3단계 · 몇 배로 호 구하기',q:`∠AOE는 ∠BOD의 몇 배인지 보고, 호 AE의 길이를 구하세요.`,type:'num',ans,suffix:'cm',hint:'중심각이 몇 배면 호의 길이도 몇 배예요.',ok:`∠AOE = ${3*a}°는 ${a}°의 3배라서 호 AE = ${L} × 3 = ${ans} cm예요.`}
     ]};
 }
 
 function makeC5(seed){
-  const r=(seed*22695477+1)>>>0;
-  const a=[20,25,30,35][(r>>>2)%4],L=2+((r>>>5)%5),angAC=180-2*a,ratio=(angAC/a),m=2+((r>>>7)%3);
-  const bDeg=a*m;if(180-2*bDeg<20)return makeC5(seed+1);
-  const k=Math.round((180-2*bDeg)/bDeg),ans=k*L;
-  return{id:'C5',combo:[4,2],comboWhy:'① 반원 내 평행선 엇각·이등변삼각형으로 중심각을 찾고(유형 4) → ② 중심각 비로 호 계산(유형 2)',ptype:'cent:c5',
-    title:`지름 AB인 반원에서 현 AC와 반지름 OD가 평행(AC ∥ OD)이고 ∠BOD = ${bDeg}°, 호 BD = ${L} cm일 때, 호 AC의 길이를 구하시오.`,
-    fig:{svg:()=>ctTwoSec({a:180-2*bDeg,b:bDeg,l1:'x cm',l2:`${L} cm`,mode:'arc',semi:true,hl:['ang2','val2']})},
+  /* [T20] (180 − 2b) ÷ b 가 자연수가 되는 b만 써요: 30 → 4배, 36 → 3배, 45 → 2배 */
+  const r=(seed*22695477+1)>>>0,bDeg=[30,36,45][(r>>>2)%3],L=2+((r>>>5)%5),aoc=180-2*bDeg,k=aoc/bDeg,ans=k*L;
+  return{id:'C5',combo:[4,2],comboWhy:'① 평행선의 동위각과 이등변삼각형으로 중심각을 찾고(유형 4) → ② 중심각이 몇 배인지로 호 계산(유형 1·2)',ptype:'cent:c5',
+    title:`선분 AB를 지름으로 하는 반원 O에서 AC ∥ OD이고 ∠BOD = ${bDeg}°, 호 BD의 길이가 ${L} cm일 때, 호 AC의 길이를 구하시오.`,
+    fig:{svg:()=>ctParallelSVG(bDeg,L)},
     finalQ:'호 AC의 길이는 몇 cm인가요?',
     steps:[
-      {tag:'1단계 · 동위각으로 ∠OAC 찾기',q:`AC ∥ OD이므로 동위각 ∠OAC = ∠BOD = ?`,type:'num',ans:bDeg,suffix:'°',hint:'평행선에서 동위각의 크기는 같아요.'},
-      {tag:'2단계 · 이등변삼각형 △OAC 중심각',q:`OA=OC(반지름)라 ∠OCA = ${bDeg}°예요. ∠AOC = 180° − ${2*bDeg}° = ?`,type:'num',ans:180-2*bDeg,suffix:'°',hint:`180 − (${bDeg} + ${bDeg})`},
-      {tag:'3단계 · 중심각 비례 적용',q:`호 AC의 중심각 ${180-2*bDeg}°는 ${bDeg}°의 몇 배인가요? 호 AC의 길이는?`,type:'num',ans:Math.round((180-2*bDeg)/bDeg*L),suffix:'cm',hint:`${L} × (${180-2*bDeg} ÷ ${bDeg})`,ok:`호 AC = ${Math.round((180-2*bDeg)/bDeg*L)} cm`}
+      {tag:'1단계 · 동위각으로 ∠OAC 찾기',q:`AC ∥ OD이므로 ∠OAC의 크기는?`,type:'num',ans:bDeg,suffix:'°',hint:'평행선에서 동위각의 크기는 같아요.'},
+      {tag:'2단계 · 이등변삼각형 OAC의 중심각',q:`OA = OC(반지름)이므로 ∠OCA = ∠OAC예요. ∠AOC의 크기는?`,type:'num',ans:aoc,suffix:'°',hint:'삼각형의 세 각의 합은 180°예요.'},
+      {tag:'3단계 · 몇 배인지로 호 구하기',q:`∠AOC는 ∠BOD의 몇 배인지 보고, 호 AC의 길이를 구하세요.`,type:'num',ans,suffix:'cm',hint:'중심각이 몇 배면 호의 길이도 몇 배예요.',ok:`∠AOC = ${aoc}°는 ${bDeg}°의 ${k}배라서 호 AC = ${L} × ${k} = ${ans} cm예요.`}
     ]};
 }
 
@@ -245,12 +257,59 @@ const OWL_SCENES=[
   {cap:'장면 ⑤ 반지름이 다르면 안 돼요!',say:'작은 원의 60°와 큰 원의 60°는 호의 길이가 달라요. 반드시 <span class="kw">한 원 또는 합동인 원</span>에서만 정비례가 성립해요!',exp:'happy',svg:()=>ctTwoSec({a:60,b:60,diffRadius:true})}
 ];
 
-const T1_CHECK_POOL=[
-  {id:'t1c1',kind:'schema',q:'다음 중 <b>중심각의 크기에 정비례하는 것</b>을 바르게 고른 것은?',fig:()=>ctTwoSec({a:100,b:50,l1:'호 · 넓이 vs 현',l2:'50°',mode:'arc',showChord:true}),choices:['호의 길이와 부채꼴의 넓이','현의 길이와 호의 길이','원의 중심과 반지름'],ans:'호의 길이와 부채꼴의 넓이',hint:'호와 넓이는 정비례하고 현은 예외예요.'},
-  {id:'t1c2',kind:'given',q:'"중심각 60°인 호가 8 cm일 때, 180°인 호 <i>x</i>를 구하시오."에서 <b>구할 것</b>은?',fig:()=>ctTwoSec({a:60,b:180,l1:'8 cm',l2:'x cm',mode:'arc',hl:['val2']}),choices:['180° 부채꼴의 호의 길이 x','60° 부채꼴의 넓이','원 전체의 둘레'],ans:'180° 부채꼴의 호의 길이 x',hint:'문장 끝과 x를 확인해요.'},
-  {id:'t1c3',kind:'ratio_pair',q:'중심각이 <b>40°</b>일 때 넓이가 <b>6 cm²</b>, <b>100°</b>일 때 넓이가 <b><i>x</i></b>예요. 알맞은 비례식은?',fig:()=>ctTwoSec({a:40,b:100,l1:'6 cm²',l2:'x cm²',mode:'area'}),choices:['40 : 100 = 6 : x','40 : 100 = x : 6','40 : 6 = 100 : 180'],ans:'40 : 100 = 6 : x',hint:'앞쪽 순서(40° : 100°)와 뒤쪽 순서를 맞춰요.'},
-  {id:'t1c4',kind:'three',q:'원 O에서 <span class="arcs">AB</span> : <span class="arcs">BC</span> : <span class="arcs">CA</span> = <b>1 : 2 : 3</b>일 때, <b>원 한 바퀴 360°는 모두 몇 칸</b>인가요?',fig:()=>ctThreeArcs(1,2,3,{want:'BC',hl:['AB','BC','CA']}),choices:['6칸 (1+2+3)','3칸','180칸'],ans:'6칸 (1+2+3)',hint:'세 비의 숫자를 모두 더해요.'}
-];
+/* [T20] 첫걸음 구별하기(C1): 한 원에서 중심각만 2배로 바꾼 두 부채꼴. 주황 표시가 2배가 되는지 가려요.
+   종류 0 호 · 1 넓이 · 2 현 · 3 반지름 · 4 부채꼴의 둘레 · 5 활꼴의 넓이 */
+const RAPID_CH=['2배가 돼요','2배보다 작아져요','2배보다 커져요','변하지 않아요'];
+const RAPID_ANS=['2배가 돼요','2배가 돼요','2배보다 작아져요','변하지 않아요','2배보다 작아져요','2배보다 커져요'];
+const RAPID_WHY=['한 원에서 중심각이 2배가 되면 <b>호의 길이도 2배</b>가 돼요.','한 원에서 중심각이 2배가 되면 <b>부채꼴의 넓이도 2배</b>가 돼요.',
+  '현의 길이는 중심각에 정비례하지 않아요. 중심각이 2배가 되어도 현은 <b>2배보다 짧아요</b>.','반지름은 원이 같으면 그대로예요. 중심각과 상관없이 <b>변하지 않아요</b>.',
+  '부채꼴의 둘레 = 호 + 반지름 2개예요. 호만 2배가 되고 반지름은 그대로라서 <b>2배보다 작아요</b>.','활꼴 = 부채꼴 − 삼각형이에요. 중심각이 2배가 되면 활꼴의 넓이는 <b>2배보다 더 커져요</b>.'];
+function ctRapidFig(k,seed){
+  const TH=`stroke="${HL}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"`;
+  const angs=k===5?[30,40,45,60,80,90]:[30,40,45,50,60,70,80,90],th=angs[seed%angs.length],R=70;
+  const one=(C,t)=>{const a0=90-t/2,a1=90+t/2,P0=pol(C,R,a0),P1=pol(C,R,a1);
+    let g=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#9aa3b5" stroke-width="1.8"/>`;
+    const sec=`<path d="${secD(C,R,a0,a1)}"`;
+    if(k===0)g+=`${sec} fill="none" stroke="${INK}" stroke-width="2"/><path d="${arcD(C,R,a0,a1)}" fill="none" ${TH}/>`;
+    else if(k===1)g+=`${sec} fill="${HLs}" ${TH}/>`;
+    else if(k===2)g+=`${sec} fill="none" stroke="#9aa3b5" stroke-width="1.6"/>`+`<path d="M ${pt(P0)} L ${pt(P1)}" ${TH}/>`;
+    else if(k===3)g+=`${sec} fill="none" stroke="${INK}" stroke-width="2"/>`+`<path d="M ${pt(C)} L ${pt(P0)}" ${TH}/>`;
+    else if(k===4)g+=`${sec} fill="none" ${TH}/>`;
+    else g+=`${sec} fill="none" stroke="${INK}" stroke-width="1.6"/>`+`<path d="${arcD(C,R,a0,a1)} Z" fill="${HLs}" ${TH}/>`;
+    g+=svgDot(P0,3.4)+svgDot(P1,3.4)+svgDot(C,3.6)+svgTx([C[0],C[1]+16],'O',{size:15})+svgAng(C,a0,a1,t+'°',{col:BL,size:15,r:18,lr:t>=150?30:Math.max(34,40/Math.sin(rad(t/2))*0.62)});
+    return g};
+  const g=one([95,112],th)+one([285,112],2*th)+svgTx([190,112],'→',{size:26,col:INK})+svgTx([190,140],'× 2',{size:15,sans:true,col:BL});
+  return svgBox(380,205,g,'한 원에서 중심각이 2배인 두 부채꼴');
+}
+const shufBy=(sd,arr)=>{const a=arr.slice();let x=(sd*2654435761)>>>0;for(let i=a.length-1;i>0;i--){x=(x*1103515245+12345)>>>0;const j=x%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+/* [T20] 첫걸음 차시 마무리: 보기 4개, 틀리면 make로 숫자를 바꾼 비슷한 문제 */
+function t1Given(sd){
+  const pairs=[[30,60],[30,90],[40,80],[40,120],[45,90],[45,135],[60,120],[60,180]],[a,b]=pairs[sd%pairs.length],area=(sd>>>3)%2===1,L=2+(sd%5)*(area?2:1);
+  const nm=area?'넓이':'호의 길이',other=area?'호의 길이':'넓이',u=area?'cm²':'cm';
+  const ans=`중심각이 ${b}°인 부채꼴의 ${nm}`;
+  return{id:'t1g'+sd,kind:'given',make:t1Given,q:`「한 원에서 중심각의 크기가 ${a}°인 부채꼴의 ${nm}가 ${L} ${u}일 때, 중심각의 크기가 ${b}°인 부채꼴의 ${nm}를 구하시오.」에서 <b>구해야 하는 것</b>을 고르세요.`,
+    fig:()=>ctTwoSec({a,b,l1:`${L} ${u}`,l2:'',mode:area?'area':'arc',hl:['val1','ang1','ang2']}),
+    choices:shufBy(sd,[ans,`중심각이 ${a}°인 부채꼴의 ${nm}`,`중심각이 ${b}°인 부채꼴의 ${other}`,'원 전체의 둘레']),ans,
+    hint:'문장 맨 끝 "구하시오" 바로 앞을 봐요.',why:`문장 끝에서 구하라는 것을 찾았어요. 구할 것은 <b>${ans}</b>예요.`};
+}
+function t1Pair(sd){
+  const pairs=[[40,100,6],[50,70,10],[60,80,9],[30,75,4],[45,60,12],[80,120,8],[40,60,8]],[a,b,v]=pairs[sd%pairs.length];
+  const ans=`${a} : ${b} = ${v} : x`;
+  return{id:'t1p'+sd,kind:'pair',make:t1Pair,q:`한 원에서 중심각의 크기가 <b>${a}°</b>인 부채꼴의 넓이가 <b>${v} cm²</b>이고, 중심각의 크기가 <b>${b}°</b>인 부채꼴의 넓이가 <i>x</i> cm²일 때, <i>x</i>를 구하는 식으로 옳은 것을 고르세요.`,
+    fig:()=>ctTwoSec({a,b,l1:`${v} cm²`,l2:'x cm²',mode:'area',hl:['val1','val2','ang1','ang2']}),
+    choices:shufBy(sd,[ans,`${a} : ${b} = x : ${v}`,`${a} : x = ${v} : ${b}`,`x = ${v} + (${b} − ${a})`]),ans,
+    hint:'중심각끼리, 넓이끼리 같은 순서로 짝을 맞춰요.',why:`중심각 ${a} : ${b}와 넓이 ${v} : x를 같은 순서로 짝 지었어요.`};
+}
+function t1Three(sd){
+  const sets=[[1,2,3],[2,3,4],[1,3,5],[2,3,5],[3,4,5],[1,2,6],[2,5,5],[1,4,7]],[a,b,c]=sets[sd%sets.length],t=a+b+c;
+  const opts=[t,3,360];[c,b,a*b*c,t+1,t*2].forEach(x=>{if(opts.length<4&&!opts.includes(x))opts.push(x)});
+  const ans=t+'칸';
+  return{id:'t1t'+sd,kind:'three',make:t1Three,q:`원 O 위의 세 점 A, B, C에 대하여 호 AB : 호 BC : 호 CA = <b>${a} : ${b} : ${c}</b>일 때, 원 한 바퀴 360°는 모두 몇 칸으로 나누어 생각하는지 고르세요.`,
+    fig:()=>ctThreeArcs(a,b,c,{want:'BC',hl:[]}),
+    choices:shufBy(sd,opts.map(x=>x+'칸')),ans,
+    hint:'세 호를 모두 이으면 원 한 바퀴예요.',why:`세 호를 모두 합치면 원 한 바퀴라서 ${a} + ${b} + ${c} = <b>${t}칸</b>이에요.`};
+}
+const T1_CHECK_POOL=[t1Given(5),t1Pair(3),t1Three(2)];
 
 if(typeof HG_TRACKS==='object'){
   HG_TRACKS.register('cent',{
@@ -259,6 +318,9 @@ if(typeof HG_TRACKS==='object'){
     compoundBridgeNo:2,
     owlScenes:OWL_SCENES,
     owlSummary:['같은 원에서 호의 길이와 넓이는 중심각에 정비례해요.','현의 길이는 중심각에 정비례하지 않아요 (2배보다 짧음!).','딱 떨어지면 몇 배, 안 떨어지면 간단한 비(1칸), 세 호의 비는 360°를 전체 칸 수로 나눠요.'],
+    schemaRapid:{n:6,kinds:6,title:'중심각이 2배가 되면?',q:'두 부채꼴은 <b>한 원</b>에서 중심각만 2배로 바꾼 거예요. <b>주황색으로 표시한 것</b>은 어떻게 될까요?',
+      choices:RAPID_CH,check:[0,2,4,5],
+      make:(k,seed)=>({fig:ctRapidFig(k,Math.floor(seed/6)),ans:RAPID_ANS[k],why:RAPID_WHY[k]})},
     schemaQs:SCHEMA_QS,
     firstGuide:FIRST_GUIDE,
     t1Check:T1_CHECK_POOL,
