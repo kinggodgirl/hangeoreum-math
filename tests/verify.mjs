@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const jsFiles = [
   'js/01-core.js',
   'js/02-unit-solid.js',
@@ -132,6 +133,14 @@ recordCalcErr('signed', '부호가 반대예요.');
 const ds = dataSummary(DB);
 if (!ds.calcErrs.length) errors.push('dataSummary calcErrs failed');
 
+const checkStep = st => {
+  if (!st || !st.q) return false;
+  if (st.type === 'choice') return Array.isArray(st.choices) && st.choices.includes(st.ans) && new Set(st.choices).size === st.choices.length;
+  if (!Number.isFinite(st.ans)) return false;
+  const a = st.type === 'pi' ? (st.ans === 1 ? 'π' : st.ans + 'π') : st.type === 'sn' ? (st.ansText || sgnTxt(st.ans)) : String(st.ans);
+  return check(st, a) === true;
+};
+
 // 원과 부채꼴: 모든 유형 생성기가 문제를 만들고, 단계마다 정답이 check()를 통과하는지
 let circleProbs = 0;
 for (const lid of ['arc', 'cent', 'sector']) {
@@ -142,12 +151,47 @@ for (const lid of ['arc', 'cent', 'sector']) {
       const P = GEN[tyKey(lid, T.no)](sd);
       if (!P || !P.steps || !P.steps.length || !T.pt.includes(P.ptype)) { errors.push(`Bad circle gen: ${lid} 유형 ${T.no}`); break; }
       if (P.fig && P.fig.svg && !/<svg/.test(P.fig.svg(true, 0) + P.fig.svg(false, 0))) { errors.push(`Bad circle fig: ${lid} 유형 ${T.no}`); break; }
-      const bad = P.steps.find(st => {
-        if (st.type === 'choice') return !st.choices.includes(st.ans) || new Set(st.choices).size !== st.choices.length;
-        const a = st.type === 'pi' ? (st.ans === 1 ? 'π' : st.ans + 'π') : String(st.ans);
-        return !Number.isFinite(st.ans) || check(st, a) !== true;
-      });
+      const bad = P.steps.find(st => !checkStep(st));
       if (bad) { errors.push(`Circle step answer fails: ${lid} 유형 ${T.no} seed ${sd}: ${bad.q}`); break; }
+    }
+  }
+}
+
+// 입체도형: 열린 차시(poly · regular · area) 문제 생성과 단계 정답 검증
+let solidProbs = 0;
+for (const lid of ['poly', 'regular']) {
+  if (!LESSONS.some(l => l.id === lid && l.ready)) errors.push(`Missing ready solid lesson ${lid}`);
+  for (const T of PTYPES[lid] || []) {
+    for (let sd = 1; sd <= 40; sd++) {
+      solidProbs++;
+      const P = GEN[tyKey(lid, T.no)](sd);
+      if (!P || !P.steps || !P.steps.length || !T.pt.includes(P.ptype)) { errors.push(`Bad solid gen: ${lid} 유형 ${T.no}`); break; }
+      const bad = P.steps.find(st => !checkStep(st)) || (P.final && !checkStep(P.final) ? P.final : null);
+      if (bad) { errors.push(`Solid step answer fails: ${lid} 유형 ${T.no} seed ${sd}: ${bad.q}`); break; }
+    }
+  }
+}
+for (const genName of ['area', 'areaStep']) {
+  for (let sd = 1; sd <= 40; sd++) {
+    solidProbs++;
+    const P = GEN[genName](sd);
+    if (!P || !P.steps || !P.steps.length) { errors.push(`Bad solid gen: ${genName}`); break; }
+    const bad = P.steps.find(st => !checkStep(st)) || (P.final && !checkStep(P.final) ? P.final : null);
+    if (bad) { errors.push(`Solid ${genName} fails seed ${sd}: ${bad.q}`); break; }
+  }
+}
+
+// 정수와 유리수: 열린 차시(sign · numline · abs · iadd · isub) 문제 생성과 단계 정답 검증
+let intProbs = 0;
+for (const lid of ['sign', 'numline', 'abs', 'iadd', 'isub']) {
+  for (const genName of [lid, lid + 'Step']) {
+    if (typeof GEN[genName] !== 'function') { errors.push(`Missing int gen: ${genName}`); continue; }
+    for (let sd = 1; sd <= 40; sd++) {
+      intProbs++;
+      const P = GEN[genName](sd);
+      if (!P || !P.steps || !P.steps.length) { errors.push(`Bad int gen: ${genName}`); break; }
+      const bad = P.steps.find(st => !checkStep(st)) || (P.final && !checkStep(P.final) ? P.final : null);
+      if (bad) { errors.push(`Int ${genName} fails seed ${sd}: ${bad.q}`); break; }
     }
   }
 }
@@ -173,4 +217,4 @@ if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);
 }
-console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, goals OK, circle ${circleProbs} problems`);
+console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, goals OK, circle ${circleProbs} problems, solid ${solidProbs} problems, int ${intProbs} problems`);
