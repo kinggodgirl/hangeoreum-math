@@ -67,7 +67,7 @@ function viewPrint(pre){
    아래 줄무늬(데이터 줄)에 문제지 번호 · 차시 · 문제 수가 들어 있어서 사진만 찍으면 정답을 다시 만들어 채점해요.
    좌표는 모두 mm(답안지 180×250). */
 const OMR={W:180,H:250,MS:8,M:[[5,5],[175,5],[175,245],[5,245]],SX:24,SY:245,SW:3.3,SH:4,VER:2,SP:5.8};
-const OMR_D=P=>/^area:/.test(P.ptype)?3:2;   /* 자리 수: 겉넓이만 세 자리 */
+const OMR_D=P=>/^(area|volume|conearea|cone):/.test(P.ptype)?3:2;   /* 자리 수: 겉넓이·부피는 세 자리 */
 function omrParts(P){const F=pwFinal(P),num=(s,lab)=>({k:'num',s,lab,d:Math.max(OMR_D(P),String(Math.abs(s.ans)).length),sg:s.type==='sn',pi:s.type==='pi'});
   if(P.ptype==='poly:name2'){const a=P.steps.find(s=>/\(1\)/.test(s.tag||''));return[num(a,'(1)'),{k:'ch',s:F,lab:'(2)'}]}
   if(P.ptype==='poly:all3')return pwAll3(P).map(([l,s])=>num(s,l==='몇 면체'?'면체':l==='모서리'?'모서리':'꼭짓점'));
@@ -87,13 +87,20 @@ function omrLayout(items){
   return null}
 const OMR_NO={rows:[{lab:'십',y:41},{lab:'일',y:48}],x:52};   /* 번호 두 자리 */
 function omrBits(lids,n,seed){const b=[1,0],put=(v,k)=>{for(let i=k-1;i>=0;i--)b.push(v>>i&1)};
+  const SL3=omrSlots(3),useV3=lids.some(l=>SL3.findIndex(x=>x.id===l)>=12);
+  if(useV3){put(3,2);let m=0;lids.forEach(l=>{const i=SL3.findIndex(x=>x.id===l);if(i>=0&&i<15)m|=1<<i});put(m,15);put(n-1,4);put(seed-1000,14);
+    let cs=0;for(let i=2;i<b.length;i++)cs=(cs*3+b[i]+i)%4;put(cs,2);b.push(1);return b}
   put(OMR.VER,2);let m=0;const SL=omrSlots(OMR.VER);lids.forEach(l=>{const i=SL.findIndex(x=>x.id===l);if(i>=0&&i<12)m|=1<<i});put(m,12);put(n,5);put(seed,14);
   let cs=0;for(let i=2;i<b.length;i++)cs=(cs*3+b[i]+i)%16;put(cs,4);b.push(1);return b}
 function omrUnbits(b){if(b.length!==40||b[0]!==1||b[1]!==0||b[39]!==1)return null;const get=(i,k)=>{let v=0;for(let j=0;j<k;j++)v=v*2+b[i+j];return v};
+  const ver=get(2,2);
+  if(ver===3){let cs=0;for(let i=2;i<37;i++)cs=(cs*3+b[i]+i)%4;if(cs!==get(37,2))return null;
+    const m=get(4,15),n=get(19,4)+1,seed=get(23,14)+1000;if(!m||n<1||n>16||seed<1000||seed>9999)return null;
+    const lids=omrSlots(3).filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n,seed}}
   let cs=0;for(let i=2;i<35;i++)cs=(cs*3+b[i]+i)%16;if(cs!==get(35,4))return null;
-  const ver=get(2,2),m=get(4,12),n=get(16,5),seed=get(21,14);if((ver!==1&&ver!==2)||!m||n<1||n>16||seed<1000||seed>9999)return null;
+  const m=get(4,12),n=get(16,5),seed=get(21,14);if((ver!==1&&ver!==2)||!m||n<1||n>16||seed<1000||seed>9999)return null;
   const lids=omrSlots(ver).filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n,seed}}
-/* 답안지의 차시 칸: 1판은 대표 단원 차시 순서(예전 답안지), 2판은 학습지에 쓸 수 있는 차시 순서(여러 단원, 최대 12개) */
+/* 답안지의 차시 칸: 1판은 대표 단원 차시 순서(예전 답안지), 2·3판은 학습지에 쓸 수 있는 차시 순서(최대 12/15개) */
 function omrSlots(ver){return ver===1?LESSONS.filter(l=>(l.unit||'solid')===UNIT_ID):PW_LESSONS()}
 function omrCardSVG(items,lids,n,seed){const L=omrLayout(items);
   if(!L)return`<p class="muted">문제가 많아 OMR 답안지에 다 들어가지 않아요. 문제 수를 줄여 주세요.</p>`;
@@ -345,6 +352,7 @@ function route(soft){SUB_BACK=null;
   else if(/^unit-[a-z]+$/.test(h)&&OPEN_UNITS.includes(h.slice(5)))viewUnit(h.slice(5));
   else if(STANDALONE&&/^(login|teacher|boss|baseball|bb-|sea|bossview-)/.test(h)){location.replace('#home');return}
   else if(h==='me')viewMe();
+  else if(h==='dailyrev'&&typeof viewDailyRev==='function')viewDailyRev();
   else if(h==='review')viewReview();
   else if(h==='drill')viewDrill();
   else if(h==='login')viewLogin();

@@ -12,8 +12,8 @@
 | **T00** | 자율 머지 협업 규칙·공용 작업 보드 세팅 | Antigravity | `AGENTS.md`, `CLAUDE.md`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T01** | Supabase DB 위생 패치 (FK 인덱스 4개 + `hg_bb_valid`/`hg_bb_score` `search_path` 고정 + SQL 동기화 + 어드바이저 재검증) | Antigravity | `supabase/schema.sql`, `supabase/game.sql`, `supabase/group.sql`, `supabase/report.sql` (+ 운영 DB 적용) | **완료** (`main`·DB 반영) |
 | **T02** | 테스트·문서·저장소 정비 (`tests/verify.mjs` 입체도형/정수 생성기 검증 추가, `README.md` 최신화, `toast` 안전화, 병합 완료된 구 브랜치 정리) | Antigravity | `tests/verify.mjs`, `README.md`, `js/01-core.js` | **완료** (`main` 반영) |
-| **T03** | 시험 범위 차시 확장 A: 3차시 `회전체` · 4차시 `회전체의 성질` (교과서 217~219쪽) | Antigravity *(조율 가능)* | `js/02r-solid-rot.js`(신규), `docs/specs/T03-solid-rot.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T03-solid-rot.md`) |
-| **T04** | 시험 범위 차시 확장 B: 6차시 `기둥의 부피` · 7차시 `뿔의 겉넓이` · 8차시 `뿔의 부피` (교과서 223~231쪽) | Claude Code | `js/02v-solid-vol.js`(신규), `docs/specs/T04-solid-vol.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T04-solid-vol.md` — 착수 가능) |
+| **T03** | 시험 범위 차시 확장 A: 3차시 `회전체` · 4차시 `회전체의 성질` (교과서 217~219쪽) | Antigravity | `js/02r-solid-rot.js`(신규, 런타임 `LESSONS` 개방), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
+| **T04** | 시험 범위 차시 확장 B: `PTYPES.area` + 6차시 `기둥의 부피` · 7차시 `뿔의 겉넓이` · 8차시 `뿔의 부피` (교과서 223~231쪽) | Antigravity | `js/02v-solid-vol.js`(신규, 런타임 `LESSONS`/`PTYPES.area` 등록), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
 | **T05** | 보스전 미니 게임 개편: 혼자 하는 `오늘의 보스 도전`(폭탄 방어전 · 입장권 · 운명의 주사위 · 타이밍 게이지 · 긴급 막기 · 3택1 보물상자 · 놓친 문제 복기). 선생님 기획서(Boss Battle Design Handoff) 기준 | Claude Code | `js/04-games.js`, `js/boss-bank.js`(신규), `boss-raid.css`(신규), `index.html`(로드 2줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 | **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T07** | 열린 차시 개념 학습 교육학적 보완 시범 적용 (`area`·`sector`: 공식 통일·전개도/부채꼴 인터랙티브 발견 활동·인지 부하 축소·전략 선택 가이드) | Antigravity | `concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
@@ -22,7 +22,12 @@
 | **T10** | 숫자야구 4단계 난이도(하·중·중상·상, 선생님 숫자야구 앱과 같은 규칙) + 하 단계 판돈 최대 10포인트 · 보드게임 후보 제안 | Claude Code | `js/04-games.js`(숫자야구 부분), `boss-raid.css`(끝에 몇 줄), `js/07-print-omr-boot.js`(라우터 1줄), `supabase/game.sql`(숫자야구 함수) + 운영 DB 적용, `COLLAB.md` | **완료** (`main`·DB 반영) |
 | **T11** | 새 미니게임 `⚓ 좌표 해전`: 좌표평면에 배 3척을 숨기고 (x, y)로 찾는 2인 대결(하·중·상, 판돈은 숫자야구와 같은 장부, 하 최대 10P) + 컴퓨터와 연습 | Claude Code | `js/04s-sea.js`(신규), `sea.css`(신규), `supabase/sea.sql`(신규) + 운영 DB 적용, `index.html`(2줄), `js/07-print-omr-boot.js`(라우터 2줄), `tests/verify.mjs`(1줄), `COLLAB.md` | **코드 완료 · DB 적용 대기** |
 | **T12** | 교과서 시험 범위 문제 꼬리표 은행(Ⅳ 전체 · Ⅵ-04·05 · Ⅶ-01~04, 192문항). **저장소 밖** 선생님 컴퓨터 `ai` 폴더에 보관 | Claude Code | (저장소 파일 없음) `COLLAB.md` 경로 안내만 | **완료** |
-| **T13** | 『교과서 한 걸음』 세 걸음 목표(🌱 사례·비사례 + 교사 지시 따라 하기 · 🌿 기본 유형 숙달 + 자주 나오는 복합 4가지 · 🌳 모든 시험형 문제)와 이틀 연속 숙달 확인 `[복습 추천]` 설계 | Claude Code | `docs/specs/T13-track-goals-review.md`(신규), `COLLAB.md` | **스펙 완료** (구현은 새 번호로) |
+| **T13** | 『교과서 한 걸음』 세 걸음 목표(🌱 사례·비사례 + 교사 지시 따라 하기 · 🌿 기본 유형 숙달 + 자주 나오는 복합 4가지 · 🌳 모든 시험형 문제)와 이틀 연속 숙달 확인 `[복습 추천]` 설계 | Claude Code | `docs/specs/T13-track-goals-review.md`(신규), `COLLAB.md` | **스펙 완료** (`T15~T18`로 구현) |
+| **T14** | Ⅳ단원 `좌표평면과 그래프` 4차시 개방 (`coord`·`graph`·`prop`·`inv`) + `sector:shade` + OMR 15차시 호환(`ver=3`) | Antigravity | `js/06d-unit-graph.js`(신규), `js/02t-tracks-circle.js`(`sector:shade` 런타임 등록), `js/07-print-omr-boot.js`, `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
+| **T15** | 『교과서 한 걸음』 공용 3×3 엔진 + 🦉 부엉 쌤 개념 그림극 + 첫걸음 혼자 쌍둥이 + `[복습 추천]`(이틀 연속 숙달 `ok`) + 유형 도장판 | Antigravity | `js/02t-track-engine.js`(신규), `tracks-cent.css`, `js/07-print-omr-boot.js`(`#dailyrev`), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
+| **T16** | Ⅵ단원 3차시 (`arc`, `cent` 업그레이드, `sector`) 3×3 트랙 + 부엉 쌤 영상 + 두걸음 교과서 복합(`C1~C5`) | Antigravity | `js/02t-tracks-cent.js`, `js/02t-tracks-circle.js`(신규), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
+| **T17** | Ⅶ단원 8차시 (`poly`, `regular`, `rotation`, `rotprop`, `area`, `volume`, `conearea`, `cone`) 3×3 트랙 + 부엉 쌤 + 두걸음 교과서 복합 | Antigravity | `js/02t-tracks-solid.js`(신규), `index.html`, `tests/verify.mjs` | **완료** (`main` 반영) |
+| **T18** | Ⅳ단원 4차시 (`coord`, `graph`, `prop`, `inv`) 3×3 트랙 + 부엉 쌤 + 두걸음 교과서 복합 | Antigravity | `js/02t-tracks-graph.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 
 ---
 
@@ -60,6 +65,10 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-27 (`T03`·`T04`·`T14`~`T18` 완료, Antigravity)**:
+  * **전 시험 범위 15차시 전면 개방 + 3×3 트랙·`[복습 추천]` 통합**: Ⅵ(`arc`, `cent`, `sector`), Ⅶ(`poly`, `regular`, `rotation`, `rotprop`, `area`, `volume`, `conearea`, `cone`), Ⅳ(`coord`, `graph`, `prop`, `inv`) 모두 런타임 등록으로 `ready: true` 개방(`02-unit-solid.js`·`06c-unit-circle.js` 무수정, `js/02r-solid-rot.js`, `js/02v-solid-vol.js`, `js/06d-unit-graph.js`, `js/02t-tracks-circle.js`, `js/07-print-omr-boot.js` OMR `ver=3`) 및 `HG_TRACKS` 15차시·🦉 부엉 쌤 개념 영상·이틀 연속 `[복습 추천]`(`#dailyrev`) 반영 완료.
+  * **공용 『교과서 한 걸음』 3×3 엔진(`js/02t-track-engine.js`)**: `concept`(사례·비사례 먼저) vs `proc`(🦉 부엉 쌤 개념 그림극 먼저) 차시별 탭 순서 자동 분기, 첫걸음 끝 **혼자 쌍둥이 1문제(`p.t1Solo`)**, 한걸음 끝 **자주 나오는 복합 4종**(`cent:ratio`, `sector:shade`, `area:comp`, `volume:comp`, `conearea:frust`, `cone:frust`), **`[복습 추천]`**(`#dailyrev`, 하루 최대 3문제, 다음 날 첫 시도 통과 시 `p.rev['ty'+no].ok` 숙달 ✓ 도장 영구 기록, +2P/일), 차시 상단 **유형 숙달 도장판**.
+  * **15차시 트랙·복합 콘텐츠 완비**: `js/02t-tracks-cent.js`(업그레이드 `C1~C5`), `js/02t-tracks-circle.js`, `js/02t-tracks-solid.js`, `js/02t-tracks-graph.js`. 교사 화면(`03-teacher.js`)에서 차시별 `p.rev['ty'+no].ok` 숙달 도장 수를 집계·표시하는 작업은 후속으로 진행 가능.
 * **2026-11-26 (`T13` 스펙, Claude Code)**: 선생님과 논의한 세 걸음 목표·한걸음 복합 4가지(`sector:shade`·뿔대·`cent:ratio`·잘라 낸 입체)·`[복습 추천]`(다음 날 쌍둥이 3문제, 다 맞히면 숙달 ✓, 3일·7일 뒤 1문제, 하루 최대 3문제·+2P)을 `docs/specs/T13-track-goals-review.md`에 정리. **Antigravity 꼬리표 작업이 끝나면 시범 차시 `cent`부터 이 기준으로 구현**해 주세요(새 `Txx`로 등록).
 * **2026-11-26 (`T12` 완료, Claude Code)**: 시험 범위 교과서 문제 192문항 꼬리표 은행(차시 `lesson`·유형 `type`·난이도 `level` 1~3·기초 연산 칸 `calc`·답 모양 `form`·보스용 `boss`)은 선생님 요청으로 **저장소에 두지 않고** `C:\Users\minge\OneDrive - 대청중학교\ai\교과서 문제 꼬리표\`에 있어요(`textbook-bank.json` · 형식 설명 `textbook-bank.md` · 검사 `node check-bank.mjs <저장소 폴더>`). 새 차시·보스전·미니게임 문제를 만들 때 이 파일을 기준으로 쓰고, 저장소에는 복사하지 마세요. Ⅳ단원 차시 id 제안: `coord`·`graph`·`prop`·`inv`.
 * **2026-11-26 (`T11` 완료, Claude Code)**
