@@ -1,4 +1,4 @@
-/* T08: 교과서 한 걸음 — 중심각과 호(cent) 3탭 × 3트랙 시범 UI */
+/* 교과서 한 걸음: 통합 3탭 × 3트랙 · 부엉 쌤 개념 영상 · 유형 도장판 · [복습 추천] */
 
 .ct-head{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .ct-head-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
@@ -15,6 +15,14 @@
 .ct-tr-pill[data-track="1"].on{background:#eaf7ef;border-color:#2b7a4b}
 .ct-tr-pill[data-track="2"].on{background:#eaf0fc;border-color:#2a4d9e}
 .ct-tr-pill[data-track="3"].on{background:#f2ecfc;border-color:#6d47b8}
+
+/* 유형 숙달 도장판 (제목 아래 컴팩트 요약) */
+.ct-stamps{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:2px}
+.ct-stamp-lbl{font-size:12px;color:var(--ink-soft,#5a6377);font-weight:700;margin-right:2px}
+.ct-stamp{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;border:1px solid var(--line,#d8dce4);background:#f8f9fc;font-size:12px;color:var(--ink-soft,#5a6377)}
+.ct-stamp.t1{background:#f1fbf4;border-color:#a3d9b5;color:#1f5e37}
+.ct-stamp.due{background:#fff8eb;border-color:#f0c476;color:#7a4100}
+.ct-stamp.ok{background:#e5f4ea;border-color:#2b7a4b;color:#1a5c35;font-weight:700}
 
 /* 3탭 바 */
 .ct-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
@@ -41,6 +49,32 @@
 
 .ct-pass-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:12px;background:#f4f7fd;border:1px solid #c9d8f4;margin-bottom:14px;font-size:14px}
 
+/* 🦉 부엉 쌤 장면 개념 영상 플레이어 */
+.owl-wrap{border:1.5px solid #cbd7ec;background:linear-gradient(180deg,#f9fbff 0%,#ffffff 100%);border-radius:16px;padding:16px;margin-bottom:14px}
+.owl-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.owl-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px}
+.owl-dots{display:flex;align-items:center;gap:5px}
+.owl-dot{width:10px;height:10px;border-radius:50%;background:#d8e1f0;border:0;padding:0;cursor:pointer;transition:transform .12s,background .12s}
+.owl-dot.done{background:#7cb996}
+.owl-dot.on{background:var(--accent,#2a4d9e);transform:scale(1.25)}
+.owl-stage{background:#fff;border:1px solid #dce5f4;border-radius:12px;padding:12px;text-align:center;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.owl-stage svg{max-width:340px;width:100%;height:auto}
+.owl-cap{margin-top:6px;font-size:13px;font-weight:700;color:var(--accent,#2a4d9e)}
+@keyframes owlFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes owlBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.owl-new{animation:owlFade .35s ease}
+.owl-row{display:flex;align-items:flex-start;gap:12px;margin-top:12px}
+.owl-av{flex:none;width:62px;height:62px;border-radius:50%;background:#eef4ff;border:1.5px solid #bfd3f7;display:grid;place-items:center;animation:owlBob 2.8s ease-in-out infinite}
+.owl-bub{flex:1;min-width:0;background:#fff;border:1.5px solid #bfd3f7;border-radius:14px;padding:12px 14px;font-size:16px;line-height:1.55;cursor:pointer}
+.owl-bub .kw{background:#fff3bf;padding:1px 5px;border-radius:5px;font-weight:700}
+.owl-bub .num{color:#2a4d9e;font-weight:700}
+.owl-bub .warn{color:#b83a3a;font-weight:700}
+.owl-ask{margin-top:12px;padding:12px 14px;border-radius:12px;background:#fff8eb;border:1.5px solid #f0c476}
+.owl-ask-q{font-weight:700;font-size:15px;margin-bottom:8px}
+.owl-ctrl{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+.owl-sum{margin-top:12px;padding:12px 14px;border-radius:12px;background:#e5f4ea;border:1.5px solid #84c79d;font-size:14px;line-height:1.6}
+.owl-sum ul{margin:6px 0 0;padding-left:18px}
+
 /* 인터랙티브 터치 버튼 & 칩 */
 .ct-hit-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 .ct-hit{min-height:44px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--ink,#1d2640);background:#fff;cursor:pointer;font-weight:500;font-size:15px;transition:background .12s,border-color .12s}
@@ -63,7 +97,7 @@
 .ct-schema-q{font-size:19px;font-weight:700;margin:0 0 12px;line-height:1.45}
 .ct-cool{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff4e6;border:1.5px solid #f0b974;color:#7a3e00;font-size:14px;font-weight:500}
 
-/* 🌱 첫걸음: 지시 따라 분해 + 계산 대행 */
+/* 🌱 첫걸음: 지시 따라 분해 + 계산 대행 + 혼자 쌍둥이 1문제 */
 .ct-guide{display:flex;flex-direction:column;gap:10px}
 .ct-gstep{border:1.5px solid var(--line,#d8dce4);border-radius:12px;padding:12px 14px;background:#fff}
 .ct-gstep.cur{border-color:var(--ink,#1d2640);box-shadow:inset 5px 0 0 var(--hi,#ffe266)}
@@ -75,6 +109,8 @@
 .ct-eq-box{padding:10px 12px;border-radius:10px;background:#f8f9fc;border:1px solid #d5dff2;font-family:var(--math);font-size:21px;text-align:center;margin:8px 0}
 .ct-input-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
 .ct-inp{width:110px;min-height:46px;padding:6px 12px;border:2px solid var(--ink,#1d2640);border-radius:10px;font-family:var(--math);font-size:22px;text-align:center;background:#fff}
+.ct-solo{margin-top:14px;border:2px solid #84c79d;border-radius:14px;padding:14px;background:#f6fcf8}
+.ct-solo-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-weight:700;color:#1b683b}
 
 .ct-calchelp{margin-top:12px;border-top:1px dashed var(--line,#d8dce4);padding-top:10px}
 .ct-calchelp-toggle{background:#fff8ee;border:1.5px solid #eab364;color:#7a4100;border-radius:10px;padding:8px 14px;min-height:42px;cursor:pointer;font-weight:700;font-size:14px}
@@ -83,11 +119,10 @@
 .ct-timer-bar{height:6px;border-radius:999px;background:#d6e2fa;overflow:hidden;margin-top:8px}
 .ct-timer-bar i{display:block;height:100%;background:var(--accent,#2a4d9e);transition:width .25s linear}
 
-/* 🌱 첫걸음: 클릭형 모양 스키마 개념 카드 */
 .ct-click-concept{display:grid;gap:14px}
 .ct-nameplate{margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--hi-soft,#fff6c7);border:1.5px solid #d9be52;font-size:15px;line-height:1.5}
 
-/* 🌿 한걸음: 접이식 선생님 대표 예제 */
+/* 🌿 한걸음: 접이식 선생님 대표 예제 & 자주 나오는 복합 뱃지 */
 .ct-wx{border:1.5px solid #bfd3f7;background:#f9fbff;border-radius:12px;margin-bottom:12px;overflow:hidden}
 .ct-wx-toggle{width:100%;display:flex;align-items:center;gap:8px;padding:10px 14px;background:transparent;border:0;cursor:pointer;text-align:left;min-height:44px}
 .ct-wx-toggle:hover{background:#f0f5ff}
@@ -95,13 +130,14 @@
 .ct-wx-sum{font-size:14px;font-weight:600;color:var(--ink,#1d2640)}
 .ct-wx-chev{margin-left:auto;font-size:13px;font-weight:700;color:var(--accent,#2a4d9e);white-space:nowrap}
 .ct-wx-body{padding:0 14px 14px;border-top:1px solid #dce5f7}
-.ct-wx .ct-svg{max-width:240px}
+.ct-wx .ct-svg,.ct-wx .cfig{max-width:240px}
 .ct-wx-steps{display:flex;flex-direction:column;gap:8px}
 .ct-wx-step{border:1.5px solid #dce5f7;border-radius:10px;padding:10px 12px;background:#fff;cursor:pointer;text-align:left;width:100%}
 .ct-wx-step.on{border-color:var(--accent,#2a4d9e);background:#eef3fb}
 .ct-wx-step-top{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
 .ct-wx-step-body{margin-top:6px;font-size:15px;color:var(--ink,#1d2640);line-height:1.5}
 .ct-pitfall{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff4e6;border:1.5px solid #f0b974;color:#7a3e00;font-size:14px;line-height:1.5}
+.ct-comp-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#f3e8ff;border:1px solid #c4b5fd;color:#5b21b6;font-size:11px;font-weight:700}
 
 /* 🌿 🌳 적응형 차시 마무리 */
 .ct-chk-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:12px;background:#f8f9fc;border:1px solid var(--line,#d8dce4);margin-bottom:14px}
@@ -115,6 +151,12 @@
 .ct-meta{margin-top:14px;padding:14px;border-radius:14px;background:#f4f7fd;border:1.5px solid #bfd3f7}
 .ct-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 
+/* [복습 추천] 홈 배너 카드 */
+.ct-drev-card{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#eef6ff 0%,#f0fbf4 100%);border:1.5px solid #7ab3ef;margin-bottom:10px}
+.ct-drev-txt b{display:block;font-size:16px;color:var(--ink,#1d2640)}
+.ct-drev-txt small{font-size:13px;color:var(--ink-soft,#5a6377)}
+.ct-drev-act{display:flex;align-items:center;gap:8px}
+
 /* 더 알아보기 보너스 카드 */
 .ct-bonus-explore{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:14px;border:1.5px dashed #9fbcf2;background:#f8fbff;margin-top:16px}
 .ct-bonus-explore b{display:block;font-size:16px;margin-bottom:2px}
@@ -124,4 +166,6 @@
   .ct-tabs{grid-template-columns:1fr}
   .ct-stage{grid-template-columns:1fr}
   .ct-hit,.ct-subtab,.ct-tab{min-height:46px}
+  .owl-row{flex-direction:column}
+  .owl-av{width:52px;height:52px}
 }
