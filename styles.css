@@ -1049,3 +1049,10 @@ body.t-dopen{overflow:hidden}
 .tystar{letter-spacing:1px;color:#c9a200;font-size:18px;line-height:1}.tystar.s0{color:#b9bfcc}.tpc .tystar{font-size:15px}
 .tyrun b,.tygoal b{font-weight:800}.tydone{color:#3f7d4e;font-weight:700}
 @media (max-width:760px){.typrog{font-size:14px;gap:4px 10px}}
+
+/* 오늘의 길잡이: 선생님과 함께 / 혼자 하기 */
+.gsteps li.g-sub{border:0;background:none;padding:8px 2px 0;gap:8px;flex-wrap:wrap;align-items:baseline}
+.gsteps li.g-sub b{font-size:15px}.gsteps li.g-sub small{color:var(--muted,#666);font-size:13px}
+.gsteps li.g-sub.g-t b{color:#2a4d9e}.gsteps li.g-sub.g-s b{color:#3f7d4e}
+.tab{position:relative}.tab .twho{display:none;position:absolute;top:3px;right:5px;font-size:14px;line-height:1}
+@media (max-width:760px){.tab .twho{display:block}}

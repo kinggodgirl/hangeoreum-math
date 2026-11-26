@@ -793,7 +793,7 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   if(due||NUM(D.c.review))S.push({done:!due,t:due?`복습 노트 ${due}문제`:'복습 노트',s:due?'틀렸던 문제를 다시 풀어요':'오늘 복습을 끝냈어요',href:'#review'});
   const L=LESSONS.filter(l=>l.ready),cur=L.find(l=>lessonDone(l.id)<LESSON_REQ),moved=NUM(D.c.steps)+NUM(D.c.prac)+NUM(D.c.explore)>0;
   if(cur){const p=OBJ(DB[cur.id]),tab=!p.concept?'concept':!(NUM(p.steps)>0)?'steps':!(NUM(OBJ(p.prac).solved)>=5)?'practice':'explore';
-    S.push({done:moved,more:true,t:`${cur.no}차시 ${cur.title}`,s:TAB_DO[tab]+(tab==='practice'?` (지금 ${NUM(OBJ(p.prac).solved)}개)`:''),href:'#'+cur.id+(tab==='concept'?'':'-'+tab)})}
+    S.push({who:(tab==='concept'||tab==='steps')?'T':'S',done:moved,more:true,t:`${cur.no}차시 ${cur.title}`,s:TAB_DO[tab]+(tab==='practice'?` (지금 ${NUM(OBJ(p.prac).solved)}개)`:''),href:'#'+cur.id+(tab==='concept'?'':'-'+tab)})}
   else S.push({done:moved,more:true,t:'열린 차시를 모두 마쳤어요',s:'연습 문제로 실력을 다져요',href:'#'+L[L.length-1].id+'-practice'});
   const cdone=NUM(D.c.calc)>0,dg=OBJ(DB._calcDiag);
   if(!dg.d)S.push({done:cdone,more:true,t:'기초 연산 · 시작점 찾기',s:cdone?'오늘 한 세트 했어요 · 시작점 찾기도 해 보세요':`${DIAG.length}문제로 어디서부터 할지 찾아요`,href:'#calc-start'});
@@ -804,7 +804,9 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
     S.push({done:cdone,more:true,t:`기초 연산 · ${tp.nm}`,s:cdone?'오늘 한 세트 했어요':sub,href:'#calc-'+tp.id})}
   const dd=OBJ(DB._drill).last===today(),dn=dueList().length,cl=calcLenPref();S.push({done:dd,t:'오늘의 계산',s:dd?'오늘 끝냈어요':dn?`복습할 주제 ${Math.min(cl<=5?2:3,dn)}개를 섞어서 ${cl}문제`:`섞어서 ${cl}문제 · ${cl<=5?'3분쯤':'5분쯤'}`,href:'#drill'});
   return S}
-function guideHTML(){const S=guideSteps(),ci=S.findIndex(x=>!x.done),n=S.filter(x=>x.done).length;
+/* 방과후: 선생님과 함께 할 것(T)을 위에, 혼자 할 것(S)을 아래에 나눠 보여요 */
+const GUIDE_WHO={T:['👩‍🏫 선생님과 함께','방과후 시간에 선생님과 같이 해요'],S:['🙋 혼자 하기','선생님이 다른 친구를 도와줄 때나 집에서 혼자 해요']};
+function guideHTML(){const S0=guideSteps(),S=S0.filter(x=>x.who==='T').concat(S0.filter(x=>x.who!=='T')),ci=S.findIndex(x=>!x.done),n=S.filter(x=>x.done).length;
   return`<div class="g-head"><b class="t">오늘의 길잡이</b><span class="k">${n===S.length?'오늘 할 일을 다 했어요!':'위에서부터 하나씩 해 봐요'} · ${n}/${S.length}</span></div>
-  <ol class="gsteps">${S.map((x,i)=>`<li class="${x.done?'done':i===ci?'cur':''}"><span class="gn">${x.done?CHECK:i+1}</span><span class="gt"><b>${x.t}</b><small>${x.s}</small></span>${x.done&&!x.more?'':`<a class="btn ${i===ci?'primary':'ghost'}" href="${x.href}">${x.done?'더 하기':i===ci?'시작':'하기'}</a>`}</li>`).join('')}</ol>`}
+  <ol class="gsteps">${S.map((x,i)=>`${(x.who==='T'?'T':'S')!==(i?(S[i-1].who==='T'?'T':'S'):'')?`<li class="g-sub g-${x.who==='T'?'t':'s'}"><b>${GUIDE_WHO[x.who==='T'?'T':'S'][0]}</b><small>${GUIDE_WHO[x.who==='T'?'T':'S'][1]}</small></li>`:''}<li class="${x.done?'done':i===ci?'cur':''}"><span class="gn">${x.done?CHECK:i+1}</span><span class="gt"><b>${x.t}</b><small>${x.s}</small></span>${x.done&&!x.more?'':`<a class="btn ${i===ci?'primary':'ghost'}" href="${x.href}">${x.done?'더 하기':i===ci?'시작':'하기'}</a>`}</li>`).join('')}</ol>`}
 
