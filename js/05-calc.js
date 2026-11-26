@@ -131,7 +131,7 @@ const calcLvN=id=>((typeof CALC!=='undefined'&&CALC.find(t=>t.id===id))||{}).lv?
 const calcDone=id=>NUM(calcPeek(id).stars)>=calcLvN(id);
 const calcMaxLv=id=>{const s=calcPeek(id);return Math.min(calcLvN(id),Math.max(NUM(s.stars)+1,NUM(s.unlock)||1))};
 const calcPeek=id=>OBJ(OBJ(DB._calc)[id]);
-const calcStars=()=>CALC.reduce((a,t)=>a+Math.min(3,NUM(calcPeek(t.id).stars)),0);
+const calcStars=()=>CALC.reduce((a,t)=>a+Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)),0);
 const calcStarted=id=>{const s=calcPeek(id);return NUM(s.stars)>0||NUM(s.n)>0||NUM(s.box)>0||Object.keys(OBJ(s.ways)).length>0};
 const calcDue=id=>{if(id==='facts'||!calcStarted(id))return false;const d=calcPeek(id).due;return!d||d<=today()};
 const dueList=()=>CALC.filter(t=>calcDue(t.id)).sort((a,b)=>String(calcPeek(a.id).due||'').localeCompare(String(calcPeek(b.id).due||'')));
@@ -697,6 +697,9 @@ const EXAM_TAG={pi:'원·부채꼴·입체',frac:'부채꼴·뿔·구',pow:'원�
 const examRank=id=>{const i=EXAM_FOCUS.indexOf(id);return i<0?99:i};
 const CALC_GRP=[['solid','원·부채꼴 · 입체도형 핵심 계산','이번 시험 범위(원과 부채꼴·입체도형·정비례/반비례)에 바로 나오는 계산이에요.'],['mid','중1 핵심 연산','부호·분수·소수·약수와 배수. 정비례·반비례와 부채꼴 계산의 바탕이에요.'],['base','기초 다지기','모든 계산의 바탕이에요. 흔들리는 부분부터 챙겨요.']];
 const calcVisible=t=>!SITE.calcGroups||SITE.calcGroups.includes(t.grp);
+/* 선생님이 지금 먼저 하게 할 기초 연산 주제(config의 SITE.calcNow로 바꿀 수 있어요, ''이면 끔). 다 익힐 때까지 홈·길잡이 맨 앞에 나와요 */
+const CALC_NOW=typeof SITE.calcNow==='string'?SITE.calcNow:'pi';
+const calcNowT=()=>{const t=CALC.find(c=>c.id===CALC_NOW);return t&&calcVisible(t)&&!calcDone(t.id)?t:null};
 const calcPlan=()=>{const d=OBJ(DB._calcDiag);return Array.isArray(d.plan)?d.plan.filter(id=>CALC.some(t=>t.id===id)):[]};
 function calcCard(t,dueIds,plan){const s=calcPeek(t.id),wd=t.ways.filter((w,k)=>OBJ(s.ways)[k]).length,isDue=dueIds.includes(t.id),rec=plan.includes(t.id)&&NUM(s.stars)<1,ex=EXAM_TAG[t.id];
   return`<a class="card calc-card" href="#calc-${t.id}"><span class="calc-tags">${ex?`<i class="ctag exam">시험 · ${ex}</i>`:''}${isDue?'<i class="ctag due">복습</i>':''}${rec?'<i class="ctag rec">추천</i>':''}</span><b>${t.nm}</b>${KEYS[t.id]?`<span class="kw">💡 ${KEYS[t.id].w}</span>`:''}<small>${t.use}</small><span class="calc-prog">${starRow(Math.min(calcLvN(t.id),NUM(s.stars)),calcLvN(t.id))}<small>생각하는 법 ${wd}/${t.ways.length}</small></span></a>`}
@@ -788,7 +791,7 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
        <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`}
     ask()}}
 /* ── 오늘의 계산: 복습할 주제(간격 반복) + 곱셈구구 + 지난 주제를 섞어서 10문제 ── */
-function drillPlan(r,count=10){const out=[],allDue=dueList().sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=CALC.filter(t=>t.id!=='facts'&&calcStarted(t.id)).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(3,NUM(calcPeek(t.id).stars)||1));
+function drillPlan(r,count=10){const out=[],allDue=dueList().sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=CALC.filter(t=>t.id!=='facts'&&calcStarted(t.id)).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)||1));
   const add=(t,L)=>{let q;for(let k=0;k<6;k++){q=Object.assign({type:'num'},t.gen(L,r));if(!out.some(x=>x.q===q.q))break}q.tid=t.id;q.lv=L;if(t.id!=='facts')q.regen=()=>Object.assign({type:'num'},t.gen(L,r),{tid:t.id,lv:L});out.push(q)};
   due.forEach(t=>add(t,lvOf(t)));
   const F=CALC.find(t=>t.id==='facts'),fl=lvOf(F),nf=count<=5?1:(started.length<2?2:1);for(let i=0;i<nf&&out.length<count;i++)add(F,ri(r,1,fl));
@@ -830,12 +833,13 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   if(cur){const p=OBJ(DB[cur.id]),tab=!p.concept?'concept':!(NUM(p.steps)>0)?'steps':!(NUM(OBJ(p.prac).solved)>=5)?'practice':'explore';
     S.push({who:(tab==='concept'||tab==='steps')?'T':'S',done:moved,more:true,t:`${cur.no}차시 ${cur.title}`,s:TAB_DO[tab]+(tab==='practice'?` (지금 ${NUM(OBJ(p.prac).solved)}개)`:''),href:'#'+cur.id+(tab==='concept'?'':'-'+tab)})}
   else S.push({done:moved,more:true,t:'열린 차시를 모두 마쳤어요',s:'연습 문제로 실력을 다져요',href:'#'+L[L.length-1].id+'-practice'});
-  const cdone=NUM(D.c.calc)>0,dg=OBJ(DB._calcDiag);
-  if(!dg.d)S.push({done:cdone,more:true,t:'기초 연산 · 시작점 찾기',s:cdone?'오늘 한 세트 했어요 · 시작점 찾기도 해 보세요':`${DIAG.length}문제로 어디서부터 할지 찾아요`,href:'#calc-start'});
+  const cdone=NUM(D.c.calc)>0,dg=OBJ(DB._calcDiag),nowT=calcNowT();
+  if(nowT){const st=calcPeek(nowT.id),lv=Math.min(calcLvN(nowT.id),NUM(st.stars)+1);S.push({done:cdone,more:true,t:`기초 연산 · ${nowT.nm}`,s:cdone?'오늘 한 세트 했어요':`선생님이 먼저 하자고 한 계산이에요 · ${lv}단계`,href:'#calc-'+nowT.id})}
+  else if(!dg.d)S.push({done:cdone,more:true,t:'기초 연산 · 시작점 찾기',s:cdone?'오늘 한 세트 했어요 · 시작점 찾기도 해 보세요':`${DIAG.length}문제로 어디서부터 할지 찾아요`,href:'#calc-start'});
   else{const dueT=dueList()[0],planT=calcPlan().map(id=>CALC.find(t=>t.id===id)).find(t=>t&&NUM(calcPeek(t.id).stars)<1),ids=CALC_FOR[cur?cur.id:'area']||[];
     const examT=EXAM_FOCUS.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&calcVisible(t)&&!calcDone(t.id));
     const tp=dueT||examT||planT||ids.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&!calcDone(t.id))||CALC.filter(calcVisible).sort((a,b)=>examRank(a.id)-examRank(b.id)||NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars))[0];
-    const st=calcPeek(tp.id),sub=calcDue(tp.id)?'복습할 때예요 · 10문제':Object.keys(OBJ(st.ways)).length?`${Math.min(3,NUM(st.stars)+1)}단계 10문제`:'생각하는 법부터 익혀요';
+    const st=calcPeek(tp.id),sub=calcDue(tp.id)?'복습할 때예요 · 10문제':Object.keys(OBJ(st.ways)).length?`${Math.min(calcLvN(tp.id),NUM(st.stars)+1)}단계 10문제`:'생각하는 법부터 익혀요';
     S.push({done:cdone,more:true,t:`기초 연산 · ${tp.nm}`,s:cdone?'오늘 한 세트 했어요':sub,href:'#calc-'+tp.id})}
   const dd=OBJ(DB._drill).last===today(),dn=dueList().length,cl=calcLenPref();S.push({done:dd,t:'오늘의 계산',s:dd?'오늘 끝냈어요':dn?`복습할 주제 ${Math.min(cl<=5?2:3,dn)}개를 섞어서 ${cl}문제`:`섞어서 ${cl}문제 · ${cl<=5?'3분쯤':'5분쯤'}`,href:'#drill'});
   return S}

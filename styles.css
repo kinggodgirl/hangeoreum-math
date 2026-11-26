@@ -1080,3 +1080,4 @@ body.t-dopen{overflow:hidden}
 .pifigw{display:flex;justify-content:center;margin:0 0 6px}.pifig{max-width:150px;height:auto}
 .calcLv{max-width:100%}.calcLv button{flex:0 1 auto;white-space:nowrap;padding:9px 12px;min-width:0}
 .kfigw{display:flex;justify-content:center;margin:2px 0 8px}.zigfig{max-width:100%;height:auto}
+.calc-chip.now{border-color:#2a4d9e;background:#eef3fd;box-shadow:0 0 0 2px #2a4d9e33}.calc-chip small.now{color:#2a4d9e;font-weight:700}
