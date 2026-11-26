@@ -20,8 +20,11 @@ const T=(key,label)=>`<button type="button" class="term" data-t="${key}">${label
 /* ───────── 단원 · 사이트 설정 (config.js) ─────────
    unit: 이 사이트에서 여는 단원(solid 입체도형, int 정수와 유리수) · standalone: 로그인 없이 이 기기에만 저장 */
 const SITE=window.HG_CONFIG||{},UNIT_ID=SITE.unit||'solid',STANDALONE=!!SITE.standalone;
-const UNIT_INFO={solid:{name:'입체도형의 성질',sub:'1학년 2학기 · 시범 단원',start:'입체도형 단원 시작하기'},int:{name:'정수와 유리수',sub:'1학년 1학기 · II단원',start:'정수와 유리수 단원 시작하기'}};
+const UNIT_INFO={solid:{name:'입체도형의 성질',ch:'입체도형의 성질',sub:'1학년 2학기 · 시범 단원',start:'입체도형 단원 시작하기'},int:{name:'정수와 유리수',ch:'정수와 유리수',sub:'1학년 1학기 · II단원',start:'정수와 유리수 단원 시작하기'},circle:{name:'원과 부채꼴',ch:'평면도형의 성질',sub:'1학년 2학기 · 평면도형의 성질',start:'원과 부채꼴 시작하기'}};
 const UI_=UNIT_INFO[UNIT_ID]||UNIT_INFO.solid,UNIT_HASH='#unit-'+UNIT_ID;
+/* 한 사이트에서 함께 여는 단원 (config.js units: ['solid','circle'] 처럼 바꿀 수 있어요). 첫 단원이 대표 단원(UNIT_ID) */
+const OPEN_UNITS=Array.isArray(SITE.units)&&SITE.units.length?SITE.units.filter(u=>UNIT_INFO[u]):UNIT_ID==='solid'?['solid','circle']:[UNIT_ID];
+const unitOf=u=>UNIT_INFO[u]||UI_;
 /* ───────── 저장(이 기기 전용) ───────── */
 const STORE_KEY=SITE.storeKey||'hangeoreum-math-v1',AUTH_KEY='hangeoreum-auth-v1',TKEY='hangeoreum-teacher-v1';
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}};
@@ -67,7 +70,7 @@ const BADGES=[
   {k:'boss3',server:true,nm:'보스 사냥꾼',d:'우리 반과 함께 보스 3마리 물리치기',ok:M=>(M.cnt.boss||0)>=3},
   {k:'calc12',nm:'계산 장인',d:'기초 연산 별 12개 모으기',ok:()=>calcStars()>=12},
   {k:'facts36',nm:'구구단 달인',d:'구구단 표 36칸을 모두 익힘으로 만들기',ok:()=>factsKnown()>=36}];
-function badgeOn(b){return(!b.unit||b.unit===UNIT_ID)&&!(b.server&&STANDALONE)}
+function badgeOn(b){return(!b.unit||OPEN_UNITS.includes(b.unit))&&!(b.server&&STANDALONE)}
 function checkBadges(){const M=me();BADGES.forEach(b=>{if(!M.badges[b.k]&&b.ok(M)){M.badges[b.k]=today();save();setTimeout(()=>toast(`배지를 받았어요 · ${b.nm}`),400)}})}
 function badgeIcon(i,on){const n=3+(i%4),R=17,c=22;const pts=regPoly(n,R,-Math.PI/2).map(p=>`${(c+p[0]).toFixed(1)},${(c+p[1]).toFixed(1)}`).join(' ');
   return`<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><polygon points="${pts}" fill="${on?FC[i%5]:'#eef0f4'}" stroke="${on?'#1d2640':'#c3c8d2'}" stroke-width="2" stroke-linejoin="round"/>${on?`<text x="22" y="27" text-anchor="middle" font-size="13" font-weight="700" fill="#1d2640" font-family="IBM Plex Sans KR,sans-serif">${n}</text>`:''}</svg>`}

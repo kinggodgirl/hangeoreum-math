@@ -1,5 +1,5 @@
 /* ───────── 단원 맞추기: 이 사이트에서 여는 단원의 차시·배지만 남김 ───────── */
-{const keep=LESSONS.filter(l=>(l.unit||'solid')===UNIT_ID);LESSONS.splice(0,LESSONS.length,...keep);const kb=BADGES.filter(badgeOn);BADGES.splice(0,BADGES.length,...kb);
+{const keep=LESSONS.filter(l=>OPEN_UNITS.includes(l.unit||'solid'));LESSONS.splice(0,LESSONS.length,...keep);const kb=BADGES.filter(badgeOn);BADGES.splice(0,BADGES.length,...kb);
   if(UNIT_ID!=='solid')document.title=`${UI_.name} · 한 걸음 수학`;
   if(STANDALONE){const f=$('#foot');if(f)f.innerHTML=`${UI_.name} · 기록은 이 기기에만 저장돼요. 다른 기기에서는 처음부터 시작해요.`}}
 /* ───────── 길찾기 ───────── */
@@ -9,7 +9,9 @@
 let PW_GO=null;   /* 점검 채점에서 '이 유형 다시 풀기'로 왔을 때 고를 유형 */
 const PW_CIRC=['①','②','③','④','⑤','⑥','⑦','⑧'];
 const PW_LESSONS=()=>LESSONS.filter(l=>l.ready&&(PTYPES[l.id]||GEN[l.id]));
-function pwFinal(P){return P.final||Object.assign({},P.steps[P.steps.length-1],{q:P.finalQ||P.steps[P.steps.length-1].q})}
+function pwFinal(P){if(P.final)return P.final;const L=P.steps[P.steps.length-1],F=Object.assign({},L,{q:P.finalQ||L.q});
+  /* 보기에 이미 ①②가 붙어 있으면 떼어 내요 (인쇄할 때 번호가 두 번 붙지 않게) */
+  const cut=c=>String(c).replace(/^[①②③④⑤]\s*/,'');if(F.type==='choice'&&F.choices.every(c=>/^[①②③④⑤]\s/.test(c))){F.choices=F.choices.map(cut);F.ans=cut(F.ans)}return F}
 function pwMake(lids,n,seed){const r=mulberry(seed),slots=[];
   lids.forEach(lid=>{const T=PTYPES[lid];if(T)T.forEach(t=>slots.push({lid,key:tyKey(lid,t.no),nm:`${t.nm}`,no:t.no}));else slots.push({lid,key:lid,nm:'',no:null})});
   const order=[];while(order.length<n){shuffle(r,slots.slice()).forEach(s=>{if(order.length<n)order.push(s)})}
@@ -24,7 +26,7 @@ function pwQHTML(it,i){const P=it.P,F=pwFinal(P),circOnly=F.type==='choice'&&F.c
   else if(P.ptype==='poly:all3')ans=`<div class="pw-ans">${pwAll3(P).map(([l,s])=>`${l}: <span class="pw-line" style="width:70px"></span>${s.suffix||''}`).join('&emsp;')}</div>`;
   else if(F.type==='choice')ans=circOnly?`<div class="pw-ch pw-ch1">${F.choices.map(c=>`<span>${c}</span>`).join('')}</div>`:`<div class="pw-ch">${F.choices.map((c,k)=>`<span>${PW_CIRC[k]} ${c}</span>`).join('')}</div>`;
   else ans=`<div class="pw-ans">답: <span class="pw-line"></span> ${F.suffix||''}</div>`;
-  return`<div class="pw-q"><div class="pw-h"><b class="pw-n">${i+1}</b><div class="pw-t">${P.title}</div></div>${P.fig?`<div class="pw-figw"><canvas class="pw-fig" data-i="${i}"></canvas></div>`:''}
+  return`<div class="pw-q"><div class="pw-h"><b class="pw-n">${i+1}</b><div class="pw-t">${P.title}</div></div>${P.fig?(P.fig.svg?`<div class="pw-figw pw-svg">${P.fig.svg(false,0)}</div>`:`<div class="pw-figw"><canvas class="pw-fig" data-i="${i}"></canvas></div>`):''}
     ${/poly:(all3|name2)/.test(P.ptype)?'':`<div class="pw-fq">${F.q}</div>`}${ans}<div class="pw-work">풀이</div></div>`}
 const pwFmt=s=>s.suffix==='면체'?kn(s.ans)+'면체':fmtAns(s);
 function pwKeyHTML(it,i){const P=it.P,F=pwFinal(P);let a;
@@ -46,7 +48,7 @@ function viewPrint(pre){
   const draw=()=>{const sheet=$('.pw-sheet',app);if(!lids.length){sheet.innerHTML='<p class="muted">차시를 하나 이상 골라 주세요.</p>';return}
     const items=pwMake(lids,n,seed),names=RL.filter(l=>lids.includes(l.id)).map(l=>`${l.no}차시 ${l.title}`).join(' · ');
     $('.pwNo',app).textContent=`문제지 번호 ${seed}`;
-    sheet.innerHTML=`<section class="pw-page"><div class="pw-top"><div><b class="pw-ttl">한 걸음 수학 · 점검 학습지</b><div class="pw-sub">${UI_.name} · ${names} · ${items.length}문제 · 문제지 ${seed}</div></div>
+    sheet.innerHTML=`<section class="pw-page"><div class="pw-top"><div><b class="pw-ttl">한 걸음 수학 · 점검 학습지</b><div class="pw-sub">${[...new Set(RL.filter(l=>lids.includes(l.id)).map(l=>unitOf(l.unit||'solid').name))].join(' · ')} · ${names} · ${items.length}문제 · 문제지 ${seed}</div></div>
         <div class="pw-name">학년 <span></span> 반 <span></span> 번호 <span></span> 이름 <span class="w"></span></div></div>
       <div class="pw-tip">단계 안내 없이 풀어요. 그림에 직접 표시하고, 식과 과정을 '풀이' 칸에 적어 보세요.</div>
       <div class="pw-grid">${items.map(pwQHTML).join('')}</div></section>
@@ -64,7 +66,7 @@ function viewPrint(pre){
    점검 학습지 뒤에 OMR 답안지를 붙여요. 네 모서리 검은 네모로 종이 위치를 잡고,
    아래 줄무늬(데이터 줄)에 문제지 번호 · 차시 · 문제 수가 들어 있어서 사진만 찍으면 정답을 다시 만들어 채점해요.
    좌표는 모두 mm(답안지 180×250). */
-const OMR={W:180,H:250,MS:8,M:[[5,5],[175,5],[175,245],[5,245]],SX:24,SY:245,SW:3.3,SH:4,VER:1,SP:5.8};
+const OMR={W:180,H:250,MS:8,M:[[5,5],[175,5],[175,245],[5,245]],SX:24,SY:245,SW:3.3,SH:4,VER:2,SP:5.8};
 const OMR_D=P=>/^area:/.test(P.ptype)?3:2;   /* 자리 수: 겉넓이만 세 자리 */
 function omrParts(P){const F=pwFinal(P),num=(s,lab)=>({k:'num',s,lab,d:Math.max(OMR_D(P),String(Math.abs(s.ans)).length),sg:s.type==='sn',pi:s.type==='pi'});
   if(P.ptype==='poly:name2'){const a=P.steps.find(s=>/\(1\)/.test(s.tag||''));return[num(a,'(1)'),{k:'ch',s:F,lab:'(2)'}]}
@@ -85,12 +87,14 @@ function omrLayout(items){
   return null}
 const OMR_NO={rows:[{lab:'십',y:41},{lab:'일',y:48}],x:52};   /* 번호 두 자리 */
 function omrBits(lids,n,seed){const b=[1,0],put=(v,k)=>{for(let i=k-1;i>=0;i--)b.push(v>>i&1)};
-  put(OMR.VER,2);let m=0;lids.forEach(l=>{const i=LESSONS.findIndex(x=>x.id===l);if(i>=0)m|=1<<i});put(m,12);put(n,5);put(seed,14);
+  put(OMR.VER,2);let m=0;const SL=omrSlots(OMR.VER);lids.forEach(l=>{const i=SL.findIndex(x=>x.id===l);if(i>=0&&i<12)m|=1<<i});put(m,12);put(n,5);put(seed,14);
   let cs=0;for(let i=2;i<b.length;i++)cs=(cs*3+b[i]+i)%16;put(cs,4);b.push(1);return b}
 function omrUnbits(b){if(b.length!==40||b[0]!==1||b[1]!==0||b[39]!==1)return null;const get=(i,k)=>{let v=0;for(let j=0;j<k;j++)v=v*2+b[i+j];return v};
   let cs=0;for(let i=2;i<35;i++)cs=(cs*3+b[i]+i)%16;if(cs!==get(35,4))return null;
-  const ver=get(2,2),m=get(4,12),n=get(16,5),seed=get(21,14);if(ver!==OMR.VER||!m||n<1||n>16||seed<1000||seed>9999)return null;
-  const lids=LESSONS.filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n,seed}}
+  const ver=get(2,2),m=get(4,12),n=get(16,5),seed=get(21,14);if((ver!==1&&ver!==2)||!m||n<1||n>16||seed<1000||seed>9999)return null;
+  const lids=omrSlots(ver).filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n,seed}}
+/* 답안지의 차시 칸: 1판은 대표 단원 차시 순서(예전 답안지), 2판은 학습지에 쓸 수 있는 차시 순서(여러 단원, 최대 12개) */
+function omrSlots(ver){return ver===1?LESSONS.filter(l=>(l.unit||'solid')===UNIT_ID):PW_LESSONS()}
 function omrCardSVG(items,lids,n,seed){const L=omrLayout(items);
   if(!L)return`<p class="muted">문제가 많아 OMR 답안지에 다 들어가지 않아요. 문제 수를 줄여 주세요.</p>`;
   const r=L.r,o=[],T=(x,y,s,t,a='start',w=400,c='#111')=>o.push(`<text x="${x}" y="${y}" font-size="${s}" text-anchor="${a}" font-weight="${w}" fill="${c}">${t}</text>`),
@@ -338,7 +342,7 @@ function route(soft){SUB_BACK=null;
   document.body.classList.remove('pw-mode');hideTerm();stopSpeak();activeBox=null;pinKeyHandler=null;themePreview=null;applyTheme();if(!$('#labov').hidden)closeLab();
   const h=(location.hash||'').replace('#','');
   if(!h||h==='home')viewHome();
-  else if(h==='unit-'+UNIT_ID)viewUnit();
+  else if(/^unit-[a-z]+$/.test(h)&&OPEN_UNITS.includes(h.slice(5)))viewUnit(h.slice(5));
   else if(STANDALONE&&/^(login|teacher|boss|baseball|bb-|bossview-)/.test(h)){location.replace('#home');return}
   else if(h==='me')viewMe();
   else if(h==='review')viewReview();

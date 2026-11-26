@@ -18,7 +18,7 @@ const LESSONS=[
 const TABS=[{id:'concept',t:'미리 보기',s:'👩‍🏫 선생님과 · 수업 전에',who:'T'},{id:'steps',t:'같이 풀기',s:'👩‍🏫 선생님과 · 한 단계씩',who:'T'},{id:'practice',t:'혼자 풀기',s:'🙋 혼자 · 섞어서 반복',who:'S'},{id:'explore',t:'더 알아보기',s:'🙋 혼자 · 선택',who:'S'}];
 const DATA_TABS=['concept','explore','steps','practice'];   // 저장된 진도 배열의 순서 (교사 화면 · 엑셀)
 const TAB_NM=Object.fromEntries(TABS.map(t=>[t.id,t.t]));
-const UNITS=[['소인수분해',false],['정수와 유리수',false],['문자의 사용과 식',false],['일차방정식',false],['좌표평면과 그래프',false],['기본 도형',false],['평면도형의 성질',false],['입체도형의 성질',false],['자료의 정리와 해석',false]].map(([u])=>[u,u===UI_.name]);
+const UNITS=[['소인수분해',false],['정수와 유리수',false],['문자의 사용과 식',false],['일차방정식',false],['좌표평면과 그래프',false],['기본 도형',false],['평면도형의 성질',false],['입체도형의 성질',false],['자료의 정리와 해석',false]].map(([u])=>[u,OPEN_UNITS.some(k=>unitOf(k).ch===u)]);
 
 /* ───────── 화면: 홈 ───────── */
 const app=$('#app'),crumbs=$('#crumbs');
@@ -45,8 +45,8 @@ function viewHome(){
   ${STANDALONE?'':`<a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>`}
   <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
   <div class="calc-strip">${homeCalcChips()}</div>
-  <div class="sec-title"><h2>1학년 단원</h2><span>지금은 ${UI_.name} 단원을 열어 두었어요 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*LESSON_REQ}</span></div>
-  <div class="units">${UNITS.map(([u,r],i)=>r?`<a class="card unit ready" href="${UNIT_HASH}"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${u}</b><span class="st">열려 있음 · ${LESSONS.filter(l=>l.ready).length}개 차시 →</span></a>`:'').join('')}</div>
+  <div class="sec-title"><h2>1학년 단원</h2><span>지금은 ${OPEN_UNITS.map(u=>unitOf(u).name).join(' · ')} 단원을 열어 두었어요 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*LESSON_REQ}</span></div>
+  <div class="units">${OPEN_UNITS.slice().sort((x,y)=>UNITS.findIndex(z=>z[0]===unitOf(x).ch)-UNITS.findIndex(z=>z[0]===unitOf(y).ch)).map(u=>{const I=unitOf(u),i=UNITS.findIndex(x=>x[0]===I.ch),n=LESSONS.filter(l=>l.ready&&(l.unit||'solid')===u).length;return`<a class="card unit ready" href="#unit-${u}"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${I.name}</b>${I.name!==I.ch?`<small class="uch">${I.ch}</small>`:''}<span class="st">열려 있음 · ${n}개 차시 →</span></a>`}).join('')}</div>
   <p class="units-soon">준비 중인 단원: ${UNITS.filter(x=>!x[1]).map(x=>x[0]).join(' · ')}</p>`;
   if(UNIT_ID==='solid'){const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk())}
   if(isStudent())loadClass();
@@ -87,11 +87,11 @@ function pipsOf(id){const p=DB[id];const v=p?{concept:p.concept,explore:p.explor
 function homeCalcChips(){const due=dueList(),dg=OBJ(DB._calcDiag),exam=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t)&&NUM(calcPeek(t.id).stars)<3),plan=calcPlan().map(id=>CALC.find(t=>t.id===id)),rest=CALC.filter(calcVisible).sort((a,b)=>examRank(a.id)-examRank(b.id)||NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars));
   const list=[...due,...exam,...plan,...rest].filter((t,i,a)=>t&&a.indexOf(t)===i).slice(0,dg.d?4:3);
   return(dg.d?'':`<a class="calc-chip start" href="#calc-start"><b>시작점 찾기</b><small>처음이면 여기부터</small></a>`)+list.map(t=>`<a class="calc-chip" href="#calc-${t.id}"><b>${t.nm}</b>${calcDue(t.id)?'<small class="due">복습할 때</small>':starRow(Math.min(3,NUM(calcPeek(t.id).stars)))}</a>`).join('')}
-function viewUnit(){
-  crumbs.innerHTML=`<span class="sep">›</span><span>${UI_.name}</span>`;
-  app.innerHTML=`<div class="unit-head"><div><h1>${UI_.name}</h1><p>${UI_.sub}</p></div>
+function viewUnit(u=UNIT_ID){const I=unitOf(u);
+  crumbs.innerHTML=`<span class="sep">›</span><span>${I.name}</span>`;
+  app.innerHTML=`<div class="unit-head"><div><h1>${I.name}</h1><p>${I.sub}</p></div>
     <div class="legend"><span><i class="on"></i>미리 보기(수업 전) → 같이 풀기 → 혼자 풀기 5문제 · 더 알아보기는 선택</span></div></div>
-  <div class="lessons">${LESSONS.filter(l=>!l.hidden).map(l=>l.ready?`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="pips" aria-label="진행 상황">${pipsOf(l.id)}</span></a>`
+  <div class="lessons">${LESSONS.filter(l=>!l.hidden&&(l.unit||'solid')===u).map(l=>l.ready?`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="pips" aria-label="진행 상황">${pipsOf(l.id)}</span></a>`
     :`<div class="card lesson soon"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="soon-tag">준비 중</span></div>`).join('')}</div>`;
 }
 /* 미리 보기 상자: 정규 수업 전에 「오늘의 핵심」만 크게 (교과서: 지학사 중학교 수학 1) */
@@ -156,7 +156,7 @@ document.addEventListener('click',e=>{const c=e.target.closest('.zc');if(c&&!e.t
 /* 화면: 차시 */
 function viewLesson(id,tab){
   const L=LESSONS.find(l=>l.id===id);const p=prog(id);
-  crumbs.innerHTML=`<span class="sep">›</span><a href="${UNIT_HASH}">${UI_.name}</a><span class="sep">›</span><span>${L.title}</span>`;
+  crumbs.innerHTML=`<span class="sep">›</span><a href="#unit-${L.unit||'solid'}">${unitOf(L.unit||'solid').name}</a><span class="sep">›</span><span>${L.title}</span>`;
   const doneOf={concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac.solved>=5};
   app.innerHTML=`<div class="lesson-head"><div class="kicker">${L.no}차시${L.tb?` · <span class="tbref">교과서 ${L.tb}</span>`:''}</div><h1>${L.title}</h1></div>
    <div class="tabs" role="tablist">${TABS.map((t,i)=>`<button type="button" role="tab" class="tab ${t.id===tab?'on':''} ${doneOf[t.id]?'done':''}" data-tab="${t.id}" aria-selected="${t.id===tab}"><span class="num">${doneOf[t.id]&&t.id!==tab?CHECK:i+1}</span><span class="twho" title="${t.who==='T'?'선생님과 함께':'혼자 하기'}">${t.who==='T'?'👩‍🏫':'🙋'}</span><span class="tl">${t.t}<small>${t.s}</small></span></button>`).join('')}</div>
