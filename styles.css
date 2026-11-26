@@ -1081,3 +1081,4 @@ body.t-dopen{overflow:hidden}
 .calcLv{max-width:100%}.calcLv button{flex:0 1 auto;white-space:nowrap;padding:9px 12px;min-width:0}
 .kfigw{display:flex;justify-content:center;margin:2px 0 8px}.zigfig{max-width:100%;height:auto}
 .calc-chip.now{border-color:#2a4d9e;background:#eef3fd;box-shadow:0 0 0 2px #2a4d9e33}.calc-chip small.now{color:#2a4d9e;font-weight:700}
+.arcs{position:relative;display:inline-block;padding-top:.2em;font-family:var(--math,"Times New Roman"),serif;font-style:italic;font-size:1.1em;line-height:1.2}.arcs::before{content:"";position:absolute;left:6%;right:6%;top:-.02em;height:.4em;border:1.6px solid currentColor;border-bottom:none;border-radius:50% 50% 0 0/100% 100% 0 0}

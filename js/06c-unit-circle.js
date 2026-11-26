@@ -79,7 +79,7 @@ CONCEPT.arc=body=>{const A=pol(CC,CR,140),B=pol(CC,CR,40);
      <div class="box" style="margin:0">${T('지름')}은 원의 중심을 지나는 현이에요. 한 원에서 <b>가장 긴 현</b>이고, 길이는 반지름의 2배예요.</div>`,true)+
    fold(2,'호와 현','굽은 선과 곧은 선',`<div class="figbox">${svgW(300,270,circ(CC,CR)+`<path d="${arcD(CC,CR,40,140)}" fill="none" stroke="${HL}" stroke-width="6" stroke-linecap="round"/>`+ln(A,B,{col:BL,w:3.4})+dot(A)+dot(B)+dot(CC)+tx(pol(CC,CR+20,140),'A',{it:true})+tx(pol(CC,CR+20,40),'B',{it:true})+tx(pol(CC,CR+24,90),'호 AB',{size:17,sans:true,col:HL})+tx([CC[0],A[1]+20],'현 AB',{size:17,sans:true,col:BL})+tx([CC[0]+4,CC[1]+20],'O',{size:20}))}</div>
      <p>원 위의 두 점 A, B를 <b style="color:${HL}">원을 따라 이은 굽은 선</b>이 호 AB, <b style="color:${BL}">곧게 이은 선분</b>이 현 AB예요.</p>
-     <div class="box" style="margin:0">호 AB는 기호로 <span class="rm">⌒AB</span>(AB 위에 ⌒)처럼 써요. 보통 길이가 짧은 쪽 호를 말해요.</div>`)+
+     <div class="box" style="margin:0">호 AB는 기호로 <span class="arcs">AB</span>처럼 AB 위에 둥근 표시를 해서 써요. 보통 길이가 짧은 쪽 호를 말해요.</div>`)+
    fold(3,'부채꼴 · 중심각 · 활꼴','반지름 2개 + 호, 현 + 호',`<div class="duo"><div class="figbox">${svgW(300,270,circ(CC,CR)+`<path d="${secD(CC,CR,40,140)}" fill="${HLs}" stroke="${INK}" stroke-width="2.4"/>`+angMk(CC,40,140,'중심각',{col:'#b83a3a',lr:46,size:16})+dot(CC)+tx([CC[0]+4,CC[1]+20],'O',{size:20}))}<div class="figcap"><b>부채꼴</b> = 반지름 2개 + 호</div></div>
      <div class="figbox">${svgW(300,270,circ(CC,CR)+`<path d="${arcD(CC,CR,40,140)} Z" fill="${BLs}" stroke="${INK}" stroke-width="2.4"/>`+dot(CC)+tx([CC[0]+4,CC[1]+20],'O',{size:20}))}<div class="figcap"><b>활꼴</b> = 현 + 호</div></div></div>
      <p>두 반지름과 호로 둘러싸인 도형이 ${T('부채꼴')}, 두 반지름이 이루는 각이 ${T('중심각')}이에요. 현과 호로 둘러싸인 도형은 ${T('활꼴')}이에요.</p>`)+
@@ -171,7 +171,7 @@ GEN.centRatio=seed=>{const r=mulberry(seed),area=r()<0.35;let p,q,a,b;
     {tag:'한 칸의 크기',q:`${p}칸이 ${L} ${u}예요. 1칸은?`,type:'num',ans:m,suffix:u,hint:`${L} ÷ ${p}`},
     {tag:'구하는 칸 수만큼',q:`<i class="math">x</i>는 ${q}칸이에요. <i class="math">x</i>는?`,type:'num',ans:x,suffix:u,hint:`${m} × ${q}`,ok:`${m} × ${q} = ${x}`}]}};
 GEN.centThree=seed=>{const r=mulberry(seed);let a,b,c,t;for(;;){t=pick(r,[6,8,9,10,12,15,18,20]);a=ri(r,1,t-2);b=ri(r,1,t-a-1);c=t-a-b;if(c>=1&&new Set([a,b,c]).size>=2&&Math.min(a,b,c)*6>=t&&Math.max(a,b,c)*2<=t)break}
-  const one=360/t,want=pick(r,[['AB',a],['BC',b],['CA',c]]),fig=three(a,b,c),arc=s=>`<span class="rm">⌒</span>${s}`;
+  const one=360/t,want=pick(r,[['AB',a],['BC',b],['CA',c]]),fig=three(a,b,c),arc=s=>`<span class="arcs">${s}</span>`;
   return{ptype:'cent:three',title:`그림의 원 O에서 ${arc('AB')} : ${arc('BC')} : ${arc('CA')} = ${a} : ${b} : ${c}일 때, ${arc(want[0])}에 대한 중심각의 크기를 구하시오.`,fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:`${arc(want[0])}에 대한 중심각은 몇 도인가요?`,steps:[
     {tag:'전체 칸 수',q:'호의 비를 모두 더하면 몇 칸인가요?',type:'num',ans:t,suffix:'칸',hint:`${a} + ${b} + ${c}`,ok:`원 한 바퀴(360°)가 ${t}칸이에요.`},
     {tag:'1칸의 중심각',q:'1칸에 대한 중심각은 몇 도인가요?',type:'num',ans:one,suffix:'°',hint:`360 ÷ ${t}`},
@@ -249,7 +249,7 @@ const add=(k,o)=>{if(!TERMS[k])TERMS[k]=o};
 add('원',{k:'원과 부채꼴',b:'<p>평면 위의 한 점 O에서 일정한 거리에 있는 모든 점으로 이루어진 도형이에요. 점 O가 원의 중심이에요.</p>'});
 add('반지름',{k:'원과 부채꼴',b:'<p>원의 중심과 원 위의 한 점을 이은 선분이에요.</p>'});
 add('지름',{k:'원과 부채꼴',b:'<p>원의 중심을 지나는 현이에요. 한 원에서 가장 긴 현이고, 반지름의 2배예요.</p>'});
-add('호',{k:'원과 부채꼴',b:'<p>원 위의 두 점 A, B를 원을 따라 이은 굽은 선이에요. 기호 <span class="rm">⌒AB</span>로 나타내요.</p>'});
+add('호',{k:'원과 부채꼴',b:'<p>원 위의 두 점 A, B를 원을 따라 이은 굽은 선이에요. 기호 <span class="arcs">AB</span>로 나타내요.</p>'});
 add('현',{k:'원과 부채꼴',b:'<p>원 위의 두 점을 이은 <b>선분</b>이에요. 중심을 지나는 현이 지름이에요.</p>'});
 add('부채꼴',{k:'원과 부채꼴',b:'<p>원의 두 반지름과 호로 둘러싸인 도형이에요. 꼭짓점은 원의 중심이에요.</p>'});
 add('중심각',{k:'원과 부채꼴',b:'<p>부채꼴에서 두 반지름이 이루는 각이에요.</p>'});
