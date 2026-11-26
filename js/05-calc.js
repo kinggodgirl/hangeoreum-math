@@ -11,7 +11,7 @@ const J=(n,a,b)=>josa(String(n),a,b),IY=n=>J(n,'이에요','예요'),IYs=n=>IY(n
 const S_=(t,q,ans,type,choices)=>({t,q,ans,type:type||'num',choices});
 const E_=(a,m,pi)=>({a,m,pi});
 /* 그림 보고 원의 둘레·넓이: 공식을 주지 않고 그림(반지름 또는 지름)만 보여 줘요 */
-function piFig(r){const area=r()<0.5,useD=r()<0.4,rr=ri(r,2,8),d=2*rr,u=area?'cm²':'cm',w=area?'넓이':'둘레의 길이';
+function piFig(r,area){if(area===undefined)area=r()<0.5;const useD=r()<0.4,rr=ri(r,2,8),d=2*rr,u=area?'cm²':'cm',w=area?'넓이':'둘레의 길이';
   const C=80,R=58,lab=useD?`${d} cm`:`${rr} cm`;
   const svg=`<svg class="pifig" viewBox="0 0 160 160" width="150" height="150" role="img" aria-label="${useD?'지름':'반지름'} ${lab}인 원"><circle cx="${C}" cy="${C}" r="${R}" fill="${area?'#e8eefb':'none'}" stroke="#1d2433" stroke-width="2.4"/><circle cx="${C}" cy="${C}" r="3" fill="#1d2433"/>`+
     (useD?`<line x1="${C-R}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`:`<line x1="${C}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`)+
@@ -105,15 +105,18 @@ const r3_=v=>Math.round(v*1000)/1000;
 const calcLenPref=()=>lsGet('hangeoreum-calc-len',5)===10?10:5;
 function recordCalcErr(tid,msg){if(!tid||!msg)return;const E=DB._calcErrs=OBJ(DB._calcErrs),plain=stripTags(msg).slice(0,90),k=tid+':'+plain.slice(0,36);const cur=OBJ(E[k]);E[k]={tid,m:plain,n:NUM(cur.n)+1,d:today()};save()}
 const BOX_DAYS=[0,1,2,4,7,14];
-function calcState(id){const C=DB._calc=OBJ(DB._calc);const s=C[id]=OBJ(C[id]);s.stars=Math.min(3,NUM(s.stars));s.unlock=Math.min(3,Math.max(1,NUM(s.unlock)||1));s.best=OBJ(s.best);s.n=NUM(s.n);s.ways=OBJ(s.ways);s.box=Math.min(5,NUM(s.box));if(typeof s.due!=='string')s.due='';return s}
-const calcMaxLv=id=>{const s=calcPeek(id);return Math.min(3,Math.max(NUM(s.stars)+1,NUM(s.unlock)||1))};
+function calcState(id){const C=DB._calc=OBJ(DB._calc);const s=C[id]=OBJ(C[id]);const N=calcLvN(id);s.stars=Math.min(N,NUM(s.stars));s.unlock=Math.min(N,Math.max(1,NUM(s.unlock)||1));s.best=OBJ(s.best);s.n=NUM(s.n);s.ways=OBJ(s.ways);s.box=Math.min(5,NUM(s.box));if(typeof s.due!=='string')s.due='';return s}
+/* 주제마다 단계 수가 달라요(기본 3, π 계산은 5) */
+const calcLvN=id=>((typeof CALC!=='undefined'&&CALC.find(t=>t.id===id))||{}).lv?.length||3;
+const calcDone=id=>NUM(calcPeek(id).stars)>=calcLvN(id);
+const calcMaxLv=id=>{const s=calcPeek(id);return Math.min(calcLvN(id),Math.max(NUM(s.stars)+1,NUM(s.unlock)||1))};
 const calcPeek=id=>OBJ(OBJ(DB._calc)[id]);
 const calcStars=()=>CALC.reduce((a,t)=>a+Math.min(3,NUM(calcPeek(t.id).stars)),0);
 const calcStarted=id=>{const s=calcPeek(id);return NUM(s.stars)>0||NUM(s.n)>0||NUM(s.box)>0||Object.keys(OBJ(s.ways)).length>0};
 const calcDue=id=>{if(id==='facts'||!calcStarted(id))return false;const d=calcPeek(id).due;return!d||d<=today()};
 const dueList=()=>CALC.filter(t=>calcDue(t.id)).sort((a,b)=>String(calcPeek(a.id).due||'').localeCompare(String(calcPeek(b.id).due||'')));
 function calcSchedule(id,score){const s=calcState(id);if(score>=8){s.box=Math.min(5,s.box+1);s.due=addDays(today(),BOX_DAYS[s.box])}else{s.box=score>=5?Math.max(1,s.box):1;s.due=addDays(today(),1)}}
-const starRow=n=>`<span class="stars" aria-label="별 ${n}개">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}">★</i>`).join('')}</span>`;
+const starRow=(n,N=3)=>`<span class="stars" aria-label="별 ${n}개">${range(N).map(i=>i+1).map(i=>`<i class="${i<=n?'on':''}">★</i>`).join('')}</span>`;
 const CALC_LV=['1단계 · 쉬운 수','2단계 · 조금 큰 수','3단계 · 입체도형 문제처럼'];
 /* ── 곱셈구구: 36칸(순서를 바꿔도 같으니까), 칸마다 익힘 정도 ──
    0 아직 · 1 연습 중 · 2 빠르게 맞힘 · 3 익힘(다른 날 두 번 빠르게) · 4 오래 기억(일주일 뒤에도) */
@@ -380,7 +383,7 @@ const CALC=[
      return{q:`밑변 ${M_(a+' cm')}, 높이 ${M_(b+' cm')}인<br>평행사변형의 넓이`,ans:a*b,suffix:'cm²',steps:[S_('밑변 × 높이',M_(`${a} × ${b}`),a*b)],errs}}
    let a=ri(r,2,8),b=ri(r,a+1,12),h=ri(r,2,8);if(((a+b)*h)%2)h++;return{q:`윗변 ${M_(a+' cm')}, 아랫변 ${M_(b+' cm')}, 높이 ${M_(h+' cm')}인<br>사다리꼴의 넓이`,ans:(a+b)*h/2,suffix:'cm²',steps:[S_('윗변 + 아랫변',M_(`${a} + ${b}`),a+b),S_('× 높이',M_(`${a+b} × ${h}`),(a+b)*h),S_('절반',M_(`${(a+b)*h} ÷ 2`),(a+b)*h/2)],
      errs:[E_((a+b)*h,'÷ 2를 빠뜨렸어요. 사다리꼴 두 개가 평행사변형이니까 절반이에요.'),E_(a*b*h/2,'윗변과 아랫변을 곱했어요. 더해야 해요.')]}}},
- {id:'pi',grp:'solid',nm:'π가 있는 계산',use:'원과 부채꼴(호·넓이), 원기둥·원뿔·구',lv:['1단계 · π끼리 더하고 빼기','2단계 · 원의 둘레와 넓이','3단계 · 그림 보고 원의 둘레와 넓이'],
+ {id:'pi',grp:'solid',nm:'π가 있는 계산',use:'원과 부채꼴(호·넓이), 원기둥·원뿔·구',lv:['1단계 · π끼리 더하고 빼기','2단계 · 원의 둘레 (식 보고)','3단계 · 그림 보고 원의 둘레','4단계 · 원의 넓이 (식 보고)','5단계 · 그림 보고 원의 넓이'],
   ways:[{t:'π는 단위처럼',idea:`${M_('12π + 8π')}는 "사과 12개 + 사과 8개"처럼 생각해요. <b>π 앞의 수끼리</b> 계산하고 π는 그대로 붙여요.`,
      ex(r){const a=ri(r,3,15),b=ri(r,2,9);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',steps:[S_('π 앞의 수끼리 더해요',M_(`${a} + ${b}`),a+b),S_('π를 붙여서 답해요 (π 단추)',M_(`${a+b} × π`),a+b,'pi')]}},
      why:{q:`${M_('12π + 8π')}를 사과로 바꿔 말하면?`,choices:['사과 12개 + 사과 8개','사과 12개 × 사과 8개','사과 20개 × 2'],ans:0,ok:'π를 하나의 물건처럼 세면 20π예요.'}},
@@ -390,9 +393,10 @@ const CALC=[
   gen(L,r){if(L===1){const k=ri(r,0,2);if(k===0){const a=ri(r,2,15),b=ri(r,2,10);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',steps:[S_('수끼리 더해요',M_(`${a} + ${b}`),a+b),S_('π를 붙여요',M_(`${a+b} × π`),a+b,'pi')],errs:[E_(a*b,'곱했어요. π 앞의 수끼리 더해요.',true)]}}
      if(k===1){const a=ri(r,10,20),b=ri(r,2,9);return{q:M_(`${a}π − ${b}π`),ans:a-b,type:'pi',steps:[S_('수끼리 빼요',M_(`${a} − ${b}`),a-b),S_('π를 붙여요',M_(`${a-b} × π`),a-b,'pi')],errs:[E_(a+b,'더했어요. 빼기예요.',true)]}}
      const a=ri(r,2,5),b=ri(r,2,9);return{q:M_(`${a} × ${b}π`),ans:a*b,type:'pi',steps:[S_('수끼리 곱해요',M_(`${a} × ${b}`),a*b),S_('π를 붙여요',M_(`${a*b} × π`),a*b,'pi')],errs:[E_(a+b,'더했어요. 곱해요.',true)]}}
-   if(L===2){const rr=ri(r,2,8);if(r()<0.5)return{q:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`,ans:2*rr,type:'pi',suffix:'cm',steps:[S_('수끼리 곱해요',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${2*rr} × π`),2*rr,'pi')],errs:[E_(rr,'2를 곱하지 않았어요.',true),E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)]};
-     return{q:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`,ans:rr*rr,type:'pi',suffix:'cm²',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('π를 붙여요',M_(`${rr*rr} × π`),rr*rr,'pi')],errs:[E_(2*rr,`${M_(`${rr} × 2`)}를 했어요. ${M_(`${rr}²`)}${J(rr,'은','는').slice(String(rr).length)} ${M_(`${rr} × ${rr}`)}${IYs(rr)}.`,true)]}}
-   return piFig(r)}},
+   if(L===2){const rr=ri(r,2,8);return{q:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`,ans:2*rr,type:'pi',suffix:'cm',steps:[S_('수끼리 곱해요',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${2*rr} × π`),2*rr,'pi')],errs:[E_(rr,'2를 곱하지 않았어요.',true),E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)]}}
+   if(L===3)return piFig(r,false);
+   if(L===4){const rr=ri(r,2,8);return{q:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`,ans:rr*rr,type:'pi',suffix:'cm²',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('π를 붙여요',M_(`${rr*rr} × π`),rr*rr,'pi')],errs:[E_(2*rr,`${M_(`${rr} × 2`)}를 했어요. ${M_(`${rr}²`)}${J(rr,'은','는').slice(String(rr).length)} ${M_(`${rr} × ${rr}`)}${IYs(rr)}.`,true)]}}
+   return piFig(r,true)}},
  {id:'frac',grp:'solid',nm:'분수 곱하기',use:'부채꼴(중심각/360°), 뿔의 부피 ⅓, 구의 부피 4/3',lv:['1단계 · ½ ×, ⅓ ×','2단계 · 셋을 곱할 때','3단계 · 뿔과 구의 부피'],
   ways:[{t:'⅓ ×는 ÷ 3',idea:`${M_('⅓ × 12')}는 12를 <b>셋으로 똑같이 나눈 하나</b>예요. 그래서 ${M_('12 ÷ 3')}.`,
      ex(r){const a=ri(r,2,9)*3;return{q:M_(`⅓ × ${a}`),fig:svgGroups(a,3,1),ans:a/3,steps:[S_('3으로 나눠요',M_(`${a} ÷ 3`),a/3)]}},
@@ -675,7 +679,7 @@ const CALC_GRP=[['solid','원·부채꼴 · 입체도형 핵심 계산','이번 
 const calcVisible=t=>!SITE.calcGroups||SITE.calcGroups.includes(t.grp);
 const calcPlan=()=>{const d=OBJ(DB._calcDiag);return Array.isArray(d.plan)?d.plan.filter(id=>CALC.some(t=>t.id===id)):[]};
 function calcCard(t,dueIds,plan){const s=calcPeek(t.id),wd=t.ways.filter((w,k)=>OBJ(s.ways)[k]).length,isDue=dueIds.includes(t.id),rec=plan.includes(t.id)&&NUM(s.stars)<1,ex=EXAM_TAG[t.id];
-  return`<a class="card calc-card" href="#calc-${t.id}"><span class="calc-tags">${ex?`<i class="ctag exam">시험 · ${ex}</i>`:''}${isDue?'<i class="ctag due">복습</i>':''}${rec?'<i class="ctag rec">추천</i>':''}</span><b>${t.nm}</b>${KEYS[t.id]?`<span class="kw">💡 ${KEYS[t.id].w}</span>`:''}<small>${t.use}</small><span class="calc-prog">${starRow(Math.min(3,NUM(s.stars)))}<small>생각하는 법 ${wd}/${t.ways.length}</small></span></a>`}
+  return`<a class="card calc-card" href="#calc-${t.id}"><span class="calc-tags">${ex?`<i class="ctag exam">시험 · ${ex}</i>`:''}${isDue?'<i class="ctag due">복습</i>':''}${rec?'<i class="ctag rec">추천</i>':''}</span><b>${t.nm}</b>${KEYS[t.id]?`<span class="kw">💡 ${KEYS[t.id].w}</span>`:''}<small>${t.use}</small><span class="calc-prog">${starRow(Math.min(calcLvN(t.id),NUM(s.stars)),calcLvN(t.id))}<small>생각하는 법 ${wd}/${t.ways.length}</small></span></a>`}
 function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 연산</span>`;stopSpeak();
   const dueIds=dueList().map(t=>t.id),dg=OBJ(DB._calcDiag),plan=calcPlan();
   app.innerHTML=`<div class="unit-head"><div><h1>기초 연산</h1><p>짧게, 자주, 정확하게. <b>생각하는 법</b>을 익히고 쉬운 수부터 연습해요.</p></div></div>
@@ -683,7 +687,7 @@ function viewCalc(){crumbs.innerHTML=`<span class="sep">›</span><span>기초 �
    <div class="card panel calc-sum"><div class="stat"><small>모은 별</small><b class="rm">${calcStars()} / ${CALC.filter(calcVisible).length*3}</b></div><div class="stat"><small>구구단 익힘</small><b class="rm">${factsKnown()} / 36</b></div><div class="stat"><small>오늘 복습</small><b class="rm">${dueIds.length>2?`2 / ${dueIds.length}`:dueIds.length}</b></div>
     <div class="calc-acts"><a class="btn${dg.d?' primary':''}" href="#drill">오늘의 계산${dueIds.length?` · 복습 ${Math.min(2,dueIds.length)}개`:''}</a>${dg.d?'<a class="btn ghost" href="#calc-start">시작점 다시 찾기</a>':''}</div></div>
    ${dueIds.length>2?`<p class="calc-due">밀린 복습이 ${dueIds.length}개 있지만 괜찮아요! 오늘은 부담 없이 <b>2개만</b> 먼저 챙겨도 충분해요.</p>`:''}
-   ${(()=>{const ef=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));return ef.length?`<div class="card panel exam-box"><h2>🎯 이번 시험 집중 연산</h2><p><b>원과 부채꼴 · 입체도형 · 정비례와 반비례</b>에 바로 쓰이는 기초 연산을 우선 배치했어요.</p><div class="exam-chips">${ef.slice(0,8).map(t=>`<a class="exam-chip" href="#calc-${t.id}"><b>${t.nm}</b><small>${EXAM_TAG[t.id]}</small>${starRow(Math.min(3,NUM(calcPeek(t.id).stars)))}</a>`).join('')}</div></div>`:''})()}
+   ${(()=>{const ef=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));return ef.length?`<div class="card panel exam-box"><h2>🎯 이번 시험 집중 연산</h2><p><b>원과 부채꼴 · 입체도형 · 정비례와 반비례</b>에 바로 쓰이는 기초 연산을 우선 배치했어요.</p><div class="exam-chips">${ef.slice(0,8).map(t=>`<a class="exam-chip" href="#calc-${t.id}"><b>${t.nm}</b><small>${EXAM_TAG[t.id]}</small>${starRow(Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)),calcLvN(t.id))}</a>`).join('')}</div></div>`:''})()}
    ${dg.d&&plan.length?`<div class="card panel calc-plan"><b>내 추천 순서</b> ${plan.map((id,i)=>`<a class="chip" href="#calc-${id}">${i+1}. ${CALC.find(x=>x.id===id).nm}</a>`).join(' ')}</div>`:''}
    ${CALC_GRP.filter(([g])=>!SITE.calcGroups||SITE.calcGroups.includes(g)).map(([g,nm,d])=>`<h2 class="calc-gh">${nm}</h2><p class="muted calc-gd">${d}</p><div class="calc-grid">${CALC.filter(t=>t.grp===g).sort((a,b)=>examRank(a.id)-examRank(b.id)).map(t=>calcCard(t,dueIds,plan)).join('')}</div>`).join('')}`}
 /* ── 곱셈구구 표 ── */
@@ -701,14 +705,14 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}const T=CALC.
   crumbs.innerHTML=`<span class="sep">›</span><a href="#calc">기초 연산</a><span class="sep">›</span><span>${T.nm}</span>`;
   let L=calcMaxLv(id),CNT=calcLenPref();const LV=T.lv||CALC_LV;
   const draw=()=>{const st=calcState(id),wd=T.ways.filter((w,k)=>st.ways[k]).length;
-    app.innerHTML=`<div class="unit-head"><div><h1>${T.nm}</h1><p>어디에 쓰여요? <b>${T.use}</b></p></div><div>${starRow(st.stars)}</div></div>
+    app.innerHTML=`<div class="unit-head"><div><h1>${T.nm}</h1><p>어디에 쓰여요? <b>${T.use}</b></p></div><div>${starRow(st.stars,LV.length)}</div></div>
      ${calcDue(id)?'<p class="calc-due">복습할 때예요! 하루 이틀 지나 다시 떠올리면 더 오래 기억해요.</p>':''}
      ${id==='facts'?`<div class="card panel"><h2 style="margin-top:0">내 구구단 표 <small class="muted" style="font-size:15px">익힘 ${factsKnown()}/36</small></h2>${factGridHTML()}<div class="fLearn"></div></div>`:''}
      ${KEYS[id]?`<div class="card panel kpanel"><h2 style="margin-top:0">핵심 낱말 ${st.key?`<small class="kdone">${CHECK} 이었어요</small>`:''}</h2><p class="muted" style="margin-top:-4px">이 계산을 보면 무엇을 떠올릴까요? 신호 → 낱말 → 그림 → 식으로 이어 봐요.</p>${keyCardHTML(id)}
       <p style="margin:12px 0 0">${canSpeak?'<button type="button" class="say kSay">🔊 듣기</button> ':''}<button type="button" class="btn${st.key?'':' primary'} kGo">낱말 잇기 ${keyRounds(id,mulberry(1)).length}문제</button></p><div class="kHost"></div></div>`:''}
      <div class="card panel"><h2 style="margin-top:0">생각하는 법 <small class="muted" style="font-size:15px">${wd}/${T.ways.length}</small></h2><p class="muted" style="margin-top:-4px">${KEYS[id]&&!st.key?'핵심 낱말을 먼저 이어 보고 시작하면 좋아요. ':''}보기 → 같이 → 혼자 순서로 익혀요.</p>
       <div class="ways">${T.ways.map((w,k)=>`<div class="way ${st.ways[k]?'done':''}" data-k="${k}"><button type="button" class="wayHead" aria-expanded="false"><span class="wn">${k+1}</span><b>${w.t}</b><span class="wst">${st.ways[k]?CHECK:'익히기'}</span></button><div class="wayBody" hidden></div></div>`).join('')}</div></div>
-     <div class="card panel"><h2 style="margin-top:0">연습</h2><div class="seg calcLv" role="tablist">${[1,2,3].map(k=>`<button type="button" data-l="${k}" class="${k===L?'on':''}" ${k>calcMaxLv(id)?'disabled':''}>${k}단계${k<=st.stars?' ★':''}</button>`).join('')}</div>
+     <div class="card panel"><h2 style="margin-top:0">연습</h2><div class="seg calcLv" role="tablist">${range(LV.length).map(i=>i+1).map(k=>`<button type="button" data-l="${k}" class="${k===L?'on':''}" ${k>calcMaxLv(id)?'disabled':''}>${k}단계${k<=st.stars?' ★':''}</button>`).join('')}</div>
       <p class="muted" style="margin:10px 0 0">${LV[L-1]}${st.best[L]!=null?` · 내 최고 ${NUM(st.best[L])}%`:''}</p>
       ${wd===0&&L===1?'<p class="calc-nudge">처음이라면 위의 <b>생각하는 법</b>을 하나 먼저 익혀요.</p>':''}
       <div class="calc-len"><div class="seg calcCnt" role="tablist"><button type="button" data-n="5" class="${CNT===5?'on':''}">5문제 · 가볍게 (3분)</button><button type="button" data-n="10" class="${CNT===10?'on':''}">10문제 · 탄탄하게</button></div></div>
@@ -734,11 +738,11 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}const T=CALC.
     drillRun(Q,{onAnswer:(q,res)=>{if(q.fact)factRecord(q.fact,res.ok,res.ms)},
       onFinish:(first,info)=>{const st=calcState(id),n=info.total;st.n++;st.last=today();const pct=Math.round(first*100/n);if(st.best[L]==null||pct>NUM(st.best[L]))st.best[L]=pct;
         const need=Math.ceil(n*0.8),star=first>=need&&L>st.stars;if(star)st.stars=L;calcSchedule(id,Math.round(first*10/n));save();dayBump('calc');if(first)award(first);if(star)award(5,'calc:'+id+':'+L);
-        $('.dIn',app).innerHTML=`<div class="feedback ${first>=need?'ok':''}" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${n}<br>${star?`${L}단계 별을 받았어요!${L<3?' 다음 단계가 열렸어요.':' 이 계산은 다 익혔어요!'}`:first>=need?'잘했어요! 이미 받은 별이에요.':`${need}문제 이상 맞히면 별을 받아요. 쪼개서 푼 문제를 떠올리며 한 번 더 해 봐요.`}</div>
+        $('.dIn',app).innerHTML=`<div class="feedback ${first>=need?'ok':''}" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${n}<br>${star?`${L}단계 별을 받았어요!${L<LV.length?' 다음 단계가 열렸어요.':' 이 계산은 다 익혔어요!'}`:first>=need?'잘했어요! 이미 받은 별이에요.':`${need}문제 이상 맞히면 별을 받아요. 쪼개서 푼 문제를 떠올리며 한 번 더 해 봐요.`}</div>
           ${info.tip?`<p class="sum-tip"><b>자주 나온 실수</b> ${info.tip}</p>`:''}
           <p class="sum-space">${id==='facts'?`구구단 표: 빠르게 맞힘 <b>${FACTS.filter(([a,b])=>fs0(fk(a,b)).lv>=2).length}</b>칸 · 익힘 <b>${factsKnown()}</b>칸. 다른 날 한 번 더 빠르게 맞히면 익힘이 돼요.<br>`:''}내일 오늘의 계산에서 다시 만나요. 하루 지나 다시 떠올리면 더 오래 기억해요.</p>
-          <div class="next-row" style="justify-content:center"><button type="button" class="btn calcBack">${T.nm}</button><button type="button" class="btn primary calcAgain">${star&&L<3?'다음 단계':'한 번 더'}</button></div>`;
-        if(star)celebrate('');$('.calcBack',app).onclick=()=>draw();$('.calcAgain',app).onclick=()=>{if(star&&L<3)L++;run()}}})}
+          <div class="next-row" style="justify-content:center"><button type="button" class="btn calcBack">${T.nm}</button><button type="button" class="btn primary calcAgain">${star&&L<LV.length?'다음 단계':'한 번 더'}</button></div>`;
+        if(star)celebrate('');$('.calcBack',app).onclick=()=>draw();$('.calcAgain',app).onclick=()=>{if(star&&L<LV.length)L++;run()}}})}
   draw()}
 /* ── 시작점 찾기: 맞았는지 하나씩 알려 주지 않고, 끝나고 추천 순서만 ── */
 const DIAG=[['add',1],['add',3],['facts',1],['facts',2],['facts',3],['div',1],['div',2],['order',1],['order',2],['fracbase',1],['fracbase',2]];
@@ -755,7 +759,7 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
       io.appendChild(answerUI({type:q.type,suffix:q.suffix,choices:q.choices,mathChoices:q.mathChoices},v=>{if(busy)return true;const c=check({type:q.type,ans:q.ans},v);if(c==='nopi'){$('.dflash',app).textContent='π를 붙여서 답해요.';return false}busy=true;rec(q,c===true,performance.now()-t0);return true}));
       const sk=el('<p class="dhelp"><button type="button" class="t-mini">모르겠어요</button></p>');sk.firstChild.onclick=()=>{if(busy)return;busy=true;rec(q,false,null)};io.appendChild(sk)}
     function done(){const plan=DIAG_ORDER.filter(id=>res[id]===false),good=DIAG_ORDER.filter(id=>res[id]),nm=id=>CALC.find(t=>t.id===id).nm;DB._calcDiag={d:today(),res,lvRes,plan};
-      DIAG_ORDER.forEach(id=>{const s=calcState(id),lr=lvRes[id]||{};if(res[id]){s.unlock=3;if(!s.due){s.box=Math.max(s.box,1);s.due=addDays(today(),2)}}else if(lr[1]&&!lr[2]&&!lr[3]){s.unlock=Math.max(s.unlock,2)}else if(lr[1]&&lr[2]&&lr[3]===false){s.unlock=3}});save();dayBump('calc');award(5,'calcdiag');
+      DIAG_ORDER.forEach(id=>{const s=calcState(id),lr=lvRes[id]||{};if(res[id]){s.unlock=calcLvN(id);if(!s.due){s.box=Math.max(s.box,1);s.due=addDays(today(),2)}}else if(lr[1]&&!lr[2]&&!lr[3]){s.unlock=Math.max(s.unlock,2)}else if(lr[1]&&lr[2]&&lr[3]===false){s.unlock=calcLvN(id)}});save();dayBump('calc');award(5,'calcdiag');
       app.innerHTML=`<div class="unit-head"><div><h1>시작점을 찾았어요</h1><p>잘하는 것은 지키고, 흔들리는 것부터 다져요.</p></div></div>
        ${good.length?`<div class="card panel"><h2 style="margin-top:0">잘하고 있어요</h2><p>${good.map(id=>`<span class="chip">${nm(id)}</span>`).join(' ')}</p><p class="muted" style="margin-bottom:0">이 주제들은 오늘의 계산에서 가끔 복습해요.</p></div>`:''}
        <div class="card panel"><h2 style="margin-top:0">${plan.length?'여기부터 해요':'기초가 튼튼해요!'}</h2>
@@ -809,8 +813,8 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   const cdone=NUM(D.c.calc)>0,dg=OBJ(DB._calcDiag);
   if(!dg.d)S.push({done:cdone,more:true,t:'기초 연산 · 시작점 찾기',s:cdone?'오늘 한 세트 했어요 · 시작점 찾기도 해 보세요':`${DIAG.length}문제로 어디서부터 할지 찾아요`,href:'#calc-start'});
   else{const dueT=dueList()[0],planT=calcPlan().map(id=>CALC.find(t=>t.id===id)).find(t=>t&&NUM(calcPeek(t.id).stars)<1),ids=CALC_FOR[cur?cur.id:'area']||[];
-    const examT=EXAM_FOCUS.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&calcVisible(t)&&NUM(calcPeek(t.id).stars)<3);
-    const tp=dueT||examT||planT||ids.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&NUM(calcPeek(t.id).stars)<3)||CALC.filter(calcVisible).sort((a,b)=>examRank(a.id)-examRank(b.id)||NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars))[0];
+    const examT=EXAM_FOCUS.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&calcVisible(t)&&!calcDone(t.id));
+    const tp=dueT||examT||planT||ids.map(id=>CALC.find(c=>c.id===id)).find(t=>t&&!calcDone(t.id))||CALC.filter(calcVisible).sort((a,b)=>examRank(a.id)-examRank(b.id)||NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars))[0];
     const st=calcPeek(tp.id),sub=calcDue(tp.id)?'복습할 때예요 · 10문제':Object.keys(OBJ(st.ways)).length?`${Math.min(3,NUM(st.stars)+1)}단계 10문제`:'생각하는 법부터 익혀요';
     S.push({done:cdone,more:true,t:`기초 연산 · ${tp.nm}`,s:cdone?'오늘 한 세트 했어요':sub,href:'#calc-'+tp.id})}
   const dd=OBJ(DB._drill).last===today(),dn=dueList().length,cl=calcLenPref();S.push({done:dd,t:'오늘의 계산',s:dd?'오늘 끝냈어요':dn?`복습할 주제 ${Math.min(cl<=5?2:3,dn)}개를 섞어서 ${cl}문제`:`섞어서 ${cl}문제 · ${cl<=5?'3분쯤':'5분쯤'}`,href:'#drill'});

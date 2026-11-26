@@ -14,7 +14,7 @@ const OBJ=v=>(v&&typeof v==='object'&&!Array.isArray(v))?v:{};
 function dataSummary(d){d=OBJ(d);const me=OBJ(d._me),t=today(),streak=(me.last===t||me.last===addDays(t,-1))?NUM(me.streak):0;
   const les=LESSONS.filter(l=>l.ready).map(l=>{const p=OBJ(d[l.id]),pr=OBJ(p.prac);return[!!p.concept,!!p.explore,NUM(p.steps)>0,NUM(pr.solved)>=5]});
   const solved=LESSONS.reduce((a,l)=>a+NUM(OBJ(OBJ(d[l.id]).prac).solved),0),rev=Array.isArray(d._rev)?d._rev:[];
-  const calc=Object.values(OBJ(d._calc)).reduce((a,v)=>a+Math.min(3,NUM(OBJ(v).stars)),0),facts=Object.values(OBJ(d._facts)).filter(v=>NUM(OBJ(v).lv)>=3).length,dg=OBJ(d._calcDiag),plan=Array.isArray(dg.plan)?dg.plan:[];
+  const calc=Object.entries(OBJ(d._calc)).reduce((a,[k,v])=>a+Math.min(calcLvN(k),NUM(OBJ(v).stars)),0),facts=Object.values(OBJ(d._facts)).filter(v=>NUM(OBJ(v).lv)>=3).length,dg=OBJ(d._calcDiag),plan=Array.isArray(dg.plan)?dg.plan:[];
   const calcErrs=Object.values(OBJ(d._calcErrs)).filter(x=>x&&x.m).sort((a,b)=>NUM(b.n)-NUM(a.n)||String(b.d||'').localeCompare(String(a.d||'')));
   const weakFacts=Object.entries(OBJ(d._facts)).filter(([,v])=>v&&(NUM(v.w)>0||NUM(v.lv)<=1)).sort((a,b)=>NUM(b[1].w)-NUM(a[1].w)||NUM(a[1].lv)-NUM(b[1].lv)).slice(0,6).map(([k,v])=>({k:k.replace('x','×'),w:NUM(v.w),lv:NUM(v.lv)}));
   return{calc,facts,diag:!!dg.d,plan,calcErrs,weakFacts,pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}

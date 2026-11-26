@@ -97,7 +97,7 @@ let totalProbs = 0;
 for (const T of CALC) {
   if (!KEYS[T.id]) errors.push(`Missing KEYS for ${T.id}`);
   if (!LINKS[T.id]) errors.push(`Missing LINKS for ${T.id}`);
-  for (let L = 1; L <= 3; L++) {
+  for (let L = 1; L <= (T.lv || CALC_LV).length; L++) {
     for (let k = 0; k < 30; k++) {
       totalProbs++;
       const q = T.gen(L, r);
