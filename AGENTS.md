@@ -16,6 +16,7 @@
 | `js/03-teacher.js` | 교사 대시보드(`viewTeacher`, `openStu`, `dataSummary`, `loadReports`, `renderOmr`) | 기초 연산 오개념(`_calcErrs`), 취약 구구단(`_facts`), 문제 신고, OMR 집계 유지 |
 | `teacher-plus.css` | 교사 화면 편의 기능(📅 이번 주 · 쿠폰 · 표 머리줄 단원 묶음) 보조 스타일 | `styles.css`와 분리 유지 · 교사 화면 로직은 `js/03-teacher.js` |
 | `js/04-games.js` | 오늘의 미션, 꾸미기 상점(3D 아바타·모자·캡슐 뽑기), 우리 반 보스전, 숫자야구 | `DB._me` 포인트·배지·`DB._shop` 구조 유지 |
+| `js/04s-sea.js` · `sea.css` · `supabase/sea.sql` | ⚓ 좌표 해전(T11): 좌표평면 배 찾기 2인 대결(`hg_sea_*`)·컴퓨터 연습. 전역은 `viewSea`·`viewSeaGame`·`viewSeaCpu`만 | 포인트는 숫자야구 장부(`hg_bb_ledger.sea_id`)를 같이 써요 |
 | `js/05-calc.js` | 기초 연산 28개 주제(`CALC`, 5갈래 사다리 `CALC_PATHS`), `EXAM_FOCUS`, `KEYS`, `LINKS`, `DIAG`, 5/10문제 미니 모드, 오늘의 계산(`viewDrill`), 오늘의 길잡이 | 시험 범위 변경 시 `EXAM_FOCUS`와 `EXAM_TAG`만 우선 수정 |
 | `js/06-unit-int.js` | 정수와 유리수 단원(`unit: 'int'`) | `LESSONS`, `STEPGEN`, `CALC_FOR`, `TERMS`, `BADGES` 확장 블록 |
 | `js/06c-unit-circle.js` | 원과 부채꼴 단원(`unit: 'circle'`, 차시 `arc` · `cent` · `sector`). 입체도형 사이트에서 함께 열림(`OPEN_UNITS`) | 함수 안에 넣어 전역 이름을 만들지 않음 · 그림은 SVG(`fig.svg`) |

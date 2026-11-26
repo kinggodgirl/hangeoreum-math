@@ -1,0 +1,28 @@
+/* 좌표 해전 (T11) · js/04s-sea.js */
+.sea-cols{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start}
+@media (max-width:700px){.sea-cols{grid-template-columns:1fr}}
+.sea-cols h3{margin:0 0 6px;font-size:17px}.sea-cols h3 small{font-weight:400;color:var(--ink-soft);font-size:13px;margin-left:6px}
+.sea-one{max-width:420px;margin:0 auto}
+.sea-svg{width:100%;height:auto;display:block;background:#eaf4fb;border:2px solid #1d2640;border-radius:14px;color:#1d2640;touch-action:manipulation}
+.sea-svg.small{max-width:300px}
+.sea-svg .sg{stroke:#b9d3e6;stroke-width:1}
+.sea-svg .sax{stroke:#1d2640;stroke-width:2}
+.sea-svg .sal{font:italic 700 16px "Times New Roman",serif;fill:#1d2640}
+.sea-svg .stk{font:600 13px var(--math,serif);fill:#1d2640}
+.sea-svg .sdot{fill:#8fa6bd}
+.sea-svg .shit-area{fill:transparent}
+.sea-svg .spt.can{cursor:pointer}.sea-svg .spt.can:hover .shit-area{fill:rgba(255,226,102,.55)}
+.sea-svg .ssel{fill:none;stroke:#e05555;stroke-width:3}
+.sea-svg .smiss{fill:#fff;stroke:#5f6b7a;stroke-width:3}
+.sea-svg .shitx{stroke:#d23b3b;stroke-width:4;stroke-linecap:round}
+.sea-svg .sship{fill:#5b6b82;opacity:.55}.sea-svg .sship.sunk{fill:#1d2640;opacity:.35}
+.sea-pick .cap{margin-top:8px}
+.sea-pick .seg{flex-wrap:wrap}
+.sea-pick .seg button{min-width:44px}
+.sea-w button{min-width:0!important;font-size:14px}
+.sea-hint{margin:8px 0 0;font-size:17px}.sea-hint .rm{font-size:20px}
+.sea-score{margin:0 0 10px;text-align:center}
+.sea-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:220px;overflow:auto}
+.sea-log li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:5px 10px;background:#fff;flex-wrap:wrap}
+.sea-log .rn{font-size:12px;color:var(--ink-soft);min-width:18px}
+.sea-log .r-hit b,.sea-log .r-sunk b{color:#d23b3b}.sea-log .r-miss b{color:#6b7280}.sea-log .r-wrong b{color:#c78a00}
