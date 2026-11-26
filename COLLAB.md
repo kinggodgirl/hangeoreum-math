@@ -19,6 +19,7 @@
 | **T07** | 열린 차시 개념 학습 교육학적 보완 시범 적용 (`area`·`sector`: 공식 통일·전개도/부채꼴 인터랙티브 발견 활동·인지 부하 축소·전략 선택 가이드) | Antigravity | `concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T08** | 『교과서 한 걸음』 3탭 × 3트랙 시범 전면 개편 (`cent` 중심각과 호: 첫걸음·한걸음·두걸음 루프, 대표 예제, 복합 유형, 적응형 마무리, 기초 연산 연계) | Antigravity | `tracks-cent.css`(신규), `js/02t-tracks-cent.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T09** | 교사 화면 편의 기능: 📅 이번 주 한눈에(지난 7일 공부한 날·챙길 점·수업 메모 복사) · 🎫 쿠폰 확인/사용함 · 학습 현황 표 머리줄 단원 묶음·점 범례 · 🎮 게임 탭을 학생별 보스 도전 기록으로 | Claude Code | `js/03-teacher.js`, `teacher-plus.css`(신규), `index.html`(1줄), `AGENTS.md`·`COLLAB.md`(문서) | **완료** |
+| **T10** | 숫자야구 4단계 난이도(하·중·중상·상, 선생님 숫자야구 앱과 같은 규칙) + 하 단계 판돈 최대 10포인트 · 보드게임 후보 제안 | Claude Code | `js/04-games.js`(숫자야구 부분), `boss-raid.css`(끝에 몇 줄), `js/07-print-omr-boot.js`(라우터 1줄), `supabase/game.sql`(숫자야구 함수) + 운영 DB 적용, `COLLAB.md` | **코드 완료 · DB 적용 대기** |
 
 ---
 
@@ -55,6 +56,11 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 ---
 
 ## 4. 인계 로그 (Handoff Log)
+
+* **2026-11-26 (`T10` 완료, Claude Code)**
+  * 숫자야구에 선생님 앱(`kinggodgirl/number-baseball`)과 같은 4단계 추가: **하** 1~6·2자리·○△× / **중** 1~9·3자리·○△× / **중상** 1~6·3자리·S/B / **상** 0~9·3자리·S/B. **하는 판돈 최대 10포인트**(화면과 서버 둘 다 막음). 컴퓨터와 연습도 4단계(`#bb-cpu-easy|mid|mh|hard`).
+  * 서버: `hg_bb_games.lv`(비면 예전 3·4자리 방식), `digits`에 2 허용, `hg_bb_guesses.h`(자리별 힌트 O/A/X), 새 함수 `hg_bb_ok`·`hg_bb_need`·`hg_bb_hint`, `hg_bb_create`에 `p_lv` 인자(기본 null이라 옛 화면도 그대로 동작). 운영 DB 마이그레이션 `t09_bb_levels`는 선생님 확인 뒤 적용(적용 전에는 친구 대결이 예전 3·4자리 화면 그대로, 컴퓨터 연습만 4단계).
+  * 화면은 로비 응답의 `lvs`가 있을 때만 4단계를 보여 줘서, DB 적용 전·후 어느 쪽에서도 깨지지 않아요. 교사 화면(`03-teacher.js`)은 건드리지 않았어요(경기 목록의 `digits`가 2로 보일 수 있음).
 
 * **2026-11-26 (`T09` 완료, Claude Code)**: 교사 화면에 `📅 이번 주` 탭 추가(학생별 지난 7일 공부한 날 = `_me.days`+`_me.last`, 7일 풀이, 이번 주 포인트, 보스 승/판, 쿠폰, 챙길 점 + `수업 메모로 복사`). 🎫 쿠폰은 `_shop.couponPcs`가 늘어나기만 해서 선생님이 누른 '사용함' 장수는 교사 기기 `localStorage`(`hangeoreum-t-coupons`)에만 저장해요(서버·SQL 변경 없음, 학생 화면 쿠폰 수는 그대로). 학습 현황 표는 단원 머리줄(`UNIT_INFO`)로 묶고 차시 이름·점 뜻을 보여 줘요. 게임 탭은 범위(방과후 반 포함) 학생별 `오늘의 보스 도전` 기록을 보여 주고, `CLASS_BOSS_ON=false`면 반 보스전 카드를 숨겨요. 좁은 화면에서 표가 화면을 밀던 문제는 `teacher-plus.css`의 `.t-cols>*{min-width:0}`로 해결. T08 3트랙(`p.track`·`p.trackDone`)은 아직 교사 화면에 안 보여요(시범 확정 후 연결 추천). 검증: `node tests/verify.mjs` 통과 + 체험 모드 화면 확인.
 * **2026-11-26 (`T08` 완료, Antigravity)**
