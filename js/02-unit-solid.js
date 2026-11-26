@@ -14,7 +14,8 @@ const LESSONS=[
 ];
 // 차시 흐름: 정규 수업 전에 '미리 보기' → 정규 수업 뒤에 '같이 풀기 · 혼자 풀기'로 다지기 → '더 알아보기'(탐구)는 수업 뒤에
 // id는 예전 그대로(concept · steps · practice · explore)라서 학생 기록은 그대로 이어져요.
-const TABS=[{id:'concept',t:'미리 보기',s:'정규 수업 전에'},{id:'steps',t:'같이 풀기',s:'한 단계씩'},{id:'practice',t:'혼자 풀기',s:'섞어서 반복'},{id:'explore',t:'더 알아보기',s:'선택 · 하고 싶을 때'}];
+/* who: T = 방과후에 선생님과 함께, S = 혼자 (선생님이 다른 친구를 돕는 동안 · 집에서) */
+const TABS=[{id:'concept',t:'미리 보기',s:'👩‍🏫 선생님과 · 수업 전에',who:'T'},{id:'steps',t:'같이 풀기',s:'👩‍🏫 선생님과 · 한 단계씩',who:'T'},{id:'practice',t:'혼자 풀기',s:'🙋 혼자 · 섞어서 반복',who:'S'},{id:'explore',t:'더 알아보기',s:'🙋 혼자 · 선택',who:'S'}];
 const DATA_TABS=['concept','explore','steps','practice'];   // 저장된 진도 배열의 순서 (교사 화면 · 엑셀)
 const TAB_NM=Object.fromEntries(TABS.map(t=>[t.id,t.t]));
 const UNITS=[['소인수분해',false],['정수와 유리수',false],['문자의 사용과 식',false],['일차방정식',false],['좌표평면과 그래프',false],['기본 도형',false],['평면도형의 성질',false],['입체도형의 성질',false],['자료의 정리와 해석',false]].map(([u])=>[u,u===UI_.name]);
@@ -158,7 +159,7 @@ function viewLesson(id,tab){
   crumbs.innerHTML=`<span class="sep">›</span><a href="${UNIT_HASH}">${UI_.name}</a><span class="sep">›</span><span>${L.title}</span>`;
   const doneOf={concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac.solved>=5};
   app.innerHTML=`<div class="lesson-head"><div class="kicker">${L.no}차시${L.tb?` · <span class="tbref">교과서 ${L.tb}</span>`:''}</div><h1>${L.title}</h1></div>
-   <div class="tabs" role="tablist">${TABS.map((t,i)=>`<button type="button" role="tab" class="tab ${t.id===tab?'on':''} ${doneOf[t.id]?'done':''}" data-tab="${t.id}" aria-selected="${t.id===tab}"><span class="num">${doneOf[t.id]&&t.id!==tab?CHECK:i+1}</span><span class="tl">${t.t}<small>${t.s}</small></span></button>`).join('')}</div>
+   <div class="tabs" role="tablist">${TABS.map((t,i)=>`<button type="button" role="tab" class="tab ${t.id===tab?'on':''} ${doneOf[t.id]?'done':''}" data-tab="${t.id}" aria-selected="${t.id===tab}"><span class="num">${doneOf[t.id]&&t.id!==tab?CHECK:i+1}</span><span class="twho" title="${t.who==='T'?'선생님과 함께':'혼자 하기'}">${t.who==='T'?'👩‍🏫':'🙋'}</span><span class="tl">${t.t}<small>${t.s}</small></span></button>`).join('')}</div>
    <div id="tabBody"></div>`;
   $$('.tab',app).forEach(b=>b.onclick=()=>{location.hash=id+(b.dataset.tab==='concept'?'':'-'+b.dataset.tab)});
   const body=$('#tabBody');
