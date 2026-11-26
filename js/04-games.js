@@ -287,7 +287,10 @@ async function loadClass(force){if(!isStudent()||GAME.off)return null;if(GAME.bu
   finally{GAME.busy=false;renderBossBits()}}
 function bossRewards(st){if(!st||!(NUM(st.my)>0))return;bossPlan(st).defeated.forEach(s=>{const n=10+5*s.k;if(award(n,'boss:'+st.week_start+':'+s.k)){bump('boss');setTimeout(()=>celebrate(`우리 반이 ${josa(s.boss.nm,'을','를')} 물리쳤어요! 보너스 +${n}`),400)}})}
 const offHTML=()=>`<div class="g-head"><b class="t">우리 반 보스전</b></div><p class="muted" style="margin:6px 0 0">선생님이 서버에 게임 설정을 추가하면 열려요.</p>`;
-function bossCardHTML(){return bossCardBase()+raidStripHTML()}
+/* 우리 반 보스전은 잠시 숨겨 둬요(나중에 보완해서 다시 열기: true로). 포인트 집계·교사 크게 띄우기는 그대로 동작 */
+const CLASS_BOSS_ON=false;
+function bossCardHTML(){if(CLASS_BOSS_ON)return bossCardBase()+raidStripHTML();const b=raidBoss();
+  return`<div class="g-head"><b class="t">오늘의 보스 도전</b><span class="k">이번 주 보스</span></div><div class="boss-mini"><div class="bm-pic">${bossSVG(b,90,0.5)}</div><div class="bm-info"><b>${esc(b.nm)}</b><small>문제 폭탄을 풀어 터뜨리고 보물상자를 열어요</small></div></div>${raidStripHTML(true)}`}
 function bossCardBase(){
   if(!isStudent())return`<div class="g-head"><b class="t">우리 반 보스전</b></div><p style="margin:6px 0 12px">로그인하면 반 친구들과 함께 이번 주 보스를 물리쳐요. 내가 받은 포인트만큼 보스에게 데미지가 들어가요.</p><a class="btn" href="#login">로그인하기</a>`;
   if(GAME.off)return offHTML();
@@ -334,8 +337,8 @@ function renderBossBits(){const c=$('#bossCard');if(c)c.innerHTML=bossCardHTML()
   if(GAME.off){h._st=null;h.innerHTML=`<div class="card panel">${offHTML()}</div>`;return}
   if(GAME.st){if(h._st)updateBossPage(h,GAME.st,{});else renderBossPage(h,GAME.st,{})}}
 function viewBoss(){crumbs.innerHTML=`<span class="sep">›</span><span>보스전</span>`;
-  app.innerHTML=`<div class="unit-head"><div><h1>보스전</h1><p>혼자 도전하는 <b>오늘의 보스 도전</b>과, 반 친구들과 포인트를 모아 때리는 <b>우리 반 보스전</b>이 있어요.</p></div></div><div id="raidHost"></div><h2 class="raid-sub">우리 반 보스전</h2><div id="bossHost"></div>`;
-  raidLobby($('#raidHost',app));
+  app.innerHTML=`<div class="unit-head"><div><h1>보스전</h1><p>보스가 던지는 문제 폭탄을 풀어서 터뜨려요. 빠르고 정확해야 이길 수 있어요!</p></div></div><div id="raidHost"></div>${CLASS_BOSS_ON?'<h2 class="raid-sub">우리 반 보스전</h2><div id="bossHost"></div>':''}`;
+  raidLobby($('#raidHost',app));if(!CLASS_BOSS_ON)return;
   const h=$('#bossHost',app);
   if(!isStudent()){h.innerHTML=`<div class="card panel"><p style="margin-top:0">로그인하면 우리 반 친구들과 함께 보스전에 참여해요.</p><a class="btn primary" href="#login">로그인하기</a></div>`;return}
   if(GAME.off){h.innerHTML=`<div class="card panel">${offHTML()}</div>`;return}
@@ -522,7 +525,7 @@ function viewBBCpu(key){crumbs.innerHTML=`<span class="sep">›</span><a href="#
    방식(RAID_MODES)은 주마다 바꿀 수 있게 나눠 두었어요. 지금은 '폭탄 방어전' 하나예요.
    문제는 js/boss-bank.js(window.BOSS_BANK)에서 가져와요.
    포인트는 '끝까지 하기 · 다시 맞히기 · 새 도전'에만 조금 주고, 큰 보상은 보물상자(물건)로 줘요. */
-const RAID={COST:20,PAID_MAX:2,POT:10,HP:{normal:500,hard:450},SEC:{normal:45,hard:75},HEARTS:3,GAUGE_MS:2000,PARRY_MS:1200,BASE:100};
+const RAID={COST:20,PAID_MAX:2,POT:10,HP:{normal:650,hard:600},SEC:{normal:40,hard:60},HEARTS:3,GAUGE_MS:1600,GAUGE_PER:650,GOLD:3.5,GOOD:11,PARRY_MS:650,BASE:100};
 const RAID_MODES={defense:{nm:'폭탄 방어전',d:'보스가 던지는 문제 폭탄이 성벽에 닿기 전에 풀어서 터뜨려요.'}};
 const raidModeNow=()=>'defense';
 const DICE=[null,
@@ -546,8 +549,8 @@ function shieldCheck(){const M=me(),t=today(),y=addDays(t,-1);if(!M.last||M.last
   setTimeout(()=>toast(`🛡️ 연속 보호 방패 ${gap}개를 써서 연속 ${M.streak}일이 그대로 이어졌어요!`),300)}
 award=(f=>function(n,k,w){shieldCheck();return f(n,k,w)})(award);
 
-function raidStripHTML(){const t=raidTix(),n=(t.free?1:0)+t.paidLeft;
-  return`<a class="raid-strip" href="#boss"><span>⚔️ <b>오늘의 보스 도전</b> · ${esc(raidBoss().nm)}</span><small>${t.free?'무료 입장권 있어요!':t.drill?(n?`추가 입장 ${n}번 가능`:'오늘은 다 했어요'):'오늘의 계산을 끝내면 무료 입장'}</small></a>`}
+function raidStripHTML(short){const t=raidTix(),n=(t.free?1:0)+t.paidLeft;
+  return`<a class="raid-strip" href="#boss"><span>⚔️ <b>${short?'도전하러 가기 →':'오늘의 보스 도전'}</b>${short?'':' · '+esc(raidBoss().nm)}</span><small>${t.free?'무료 입장권 있어요!':t.drill?(n?`추가 입장 ${n}번 가능`:'오늘은 다 했어요'):'오늘의 계산을 끝내면 무료 입장'}</small></a>`}
 function raidLootCount(){const S=shopState(),fr=shopCat('frame').items.filter(i=>i.bossOnly),ti=shopCat('title').items.filter(i=>i.bossOnly);
   return{tix:bonusLeft(),shield:shieldLeft(),pcs:NUM(S.couponPcs)%3,coupons:Math.floor(NUM(S.couponPcs)/3),fr:fr.filter(i=>owns('frame',i.id)).length,frN:fr.length,ti:ti.filter(i=>owns('title',i.id)).length,tiN:ti.length}}
 function raidLobby(host){if(!host)return;const b=raidBoss(),t=raidTix(),{R}=raidDay(),L=raidLootCount(),mode=RAID_MODES[raidModeNow()];
@@ -666,10 +669,10 @@ function raidOpen(paid,onClose){
       bomb.style.top=(p*100).toFixed(2)+'%';bt.textContent=Math.max(0,left);bomb.classList.toggle('hurry',left<=10);
       if(p>=1){wrong(null);return}requestAnimationFrame(tick)};requestAnimationFrame(tick)}
   /* 정답 → 저스트 타이밍 게이지 */
-  function hitPhase(){G.state='gauge';G.hits++;const box=$('.rb-ans',stage),gw=6*G.zone,ow=18;
+  function hitPhase(){G.state='gauge';G.hits++;const box=$('.rb-ans',stage),gw=RAID.GOLD*G.zone,ow=RAID.GOOD;
     box.innerHTML=`<div class="rg"><p class="rg-t">정답! 가운데 <b>황금 존</b>에 맞춰 누르면 PERFECT!</p><div class="rg-bar"><i class="rg-good" style="left:${50-ow}%;width:${ow*2}%"></i><i class="rg-gold" style="left:${50-gw}%;width:${gw*2}%"></i><b class="rg-cur"></b></div>
       <button type="button" class="btn primary rg-hit">지금! (스페이스)</button></div>`;
-    activeBox=null;const cur=$('.rg-cur',box),t0=performance.now(),per=reduced?1400:900;let done=false,p=0;
+    activeBox=null;const cur=$('.rg-cur',box),t0=performance.now(),per=reduced?1200:RAID.GAUGE_PER;let done=false,p=0;
     const tick=now=>{if(done||closed||!G||G.over)return;const ph=((now-t0)/per)%2;p=ph<1?ph:2-ph;cur.style.left=(p*100).toFixed(2)+'%';if(now-t0>=RAID.GAUGE_MS){hit(null);return}requestAnimationFrame(tick)};
     const hit=pp=>{if(done)return;done=true;keyFn=null;const d=Math.abs((pp==null?-1:pp)*100-50);
       const g=pp==null?'late':d<=gw?'perfect':d<=ow?'good':'miss';strike(g)};
@@ -688,7 +691,7 @@ function raidOpen(paid,onClose){
     if(G.luck){G.luck=false;fx('🍀 행운의 방패가 막았어요!','guard');later(next,1500);return}
     if(G.guard){later(()=>hurt(),500);return}
     later(()=>{const ar=$('.rb-arena',stage);if(!ar)return;const b=el('<button type="button" class="rp-parry">🛡️ 막기!</button>');
-      b.style.left=(8+Math.random()*60)+'%';b.style.top=(12+Math.random()*55)+'%';ar.appendChild(b);let done=false;
+      b.style.left=(4+Math.random()*70)+'%';b.style.top=(6+Math.random()*62)+'%';ar.appendChild(b);let done=false;
       const ok=e=>{if(e)e.preventDefault();if(done)return;done=true;keyFn=null;b.remove();G.guard=true;fx('⚡ 저스트 가드!','guard');buzz([15,20,15]);later(next,1300)};
       b.onpointerdown=ok;b.onclick=ok;keyFn=ok;later(()=>{if(done)return;done=true;keyFn=null;b.remove();hurt()},RAID.PARRY_MS)},450)}
   function hurt(){if(!G||G.over)return;G.hearts--;fx('💥 성벽이 흔들려요! 하트 −1','hurt');buzz(120);const a=$('.rb-arena',stage);if(a&&!reduced){a.classList.remove('shake');void a.offsetWidth;a.classList.add('shake')}

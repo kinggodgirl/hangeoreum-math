@@ -92,7 +92,7 @@ body.raid-lock{overflow:hidden}
 .rfx.hurt{color:#ff9b9b}
 .rfx.guard{color:#8ec5ff;font-size:28px}
 @keyframes rfxUp{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-140%) scale(1)}}
-.rp-parry{position:absolute;z-index:3;border:3px solid #fff;background:#2f7bff;color:#fff;font-size:22px;font-weight:800;border-radius:16px;padding:14px 20px;cursor:pointer;box-shadow:0 0 0 6px rgba(47,123,255,.35),0 0 26px rgba(142,197,255,.9);animation:rpFlash .3s ease-out,rpPulse .4s .3s infinite alternate;touch-action:manipulation}
+.rp-parry{position:absolute;z-index:3;border:3px solid #fff;background:#2f7bff;color:#fff;font-size:17px;font-weight:800;border-radius:12px;padding:8px 12px;cursor:pointer;box-shadow:0 0 0 6px rgba(47,123,255,.35),0 0 26px rgba(142,197,255,.9);animation:rpFlash .3s ease-out,rpPulse .4s .3s infinite alternate;touch-action:manipulation}
 @keyframes rpFlash{from{transform:scale(1.7);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes rpPulse{to{transform:scale(1.08)}}
 
