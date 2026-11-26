@@ -66,21 +66,21 @@ function faceSVG(kind,x,y,u,boss){const k='#1d2640',e=10*u,f=v=>v.toFixed(1);
 const MINI_BASE='assets/mini-characters';
 const RAR_NM={common:'일반',rare:'반짝',legend:'전설'};
 const RAR_W={common:60,rare:30,legend:10};
-const GACHA_COST=120,GACHA_MAX_DAY=2;
+const GACHA_COST=180,GACHA_MAX_DAY=2;
 const SHOP=[
  {cat:'mini',nm:'3D 캐릭터',items:[
    {id:'fa',nm:'민지',f:'character-female-a',r:'common',p:0},
    {id:'ma',nm:'준호',f:'character-male-a',r:'common',p:0},
-   {id:'fb',nm:'서연',f:'character-female-b',r:'common',p:180},
-   {id:'mb',nm:'도윤',f:'character-male-b',r:'common',p:180},
-   {id:'fc',nm:'하은',f:'character-female-c',r:'common',p:180},
-   {id:'mc',nm:'시우',f:'character-male-c',r:'common',p:180},
-   {id:'fd',nm:'지우',f:'character-female-d',r:'rare',p:300},
-   {id:'md',nm:'예준',f:'character-male-d',r:'rare',p:300},
-   {id:'fe',nm:'수아',f:'character-female-e',r:'rare',p:300},
-   {id:'me',nm:'건우',f:'character-male-e',r:'rare',p:300},
-   {id:'ff',nm:'별빛 소녀',f:'character-female-f',r:'legend',p:500},
-   {id:'mf',nm:'은하 소년',f:'character-male-f',r:'legend',p:500}]},
+   {id:'fb',nm:'서연',f:'character-female-b',r:'common',p:250},
+   {id:'mb',nm:'도윤',f:'character-male-b',r:'common',p:250},
+   {id:'fc',nm:'하은',f:'character-female-c',r:'common',p:250},
+   {id:'mc',nm:'시우',f:'character-male-c',r:'common',p:250},
+   {id:'fd',nm:'지우',f:'character-female-d',r:'rare',p:400},
+   {id:'md',nm:'예준',f:'character-male-d',r:'rare',p:400},
+   {id:'fe',nm:'수아',f:'character-female-e',r:'rare',p:400},
+   {id:'me',nm:'건우',f:'character-male-e',r:'rare',p:400},
+   {id:'ff',nm:'별빛 소녀',f:'character-female-f',r:'legend',p:700},
+   {id:'mf',nm:'은하 소년',f:'character-male-f',r:'legend',p:700}]},
  {cat:'frame',nm:'프로필 프레임',items:[
    {id:'none',nm:'기본',p:0,cls:'f-none'},
    {id:'sky',nm:'하늘 원',p:25,cls:'f-sky'},
@@ -130,7 +130,7 @@ function mountAvatar(host,getEq,size=210){let curKey='',token=0;
     if(mv)mv.addEventListener('error',()=>{if(token===myTok)host.innerHTML=avatarThumb(eq,size)})}
   sync();return sync}
 
-/* 착한 캡슐 뽑기: 100% 꽝 없음 · 중복 없음 · 오늘의 계산 완료 시 무료 1회 · 하루 최대 2회 */
+/* 캡슐 뽑기: 포인트 뽑기는 중복 없음 · 오늘의 계산 완료 시 무료 1회(무료는 이미 가진 캐릭터도 나올 수 있음) · 하루 최대 2회 */
 function gachaInfo(){const S=shopState(),t=today(),pool=shopCat('mini').items.filter(it=>it.p>0&&!owns('mini',it.id));
   const used=S.gachaDay===t?NUM(S.gachaCnt):0,drillDone=NUM(dayState().c.drill)>0||OBJ(DB._drill).last===t;
   const free=drillDone&&S.freeGachaDay!==t&&pool.length>0&&used<GACHA_MAX_DAY;
@@ -140,9 +140,10 @@ function pullGacha(){const g=gachaInfo();if(!g.pool.length)return{err:'all'};if(
   const S=shopState(),t=today();if(S.gachaDay!==t){S.gachaDay=t;S.gachaCnt=0}
   if(g.free)S.freeGachaDay=t;else S.spent+=GACHA_COST;
   S.gachaCnt=NUM(S.gachaCnt)+1;
-  const ws=g.pool.map(it=>RAR_W[it.r]||30);let roll=Math.random()*ws.reduce((a,b)=>a+b,0),won=g.pool[g.pool.length-1];
-  for(let i=0;i<g.pool.length;i++){roll-=ws[i];if(roll<=0){won=g.pool[i];break}}
-  S.own['mini:'+won.id]=1;save();return{won,free:g.free}}
+  const pool=g.free?shopCat('mini').items.filter(it=>it.p>0):g.pool;
+  const ws=pool.map(it=>RAR_W[it.r]||30);let roll=Math.random()*ws.reduce((a,b)=>a+b,0),won=pool[pool.length-1];
+  for(let i=0;i<pool.length;i++){roll-=ws[i];if(roll<=0){won=pool[i];break}}
+  const dup=owns('mini',won.id);S.own['mini:'+won.id]=1;save();return{won,free:g.free,dup}}
 
 function viewShop(){
   crumbs.innerHTML=`<span class="sep">›</span><a href="#me">내 기록</a><span class="sep">›</span><span>꾸미기 상점</span>`;
@@ -157,14 +158,14 @@ function viewShop(){
     const btnTxt=!g.pool.length?'모든 3D 캐릭터를 모았어요 🎉':g.left<=0?`오늘 뽑기 완료 (${GACHA_MAX_DAY}/${GACHA_MAX_DAY})`:g.free?'🎁 오늘의 계산 무료 뽑기!':`🎁 캡슐 뽑기 (${GACHA_COST}포인트)`;
     const dis=!g.pool.length||g.left<=0||(!g.free&&balance()<GACHA_COST)||gachaBusy;
     box.innerHTML=`<div class="gacha-head"><h2>🎁 3D 미니 캐릭터 캡슐 뽑기</h2><button type="button" class="btn primary gachaGo" ${dis?'disabled':''}>${btnTxt}</button></div>
-      <p class="gacha-meta"><b>100% 꽝 없음 · 중복 없음!</b> 아직 없는 캐릭터만 나와요 · 모은 캐릭터 <b class="rm">${got}/${g.total}</b> · 오늘 남은 횟수 <b class="rm">${g.left}/${GACHA_MAX_DAY}</b>${g.free?' · <b style="color:var(--ok)">오늘의 계산 완료 무료권 사용 가능!</b>':' · 오늘의 계산을 끝내면 하루 1회 무료!'}</p>
+      <p class="gacha-meta"><b>포인트 뽑기는 중복 없음!</b> 아직 없는 캐릭터만 나와요 · 무료 뽑기는 가진 캐릭터가 또 나올 수도 있어요 · 모은 캐릭터 <b class="rm">${got}/${g.total}</b> · 오늘 남은 횟수 <b class="rm">${g.left}/${GACHA_MAX_DAY}</b>${g.free?' · <b style="color:var(--ok)">오늘의 계산 완료 무료권 사용 가능!</b>':' · 오늘의 계산을 끝내면 하루 1회 무료!'}</p>
       ${resHTML?`<div class="gacha-stage">${resHTML}</div>`:''}`;
     const gb=$('.gachaGo',box);
     if(gb)gb.onclick=()=>{if(gachaBusy)return;gachaBusy=true;drawGacha('<div class="gacha-cap" aria-hidden="true">💊</div><p class="muted" style="margin:6px 0 0">캡슐이 열리고 있어요…</p>');
       setTimeout(()=>{const r=pullGacha();gachaBusy=false;
         if(r.err){drawGacha(`<p class="muted">${r.err==='pts'?`포인트가 ${r.need}만큼 모자라요.`:r.err==='limit'?'오늘 뽑기 횟수를 다 썼어요. 내일 다시 뽑아요!':'이미 모든 캐릭터를 모았어요!'}</p>`);return}
-        const w=r.won;celebrate(`${RAR_NM[w.r]} 캐릭터 ‘${w.nm}’를 얻었어요!`);
-        drawGacha(`<div class="gacha-res"><span class="rar ${w.r}">${RAR_NM[w.r]}</span><h3 style="margin:4px 0 8px">${w.nm}</h3>${mini3DHTML(w,170,shopItem('frame',myEq().frame).cls)}<p style="margin:10px 0 0"><button type="button" class="btn primary gEquip">바로 장착하기</button></p></div>`);
+        const w=r.won;if(r.dup)toast(`앗, 이미 가진 ‘${w.nm}’가 나왔어요. 내일 또 도전해요!`);else celebrate(`${RAR_NM[w.r]} 캐릭터 ‘${w.nm}’를 얻었어요!`);
+        drawGacha(`<div class="gacha-res"><span class="rar ${w.r}">${RAR_NM[w.r]}</span><h3 style="margin:4px 0 8px">${w.nm}${r.dup?' <small class="muted">(이미 있어요)</small>':''}</h3>${mini3DHTML(w,170,shopItem('frame',myEq().frame).cls)}<p style="margin:10px 0 0"><button type="button" class="btn primary gEquip">바로 장착하기</button></p></div>`);
         const ge=$('.gEquip',box);if(ge)ge.onclick=()=>{equipItem('mini',w.id);setPreview(null);toast(`${w.nm} 캐릭터로 바꿨어요!`);drawGacha('')};
         draw()},reduced?0:650)}}
   function setPreview(p){preview=p;themePreview=p&&p.cat==='hi'?shopItem('hi',p.id):null;applyTheme();syncAv();draw()}
