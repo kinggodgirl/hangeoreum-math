@@ -17,6 +17,7 @@ create table if not exists public.hg_group_members (
   added_at timestamptz not null default now(),
   primary key (gid, sid)
 );
+create index if not exists hg_group_members_sid on public.hg_group_members (sid);
 alter table public.hg_groups enable row level security;
 alter table public.hg_group_members enable row level security;
 revoke all on public.hg_groups, public.hg_group_members from anon, authenticated;

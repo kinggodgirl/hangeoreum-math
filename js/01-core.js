@@ -12,7 +12,7 @@ const newSeed=()=>Math.floor(Math.random()*2**31);
 const KD=['','일','이','삼','사','오','육','칠','팔','구'];
 function kn(n){if(n<10)return KD[n];const t=Math.floor(n/10),o=n%10;return(t>1?KD[t]:'')+'십'+KD[o]}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function toast(msg){let box=$('#toasts');if(!box){box=el('<div id="toasts" aria-live="polite"></div>');document.body.appendChild(box)}const t=el(`<div class="toast" role="status">${msg}</div>`);box.appendChild(t);while(box.children.length>3)box.firstElementChild.remove();setTimeout(()=>t.remove(),2600)}
+function toast(msg){let box=$('#toasts');if(!box){box=el('<div id="toasts" aria-live="polite"></div>');document.body.appendChild(box)}const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=String(msg);box.appendChild(t);while(box.children.length>3)box.firstElementChild.remove();setTimeout(()=>t.remove(),2600)}
 const CHECK='<svg width="14" height="14" viewBox="0 0 14 14" aria-label="완료"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const sgnTxt=n=>{const r=Math.round(n*1000)/1000;return r>0?'+'+r:r<0?'−'+(-r):'0'};
 const T=(key,label)=>`<button type="button" class="term" data-t="${key}">${label||key}</button>`;
@@ -594,4 +594,3 @@ function cylLabels(ctx,v,r,h,lr,lh){const C=v.proj([0,0,h]);const ang=-0.35;cons
   lab(ctx,lr||r+' cm',(C[0]+Rp[0])/2,(C[1]+Rp[1])/2-18,{italic:!!lr,chip:v.o.chip});
   let best=null;for(let k=0;k<64;k++){const th=TAU*k/64;const p=v.proj([r*Math.cos(th),r*Math.sin(th),0]);if(!best||p[0]>best.p[0])best={p,th}}
   const T2=v.proj([r*Math.cos(best.th),r*Math.sin(best.th),h]);ctx.font='21px "Times New Roman",serif';const ht=lh||h+' cm';const tw=ctx.measureText(ht).width+(v.o.chip?16:0);lab(ctx,ht,best.p[0]+12+tw/2,(best.p[1]+T2[1])/2,{italic:!!lh,chip:v.o.chip})}
-
