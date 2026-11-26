@@ -700,7 +700,7 @@ EXPLORE.types=body=>{
 function ruleActivity(host,done){
   host.innerHTML=`<div class="explore"><div class="stage"><canvas class="tyCv"></canvas><span class="hint">끌어서 돌려 보세요</span></div>
     <div class="ctrl">
-     <div class="seg tyType"><button type="button" class="on" data-t="prism">각기둥</button><button type="button" data-t="pyramid">각뿔</button><button type="button" data-t="frustum">각뿔대</button></div>
+     <div class="seg tyType"><button type="button" class="on" data-t="prism">각기둥</button><button type="button" class="on" style="display:none"></button><button type="button" data-t="pyramid">각뿔</button><button type="button" data-t="frustum">각뿔대</button></div>
      <div><label class="cap" for="tyN">밑면: <span class="tyNm">삼각형</span></label><input type="range" id="tyN" class="tyN" min="3" max="10" value="3"></div>
      <div class="tablewrap"><table class="t ptable"><thead><tr><th>이름</th><th>면<br><small>지붕+벽+바닥</small></th><th>모서리<br><small>위층·사이·아래층</small></th><th>꼭짓점<br><small>층별</small></th></tr></thead><tbody class="tyBody"></tbody></table></div>
      <div class="tyMsg flmsg"></div>
@@ -1419,7 +1419,7 @@ function viewLogin(){
     <p class="muted" style="font-size:15px">학교 패드처럼 여럿이 함께 쓰는 기기라면, 공부를 마친 뒤 꼭 로그아웃해 주세요.</p></div></div>`;
     $('.lgOut',app).onclick=async()=>{await studentLogout();toast('로그아웃했어요.');viewLogin()};return}
   app.innerHTML=`<div class="login-wrap">${demoBanner()}<div class="card panel login-card">
-    <div class="seg logtab" role="tablist"><button type="button" class="on" data-t="s" role="tab">학생</button><button type="button" class="on" style="display:none"></button><button type="button" data-t="t" role="tab">선생님</button></div>
+    <div class="seg logtab" role="tablist"><button type="button" class="on" data-t="s" role="tab">학생</button><button type="button" data-t="t" role="tab">선생님</button></div>
     <div class="logS">
       <h1 style="font-size:28px;margin-top:14px">학생 로그인</h1>
       <p class="muted" style="margin-top:4px">로그인하면 다른 기기에서도 이어서 할 수 있고, 선생님이 내 진도를 볼 수 있어요.</p>
