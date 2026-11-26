@@ -189,6 +189,7 @@ create table if not exists public.hg_bb_ledger (
   created_at timestamptz not null default now()
 );
 create index if not exists hg_bb_ledger_sid on public.hg_bb_ledger (sid);
+create index if not exists hg_bb_ledger_game on public.hg_bb_ledger (game_id);
 
 alter table public.hg_bb_games   enable row level security;
 alter table public.hg_bb_guesses enable row level security;
@@ -232,13 +233,13 @@ language sql stable security definer set search_path = public, extensions as $$
 $$;
 
 create or replace function public.hg_bb_valid(p text, d int) returns boolean
-language sql immutable as $$
+language sql immutable set search_path = public, extensions as $$
   select p is not null and p ~ ('^[1-9]{' || d || '}$')
      and (select count(distinct c) from regexp_split_to_table(p, '') c) = d
 $$;
 
 create or replace function public.hg_bb_score(p_secret text, p_guess text, out s int, out b int)
-language plpgsql immutable as $$
+language plpgsql immutable set search_path = public, extensions as $$
 declare i int;
 begin
   s := 0; b := 0;

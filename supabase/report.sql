@@ -18,6 +18,7 @@ create table if not exists public.hg_reports (
   created_at timestamptz not null default now()
 );
 create index if not exists hg_reports_open on public.hg_reports (done, created_at desc);
+create index if not exists hg_reports_sid on public.hg_reports (sid);
 alter table public.hg_reports enable row level security;
 revoke all on public.hg_reports from anon, authenticated;
 
