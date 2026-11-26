@@ -21,7 +21,7 @@
 | **T09** | 교사 화면 편의 기능: 📅 이번 주 한눈에(지난 7일 공부한 날·챙길 점·수업 메모 복사) · 🎫 쿠폰 확인/사용함 · 학습 현황 표 머리줄 단원 묶음·점 범례 · 🎮 게임 탭을 학생별 보스 도전 기록으로 | Claude Code | `js/03-teacher.js`, `teacher-plus.css`(신규), `index.html`(1줄), `AGENTS.md`·`COLLAB.md`(문서) | **완료** |
 | **T10** | 숫자야구 4단계 난이도(하·중·중상·상, 선생님 숫자야구 앱과 같은 규칙) + 하 단계 판돈 최대 10포인트 · 보드게임 후보 제안 | Claude Code | `js/04-games.js`(숫자야구 부분), `boss-raid.css`(끝에 몇 줄), `js/07-print-omr-boot.js`(라우터 1줄), `supabase/game.sql`(숫자야구 함수) + 운영 DB 적용, `COLLAB.md` | **완료** (`main`·DB 반영) |
 | **T11** | 새 미니게임 `⚓ 좌표 해전`: 좌표평면에 배 3척을 숨기고 (x, y)로 찾는 2인 대결(하·중·상, 판돈은 숫자야구와 같은 장부, 하 최대 10P) + 컴퓨터와 연습 | Claude Code | `js/04s-sea.js`(신규), `sea.css`(신규), `supabase/sea.sql`(신규) + 운영 DB 적용, `index.html`(2줄), `js/07-print-omr-boot.js`(라우터 2줄), `tests/verify.mjs`(1줄), `COLLAB.md` | **코드 완료 · DB 적용 대기** |
-| **T12** | 교과서 시험 범위 문제 꼬리표 은행(Ⅳ 전체 · Ⅵ-04·05 · Ⅶ-01~04, 192문항: 단원·쪽·유형·난이도·기초 연산 칸·보스용) + 형식 검사 | Claude Code | `data/textbook-bank.json`(신규), `docs/textbook-bank.md`(신규), `tests/textbook-bank.mjs`(신규), `tests/verify.mjs`(1줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
+| **T12** | 교과서 시험 범위 문제 꼬리표 은행(Ⅳ 전체 · Ⅵ-04·05 · Ⅶ-01~04, 192문항). **저장소 밖** 선생님 컴퓨터 `ai` 폴더에 보관 | Claude Code | (저장소 파일 없음) `COLLAB.md` 경로 안내만 | **완료** |
 
 ---
 
@@ -59,7 +59,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
-* **2026-11-26 (`T12` 완료, Claude Code)**: 시험 범위 교과서 문제 192문항을 `data/textbook-bank.json`에 꼬리표로 정리(차시 `lesson`·유형 `type`·난이도 `level` 1~3·기초 연산 칸 `calc`·답 모양 `form`·보스용 `boss`). 저작권 때문에 원문·그림은 넣지 않고 우리말 요약·수치·정답만 넣었어요. **새 차시·보스전·미니게임 문제를 만들 때 이 파일을 기준으로 써 주세요**(형식·쓰는 법: `docs/textbook-bank.md`). 문항을 덧붙이면 `node tests/verify.mjs`가 `tests/textbook-bank.mjs`로 형식·쪽 범위·`CALC` id를 검사해요. Ⅳ단원 차시 id는 `coord`·`graph`·`prop`·`inv`로 제안(보스 은행 `les`와 같음).
+* **2026-11-26 (`T12` 완료, Claude Code)**: 시험 범위 교과서 문제 192문항 꼬리표 은행(차시 `lesson`·유형 `type`·난이도 `level` 1~3·기초 연산 칸 `calc`·답 모양 `form`·보스용 `boss`)은 선생님 요청으로 **저장소에 두지 않고** `C:\Users\minge\OneDrive - 대청중학교\ai\교과서 문제 꼬리표\`에 있어요(`textbook-bank.json` · 형식 설명 `textbook-bank.md` · 검사 `node check-bank.mjs <저장소 폴더>`). 새 차시·보스전·미니게임 문제를 만들 때 이 파일을 기준으로 쓰고, 저장소에는 복사하지 마세요. Ⅳ단원 차시 id 제안: `coord`·`graph`·`prop`·`inv`.
 * **2026-11-26 (`T11` 완료, Claude Code)**
   * 새 미니게임 **⚓ 좌표 해전**(`#sea`, 처음 화면 숫자야구 띠 아래 `sea-strip`). 단계: **하** −3~3·판을 눌러 쏘기·판돈 최대 10 / **중** −3~3·x, y 버튼으로 골라 쏘기 / **상** −4~4·좌표 + 그 점의 위치(제1~4사분면·x축·y축·원점)까지 맞혀야 쏘기(틀리면 차례 넘김). 배는 하·중 3·2·2칸, 상 4·3·2칸. 방장 먼저, 같은 횟수 보장, 하·중 25번·상 30번 뒤엔 맞힌 칸 수로 승부, 60초 시간 제한.
   * 서버: `supabase/sea.sql`(신규) — `hg_sea_games`·`hg_sea_shots`, 학생 RPC `hg_sea_lobby/create/join/ships/fire/state/leave`. 배 위치는 서버만 알고(가라앉은 배·끝난 뒤만 공개), 맞힘 판정도 서버. 포인트는 숫자야구 장부 `hg_bb_ledger`에 `sea_id` 칸을 더해 같이 써요(쓸 수 있는 포인트 공유, 이유 '좌표 해전 판돈/승리/무승부'). 켜기/끄기·최대 판돈은 숫자야구 설정(`bb_on`, `bb_max`)을 따라가요. 하루 10판.
