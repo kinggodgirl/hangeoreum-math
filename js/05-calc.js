@@ -380,7 +380,7 @@ const CALC=[
      return{q:`밑변 ${M_(a+' cm')}, 높이 ${M_(b+' cm')}인<br>평행사변형의 넓이`,ans:a*b,suffix:'cm²',steps:[S_('밑변 × 높이',M_(`${a} × ${b}`),a*b)],errs}}
    let a=ri(r,2,8),b=ri(r,a+1,12),h=ri(r,2,8);if(((a+b)*h)%2)h++;return{q:`윗변 ${M_(a+' cm')}, 아랫변 ${M_(b+' cm')}, 높이 ${M_(h+' cm')}인<br>사다리꼴의 넓이`,ans:(a+b)*h/2,suffix:'cm²',steps:[S_('윗변 + 아랫변',M_(`${a} + ${b}`),a+b),S_('× 높이',M_(`${a+b} × ${h}`),(a+b)*h),S_('절반',M_(`${(a+b)*h} ÷ 2`),(a+b)*h/2)],
      errs:[E_((a+b)*h,'÷ 2를 빠뜨렸어요. 사다리꼴 두 개가 평행사변형이니까 절반이에요.'),E_(a*b*h/2,'윗변과 아랫변을 곱했어요. 더해야 해요.')]}}},
- {id:'pi',grp:'solid',nm:'π가 있는 계산',use:'원과 부채꼴(호·넓이), 원기둥·원뿔·구',lv:['1단계 · π끼리 더하고 빼기','2단계 · 원의 둘레와 넓이','3단계 · 원기둥의 부피와 옆넓이'],
+ {id:'pi',grp:'solid',nm:'π가 있는 계산',use:'원과 부채꼴(호·넓이), 원기둥·원뿔·구',lv:['1단계 · π끼리 더하고 빼기','2단계 · 원의 둘레와 넓이','3단계 · 그림 보고 원의 둘레와 넓이'],
   ways:[{t:'π는 단위처럼',idea:`${M_('12π + 8π')}는 "사과 12개 + 사과 8개"처럼 생각해요. <b>π 앞의 수끼리</b> 계산하고 π는 그대로 붙여요.`,
      ex(r){const a=ri(r,3,15),b=ri(r,2,9);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',steps:[S_('π 앞의 수끼리 더해요',M_(`${a} + ${b}`),a+b),S_('π를 붙여서 답해요 (π 단추)',M_(`${a+b} × π`),a+b,'pi')]}},
      why:{q:`${M_('12π + 8π')}를 사과로 바꿔 말하면?`,choices:['사과 12개 + 사과 8개','사과 12개 × 사과 8개','사과 20개 × 2'],ans:0,ok:'π를 하나의 물건처럼 세면 20π예요.'}},
@@ -390,11 +390,9 @@ const CALC=[
   gen(L,r){if(L===1){const k=ri(r,0,2);if(k===0){const a=ri(r,2,15),b=ri(r,2,10);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',steps:[S_('수끼리 더해요',M_(`${a} + ${b}`),a+b),S_('π를 붙여요',M_(`${a+b} × π`),a+b,'pi')],errs:[E_(a*b,'곱했어요. π 앞의 수끼리 더해요.',true)]}}
      if(k===1){const a=ri(r,10,20),b=ri(r,2,9);return{q:M_(`${a}π − ${b}π`),ans:a-b,type:'pi',steps:[S_('수끼리 빼요',M_(`${a} − ${b}`),a-b),S_('π를 붙여요',M_(`${a-b} × π`),a-b,'pi')],errs:[E_(a+b,'더했어요. 빼기예요.',true)]}}
      const a=ri(r,2,5),b=ri(r,2,9);return{q:M_(`${a} × ${b}π`),ans:a*b,type:'pi',steps:[S_('수끼리 곱해요',M_(`${a} × ${b}`),a*b),S_('π를 붙여요',M_(`${a*b} × π`),a*b,'pi')],errs:[E_(a+b,'더했어요. 곱해요.',true)]}}
-   if(L===2&&r()<0.5)return piFig(r);
    if(L===2){const rr=ri(r,2,8);if(r()<0.5)return{q:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`,ans:2*rr,type:'pi',suffix:'cm',steps:[S_('수끼리 곱해요',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${2*rr} × π`),2*rr,'pi')],errs:[E_(rr,'2를 곱하지 않았어요.',true),E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)]};
      return{q:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`,ans:rr*rr,type:'pi',suffix:'cm²',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('π를 붙여요',M_(`${rr*rr} × π`),rr*rr,'pi')],errs:[E_(2*rr,`${M_(`${rr} × 2`)}를 했어요. ${M_(`${rr}²`)}${J(rr,'은','는').slice(String(rr).length)} ${M_(`${rr} × ${rr}`)}${IYs(rr)}.`,true)]}}
-   const rr=ri(r,2,5),h=ri(r,2,6);if(r()<0.5)return{q:`원기둥의 부피<br>${M_(`π × ${rr}² × ${h}`)}`,ans:rr*rr*h,type:'pi',suffix:'cm³',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('높이를 곱해요',M_(`${rr*rr} × ${h}`),rr*rr*h),S_('π를 붙여요',M_(`${rr*rr*h} × π`),rr*rr*h,'pi')],errs:[E_(2*rr*h,'제곱을 × 2로 했어요.',true),E_(rr*h,'제곱을 빠뜨렸어요.',true)]};
-   return{q:`원기둥의 옆넓이<br>${M_(`2 × π × ${rr} × ${h}`)}`,ans:2*rr*h,type:'pi',suffix:'cm²',steps:[S_('수끼리 곱해요',M_(`2 × ${rr} × ${h}`),2*rr*h),S_('π를 붙여요',M_(`${2*rr*h} × π`),2*rr*h,'pi')],errs:[E_(rr*h,'2를 빠뜨렸어요.',true)]}}},
+   return piFig(r)}},
  {id:'frac',grp:'solid',nm:'분수 곱하기',use:'부채꼴(중심각/360°), 뿔의 부피 ⅓, 구의 부피 4/3',lv:['1단계 · ½ ×, ⅓ ×','2단계 · 셋을 곱할 때','3단계 · 뿔과 구의 부피'],
   ways:[{t:'⅓ ×는 ÷ 3',idea:`${M_('⅓ × 12')}는 12를 <b>셋으로 똑같이 나눈 하나</b>예요. 그래서 ${M_('12 ÷ 3')}.`,
      ex(r){const a=ri(r,2,9)*3;return{q:M_(`⅓ × ${a}`),fig:svgGroups(a,3,1),ans:a/3,steps:[S_('3으로 나눠요',M_(`${a} ÷ 3`),a/3)]}},
