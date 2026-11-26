@@ -6,9 +6,11 @@ const GOALS=[
  {k:'calc',ic:'🌱',nm:'계산부터 탄탄히',aim:'계산 힘을 되찾고, 시험의 쉬운 계산 문제를 맞혀요.',
   how:['수 감각 사다리와 구구단부터 해요','오늘의 계산은 5문제씩 짧게 해요','차시는 미리 보기와 같이 풀기까지 하면 충분해요']},
  {k:'base',ic:'🌿',nm:'시험 기본 문제 잡기',aim:'교과서 기본 문제를 확실히 맞혀요.',
-  how:['시험 범위 계산부터 해요 (막힌 바탕 칸은 같이 열려요)','차시는 같이 풀기와 혼자 풀기 5문제까지 해요','틀린 문제는 복습 노트로 다시 풀어요']},
+  how:['시작점 찾기에서 흔들린 계산부터, 그다음 시험 범위 계산을 해요','차시는 같이 풀기와 혼자 풀기 5문제까지 해요','틀린 문제는 복습 노트로 다시 풀어요']},
  {k:'up',ic:'🌳',nm:'시험 점수 더 올리기',aim:'교과서 유형까지 풀고 실수를 줄여요.',
   how:['시험 범위 계산을 별 3개까지 채워요','오늘의 계산은 10문제로 해요','차시는 더 알아보기까지 도전해요']}];
+/* 받침에 맞는 조사: 마지막 한글 글자를 보고 골라요. jo('잡기','을','를') → '잡기를', jo('길','으로','로') → '길로' */
+const jo=(w,a,b)=>{const m=String(w).match(/[가-힣](?=[^가-힣]*$)/),c=m?m[0].charCodeAt(0)-0xAC00:-1,f=c>=0?c%28:0;return w+(f&&!(a==='으로'&&f===8)?a:b)};
 const GOAL_RANK={calc:0,base:1,up:2};
 const GOAL_AGAIN_DAYS=14;
 const goalBy=k=>GOALS.find(g=>g.k===k)||null;
@@ -16,7 +18,7 @@ const goalBy=k=>GOALS.find(g=>g.k===k)||null;
 function goalRec(d){d=OBJ(d);const dg=OBJ(d._calcDiag),dr=OBJ(dg.res),cs=OBJ(d._calc),st=id=>NUM(OBJ(cs[id]).stars),nm=id=>(CALC.find(t=>t.id===id)||{}).nm||id;
   if(!dg.d)return null;
   const numWeak=['add','add2','facts','div'].filter(id=>dr[id]===false&&st(id)<1);
-  if(numWeak.length)return{k:'calc',why:`시작점 찾기에서 ${numWeak.map(nm).join(', ')}이(가) 흔들렸어요.`};
+  if(numWeak.length)return{k:'calc',why:`시작점 찾기에서 ${jo(numWeak.map(nm).join(', '),'이','가')} 흔들렸어요.`};
   const midWeak=['order','fracbase'].filter(id=>dr[id]===false&&st(id)<1);
   if(midWeak.length)return{k:'base',why:`기초 계산은 괜찮고, ${midWeak.map(nm).join(', ')}부터 다지면 좋아요.`};
   const ex=EXAM_FOCUS.filter(id=>CALC.some(t=>t.id===id)),all=ex.reduce((a,id)=>a+calcLvN(id),0),got=ex.reduce((a,id)=>a+Math.min(calcLvN(id),st(id)),0),r=all?got/all:0;
@@ -31,21 +33,25 @@ function goalApplyPrefs(k,force){const set=(key,v)=>{if(force||lsGet(key,null)==
   set('hangeoreum-calc-exam',k!=='calc');set('hangeoreum-calc-len',k==='up'?10:5)}
 function goalChoose(k){const g=goalBy(k);if(!g)return;const old=myGoal(),R=goalRec(DB),t=today(),h=Array.isArray(OBJ(DB._goal).h)?DB._goal.h.slice(-5):[];
   h.push([k,t]);DB._goal={k,d:t,rec:R?R.k:null,h};goalApplyPrefs(k,true);save();if(!old)award(5,'goal');
-  toast(old&&old.k===k?`${g.ic} ${g.nm}, 이 길로 계속 가요!`:`${g.ic} ${g.nm}을(를) 골랐어요. 언제든 바꿀 수 있어요.`)}
+  toast(old&&old.k===k?`${g.ic} ${g.nm}, 이 길로 계속 가요!`:`${g.ic} ${jo(g.nm,'을','를')} 골랐어요. 언제든 바꿀 수 있어요.`)}
+/* 🌿 길: 시작점 찾기에서 흔들린 계산(별 0개)을 먼저 해요. 다 하면 null → 선생님이 정한 계산(calcNowT)으로 넘어가요.
+   홈 계산 칩(02-unit-solid.js)과 길잡이가 같은 칸을 가리키게 이 함수 하나로 정해요 */
+function goalCalcFirst(){const G=myGoal();if(!G||G.k!=='base')return null;
+  return calcPlan().map(id=>CALC.find(t=>t.id===id)).find(t=>t&&calcVisible(t)&&NUM(calcPeek(t.id).stars)<1)||null}
 /* 홈 카드 */
 function goalPickHTML(rk,cur){return`<div class="goal-pick" role="list">${GOALS.map(g=>`<button type="button" role="listitem" class="goal-opt ${g.k===(cur||rk)?'on':''}" data-k="${g.k}">
    <span class="gi" aria-hidden="true">${g.ic}</span><span class="gt"><b>${g.nm}${g.k===rk?' <em class="goal-rec">추천</em>':''}${g.k===cur?' <em class="goal-now">지금 길</em>':''}</b><small>${g.aim}</small></span></button>`).join('')}</div>`}
 function goalCardHTML(){const G=myGoal(),R=goalRec(DB),rk=R?R.k:null;
   if(!G)return`<div class="g-head"><b class="t">나의 길 고르기</b><span class="k">나에게 맞는 목표를 골라요</span></div>
-    ${R?`<p class="goal-why">시작점 찾기 결과로 <b>${goalBy(rk).ic} ${goalBy(rk).nm}</b>을(를) 추천해요. ${R.why} 다른 길을 골라도 괜찮아요.</p>`
+    ${R?`<p class="goal-why">시작점 찾기 결과로 <b>${goalBy(rk).ic} ${jo(goalBy(rk).nm,'을','를')}</b> 추천해요. ${R.why} 다른 길을 골라도 괜찮아요.</p>`
       :`<p class="goal-why"><a href="#calc-start">시작점 찾기</a>를 먼저 하면 나에게 맞는 길을 추천해 줘요. 지금 바로 골라도 괜찮아요.</p>`}
     ${goalPickHTML(rk,null)}<p class="goal-go"><button type="button" class="btn primary goalOk">이 길로 시작하기</button></p>`;
   const g=goalBy(G.k),days=G.d?Math.floor((Date.parse(today())-Date.parse(G.d))/864e5):0,up=rk&&GOAL_RANK[rk]>GOAL_RANK[G.k],again=days>=GOAL_AGAIN_DAYS;
-  const nudge=up?`<p class="goal-nudge">🎉 별을 많이 모았어요! <b>${goalBy(rk).ic} ${goalBy(rk).nm}</b>(으)로 한 걸음 올라가 볼래요? <button type="button" class="t-mini goalUp" data-k="${rk}">올라가기</button></p>`
+  const nudge=up?`<p class="goal-nudge">🎉 별을 많이 모았어요! <b>${goalBy(rk).ic} ${jo(goalBy(rk).nm,'으로','로')}</b> 한 걸음 올라가 볼래요? <button type="button" class="t-mini goalUp" data-k="${rk}">올라가기</button></p>`
     :again?`<p class="goal-nudge">이 길을 고른 지 ${days}일이 지났어요. 지금도 나에게 맞는지 다시 골라 볼까요? <button type="button" class="t-mini goalOpen">다시 고르기</button></p>`:'';
   return`<div class="g-head"><b class="t">나의 길 · ${g.ic} ${g.nm}</b><span class="k"><button type="button" class="t-mini goalOpen">길 바꾸기</button></span></div>
     <p class="goal-why">${g.aim}</p><ul class="goal-how">${g.how.map(x=>`<li>${x}</li>`).join('')}</ul>${nudge}
-    <div class="goal-more" hidden>${R?`<p class="goal-why">기록으로 보면 <b>${goalBy(rk).ic} ${goalBy(rk).nm}</b>을(를) 추천해요. ${R.why}</p>`:''}${goalPickHTML(rk,G.k)}<p class="goal-go"><button type="button" class="btn primary goalOk">이 길로 하기</button></p></div>`}
+    <div class="goal-more" hidden>${R?`<p class="goal-why">기록으로 보면 <b>${goalBy(rk).ic} ${jo(goalBy(rk).nm,'을','를')}</b> 추천해요. ${R.why}</p>`:''}${goalPickHTML(rk,G.k)}<p class="goal-go"><button type="button" class="btn primary goalOk">이 길로 하기</button></p></div>`}
 function goalMount(){const box=$('#goalCard');if(!box)return;box.innerHTML=goalCardHTML();let pick=(myGoal()||{}).k||(goalRec(DB)||{}).k||null;
   const sel=k=>{pick=k;$$('.goal-opt',box).forEach(b=>b.classList.toggle('on',b.dataset.k===k))};
   $$('.goal-opt',box).forEach(b=>b.onclick=()=>sel(b.dataset.k));
@@ -65,5 +71,10 @@ function goalMount(){const box=$('#goalCard');if(!box)return;box.innerHTML=goalC
     if(li>=0&&/-(practice|explore)$/.test(S[li].href))S[li]=Object.assign({},S[li],{who:'S',s:'미리 보기와 같이 풀기를 했어요 · 혼자 풀기는 도전이에요'});
     if(ci>=0){const P=CALC_PATHS.find(p=>p.k==='num'),ids=P?P.ids.filter(id=>{const t=CALC.find(c=>c.id===id);return t&&calcVisible(t)}):[],due=dueList().map(t=>t.id).find(id=>ids.includes(id)),pl=calcPlan().find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1),id=due||pl||pathNow(ids);
       if(id){const t=CALC.find(c=>c.id===id),st=calcPeek(id),cd=S[ci].done;S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${t.nm}`,s:cd?'오늘 한 세트 했어요':due?'복습할 때예요':`수 감각 사다리 · ${Math.min(calcLvN(id),NUM(st.stars)+1)}단계`,href:'#calc-'+id})}}}
+  else if(G.k==='base'){
+    const T=goalCalcFirst();if(T&&ci>=0){const cd=S[ci].done,lv=Math.min(calcLvN(T.id),NUM(calcPeek(T.id).stars)+1);S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${T.nm}`,s:cd?'오늘 한 세트 했어요':`시작점 찾기에서 흔들린 계산이에요 · ${lv}단계`,href:'#calc-'+T.id})}
+    /* 혼자 할 때 순서: 기초 연산 → 차시 혼자 풀기 → 오늘의 계산 */
+    const L=S.findIndex(x=>/^\d+차시 /.test(x.t)&&x.who!=='T'),C=S.findIndex(x=>/^기초 연산 · /.test(x.t));
+    if(L>=0&&C>L){const[x]=S.splice(L,1);S.splice(C,0,x)}}
   else if(G.k==='up'&&li>=0&&/-explore$/.test(S[li].href))S[li]=Object.assign({},S[li],{s:'더 알아보기 · 탐구 활동까지 도전해요'});
   return S}}
