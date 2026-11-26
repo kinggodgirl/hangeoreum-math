@@ -134,7 +134,7 @@ const DEF=[['원은 평면 위의 한 점 O에서 □에 있는 모든 점으로
 const BOXH='<span class="cbox">□</span>';
 GEN.arcDef=seed=>{const r=mulberry(seed),[s,ok,w]=DEF[seed%DEF.length];
   return{ptype:'arc:def',title:`□에 알맞은 것을 고르시오.<div class="cond">${s.replace('□',BOXH)}</div>`,fig:null,steps:[{q:'□에 알맞은 것은?',type:'choice',choices:shuffle(r,[ok,...w]),ans:ok,hint:'굽으면 호, 곧으면 현 · 반지름 2개 + 호는 부채꼴, 현 + 호는 활꼴이에요.',ok:s.replace('□',`<b>${ok}</b>`)}]}};
-const ALSO_DIAM={'현':'맞아요! 지름도 원 위의 두 점을 이은 선분이라서 <b>현</b>이에요. 그런데 <b>더 정확한 이름</b>이 있어요. 원의 중심을 지나는 현은 뭐라고 부를까요? 하나 더 골라 보세요.'};
+const ALSO_DIAM={'현':'맞아요, <b>현</b>도 틀린 답은 아니에요. 그런데 이 선분만 부르는 <b>더 정확한 이름</b>이 있어요. 선분이 어디를 지나는지 잘 보고 하나 더 골라 보세요.'};
 const PIC_KIND=['반지름','지름','현','호','부채꼴','활꼴','중심각'],PIC_NAMES=['반지름','지름','현','호','부채꼴','활꼴','중심각'];
 GEN.arcPic=seed=>{const r=mulberry(seed),k=PIC_KIND[seed%PIC_KIND.length],fig=idFig(k,r);
   return{ptype:'arc:pic',title:'원 O에서 <b>주황색으로 표시한 것</b>의 이름을 고르시오.',fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:'주황색으로 표시한 것의 이름은?',steps:[
