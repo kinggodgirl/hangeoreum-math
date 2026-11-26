@@ -101,21 +101,22 @@ CONCEPT.cent=body=>{
   wireFolds(body,'cent')};
 CONCEPT.sector=body=>{
   body.innerHTML=foldPanel('부채꼴의 호의 길이와 넓이',`<p class="lead">부채꼴은 <b class="mark">원의 ${FR('중심각','360')} 조각</b>이에요. 원 전체의 둘레와 넓이를 먼저 구하고 그만큼 나눠요.</p>`,
-   fold(1,'원의 둘레와 넓이','2πr과 πr²',`<div class="figbox">${svgW(300,270,circ(CC,CR,{fill:'#eef2fa'})+dot(CC)+ln(CC,pol(CC,CR,0),{col:BL,w:3})+tx(pol(CC,48,12),'r',{it:true,col:BL}))}</div>
-     <ul class="defs"><li><b>둘레</b><span>${T('원의 둘레')} = <span class="rm">2 × π × </span><i class="math">r</i> = <span class="rm">2π</span><i class="math">r</i></span></li><li><b>넓이</b><span>${T('원의 넓이')} = <span class="rm">π × </span><i class="math">r</i><span class="rm"> × </span><i class="math">r</i> = <span class="rm">π</span><i class="math">r</i><sup class="rm">2</sup></span></li></ul>
-     <p style="margin-bottom:0">반지름이 6 cm이면 둘레 <span class="rm">12π cm</span>, 넓이 <span class="rm">36π cm²</span>예요. π는 계산하지 않고 그대로 붙여 써요.</p>`,true)+
+   fold(1,'원의 둘레와 넓이','지름 × π · 반둘레 × 반지름',`<div class="figbox">${svgW(300,270,circ(CC,CR,{fill:'#eef2fa'})+dot(CC)+ln(pol(CC,CR,180),pol(CC,CR,0),{col:BL,w:3})+tx([CC[0],CC[1]-18],'지름',{size:18,sans:true,col:BL}))}</div>
+     <ul class="defs"><li><b>둘레</b><span>둘레 보면 π! π는 <b>지름</b>을 둘레로 바꾸는 마법이에요. ${T('원의 둘레')} = 지름 × π</span></li><li><b>넓이</b><span>원을 잘게 잘라 지그재그로 붙이면 <b>직사각형</b>이 돼요. 가로는 <b>반둘레</b>(반지름 × π), 세로는 <b>반지름</b>. ${T('원의 넓이')} = 반둘레 × 반지름</span></li></ul>
+     ${ZIG()}
+     <p style="margin-bottom:0">반지름이 6 cm이면 지름 12 cm → 둘레 <span class="rm">12π cm</span> · 가로 6π, 세로 6 → 넓이 <span class="rm">36π cm²</span>예요. π는 계산하지 않고 그대로 붙여 써요.</p>`,true)+
    fold(2,'원의 몇 조각인가?','360 ÷ 중심각',`<div class="figbox">${svgW(300,270,circ(CC,CR)+`<path d="${secD(CC,CR,0,60)}" fill="${HLs}" stroke="${INK}" stroke-width="2.4"/>`+[60,120,180,240,300].map(a=>ln(CC,pol(CC,CR,a),{col:'#9aa3b5',w:1.4,dash:'5 5'})).join('')+dot(CC)+angMk(CC,0,60,'60°',{size:16})+tx(pol(CC,CR+24,30),'2π',{col:HL}))}</div>
      <p>반지름 6 cm, 중심각 60°인 부채꼴은 360 ÷ 60 = 6, 원을 <b>6조각</b> 낸 것 중 하나예요.<br>호의 길이 = 12π ÷ 6 = <b class="rm">2π cm</b> · 넓이 = 36π ÷ 6 = <b class="rm">6π cm²</b></p>
      <div class="box" style="margin:0">딱 나누어떨어지지 않으면 <b>× ${FR('중심각','360')}</b>을 해요. 예) 135° → ${FR(135,360)} = ${FR(3,8)}</div>`)+
-   fold(3,'호의 길이로 넓이 구하기','½ × 호 × 반지름',`<div class="figbox">${svgW(300,250,`<path d="M 40 210 L 260 210 L 150 60 Z" fill="${HLs}" stroke="${INK}" stroke-width="2.2"/>`+ln([150,60],[150,210],{col:BL,w:2.6,dash:'6 5'})+tx([150,234],'밑변 = 호의 길이',{size:16,sans:true,col:HL})+tx([210,140],'높이 = 반지름',{size:16,sans:true,col:BL}))}</div>
-     <p>부채꼴을 아주 잘게 잘라 모으면 <b>밑변이 호의 길이, 높이가 반지름인 삼각형</b>과 넓이가 같아요.</p>
-     <div class="box" style="margin:0">(넓이) = ${FR(1,2)} × (호의 길이) × (반지름) → 중심각을 몰라도 돼요!<br>예) 반지름 6 cm, 호 4π cm → ${FR(1,2)} × 4π × 6 = <b class="rm">12π cm²</b></div>`));
+   fold(3,'호의 길이로 넓이 구하기','호의 반 × 반지름',`${ZIG('가로 = 호의 반','= 반지름')}
+     <p>부채꼴도 아주 잘게 잘라 지그재그로 붙이면 <b>직사각형</b>이 돼요. 가로는 <b>호의 반</b>, 세로는 <b>반지름</b>이에요.</p>
+     <div class="box" style="margin:0">(넓이) = (호의 반) × (반지름) → 중심각을 몰라도 돼요!<br>예) 반지름 6 cm, 호 4π cm → 가로 2π, 세로 6 → 2π × 6 = <b class="rm">12π cm²</b></div>`));
   wireFolds(body,'sector')};
 PREVIEW.arc={tb:'194~195쪽',core:[{h:'호와 현',b:'원 위의 두 점을 <b>굽게</b> 이으면 호, <b>곧게</b> 이으면 현<small>지름은 중심을 지나는 현 · 가장 긴 현</small>'},{h:'부채꼴과 활꼴',b:'<b>반지름 2개 + 호</b> → 부채꼴<br><b>현 + 호</b> → 활꼴<small>반원은 둘 다예요</small>'},{h:'중심각',b:'부채꼴에서 <b>두 반지름이 이루는 각</b><small>꼭짓점이 원의 중심 O</small>'}],
   words:['원','반지름','지름','호','현','부채꼴','중심각','활꼴'],ex:'꼭짓점이 원의 중심이 <b>아닌</b> 부채꼴 모양 → 부채꼴 ✕ · 반원 → 부채꼴 ○, 활꼴 ○'};
 PREVIEW.cent={tb:'195~197쪽',core:[{h:'정비례',b:'중심각이 <b>2배, 3배</b>가 되면 호의 길이와 넓이도 <b>2배, 3배</b>'},{h:'비로 구하기',b:'중심각의 비 = 호의 길이의 비 = 넓이의 비<small>50 : 70 = 5 : 7</small>'},{h:'현은 예외',b:'현의 길이는 중심각에 <b>정비례하지 않아요</b>'}],
   words:['중심각','호의 길이','넓이','정비례','비'],ex:'40° → 3 cm 이면 120°(= 40° × 3) → 3 × 3 = <b>9 cm</b>'};
-PREVIEW.sector={tb:'198~201쪽',core:[{h:'원 전체',b:'둘레 <b>2πr</b> · 넓이 <b>πr²</b>'},{h:'몇 조각?',b:'부채꼴 = 원의 <b>(중심각)/360</b> 조각<small>60° → 6조각 중 1조각</small>'},{h:'호로 넓이',b:'넓이 = <b>½ × 호의 길이 × 반지름</b>'}],
+PREVIEW.sector={tb:'198~201쪽',core:[{h:'원 전체',b:'둘레 보면 π! <b>지름 × π</b><br>넓이는 직사각형으로 <b>반둘레 × 반지름</b>'},{h:'몇 조각?',b:'부채꼴 = 원의 <b>(중심각)/360</b> 조각<small>60° → 6조각 중 1조각</small>'},{h:'호로 넓이',b:'부채꼴도 직사각형으로<br><b>호의 반 × 반지름</b>'}],
   words:['원의 둘레','원의 넓이','π','호의 길이','부채꼴의 넓이'],ex:'반지름 6 cm, 중심각 60° → 호 12π ÷ 6 = <b>2π cm</b> · 넓이 36π ÷ 6 = <b>6π cm²</b>'};
 
 /* ── 문제 생성기 ── */
@@ -183,31 +184,41 @@ GEN.cent=seed=>[GEN.centMul,GEN.centMul,GEN.centRatio,GEN.centThree,GEN.centTF][
 /* 3차시: 호의 길이와 넓이 */
 const TH=[30,40,45,60,72,80,90,100,120,135,144,150,160,180,200,210,225,240,270];
 const fracCh=(r,th)=>{const ok=frT(th,360),c=[frT(th,180),frT(360-th,360),frT(1,Math.max(2,Math.round(360/th)+1)),'1/2','1/3','1/4','2/3','3/4','1/6','5/6','3/8','5/12','1/5','2/5'].filter(x=>x!==ok);return shuffle(r,[ok,...[...new Set(c)].slice(0,3)])};
+/* 선생님 방식: 둘레 보면 π! π는 지름을 둘레로 바꾸는 마법 · 넓이는 원을 직사각형으로(가로 = 반둘레, 세로 = 반지름) */
+const ZIG=(lb,ls)=>typeof svgZig==='function'?`<div class="kfigw">${svgZig(lb,ls)}</div>`:'';
+const circSteps=(rr,useD)=>{const d=2*rr;return[
+  useD?{tag:'지름 찾기',q:'둘레 보면 π! π를 붙일 <b>지름</b>은 몇 cm인가요?',type:'num',ans:d,suffix:'cm',hint:'그림에 적힌 지름을 그대로 써요.'}
+      :{tag:'지름 구하기',q:`둘레 보면 π! 반지름이 ${rr} cm이면 <b>지름</b>은?`,type:'num',ans:d,suffix:'cm',hint:'π는 지름을 둘레로 바꾸는 마법이에요. 지름 = 반지름 × 2'},
+  {tag:'지름에 π',q:`지름 ${d} cm에 π를 붙이면 원의 둘레는?`,type:'pi',ans:d,suffix:'cm',hint:`π는 지름을 둘레로 바꿔요. ${d} 뒤에 π를 붙여요.`,ok:`둘레 = 지름 × π = ${d}π cm`}]};
+const areaSteps=(rr,useD,tall)=>{const d=2*rr,S=[];
+  if(useD)S.push({tag:'반지름 구하기',q:'반지름은 몇 cm인가요?',type:'num',ans:rr,suffix:'cm',hint:`반지름 = 지름 ÷ 2 = ${d} ÷ 2`});
+  S.push({tag:'가로 = 반둘레',q:`${ZIG()}원을 직사각형으로 바꿔요. <b>가로(반둘레)</b>는?`,type:'pi',ans:rr,suffix:'cm',hint:`반둘레는 둘레의 반 = 반지름 × π = ${rr} × π`});
+  if(tall)S.push({tag:'세로 = 반지름',q:'직사각형의 <b>세로</b>는?',type:'num',ans:rr,suffix:'cm',hint:'세로는 반지름이에요.'});
+  S.push({tag:'가로 × 세로',q:`원의 넓이 = ${rr}π × ${rr} = ?`,type:'pi',ans:rr*rr,suffix:'cm²',hint:`${rr} × ${rr}를 계산하고 π를 붙여요.`,ok:`넓이 = 반둘레 × 반지름 = ${rr}π × ${rr} = ${rr*rr}π cm²`});return S};
 GEN.sectorCirc=seed=>{const r=mulberry(seed),area=r()<0.5,useD=r()<0.3,rr=ri(r,2,12),d=rr*2;
   const fig=svgW(300,270,circ(CC,CR,{fill:area?'#eef2fa':'none'})+dot(CC)+(useD?ln(pol(CC,CR,180),pol(CC,CR,0),{col:BL,w:3})+tx([CC[0],CC[1]-18],`${d} cm`,{size:20}):ln(CC,pol(CC,CR,0),{col:BL,w:3})+tx(pol(CC,48,14),`${rr} cm`,{size:20})),'원');
-  const S=[];if(useD)S.push({tag:'반지름 구하기',q:'반지름은 몇 cm인가요?',type:'num',ans:rr,suffix:'cm',hint:`반지름 = 지름 ÷ 2 = ${d} ÷ 2`});
-  S.push({tag:'공식 고르기',q:`원의 ${area?'넓이':'둘레의 길이'}를 구하는 식은?`,type:'choice',choices:shuffle(r,['2 × π × r','π × r × r','π × r','2 × π × r × r']),ans:area?'π × r × r':'2 × π × r',hint:area?`${T('원의 넓이')} = π × 반지름 × 반지름`:`${T('원의 둘레')} = 2 × π × 반지름`},
-    {tag:'계산하기',q:`원의 ${area?'넓이':'둘레의 길이'}는?`,type:'pi',ans:area?rr*rr:2*rr,suffix:area?'cm²':'cm',hint:area?`π × ${rr} × ${rr} → 숫자를 곱하고 π를 붙여요.`:`2 × π × ${rr} → 숫자를 곱하고 π를 붙여요.`,ok:area?`π × ${rr}² = ${rr*rr}π cm²`:`2 × π × ${rr} = ${2*rr}π cm`});
+  const S=area?areaSteps(rr,useD,true):circSteps(rr,useD);
   return{ptype:'sector:circ',sig:(useD?'d':'r')+(area?'S':'L'),title:`${useD?'지름':'반지름'}의 길이가 ${useD?d:rr} cm인 원의 ${area?'넓이':'둘레의 길이'}를 구하시오.`,fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:`원의 ${area?'넓이':'둘레의 길이'}는?`,steps:S}};
 function secCore(seed,area){const r=mulberry(seed);let rr,th,co;for(;;){rr=ri(r,2,12);th=pick(r,TH);co=area?rr*rr*th/360:rr*th/180;if(Number.isInteger(co)&&co>0)break}
   const full=area?rr*rr:2*rr,u=area?'cm²':'cm',w=area?'넓이':'호의 길이',cw=area?'넓이':'둘레의 길이',fo=frT(th,360),mid=th>180?270:pick(r,[90,90,60,120]);
   const fig=vis=>secFig({th,mid,rLab:`${rr} cm`,aLab:`${th}°`,shade:area,hlArc:!area&&vis,arcLab:area?null:'? cm',ghost:vis});
   return{ptype:area?'sector:area':'sector:arc',title:`반지름의 길이가 ${rr} cm이고 중심각의 크기가 ${th}°인 부채꼴의 ${w}를 구하시오.`,fig:{svg:vis=>`<div class="figbox">${fig(vis)}</div>`},finalQ:`부채꼴의 ${w}는?`,steps:[
-    {tag:`원 전체의 ${cw}`,q:`반지름이 ${rr} cm인 원의 ${cw}는?`,type:'pi',ans:full,suffix:u,hint:area?`π × ${rr} × ${rr}`:`2 × π × ${rr}`},
+    ...(area?areaSteps(rr,false,false):circSteps(rr,false)),
     {tag:'원의 몇 분의 몇 조각인지',q:`중심각 ${th}°인 부채꼴은 원의 몇 분의 몇인가요? (${th}/360을 약분)`,type:'choice',choices:fracCh(r,th),ans:fo,hint:`${th}/360을 약분해요. 두 수를 같은 수로 계속 나눠 보세요.`},
     {tag:'곱하기',q:`${full}π × ${fo} = ?`,type:'pi',ans:co,suffix:u,hint:`${full} × ${fo}를 먼저 계산하고 π를 붙여요.`,ok:`${full}π × ${fo} = ${co}π ${u}`}]}}
 GEN.sectorArc=seed=>secCore(seed,false);
 GEN.sectorArea=seed=>secCore(seed,true);
-GEN.sectorLA=seed=>{const r=mulberry(seed);let rr,k,th;for(;;){rr=ri(r,3,12);k=ri(r,2,12);th=180*k/rr;if((k*rr)%2===0&&th>=30&&th<=300&&Number.isInteger(th))break}
-  const S=k*rr/2,fig=vis=>secFig({th,mid:th>180?270:90,rLab:`${rr} cm`,shade:true,arcLab:`${k}π cm`,hlArc:vis});
+GEN.sectorLA=seed=>{const r=mulberry(seed);let rr,k,th;for(;;){rr=ri(r,3,12);k=2*ri(r,1,6);th=180*k/rr;if(th>=30&&th<=300&&Number.isInteger(th))break}
+  const S=k*rr/2,h=k/2,fig=vis=>secFig({th,mid:th>180?270:90,rLab:`${rr} cm`,shade:true,arcLab:`${k}π cm`,hlArc:vis});
   return{ptype:'sector:la',title:`반지름의 길이가 ${rr} cm이고 호의 길이가 ${k}π cm인 부채꼴의 넓이를 구하시오.`,fig:{svg:vis=>`<div class="figbox">${fig(vis)}</div>`},finalQ:'부채꼴의 넓이는?',steps:[
-    {tag:'공식 고르기',q:'중심각을 모를 때 부채꼴의 넓이를 구하는 식은?',type:'choice',choices:shuffle(r,['1/2 × (호의 길이) × (반지름)','(호의 길이) × (반지름)','1/2 × (반지름) × (반지름)','2 × (호의 길이) × (반지름)']),ans:'1/2 × (호의 길이) × (반지름)',hint:'삼각형의 넓이(½ × 밑변 × 높이)와 닮았어요. 밑변 = 호, 높이 = 반지름.'},
-    {tag:'계산하기',q:`1/2 × ${k}π × ${rr} = ?`,type:'pi',ans:S,suffix:'cm²',hint:`${k} × ${rr} ÷ 2를 계산하고 π를 붙여요.`,ok:`½ × ${k}π × ${rr} = ${S}π cm²`}]}};
+    {tag:'가로 = 호의 반',q:`${ZIG('가로 = 호의 반','= 반지름')}부채꼴도 잘게 잘라 붙이면 직사각형이 돼요. <b>가로(호의 반)</b>는?`,type:'pi',ans:h,suffix:'cm',hint:`호 ${k}π cm의 반이에요. ${k} ÷ 2를 하고 π를 붙여요.`},
+    {tag:'세로 = 반지름',q:'직사각형의 <b>세로</b>는?',type:'num',ans:rr,suffix:'cm',hint:'세로는 반지름이에요.'},
+    {tag:'가로 × 세로',q:`부채꼴의 넓이 = ${h===1?'':h}π × ${rr} = ?`,type:'pi',ans:S,suffix:'cm²',hint:`${h} × ${rr}를 계산하고 π를 붙여요.`,ok:`넓이 = (호의 반) × 반지름 = ${h===1?'':h}π × ${rr} = ${S}π cm²`}]}};
 GEN.sectorAng=seed=>{const r=mulberry(seed);let rr,k,th;for(;;){rr=ri(r,2,12);k=ri(r,1,2*rr-1);th=180*k/rr;if(Number.isInteger(th)&&th>=20&&th<=300)break}
   const fo=frT(k,2*rr),fig=vis=>secFig({th,mid:th>180?270:90,rLab:`${rr} cm`,aLab:'x°',arcLab:`${k}π cm`,hlArc:vis,ghost:vis});
   const ch=shuffle(r,[fo,...[...new Set([frT(k,rr),frT(2*rr-k,2*rr),frT(k,4*rr),frT(k+1,2*rr)])].filter(x=>x!==fo)].slice(0,4));
   return{ptype:'sector:ang',title:`반지름의 길이가 ${rr} cm이고 호의 길이가 ${k}π cm인 부채꼴의 중심각의 크기를 구하시오.`,fig:{svg:vis=>`<div class="figbox">${fig(vis)}</div>`},finalQ:'중심각은 몇 도인가요?',steps:[
-    {tag:'원 전체의 둘레',q:`반지름이 ${rr} cm인 원의 둘레의 길이는?`,type:'pi',ans:2*rr,suffix:'cm',hint:`2 × π × ${rr}`},
+    ...circSteps(rr,false),
     {tag:'원의 몇 분의 몇 조각인지',q:`호 ${k}π cm는 둘레 ${2*rr}π cm의 몇 분의 몇인가요?`,type:'choice',choices:ch,ans:fo,hint:`${k}/${2*rr}을 약분해요.`},
     {tag:'중심각 구하기',q:`중심각은 360° × ${fo}. 몇 도인가요?`,type:'num',ans:th,suffix:'°',hint:`360 × ${fo}`,ok:`360 × ${fo} = ${th}°`}]}};
 GEN.sector=seed=>[GEN.sectorCirc,GEN.sectorArc,GEN.sectorArea,GEN.sectorArea,GEN.sectorLA,GEN.sectorAng][seed%6](Math.floor(seed/6)+1);
@@ -221,10 +232,10 @@ Object.assign(PTYPES,{
     {no:2,nm:'중심각 비교 ② 비',tb:'기초',key:'중심각의 비 = 호의 길이의 비 = 넓이의 비 → <b>1칸</b>을 구하고 칸 수만큼 곱하기',pt:['cent:ratio'],src:['centRatio']},
     {no:3,nm:'호의 비로 중심각 구하기',tb:'204쪽 · 스스로 마무리하기',key:'호의 비 = 중심각의 비 · 한 바퀴 <b>360°</b>를 전체 칸 수로 나누기',pt:['cent:three'],src:['centThree']},
     {no:4,nm:'정비례 ○× (현은 예외)',tb:'기초',key:'호의 길이·넓이는 중심각에 <b>정비례</b> · <b>현</b>의 길이는 정비례하지 않아요',pt:['cent:tf'],src:['centTF']}],
-  sector:[{no:1,nm:'원의 둘레와 넓이',tb:'기초',key:'둘레 <b>2πr</b> · 넓이 <b>πr²</b> · 지름이 주어지면 먼저 ÷ 2',pt:['sector:circ'],src:['sectorCirc']},
-    {no:2,nm:'반지름 · 중심각 → 호의 길이',tb:'기초',key:'원의 둘레 × <b>(중심각)/360</b>',pt:['sector:arc'],src:['sectorArc']},
-    {no:3,nm:'반지름 · 중심각 → 넓이',tb:'기초',key:'원의 넓이 × <b>(중심각)/360</b>',pt:['sector:area'],src:['sectorArea']},
-    {no:4,nm:'반지름 · 호의 길이 → 넓이',tb:'기초',key:'넓이 = <b>½ × 호의 길이 × 반지름</b> (중심각 몰라도 OK)',pt:['sector:la'],src:['sectorLA']},
+  sector:[{no:1,nm:'원의 둘레와 넓이',tb:'기초',key:'둘레 보면 π! <b>지름 × π</b> · 넓이는 원을 직사각형으로: <b>반둘레 × 반지름</b>',pt:['sector:circ'],src:['sectorCirc']},
+    {no:2,nm:'반지름 · 중심각 → 호의 길이',tb:'기초',key:'원의 둘레(<b>지름 × π</b>) × <b>(중심각)/360</b>',pt:['sector:arc'],src:['sectorArc']},
+    {no:3,nm:'반지름 · 중심각 → 넓이',tb:'기초',key:'원의 넓이(<b>반둘레 × 반지름</b>) × <b>(중심각)/360</b>',pt:['sector:area'],src:['sectorArea']},
+    {no:4,nm:'반지름 · 호의 길이 → 넓이',tb:'기초',key:'부채꼴도 직사각형으로: 가로 = <b>호의 반</b>, 세로 = <b>반지름</b> (중심각 몰라도 OK)',pt:['sector:la'],src:['sectorLA']},
     {no:5,nm:'반지름 · 호의 길이 → 중심각',tb:'201쪽 · 스스로 점검하기',key:'호 ÷ 원의 둘레 = 원의 몇 분의 몇 → <b>360° ×</b> 그 분수',pt:['sector:ang'],src:['sectorAng']}]});
 ['arc','cent','sector'].forEach(lid=>{PTYPES[lid].forEach(T_=>{const g=tyKey(lid,T_.no);GEN[g]=seed=>GEN[T_.src[0]](seed);LESSON_OF[g]=lid});
   GEN['mix_'+lid]=seed=>{const L=PTYPES[lid];return GEN[tyKey(lid,L[seed%L.length].no)](Math.floor(seed/L.length)+1)};LESSON_OF['mix_'+lid]=lid});

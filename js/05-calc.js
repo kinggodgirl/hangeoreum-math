@@ -19,13 +19,13 @@ function piSvg(area,useD,rr){const C=80,R=58,lab=useD?`${2*rr} cm`:`${rr} cm`;
     (useD?`<line x1="${C-R}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`:`<line x1="${C}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`)+
     `<text x="${useD?C:C+R/2}" y="${C-9}" text-anchor="middle" font-size="17" font-family="Times New Roman,serif" fill="#1d2433">${lab}</text>${area?'':`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#e0832a" stroke-width="4" stroke-dasharray="7 5"/>`}</svg>`}
 /* 원을 잘라 지그재그로 붙인 직사각형: 가로 = 반둘레, 세로 = 반지름 */
-function svgZig(){const n=8,W=220,H=70,x0=20,y0=16,w=W/n;let g='';
+function svgZig(lb='가로 = 반둘레 (반지름 × π)',ls='= 반지름'){const n=8,W=220,H=70,x0=20,y0=16,w=W/n;let g='';
   for(let k=0;k<n;k++){const x=x0+k*w,up=k%2===0;
     g+=up?`<path d="M ${x} ${y0+H} Q ${x+w} ${y0+H+7} ${x+2*w} ${y0+H} L ${x+w} ${y0} Z" fill="${k%4===0?'#cfdcf5':'#e8eefb'}" stroke="#1d2433" stroke-width="1.3"/>`
         :`<path d="M ${x} ${y0} Q ${x+w} ${y0-7} ${x+2*w} ${y0} L ${x+w} ${y0+H} Z" fill="${k%4===1?'#fde3c8':'#fff1e2'}" stroke="#1d2433" stroke-width="1.3"/>`}
   return`<svg class="zigfig" viewBox="0 0 ${W+110} ${H+58}" width="${W+110}" role="img" aria-label="원을 잘라 붙인 직사각형"><clipPath id="zc"><rect x="${x0+w/2}" y="${y0-8}" width="${W}" height="${H+16}"/></clipPath><g clip-path="url(#zc)">${g}</g>`+
-    `<line x1="${x0+w/2}" y1="${y0+H+22}" x2="${x0+w/2+W}" y2="${y0+H+22}" stroke="#e0832a" stroke-width="2.5"/><text x="${x0+w/2+W/2}" y="${y0+H+42}" text-anchor="middle" font-size="15" fill="#b35f12">가로 = 반둘레 (반지름 × π)</text>`+
-    `<line x1="${x0+w/2+W+12}" y1="${y0}" x2="${x0+w/2+W+12}" y2="${y0+H}" stroke="#2a4d9e" stroke-width="2.5"/><text x="${x0+w/2+W+20}" y="${y0+H/2+5}" font-size="15" fill="#2a4d9e">세로</text><text x="${x0+w/2+W+20}" y="${y0+H/2+23}" font-size="13" fill="#2a4d9e">= 반지름</text></svg>`}
+    `<line x1="${x0+w/2}" y1="${y0+H+22}" x2="${x0+w/2+W}" y2="${y0+H+22}" stroke="#e0832a" stroke-width="2.5"/><text x="${x0+w/2+W/2}" y="${y0+H+42}" text-anchor="middle" font-size="15" fill="#b35f12">${lb}</text>`+
+    `<line x1="${x0+w/2+W+12}" y1="${y0}" x2="${x0+w/2+W+12}" y2="${y0+H}" stroke="#2a4d9e" stroke-width="2.5"/><text x="${x0+w/2+W+20}" y="${y0+H/2+5}" font-size="15" fill="#2a4d9e">세로</text><text x="${x0+w/2+W+20}" y="${y0+H/2+23}" font-size="13" fill="#2a4d9e">${ls}</text></svg>`}
 const HK_CIRC={w:'둘레 보면 π',say:'π는 <b>지름</b>을 둘레로 바꾸는 마법이에요. 반지름이면 × 2 해서 지름을 만들고, 지름에 π를 붙이면 둘레!',eq:'반지름 5 → 지름 10 → 둘레 10π'};
 const HK_AREA={w:'원을 직사각형으로',say:'원을 잘게 잘라 지그재그로 붙이면 <b>직사각형</b>이 돼요. 가로는 <b>반둘레</b>(반지름에 π), 세로는 <b>반지름</b>. 넓이 = 가로 × 세로!',eq:'반지름 5 → 가로 5π, 세로 5 → 넓이 25π',fig:svgZig};
 const uniqErr=(errs,ans)=>errs.filter((e,i)=>e.a!==ans&&errs.findIndex(x=>x.a===e.a)===i);
