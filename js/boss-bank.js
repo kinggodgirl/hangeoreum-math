@@ -8,6 +8,7 @@
      type   : 'num' | 'pi' | 'sn'(부호 있는 수) | 'choice'
      suffix : 단위 (선택)
      tip    : 끝난 뒤 복기용 핵심 풀이 1~2줄
+     les    : (선택) 어느 차시 개념인지 · LESSONS id. 맨 아래 NL/HL 목록에 순서대로 적어요
    다른 AI가 문제를 더할 때는 이 파일의 배열 끝에 한 칸씩만 덧붙여 주세요. */
 (() => {
   const R = (r, a, b) => a + Math.floor(r() * (b - a + 1));
@@ -212,5 +213,13 @@
         tip: `x는 ${k}의 약수: ${[...Array(k)].map((_, i) => i + 1).filter(d => k % d === 0).join(', ')} → ${[...Array(k)].filter((_, i) => k % (i + 1) === 0).length}개` }; },
   ];
 
+  /* les: 이 문제가 어느 차시 개념인지(LESSONS의 id). 학생이 그 차시를 해결했을 때만 보스전에 나와요.
+     앱에 아직 차시가 없는 개념(좌표 coord · 정비례 prop · 반비례 inv)은 그 차시가 생기면 열려요. les가 없는 문제는 늘 나와요. */
+  const NL = ['sector', 'sector', 'sector', 'cent', 'cent', 'sector', 'arc', 'cent', 'poly', 'regular', 'volume', 'area', 'area', 'rotation', 'cone', 'volume', 'area', 'volume', 'cone',
+    'coord', 'coord', 'coord', 'prop', 'prop', 'inv', 'inv', 'prop', 'prop', 'inv'];
+  const HL = ['sector', 'sector', 'sector', 'sector', 'sector', 'cent', 'poly', 'regular', 'area', 'volume', 'volume', 'volume', 'conearea', 'cone', 'cone', 'coord', 'coord', 'prop', 'inv', 'inv', 'prop', 'inv', 'inv'];
+  if (NL.length !== normal.length || HL.length !== hard.length) console.warn('BOSS_BANK: les 개수가 문제 수와 달라요');
+  normal.forEach((it, i) => { it.les = NL[i]; });
+  hard.forEach((it, i) => { it.les = HL[i]; });
   window.BOSS_BANK = { normal, hard, units: [C, S, V] };
 })();
