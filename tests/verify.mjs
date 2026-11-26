@@ -10,6 +10,7 @@ const jsFiles = [
   'js/02-unit-solid.js',
   'js/03-teacher.js',
   'js/04-games.js',
+  'js/04s-sea.js',
   'js/05-calc.js',
   'js/06-unit-int.js',
   'js/06c-unit-circle.js',
