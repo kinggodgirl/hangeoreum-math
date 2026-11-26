@@ -116,7 +116,7 @@ function avatarThumb(eq,size=86){const it=shopItem('mini',eq&&eq.mini),fr=shopIt
 /* 기존 js/02-unit-solid.js(viewMe 등) 호환 래퍼 */
 function avatarSVG(eq,size=120){return avatarThumb(eq,size)}
 function mini3DHTML(it,size=210,frCls='f-none'){const glb=`${MINI_BASE}/glb/${it.f}.glb`,png=`${MINI_BASE}/previews/${it.f}.png`;
-  return`<div class="av-fr ${frCls}" style="width:${size+14}px;height:${size+14}px;margin:0 auto"><div class="mv-box mv-inner" style="width:${size}px;height:${size}px"><model-viewer src="${glb}" poster="${png}" alt="${it.nm} 3D 캐릭터" autoplay auto-rotate camera-controls interaction-prompt="none" shadow-intensity="0.55" style="width:${size}px;height:${size}px"></model-viewer></div></div><div class="mv-hint">끌어서 돌려 볼 수 있어요</div>`}
+  return`<div class="av-fr ${frCls}" style="width:${size+14}px;height:${size+14}px;margin:0 auto"><div class="mv-box mv-inner" style="width:${size}px;height:${size}px"><model-viewer src="${glb}" poster="${png}" animation-name="idle" alt="${it.nm} 3D 캐릭터" autoplay auto-rotate camera-controls interaction-prompt="none" shadow-intensity="0.55" style="width:${size}px;height:${size}px"></model-viewer></div></div><div class="mv-hint">끌어서 돌려 볼 수 있어요</div>`}
 function mountSpin(host,render,{speed=0.6}={}){
   if(host&&host.id==='avMe'){mountAvatar(host,()=>myEq(),160);return}
   let yaw=0.6,last=0;host.innerHTML=render(yaw);if(reduced)return;
