@@ -85,11 +85,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT_QUIZ:window.CONCEPT_QUIZ};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc};',
   sandbox
 );
 
-const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT_QUIZ } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -243,6 +243,30 @@ for (const lid of ['poly', 'regular', 'area', 'arc', 'cent', 'sector']) {
 }
 for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓점', '부채꼴', '중심각', '활꼴']) {
   if (!TERMS[w] || !TERMS[w].b) errors.push(`Missing TERMS entry: ${w}`);
+}
+
+// 교육학적 보완 시범(T07): area·sector 개념 구성, 공식 통일, 계산 도우미 검증
+{
+  if (!Array.isArray(CONCEPT_PILOT) || !CONCEPT_PILOT.includes('area') || !CONCEPT_PILOT.includes('sector')) {
+    errors.push('Missing CONCEPT_PILOT area/sector');
+  }
+  if (typeof _cpSectorCalc !== 'function') {
+    errors.push('Missing _cpSectorCalc');
+  } else {
+    const s1 = _cpSectorCalc(6, 60);
+    if (s1.arcText !== '2π' || s1.areaText !== '6π' || s1.exactDiv !== 6) errors.push(`_cpSectorCalc(6,60) bad: ${JSON.stringify(s1)}`);
+    const s2 = _cpSectorCalc(6, 135);
+    if (s2.arcText !== '9/2π' || s2.areaText !== '27/2π' || s2.frac !== '3/8') errors.push(`_cpSectorCalc(6,135) bad: ${JSON.stringify(s2)}`);
+    const s3 = _cpSectorCalc(12, 90);
+    if (s3.arcText !== '6π' || s3.areaText !== '36π' || s3.exactDiv !== 4) errors.push(`_cpSectorCalc(12,90) bad: ${JSON.stringify(s3)}`);
+  }
+  const elA = mkEl(); CONCEPT.area(elA);
+  if (!elA.innerHTML.includes('cp-lab') || !elA.innerHTML.includes('cp-strat')) errors.push('CONCEPT.area missing pilot UI');
+  if (/2πr²|2πrh/.test(elA.innerHTML)) errors.push('CONCEPT.area still has conflicting 2πr formula');
+  const elS = mkEl(); CONCEPT.sector(elS);
+  if (!elS.innerHTML.includes('cp-lab') || !elS.innerHTML.includes('cp-strat') || !/<svg/.test(elS.innerHTML)) {
+    errors.push('CONCEPT.sector missing pilot UI or SVG');
+  }
 }
 
 if (errors.length) {

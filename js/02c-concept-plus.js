@@ -278,56 +278,352 @@ if(typeof PV_CARDS==='object'&&PV_CARDS){
   }
 }
 
-/* ── 4. CONCEPT.area 보강 (선생님 원 공식 + 삼각기둥 자주 하는 실수 접기 추가) ── */
-if(typeof CONCEPT==='object'&&CONCEPT&&typeof CONCEPT.area==='function'){
-  const origArea=CONCEPT.area;
+/* ── 4. T07 교육학적 보완 시범(area·sector): 공식 통일 · 조작 발견 활동 · 전략 선택 가이드 ── */
+const PILOT_META={
+  area:{steps:['① 둘레·넓이 바탕','② 전개도 펼쳐 발견','③ 기둥별 전략 고르기']},
+  sector:{steps:['① 길이 vs 넓이 구분','② 조각 돌려 발견','③ 조건별 도구 고르기']}
+};
+window.CONCEPT_PILOT=['area','sector'];
+
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const zigHTML=(lb,ls)=>typeof svgZig==='function'?`<div class="cp-zig">${svgZig(lb,ls)}</div>`:'';
+function fracStr(n,d){
+  if(n===0)return'0';
+  const g=gcd(n,d);n/=g;d/=g;
+  return d===1?String(n):`${n}/${d}`;
+}
+function fracHTML(n,d){
+  if(n===0)return'0';
+  const g=gcd(n,d);n/=g;d/=g;
+  return d===1?String(n):`<span class="frs"><span>${n}</span><span>${d}</span></span>`;
+}
+function piVal(n,d){
+  if(n===0)return'0';
+  const g=gcd(n,d);n/=g;d/=g;
+  if(d===1)return n===1?'π':`${n}π`;
+  return`${n}/${d}π`;
+}
+function piHTML(n,d){
+  if(n===0)return'<span class="rm">0</span>';
+  const g=gcd(n,d);n/=g;d/=g;
+  if(d===1)return`<span class="rm">${n===1?'π':n+'π'}</span>`;
+  return`<span class="rm"><span class="frs"><span>${n}</span><span>${d}</span></span>π</span>`;
+}
+function cpSectorCalc(r,deg){
+  const wholeArc=2*r,wholeArea=r*r;
+  const fg=gcd(deg,360),fn=deg/fg,fd=360/fg;
+  const exactDiv=360%deg===0?360/deg:null;
+  const aNum=wholeArc*fn,sNum=wholeArea*fn;
+  return{
+    r,deg,wholeArc,wholeArea,fn,fd,
+    frac:fracStr(fn,fd),
+    fracH:fracHTML(fn,fd),
+    exactDiv,
+    arcText:piVal(aNum,fd),
+    arcHTML:piHTML(aNum,fd),
+    areaText:piVal(sNum,fd),
+    areaHTML:piHTML(sNum,fd)
+  };
+}
+window._cpSectorCalc=cpSectorCalc;
+
+const AREA_DATA={
+  tri:{
+    nm:'삼각기둥',
+    s1:'3 × 4 ÷ 2 = <b>6 cm²</b> <small>(직각삼각형은 ÷ 2!)</small>',
+    s2:'6 × 2 = <b>12 cm²</b> <small>(위·아래 밑면 2개)</small>',
+    s3:'(3 + 4 + 5) × 5 = 12 × 5 = <b>60 cm²</b> <small>(가로 = 세 변 둘레)</small>',
+    s4:'12 + 60 = <b>72 cm²</b>'
+  },
+  box:{
+    nm:'직육면체',
+    s1:'4 × 3 = <b>12 cm²</b>',
+    s2:'12 × 2 = <b>24 cm²</b> <small>(위·아래 밑면 2개)</small>',
+    s3:'(4 + 3 + 4 + 3) × 5 = 14 × 5 = <b>70 cm²</b> <small>(가로 = 네 변 둘레)</small>',
+    s4:'24 + 70 = <b>94 cm²</b>'
+  },
+  cyl:{
+    nm:'원기둥 (r=2)',
+    s1:'반둘레 2π × 반지름 2 = <b>4π cm²</b>',
+    s2:'4π × 2 = <b>8π cm²</b> <small>(위·아래 원 2개)</small>',
+    s3:'(지름 4 × π) × 높이 5 = <b>20π cm²</b>',
+    s4:'8π + 20π = <b>28π cm²</b>'
+  }
+};
+
+function cylStepsHTML(r,h=5){
+  const b1=r*r,b2=2*b1,lat=2*r*h,tot=b2+lat;
+  return`<div class="cp-steps4">`+
+    `<div class="cp-step4-row"><span class="cp-snum">1</span><div><b>밑넓이 1개</b> = 반둘레(${r}π) × 반지름(${r}) = <b class="rm">${b1}π cm²</b></div></div>`+
+    `<div class="cp-step4-row"><span class="cp-snum">2</span><div><b>밑넓이 × 2</b> = ${b1}π × 2 = <b class="rm">${b2}π cm²</b></div></div>`+
+    `<div class="cp-step4-row"><span class="cp-snum">3</span><div><b>옆넓이</b> = (지름 ${2*r} × π) × 높이 ${h} = <b class="rm">${lat}π cm²</b></div></div>`+
+    `<div class="cp-step4-row tot"><span class="cp-snum">4</span><div><b>겉넓이</b> = ${b2}π + ${lat}π = <b class="rm">${tot}π cm²</b></div></div>`+
+    `</div>`;
+}
+
+if(typeof CONCEPT==='object'&&CONCEPT){
   CONCEPT.area=function(body){
-    origArea(body);
-    const f2=body.querySelector('details.fold[data-i="2"] .fb');
-    if(f2&&!f2.querySelector('.cp-area-box')){
-      const zig=typeof svgZig==='function'?`<div class="cp-zig">${svgZig('가로 = 반둘레 (반지름 × π)','= 반지름')}</div>`:'';
-      f2.insertAdjacentHTML('beforeend',
-        `<div class="cp-area-box">`+
-        `<b>👩‍🏫 선생님 방식 · 6학년 원 공식 한 번에 떠올리기</b>`+
-        `<div class="cp-area-cols">`+
-        `<div><b>둘레 = 지름 × π</b><br><small>반지름이 주어지면 먼저 2배 해서 지름을 만들고, 뒤에 π만 붙여요.</small></div>`+
-        `<div><b>넓이 = 반둘레 × 반지름</b><br><small>원을 지그재그 직사각형으로 만들면 가로 <span class="math">r</span>π × 세로 <span class="math">r</span>!</small></div>`+
-        `</div>${zig}</div>`
-      );
-    }
-    const folds=body.querySelector('.folds');
-    if(folds&&!body.querySelector('details.fold[data-i="3"]')&&typeof fold==='function'){
-      const html=fold(3,'삼각기둥에서 자주 하는 실수','밑넓이 ÷ 2와 밑면 둘레 3변 모두 더하기',
-        `<div class="cp-pitfall">`+
-        `<p><b>1. 삼각형 밑넓이에서 ÷ 2 빼먹기</b></p>`+
-        `<p>직각을 낀 두 변이 3 cm, 4 cm이면 밑면 하나 넓이는 <code>3 × 4 ÷ 2 = 6</code> cm²예요. 겉넓이를 구할 때 밑면이 2개라 다시 × 2를 하지만, 밑넓이 하나를 물을 땐 꼭 <b>÷ 2</b>를 해야 해요.</p>`+
-        `<p style="margin-top:10px"><b>2. 옆넓이 구할 때 빗변 빼먹기</b></p>`+
-        `<p>옆넓이 가로 = <b>밑면의 둘레</b>예요. 직각삼각형 세 변이 3, 4, 5 cm이면 <code>3 + 4 + 5 = 12</code> cm처럼 <b>세 변을 모두</b> 더해야 해요.</p>`+
-        `<p style="margin-top:10px"><b>3. 밑면 2개를 1개만 더하기</b></p>`+
-        `<p>기둥은 위아래 밑면이 2개! <code>(밑넓이) × 2 + (옆넓이)</code>에서 <b>× 2</b>를 마지막에 꼭 확인해요.</p>`+
-        `</div>`,false);
-      folds.insertAdjacentHTML('beforeend',html);
-      const d3=folds.querySelector('details.fold[data-i="3"]');
-      if(d3){
-        d3.open=false;
-        const sm=d3.querySelector('summary');
-        if(sm&&!sm.querySelector('.fold-x'))sm.insertAdjacentHTML('beforeend','<span class="fold-x" aria-hidden="true">✕ 닫기</span>');
-        d3.addEventListener('toggle',()=>{
-          const all=Array.from(body.querySelectorAll('details.fold'));
-          if(d3.open){
-            all.forEach(o=>{if(o!==d3)o.open=false});
-            if(!document.querySelector('.zoom-bg.fz')){
-              const bg=document.createElement('div');
-              bg.className='zoom-bg fz';
-              bg.onclick=()=>all.forEach(o=>o.open=false);
-              document.body.appendChild(bg);
-            }
-          }else if(!all.some(o=>o.open)){
-            document.querySelectorAll('.zoom-bg.fz').forEach(b=>b.remove());
-          }
-        });
+    const stepsHTML=k=>{
+      const D=AREA_DATA[k]||AREA_DATA.tri;
+      return`<div class="cp-step4-row"><span class="cp-snum">1</span><div><b>밑넓이 1개</b><br>${D.s1}</div></div>`+
+        `<div class="cp-step4-row"><span class="cp-snum">2</span><div><b>밑넓이 × 2</b><br>${D.s2}</div></div>`+
+        `<div class="cp-step4-row"><span class="cp-snum">3</span><div><b>옆넓이 (가로 × 높이)</b><br>${D.s3}</div></div>`+
+        `<div class="cp-step4-row tot"><span class="cp-snum">4</span><div><b>전체 겉넓이</b><br>${D.s4}</div></div>`;
+    };
+    const msgHTML=(k,t)=>{
+      const nm=(AREA_DATA[k]||AREA_DATA.tri).nm;
+      if(t>=0.95)return`<b>발견!</b> ${nm} 옆면을 끝까지 펼치니 <b>직사각형 1개</b>가 되었어요. 가로는 파란 <b>밑면의 둘레</b>와 길이가 딱 맞아요!`;
+      if(t>0.1)return`옆면이 펼쳐지고 있어요 (${Math.round(t*100)}%). 파란 선(밑면 둘레)이 어디로 펴지는지 따라가 보세요.`;
+      return`슬라이더를 오른쪽으로 밀어 전개도를 펼쳐 보세요. 옆면이 어떤 도형이 될까요?`;
+    };
+
+    body.innerHTML=
+      `<div class="card panel cp-lab">`+
+        `<div class="cp-lab-head"><h2>직접 펼쳐 보며 발견해요 · 기둥의 겉넓이</h2><span class="cp-kicker">① 바탕 → ② 조작 발견</span></div>`+
+        `<div class="cp-warmup">`+
+          `<div class="cp-wbox len"><b>🟠 둘레 (길이 · cm)</b>테두리를 한 바퀴 도는 길이예요. 삼각형은 빗변까지 <b>세 변 모두</b> 더해요.</div>`+
+          `<div class="cp-wbox area"><b>🔵 넓이 (면적 · cm²)</b>색칠한 면의 크기예요. 삼각형은 꼭 <b>÷ 2</b>, 기둥 밑면은 위아래 <b>2개</b>예요.</div>`+
+        `</div>`+
+        `<div class="cp-lab-grid">`+
+          `<div class="cp-stage">`+
+            `<div class="cp-chips" id="cpAreaShapes">`+
+              `<button type="button" class="cp-chip on" data-k="tri">삼각기둥 (3·4·5)</button>`+
+              `<button type="button" class="cp-chip" data-k="box">직육면체 (4·3)</button>`+
+              `<button type="button" class="cp-chip" data-k="cyl">원기둥 (r=2)</button>`+
+            `</div>`+
+            `<canvas id="cpAreaCv" aria-label="기둥 전개도 펼치기"></canvas>`+
+            `<div class="cp-slider-row">`+
+              `<input type="range" id="cpAreaT" min="0" max="100" value="0" aria-label="전개도 펼치기 정도">`+
+              `<button type="button" class="btn primary" id="cpAreaPlay">▶ 펼쳐 보기</button>`+
+            `</div>`+
+            `<div class="cp-discover-msg" id="cpAreaMsg">${msgHTML('tri',0)}</div>`+
+          `</div>`+
+          `<div>`+
+            `<p style="margin:0 0 8px;font-weight:700;color:var(--accent,#2a4d9e)">하나로 통일된 4단계 순서</p>`+
+            `<div class="cp-steps4" id="cpAreaSteps">${stepsHTML('tri')}</div>`+
+          `</div>`+
+        `</div>`+
+      `</div>`+
+      (typeof foldPanel==='function'&&typeof fold==='function'
+        ?foldPanel('핵심 정리 · 원기둥과 실수 예방',`<p class="lead">어떤 기둥이든 식을 따로 외우지 않고 <b>같은 4단계 순서</b>로 구해요.</p>`,
+          fold(1,'원기둥도 같은 4단계! (반지름 바꿔 보기)','지름 × π · 반둘레 × 반지름으로 통일',
+            `<div class="cp-area-box" style="margin-top:0">`+
+              `<b>👩‍🏫 선생님 원 공식 한 번에 떠올리기</b>`+
+              `<div class="cp-area-cols">`+
+                `<div><b>둘레 = 지름 × π</b><br><small>반지름을 2배 해서 지름을 찾고, 뒤에 π만 붙이면 옆면의 가로예요.</small></div>`+
+                `<div><b>넓이 = 반둘레 × 반지름</b><br><small>원을 지그재그 직사각형으로 만들면 가로(반둘레) × 세로(반지름)가 돼요.</small></div>`+
+              `</div>${zigHTML('가로 = 반둘레 (반지름 × π)','= 반지름')}</div>`+
+            `<p style="margin:12px 0 6px;font-weight:700">반지름을 눌러 원기둥 겉넓이(높이 5 cm) 변화를 확인해 보세요.</p>`+
+            `<div class="cp-chips left" id="cpCylR">`+
+              `${[2,3,4,5].map(r=>`<button type="button" class="cp-chip${r===2?' on':''}" data-r="${r}">반지름 ${r} cm</button>`).join('')}`+
+            `</div>`+
+            `<div id="cpCylDemo">${cylStepsHTML(2,5)}</div>`+
+            `<p class="muted" style="font-size:13px;margin:10px 0 0">참고: 교과서에서는 반지름을 <span class="math">r</span>, 높이를 <span class="math">h</span>로 쓰기도 해요. 문자를 외우지 말고 4단계 순서로 구해요.</p>`)+
+          fold(2,'삼각기둥에서 자주 하는 실수 3가지','÷ 2 누락 · 빗변 누락 · 밑면 2개',
+            `<div class="cp-pitfall">`+
+              `<p><b>1. 삼각형 밑넓이에서 ÷ 2 빼먹기</b></p>`+
+              `<p>직각을 낀 두 변이 3 cm, 4 cm이면 밑면 하나 넓이는 <code>3 × 4 ÷ 2 = 6</code> cm²예요. 밑넓이 하나를 물을 땐 꼭 <b>÷ 2</b>를 해요.</p>`+
+              `<p style="margin-top:10px"><b>2. 옆넓이 구할 때 빗변 빼먹기</b></p>`+
+              `<p>옆넓이 가로 = <b>밑면의 둘레</b>예요. 세 변이 3, 4, 5 cm이면 <code>3 + 4 + 5 = 12</code> cm처럼 <b>세 변을 모두</b> 더해요.</p>`+
+              `<p style="margin-top:10px"><b>3. 밑면 2개를 1개만 더하기</b></p>`+
+              `<p>기둥은 위아래 밑면이 2개! <code>(밑넓이) × 2 + (옆넓이)</code>에서 <b>× 2</b>를 마지막에 꼭 확인해요.</p>`+
+            `</div>`))
+        :'')+
+      `<div class="cp-strat">`+
+        `<h2>🧭 문제 그림을 보면 이렇게 골라요 · 기둥별 전략표</h2>`+
+        `<p class="muted" style="margin:0 0 10px;font-size:14px">순서는 셋 다 같아요: <b>① 밑넓이 하나 → ② × 2 → ③ (밑면 둘레 × 높이) → ④ 더하기</b></p>`+
+        `<div class="tablewrap"><table class="cp-strat-table">`+
+          `<thead><tr><th>밑면 모양</th><th>① 밑넓이 하나</th><th>③ 밑면의 둘레 (옆면 가로)</th><th>⚠️ 꼭 챙길 함정</th></tr></thead>`+
+          `<tbody>`+
+            `<tr><th>직사각형<br><small>직육면체</small></th><td>가로 × 세로</td><td>(가로 + 세로) × 2</td><td>네 변을 빠짐없이 더하기</td></tr>`+
+            `<tr><th>삼각형<br><small>삼각기둥</small></th><td>밑변 × 높이 <b>÷ 2</b></td><td><b>세 변 모두</b> 더하기</td><td>÷ 2와 빗변 둘레 빠뜨리지 않기</td></tr>`+
+            `<tr><th>원<br><small>원기둥</small></th><td><b>반둘레 × 반지름</b></td><td><b>지름 × π</b></td><td>반지름·지름 구분하고 π 붙이기</td></tr>`+
+          `</tbody>`+
+        `</table></div>`+
+      `</div>`;
+
+    if(typeof wireFolds==='function')wireFolds(body,'area');
+
+    const msgEl=body.querySelector('#cpAreaMsg');
+    const slider=body.querySelector('#cpAreaT');
+    const playBtn=body.querySelector('#cpAreaPlay');
+    const stepsEl=body.querySelector('#cpAreaSteps');
+    const cv=body.querySelector('#cpAreaCv');
+    let curKey='tri',U=null,target=null;
+
+    const updateMsg=t=>{
+      if(msgEl){
+        msgEl.innerHTML=msgHTML(curKey,t);
+        msgEl.classList.toggle('found',t>=0.95);
       }
+      if(playBtn)playBtn.textContent=t>0.5?'◀ 다시 접기':'▶ 펼쳐 보기';
+    };
+
+    if(cv&&typeof unfoldViewer==='function'&&typeof UNF==='object'&&UNF.tri){
+      try{
+        U=unfoldViewer(cv,{shape:UNF[curKey],t:0,labels:true,areas:true});
+        const setT=t=>{
+          U.t=t;
+          if(slider)slider.value=String(Math.round(t*100));
+          if(U.v)U.v.dirty=true;
+          updateMsg(t);
+        };
+        if(slider)slider.oninput=e=>{target=null;setT((+e.target.value||0)/100)};
+        if(U.v){
+          U.v.tick=()=>{
+            if(target!=null){
+              const d=target-U.t;
+              if(Math.abs(d)<0.005){setT(target);target=null}
+              else setT(U.t+Math.sign(d)*Math.min(Math.abs(d),0.018));
+            }
+          };
+        }
+        if(playBtn)playBtn.onclick=()=>{target=U.t>0.5?0:1};
+        Array.from(body.querySelectorAll('#cpAreaShapes .cp-chip')).forEach(btn=>{
+          btn.onclick=()=>{
+            Array.from(body.querySelectorAll('#cpAreaShapes .cp-chip')).forEach(x=>x.classList.toggle('on',x===btn));
+            curKey=btn.dataset.k||'tri';
+            if(stepsEl)stepsEl.innerHTML=stepsHTML(curKey);
+            if(U&&UNF[curKey]){
+              if(U.v)U.v.userMoved=false;
+              U.set(UNF[curKey]);
+              target=null;setT(0);
+            }
+          };
+        });
+      }catch(_){}
     }
+
+    Array.from(body.querySelectorAll('#cpCylR .cp-chip')).forEach(btn=>{
+      btn.onclick=()=>{
+        Array.from(body.querySelectorAll('#cpCylR .cp-chip')).forEach(x=>x.classList.toggle('on',x===btn));
+        const r=+btn.dataset.r||2;
+        const dBox=body.querySelector('#cpCylDemo');
+        if(dBox)dBox.innerHTML=cylStepsHTML(r,5);
+      };
+    });
+  };
+
+  CONCEPT.sector=function(body){
+    const ANGS=[30,45,60,90,120,135,180,240,270];
+    const secStageSVG=(r,deg)=>{
+      const C=[110,96],R=62;
+      let g=svgC(C,R,'#f8fafc','#cbd5e1',1.8);
+      if(360%deg===0){
+        for(let a=0;a<360;a+=deg)g+=svgL(C,pol(C,R,a),'#94a3b8',1.2,'4 3');
+      }
+      g+=svgSec(C,R,0,deg,BLs,BL,2)+svgArc(C,R,0,deg,HL,5.5)+svgDot(C,INK,3);
+      g+=svgTx([C[0]+R*0.52,C[1]+13],`${r} cm`,INK,12);
+      g+=svgTx(pol(C,23,Math.min(deg/2,165)),`${deg}°`,HL,11);
+      g+=svgTx([C[0]-10,C[1]+10],'O',INK,11);
+      return svgBox(g,220,192);
+    };
+    const secDiscoverText=C=>{
+      if(C.exactDiv)return`<b>발견!</b> 360° ÷ ${C.deg}° = <b>${C.exactDiv}</b> → 원 전체를 딱 <b>${C.exactDiv}조각</b> 낸 것 중 1조각(${C.frac})이에요!`;
+      return`<b>발견!</b> ${C.deg}/360을 약분하면 <b>${C.frac}</b> → 원 전체의 <b>${C.frac}</b> 조각이에요!`;
+    };
+    const secDualHTML=C=>{
+      const multNote=C.exactDiv?`÷ ${C.exactDiv} (× ${C.fracH})`:`× ${C.fracH}`;
+      return`<div class="cp-dual-len">`+
+          `<div class="cp-dhead">🟠 호의 길이 (테두리 · cm)</div>`+
+          `<div>원 둘레 = 지름 ${2*C.r} × π = <b>${C.wholeArc}π</b></div>`+
+          `<div>부채꼴 = ${C.wholeArc}π ${multNote}</div>`+
+          `<div class="cp-bigval">${C.arcHTML} cm</div>`+
+        `</div>`+
+        `<div class="cp-dual-area">`+
+          `<div class="cp-dhead">🔵 부채꼴의 넓이 (색칠한 면 · cm²)</div>`+
+          `<div>원 넓이 = 반둘레 ${C.r}π × 반지름 ${C.r} = <b>${C.wholeArea}π</b></div>`+
+          `<div>부채꼴 = ${C.wholeArea}π ${multNote}</div>`+
+          `<div class="cp-bigval">${C.areaHTML} cm²</div>`+
+        `</div>`;
+    };
+    const laDemoHTML=(r,k)=>{
+      const h=k/2,ans=h*r;
+      return`<div class="box" style="margin:8px 0 0">`+
+        `반지름 <b>${r} cm</b>, 호의 길이 <b>${k}π cm</b><br>`+
+        `① 가로(호의 반) = ${k}π ÷ 2 = <b>${h===1?'':h}π cm</b><br>`+
+        `② 세로(반지름) = <b>${r} cm</b><br>`+
+        `③ 넓이 = ${h===1?'':h}π × ${r} = <b class="rm">${ans}π cm²</b>`+
+      `</div>`;
+    };
+
+    const init=cpSectorCalc(6,60);
+    body.innerHTML=
+      `<div class="card panel cp-lab">`+
+        `<div class="cp-lab-head"><h2>직접 조각을 돌려 보며 발견해요 · 호의 길이와 넓이</h2><span class="cp-kicker">① 구분 → ② 조작 발견</span></div>`+
+        `<div class="cp-warmup">`+
+          `<div class="cp-wbox len"><b>🟠 호의 길이 (둘레의 일부 · cm)</b>원 전체 둘레 <b>(지름 × π)</b>에서 몇 조각인지 구해요.</div>`+
+          `<div class="cp-wbox area"><b>🔵 부채꼴 넓이 (면적의 일부 · cm²)</b>원 전체 넓이 <b>(반둘레 × 반지름)</b>에서 몇 조각인지 구해요.</div>`+
+        `</div>`+
+        `<div class="cp-lab-grid">`+
+          `<div class="cp-stage">`+
+            `<div class="cp-chips" id="cpSecR">`+
+              `${[3,6,12].map(r=>`<button type="button" class="cp-chip${r===6?' on':''}" data-r="${r}">반지름 ${r} cm</button>`).join('')}`+
+            `</div>`+
+            `<div class="cp-chips" id="cpSecAng">`+
+              `${ANGS.map(a=>`<button type="button" class="cp-chip${a===60?' on':''}" data-a="${a}">${a}°</button>`).join('')}`+
+            `</div>`+
+            `<div id="cpSecSvg">${secStageSVG(6,60)}</div>`+
+            `<div class="cp-discover-msg found" id="cpSecMsg">${secDiscoverText(init)}</div>`+
+          `</div>`+
+          `<div class="cp-dual" id="cpSecCalc">${secDualHTML(init)}</div>`+
+        `</div>`+
+      `</div>`+
+      (typeof foldPanel==='function'&&typeof fold==='function'
+        ?foldPanel('핵심 정리 · 원 공식과 호로 넓이 구하기',`<p class="lead">원 전체를 먼저 구한 뒤 <b>몇 분의 몇 조각</b>인지 곱하면 끝이에요.</p>`,
+          fold(1,'원 전체 공식 3초 복습','둘레 = 지름 × π · 넓이 = 반둘레 × 반지름',
+            `<ul class="defs">`+
+              `<li><b>원 둘레</b><span><b>둘레 보면 π!</b> 지름 뒤에 π를 붙여요. 반지름이 주어지면 먼저 2배 해서 지름을 만들어요.</span></li>`+
+              `<li><b>원 넓이</b><span>원을 지그재그 직사각형으로 펼치면 <b>가로 = 반둘레(반지름 × π)</b>, <b>세로 = 반지름</b>이에요.</span></li>`+
+            `</ul>${zigHTML('가로 = 반둘레 (반지름 × π)','= 반지름')}`+
+            `<p class="muted" style="margin:8px 0 0;font-size:14px">둘레(cm)는 지름에 π, 넓이(cm²)는 반둘레 × 반지름! 단위가 다르면 구하는 식도 달라요.</p>`)+
+          fold(2,'중심각을 모를 때 · 호의 길이로 넓이 구하기','넓이 = (호의 반) × 반지름',
+            `${zigHTML('가로 = 호의 반','= 반지름')}`+
+            `<p style="margin-top:8px">부채꼴도 잘게 잘라 지그재그로 붙이면 직사각형! 중심각을 몰라도 <b>가로 = 호의 반</b>, <b>세로 = 반지름</b>으로 바로 구해요.</p>`+
+            `<div class="cp-chips left" id="cpSecLa">`+
+              `<button type="button" class="cp-chip on" data-r="4" data-k="6">r=4, 호=6π</button>`+
+              `<button type="button" class="cp-chip" data-r="6" data-k="4">r=6, 호=4π</button>`+
+              `<button type="button" class="cp-chip" data-r="8" data-k="6">r=8, 호=6π</button>`+
+            `</div>`+
+            `<div id="cpSecLaDemo">${laDemoHTML(4,6)}</div>`))
+        :'')+
+      `<div class="cp-strat">`+
+        `<h2>🧭 문제 조건 보고 어떤 도구를 꺼낼까?</h2>`+
+        `<div class="cp-strat-cards">`+
+          `<div class="cp-scard"><span class="cp-sbadge">조건 A</span><b>중심각(°)이 있을 때</b>원 전체(지름×π 또는 반둘레×반지름)를 먼저 구하고 <code>× 중심각/360</code>을 곱해요.</div>`+
+          `<div class="cp-scard"><span class="cp-sbadge">조건 B</span><b>각 없이 반지름·호(l)만 있을 때</b>각을 구할 필요 없이 바로 직사각형 생각! <code>(호의 반) × 반지름</code>으로 풀어요.</div>`+
+          `<div class="cp-scard"><span class="cp-sbadge">조건 C</span><b>호로 중심각(x°) 찾기</b><code>호 ÷ 원 둘레</code>로 전체의 몇 분의 몇 조각인지 약분한 뒤 <code>× 360°</code>를 곱해요.</div>`+
+        `</div>`+
+      `</div>`;
+
+    if(typeof wireFolds==='function')wireFolds(body,'sector');
+
+    let curR=6,curA=60;
+    const syncSec=()=>{
+      const C=cpSectorCalc(curR,curA);
+      const sv=body.querySelector('#cpSecSvg');if(sv)sv.innerHTML=secStageSVG(curR,curA);
+      const ms=body.querySelector('#cpSecMsg');if(ms)ms.innerHTML=secDiscoverText(C);
+      const cc=body.querySelector('#cpSecCalc');if(cc)cc.innerHTML=secDualHTML(C);
+    };
+    Array.from(body.querySelectorAll('#cpSecR .cp-chip')).forEach(btn=>{
+      btn.onclick=()=>{
+        Array.from(body.querySelectorAll('#cpSecR .cp-chip')).forEach(x=>x.classList.toggle('on',x===btn));
+        curR=+btn.dataset.r||6;syncSec();
+      };
+    });
+    Array.from(body.querySelectorAll('#cpSecAng .cp-chip')).forEach(btn=>{
+      btn.onclick=()=>{
+        Array.from(body.querySelectorAll('#cpSecAng .cp-chip')).forEach(x=>x.classList.toggle('on',x===btn));
+        curA=+btn.dataset.a||60;syncSec();
+      };
+    });
+    Array.from(body.querySelectorAll('#cpSecLa .cp-chip')).forEach(btn=>{
+      btn.onclick=()=>{
+        Array.from(body.querySelectorAll('#cpSecLa .cp-chip')).forEach(x=>x.classList.toggle('on',x===btn));
+        const demo=body.querySelector('#cpSecLaDemo');
+        if(demo)demo.innerHTML=laDemoHTML(+btn.dataset.r||4,+btn.dataset.k||6);
+      };
+    });
   };
 }
 
@@ -512,15 +808,41 @@ window.mountConceptPlus=function(body,id){
     syncSeenUI();
   };
 
-  /* 6-1. 진도 바 & 핵심 낱말 칩 */
+  /* 6-1. 진도 바, 시범 로드맵, 접이식 요약 카드 서랍 & 핵심 낱말 칩 */
+  const meta=PILOT_META[id]||null;
   if(pvEl&&total>0){
     const bar=document.createElement('div');
     bar.className='cp-bar';
-    bar.innerHTML=`<span class="cp-seen">본 카드 0 / ${total}</span><span class="cp-tip">그림 카드를 눌러 넘겨 보고, 아래 개념 접기 카드도 열어 보세요.</span>`;
+    const tipText=meta?'아래 발견 활동을 직접 움직여 보고, 필요할 때 위 그림 요약 카드도 열어 보세요.':'그림 카드를 눌러 넘겨 보고, 아래 개념 접기 카드도 열어 보세요.';
+    bar.innerHTML=`<span class="cp-seen">본 카드 0 / ${total}</span><span class="cp-tip">${tipText}</span>`;
     seenBadge=bar.querySelector('.cp-seen');
     const pvH=pvEl.querySelector('.pv-h');
-    if(pvH)pvH.insertAdjacentElement('afterend',bar);
-    else pvEl.prepend(bar);
+    if(pvH&&typeof pvH.insertAdjacentElement==='function'){
+      if(meta){
+        const flow=document.createElement('div');
+        flow.className='cp-flow';
+        flow.innerHTML=meta.steps.map(s=>`<span class="cp-step-pill">${s}</span>`).join('<span class="cp-step-arrow">→</span>');
+        pvH.insertAdjacentElement('afterend',flow);
+        flow.insertAdjacentElement('afterend',bar);
+      }else{
+        pvH.insertAdjacentElement('afterend',bar);
+      }
+    }else{
+      pvEl.prepend(bar);
+    }
+
+    const cardsGrid=pvEl.querySelector('.pv-cards2');
+    let wordsAnchor=cardsGrid;
+    if(meta&&cardsGrid&&!pvEl.querySelector('.cp-pv-drawer')){
+      const drawer=document.createElement('details');
+      drawer.className='cp-pv-drawer';
+      const sum=document.createElement('summary');
+      sum.textContent=`🖼️ 그림 요약 카드 한눈에 보기 (${pvCards.length}장 · 수업 전 훑어보기)`;
+      drawer.appendChild(sum);
+      if(cardsGrid.parentNode)cardsGrid.parentNode.insertBefore(drawer,cardsGrid);
+      drawer.appendChild(cardsGrid);
+      wordsAnchor=drawer;
+    }
 
     const P=typeof PREVIEW!=='undefined'?PREVIEW[id]:null;
     if(P&&Array.isArray(P.words)&&P.words.length&&!pvEl.querySelector('.cp-words')){
@@ -530,8 +852,7 @@ window.mountConceptPlus=function(body,id){
       const row=document.createElement('div');
       row.className='pv-row cp-words';
       row.innerHTML=`<span class="pv-l">핵심 낱말${hasAnyClick?' <small>(누르면 뜻 보기)</small>':''}</span>${chips}`;
-      const cardsGrid=pvEl.querySelector('.pv-cards2');
-      if(cardsGrid)cardsGrid.insertAdjacentElement('afterend',row);
+      if(wordsAnchor&&typeof wordsAnchor.insertAdjacentElement==='function')wordsAnchor.insertAdjacentElement('afterend',row);
       else pvEl.appendChild(row);
     }
   }

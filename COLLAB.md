@@ -16,6 +16,7 @@
 | **T04** | 시험 범위 차시 확장 B: 6차시 `기둥의 부피` · 7차시 `뿔의 겉넓이` · 8차시 `뿔의 부피` (교과서 223~231쪽) | Claude Code | `js/02v-solid-vol.js`(신규), `docs/specs/T04-solid-vol.md`, `index.html`, `js/02-unit-solid.js`(최소 훅), `tests/verify.mjs` | **준비 완료** (`docs/specs/T04-solid-vol.md` — 착수 가능) |
 | **T05** | 보스전 미니 게임 개편: 혼자 하는 `오늘의 보스 도전`(폭탄 방어전 · 입장권 · 운명의 주사위 · 타이밍 게이지 · 긴급 막기 · 3택1 보물상자 · 놓친 문제 복기). 선생님 기획서(Boss Battle Design Handoff) 기준 | Claude Code | `js/04-games.js`, `js/boss-bank.js`(신규), `boss-raid.css`(신규), `index.html`(로드 2줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 | **T06** | 열린 6차시 개념 학습 보완 (`poly`·`regular`·`area`·`arc`·`cent`·`sector` 그림 미리 보기 카드·카드 진도·슬라이드 모달·음성 듣기·핵심 낱말 칩·선생님 원 공식·개념 확인 퀴즈 3문항) | Antigravity | `concept-plus.css`(신규), `js/02c-concept-plus.js`(신규), `index.html`(2줄), `js/02-unit-solid.js`(1줄), `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T07** | 열린 차시 개념 학습 교육학적 보완 시범 적용 (`area`·`sector`: 공식 통일·전개도/부채꼴 인터랙티브 발견 활동·인지 부하 축소·전략 선택 가이드) | Antigravity | `concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 
 ---
 
@@ -53,6 +54,11 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (`T07` 완료, Antigravity)**
+  * `[T07]` 대표 2차시(`area` 기둥의 겉넓이 · `sector` 부채꼴의 호의 길이와 넓이)에 교육학적 보완 시범 적용 (`concept-plus.css`, `js/02c-concept-plus.js`, `tests/verify.mjs`, `COLLAB.md`만 수정).
+  * `CONCEPT.area`: `2πr²+2πrh` 문자식 제거 후 선생님 방식(`둘레 = 지름 × π`, `넓이 = 반둘레 × 반지름`)과 4단계 절차로 단일화, 초등 바탕(`둘레 cm` vs `넓이 cm²`) 리마인드·전개도 3D 펼치기 미니 슬라이더(`삼각기둥`·`직육면체`·`원기둥`)·반지름 탐색·기둥별 전략표 추가.
+  * `CONCEPT.sector`: 길이(`cm`) vs 넓이(`cm²`) 이중 색상 비교 카드와 반지름·중심각 조각 발견 슬라이더(`cpSectorCalc`), 호의 길이(`½rl`) 사례 탐색, 조건별 도구 선택 가이드(조건 A/B/C) 추가.
+  * 두 시범 차시의 `미리 보기`는 3단계 로드맵 배지와 접이식 그림 요약 서랍(`.cp-pv-drawer`)으로 인지 부하를 줄이고, 확인 후 나머지 4차시(`poly`·`regular`·`arc`·`cent`) 확장 대기.
 * **2026-11-26 (`T05` 후속 4, Claude Code)**: 선생님 요청으로 보스전은 '주요 학습'에서 해결한 차시(같이 풀기 끝까지 또는 혼자 풀기 3문제)가 3개 이상일 때만 열리고, 해결한 차시 개념의 문제만 나와요. `js/boss-bank.js` 맨 아래 `NL`/`HL`에 문제별 차시 id(`les`)를 적어요. 앱에 아직 없는 차시(`rotation`·`volume`·`conearea`·`cone`·4단원 `coord`·`prop`·`inv`) 문제는 그 차시가 열리면 자동으로 나와요(T03·T04 완료 시 연결됨).
 * **2026-11-26 (`T05` 후속 3, Claude Code)**: 선생님이 알려 준 시험 범위(Ⅵ-04·05, Ⅶ-01~04, Ⅳ 전체)에 맞춰 문제 은행 정리. 원뿔 부피·겉넓이·회전체 다시 넣음(구만 범위 밖), 단원 이름 `정비례와 반비례` → `좌표평면과 그래프`로 넓히고 사분면·좌표·넓이 문제 추가(일반 29 · 필살기 23 유형).
 * **2026-11-26 (`T05` 후속 2, Claude Code)**: 선생님 확인으로 `js/boss-bank.js`에서 시험 범위 밖 문제 제거(원뿔 부피·겉넓이, 구·반구, 회전체 이름, 원뿔·구·원기둥 비). 대신 삼각기둥 부피, 원기둥 옆넓이, 정육면체 겉넓이, 구멍 뚫린 원기둥 부피, 부피로 높이 구하기, 부피로 겉넓이 구하기 추가. 각뿔 부피 2문항은 남겨 둠.
