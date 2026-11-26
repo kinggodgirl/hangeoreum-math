@@ -20,6 +20,7 @@
 | **T08** | 『교과서 한 걸음』 3탭 × 3트랙 시범 전면 개편 (`cent` 중심각과 호: 첫걸음·한걸음·두걸음 루프, 대표 예제, 복합 유형, 적응형 마무리, 기초 연산 연계) | Antigravity | `tracks-cent.css`(신규), `js/02t-tracks-cent.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T09** | 교사 화면 편의 기능: 📅 이번 주 한눈에(지난 7일 공부한 날·챙길 점·수업 메모 복사) · 🎫 쿠폰 확인/사용함 · 학습 현황 표 머리줄 단원 묶음·점 범례 · 🎮 게임 탭을 학생별 보스 도전 기록으로 | Claude Code | `js/03-teacher.js`, `teacher-plus.css`(신규), `index.html`(1줄), `AGENTS.md`·`COLLAB.md`(문서) | **완료** |
 | **T10** | 숫자야구 4단계 난이도(하·중·중상·상, 선생님 숫자야구 앱과 같은 규칙) + 하 단계 판돈 최대 10포인트 · 보드게임 후보 제안 | Claude Code | `js/04-games.js`(숫자야구 부분), `boss-raid.css`(끝에 몇 줄), `js/07-print-omr-boot.js`(라우터 1줄), `supabase/game.sql`(숫자야구 함수) + 운영 DB 적용, `COLLAB.md` | **완료** (`main`·DB 반영) |
+| **T11** | 교과서 시험 범위 문제 꼬리표 은행(Ⅳ 전체 · Ⅵ-04·05 · Ⅶ-01~04, 192문항: 단원·쪽·유형·난이도·기초 연산 칸·보스용) + 형식 검사 | Claude Code | `data/textbook-bank.json`(신규), `docs/textbook-bank.md`(신규), `tests/textbook-bank.mjs`(신규), `tests/verify.mjs`(1줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 
 ---
 
@@ -57,6 +58,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-26 (`T11` 완료, Claude Code)**: 시험 범위 교과서 문제 192문항을 `data/textbook-bank.json`에 꼬리표로 정리(차시 `lesson`·유형 `type`·난이도 `level` 1~3·기초 연산 칸 `calc`·답 모양 `form`·보스용 `boss`). 저작권 때문에 원문·그림은 넣지 않고 우리말 요약·수치·정답만 넣었어요. **새 차시·보스전·미니게임 문제를 만들 때 이 파일을 기준으로 써 주세요**(형식·쓰는 법: `docs/textbook-bank.md`). 문항을 덧붙이면 `node tests/verify.mjs`가 `tests/textbook-bank.mjs`로 형식·쪽 범위·`CALC` id를 검사해요. Ⅳ단원 차시 id는 `coord`·`graph`·`prop`·`inv`로 제안(보스 은행 `les`와 같음).
 * **2026-11-26 (`T10` 완료, Claude Code)**
   * 숫자야구에 선생님 앱(`kinggodgirl/number-baseball`)과 같은 4단계 추가: **하** 1~6·2자리·○△× / **중** 1~9·3자리·○△× / **중상** 1~6·3자리·S/B / **상** 0~9·3자리·S/B. **하는 판돈 최대 10포인트**(화면과 서버 둘 다 막음). 컴퓨터와 연습도 4단계(`#bb-cpu-easy|mid|mh|hard`).
   * 서버: `hg_bb_games.lv`(비면 예전 3·4자리 방식), `digits`에 2 허용, `hg_bb_guesses.h`(자리별 힌트 O/A/X), 새 함수 `hg_bb_ok`·`hg_bb_need`·`hg_bb_hint`, `hg_bb_create`에 `p_lv` 인자(기본 null이라 옛 화면도 그대로 동작). 운영 DB 마이그레이션 `t09_bb_levels`는 선생님 확인 뒤 적용(적용 전에는 친구 대결이 예전 3·4자리 화면 그대로, 컴퓨터 연습만 4단계).

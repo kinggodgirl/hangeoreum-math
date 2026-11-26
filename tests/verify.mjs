@@ -343,3 +343,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, goals OK, circle ${circleProbs} problems, solid ${solidProbs} problems, int ${intProbs} problems`);
+await import('./textbook-bank.mjs'); // [T11] 교과서 문제 꼬리표 은행 형식 검사
