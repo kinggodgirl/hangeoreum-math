@@ -1,4 +1,4 @@
-// [T11] 교과서 문제 꼬리표 은행(data/textbook-bank.json) 형식 검사 — tests/verify.mjs가 불러요.
+// [T12] 교과서 문제 꼬리표 은행(data/textbook-bank.json) 형식 검사 — tests/verify.mjs가 불러요.
 // 형식 설명: docs/textbook-bank.md
 import fs from 'node:fs';
 import path from 'node:path';

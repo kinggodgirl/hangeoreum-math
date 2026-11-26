@@ -20,7 +20,8 @@
 | **T08** | 『교과서 한 걸음』 3탭 × 3트랙 시범 전면 개편 (`cent` 중심각과 호: 첫걸음·한걸음·두걸음 루프, 대표 예제, 복합 유형, 적응형 마무리, 기초 연산 연계) | Antigravity | `tracks-cent.css`(신규), `js/02t-tracks-cent.js`(신규), `index.html`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T09** | 교사 화면 편의 기능: 📅 이번 주 한눈에(지난 7일 공부한 날·챙길 점·수업 메모 복사) · 🎫 쿠폰 확인/사용함 · 학습 현황 표 머리줄 단원 묶음·점 범례 · 🎮 게임 탭을 학생별 보스 도전 기록으로 | Claude Code | `js/03-teacher.js`, `teacher-plus.css`(신규), `index.html`(1줄), `AGENTS.md`·`COLLAB.md`(문서) | **완료** |
 | **T10** | 숫자야구 4단계 난이도(하·중·중상·상, 선생님 숫자야구 앱과 같은 규칙) + 하 단계 판돈 최대 10포인트 · 보드게임 후보 제안 | Claude Code | `js/04-games.js`(숫자야구 부분), `boss-raid.css`(끝에 몇 줄), `js/07-print-omr-boot.js`(라우터 1줄), `supabase/game.sql`(숫자야구 함수) + 운영 DB 적용, `COLLAB.md` | **완료** (`main`·DB 반영) |
-| **T11** | 교과서 시험 범위 문제 꼬리표 은행(Ⅳ 전체 · Ⅵ-04·05 · Ⅶ-01~04, 192문항: 단원·쪽·유형·난이도·기초 연산 칸·보스용) + 형식 검사 | Claude Code | `data/textbook-bank.json`(신규), `docs/textbook-bank.md`(신규), `tests/textbook-bank.mjs`(신규), `tests/verify.mjs`(1줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
+| **T11** | 새 미니게임 `⚓ 좌표 해전`: 좌표평면에 배 3척을 숨기고 (x, y)로 찾는 2인 대결(하·중·상, 판돈은 숫자야구와 같은 장부, 하 최대 10P) + 컴퓨터와 연습 | Claude Code | `js/04s-sea.js`(신규), `sea.css`(신규), `supabase/sea.sql`(신규) + 운영 DB 적용, `index.html`(2줄), `js/07-print-omr-boot.js`(라우터 2줄), `tests/verify.mjs`(1줄), `COLLAB.md` | **코드 완료 · DB 적용 대기** |
+| **T12** | 교과서 시험 범위 문제 꼬리표 은행(Ⅳ 전체 · Ⅵ-04·05 · Ⅶ-01~04, 192문항: 단원·쪽·유형·난이도·기초 연산 칸·보스용) + 형식 검사 | Claude Code | `data/textbook-bank.json`(신규), `docs/textbook-bank.md`(신규), `tests/textbook-bank.mjs`(신규), `tests/verify.mjs`(1줄), `AGENTS.md`·`COLLAB.md`(문서 한 줄씩) | **완료** |
 
 ---
 
@@ -58,10 +59,16 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
-* **2026-11-26 (`T11` 완료, Claude Code)**: 시험 범위 교과서 문제 192문항을 `data/textbook-bank.json`에 꼬리표로 정리(차시 `lesson`·유형 `type`·난이도 `level` 1~3·기초 연산 칸 `calc`·답 모양 `form`·보스용 `boss`). 저작권 때문에 원문·그림은 넣지 않고 우리말 요약·수치·정답만 넣었어요. **새 차시·보스전·미니게임 문제를 만들 때 이 파일을 기준으로 써 주세요**(형식·쓰는 법: `docs/textbook-bank.md`). 문항을 덧붙이면 `node tests/verify.mjs`가 `tests/textbook-bank.mjs`로 형식·쪽 범위·`CALC` id를 검사해요. Ⅳ단원 차시 id는 `coord`·`graph`·`prop`·`inv`로 제안(보스 은행 `les`와 같음).
+* **2026-11-26 (`T12` 완료, Claude Code)**: 시험 범위 교과서 문제 192문항을 `data/textbook-bank.json`에 꼬리표로 정리(차시 `lesson`·유형 `type`·난이도 `level` 1~3·기초 연산 칸 `calc`·답 모양 `form`·보스용 `boss`). 저작권 때문에 원문·그림은 넣지 않고 우리말 요약·수치·정답만 넣었어요. **새 차시·보스전·미니게임 문제를 만들 때 이 파일을 기준으로 써 주세요**(형식·쓰는 법: `docs/textbook-bank.md`). 문항을 덧붙이면 `node tests/verify.mjs`가 `tests/textbook-bank.mjs`로 형식·쪽 범위·`CALC` id를 검사해요. Ⅳ단원 차시 id는 `coord`·`graph`·`prop`·`inv`로 제안(보스 은행 `les`와 같음).
+* **2026-11-26 (`T11` 완료, Claude Code)**
+  * 새 미니게임 **⚓ 좌표 해전**(`#sea`, 처음 화면 숫자야구 띠 아래 `sea-strip`). 단계: **하** −3~3·판을 눌러 쏘기·판돈 최대 10 / **중** −3~3·x, y 버튼으로 골라 쏘기 / **상** −4~4·좌표 + 그 점의 위치(제1~4사분면·x축·y축·원점)까지 맞혀야 쏘기(틀리면 차례 넘김). 배는 하·중 3·2·2칸, 상 4·3·2칸. 방장 먼저, 같은 횟수 보장, 하·중 25번·상 30번 뒤엔 맞힌 칸 수로 승부, 60초 시간 제한.
+  * 서버: `supabase/sea.sql`(신규) — `hg_sea_games`·`hg_sea_shots`, 학생 RPC `hg_sea_lobby/create/join/ships/fire/state/leave`. 배 위치는 서버만 알고(가라앉은 배·끝난 뒤만 공개), 맞힘 판정도 서버. 포인트는 숫자야구 장부 `hg_bb_ledger`에 `sea_id` 칸을 더해 같이 써요(쓸 수 있는 포인트 공유, 이유 '좌표 해전 판돈/승리/무승부'). 켜기/끄기·최대 판돈은 숫자야구 설정(`bb_on`, `bb_max`)을 따라가요. 하루 10판.
+  * **운영 DB에 `supabase/sea.sql` 적용 필요**(Antigravity). 적용 전에는 친구 대결 대신 안내 문구와 컴퓨터 연습만 보여요. 로컬 Postgres 16에서 두 번 실행·한 판 끝까지·판돈 정산·기권 확인함.
+  * 교사 화면(`03-teacher.js`)에는 아직 좌표 해전 기록이 없어요(학생 순 손익은 장부 합계라 숫자야구 칸에 같이 잡혀요).
+
 * **2026-11-26 (`T10` 완료, Claude Code)**
   * 숫자야구에 선생님 앱(`kinggodgirl/number-baseball`)과 같은 4단계 추가: **하** 1~6·2자리·○△× / **중** 1~9·3자리·○△× / **중상** 1~6·3자리·S/B / **상** 0~9·3자리·S/B. **하는 판돈 최대 10포인트**(화면과 서버 둘 다 막음). 컴퓨터와 연습도 4단계(`#bb-cpu-easy|mid|mh|hard`).
-  * 서버: `hg_bb_games.lv`(비면 예전 3·4자리 방식), `digits`에 2 허용, `hg_bb_guesses.h`(자리별 힌트 O/A/X), 새 함수 `hg_bb_ok`·`hg_bb_need`·`hg_bb_hint`, `hg_bb_create`에 `p_lv` 인자(기본 null이라 옛 화면도 그대로 동작). 운영 DB 마이그레이션 `t09_bb_levels`는 선생님 확인 뒤 적용(적용 전에는 친구 대결이 예전 3·4자리 화면 그대로, 컴퓨터 연습만 4단계).
+  * 서버: `hg_bb_games.lv`(비면 예전 3·4자리 방식), `digits`에 2 허용, `hg_bb_guesses.h`(자리별 힌트 O/A/X), 새 함수 `hg_bb_ok`·`hg_bb_need`·`hg_bb_hint`, `hg_bb_create`에 `p_lv` 인자(기본 null이라 옛 화면도 그대로 동작). 운영 DB 마이그레이션 `t10_bb_levels`는 선생님 확인 뒤 적용(적용 전에는 친구 대결이 예전 3·4자리 화면 그대로, 컴퓨터 연습만 4단계).
   * 화면은 로비 응답의 `lvs`가 있을 때만 4단계를 보여 줘서, DB 적용 전·후 어느 쪽에서도 깨지지 않아요. 교사 화면(`03-teacher.js`)은 건드리지 않았어요(경기 목록의 `digits`가 2로 보일 수 있음).
   * **운영 DB 적용·검증 완료 (Antigravity)**: `zlwelfgvfbacmpeqwnkx`에 `supabase/game.sql` 반영 확인(`hg_bb_games.lv`, `digits in (2,3,4)`, `hg_bb_guesses.h`, `hg_bb_ok`/`hg_bb_hint` 정상, 4인자 `hg_bb_create` 단일화, security/performance 어드바이저 신규 경고 없음).
 

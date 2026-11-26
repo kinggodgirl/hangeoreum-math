@@ -1,4 +1,4 @@
-# 교과서 시험 범위 문제 꼬리표 은행 (`data/textbook-bank.json`) — [T11]
+# 교과서 시험 범위 문제 꼬리표 은행 (`data/textbook-bank.json`) — [T12]
 
 지학사 2022 개정 중학교 수학 1에서 **이번 시험 범위 문제를 모두 모아 꼬리표를 단 자료**예요.
 Claude Code와 Antigravity가 차시 문제·보스전(`js/boss-bank.js`)·미니게임 문제를 만들 때 **같은 기준**으로 씁니다.

@@ -10,6 +10,7 @@ const jsFiles = [
   'js/02-unit-solid.js',
   'js/03-teacher.js',
   'js/04-games.js',
+  'js/04s-sea.js',
   'js/05-calc.js',
   'js/06-unit-int.js',
   'js/06c-unit-circle.js',
@@ -343,4 +344,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`✓ Runtime check passed: ${CALC.length} topics, ${totalProbs} problems, DIAG(${DIAG.length}), EXAM_FOCUS(${EXAM_FOCUS.length}), map(${Object.values(CALC_PRE).flat().length} links), repMount & teacher report OK, goals OK, circle ${circleProbs} problems, solid ${solidProbs} problems, int ${intProbs} problems`);
-await import('./textbook-bank.mjs'); // [T11] 교과서 문제 꼬리표 은행 형식 검사
+await import('./textbook-bank.mjs'); // [T12] 교과서 문제 꼬리표 은행 형식 검사
