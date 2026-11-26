@@ -18,6 +18,8 @@ const jsFiles = [
 for (const rel of jsFiles) {
   execFileSync(process.execPath, ['--check', path.join(root, rel)], { stdio: 'inherit' });
 }
+// 꾸미기(08-deco.js)는 화면에만 붙는 모듈이라 문법만 검사해요
+execFileSync(process.execPath, ['--check', path.join(root, 'js/08-deco.js')], { stdio: 'inherit' });
 console.log(`✓ Syntax check passed for all ${jsFiles.length} JS modules`);
 
 // 2. Load all modules in exact index.html order inside a Node VM
