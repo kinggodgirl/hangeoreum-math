@@ -10,18 +10,38 @@ const M_=v=>`<span class="rm">${v}</span>`,N_=`<span class="math">n</span>`;
 const J=(n,a,b)=>josa(String(n),a,b),IY=n=>J(n,'이에요','예요'),IYs=n=>IY(n).slice(String(n).length);
 const S_=(t,q,ans,type,choices)=>({t,q,ans,type:type||'num',choices});
 const E_=(a,m,pi)=>({a,m,pi});
-/* 그림 보고 원의 둘레·넓이: 공식을 주지 않고 그림(반지름 또는 지름)만 보여 줘요 */
-function piFig(r,area){if(area===undefined)area=r()<0.5;const useD=r()<0.4,rr=ri(r,2,8),d=2*rr,u=area?'cm²':'cm',w=area?'넓이':'둘레의 길이';
-  const C=80,R=58,lab=useD?`${d} cm`:`${rr} cm`;
-  const svg=`<svg class="pifig" viewBox="0 0 160 160" width="150" height="150" role="img" aria-label="${useD?'지름':'반지름'} ${lab}인 원"><circle cx="${C}" cy="${C}" r="${R}" fill="${area?'#e8eefb':'none'}" stroke="#1d2433" stroke-width="2.4"/><circle cx="${C}" cy="${C}" r="3" fill="#1d2433"/>`+
+/* 원의 둘레·넓이 (π 계산 2~5단계) — 선생님 방식
+   둘레: "둘레 보면 π! π는 지름을 둘레로 바꾸는 마법" → 지름 구하기 → 지름에 π
+   넓이: "원을 직사각형으로 바꿔요. 가로는 반둘레, 세로는 반지름" → 반둘레(반지름에 π) × 반지름
+   hk: 이 문제의 💡 힌트(KEYS보다 먼저 써요) */
+function piSvg(area,useD,rr){const C=80,R=58,lab=useD?`${2*rr} cm`:`${rr} cm`;
+  return`<svg class="pifig" viewBox="0 0 160 160" width="150" height="150" role="img" aria-label="${useD?'지름':'반지름'} ${lab}인 원"><circle cx="${C}" cy="${C}" r="${R}" fill="${area?'#e8eefb':'none'}" stroke="#1d2433" stroke-width="2.4"/><circle cx="${C}" cy="${C}" r="3" fill="#1d2433"/>`+
     (useD?`<line x1="${C-R}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`:`<line x1="${C}" y1="${C}" x2="${C+R}" y2="${C}" stroke="#2a4d9e" stroke-width="3"/>`)+
-    `<text x="${useD?C:C+R/2}" y="${C-9}" text-anchor="middle" font-size="17" font-family="Times New Roman,serif" fill="#1d2433">${lab}</text>${area?'':`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#e0832a" stroke-width="4" stroke-dasharray="7 5"/>`}</svg>`;
-  const ans=area?rr*rr:2*rr,st=[];
-  if(useD)st.push(S_('지름을 반지름으로',M_(`${d} ÷ 2`),rr));
-  st.push(area?S_('반지름 × 반지름',M_(`${rr} × ${rr}`),rr*rr):S_('2 × 반지름',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${ans} × π`),ans,'pi'));
-  const errs=area?[E_(2*rr,'둘레 공식을 썼어요. 넓이는 π × 반지름 × 반지름이에요.',true)]:[E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)];
-  if(useD)errs.push(E_(area?d*d:2*d,'지름을 그대로 썼어요. 반지름은 지름 ÷ 2예요.',true));
-  return{q:`<div class="pifigw">${svg}</div>그림의 원의 <b>${w}</b>`,ans,type:'pi',suffix:u,steps:st,errs:errs.filter((e,i)=>e.a!==ans&&errs.findIndex(x=>x.a===e.a)===i)}}
+    `<text x="${useD?C:C+R/2}" y="${C-9}" text-anchor="middle" font-size="17" font-family="Times New Roman,serif" fill="#1d2433">${lab}</text>${area?'':`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#e0832a" stroke-width="4" stroke-dasharray="7 5"/>`}</svg>`}
+/* 원을 잘라 지그재그로 붙인 직사각형: 가로 = 반둘레, 세로 = 반지름 */
+function svgZig(){const n=8,W=220,H=70,x0=20,y0=16,w=W/n;let g='';
+  for(let k=0;k<n;k++){const x=x0+k*w,up=k%2===0;
+    g+=up?`<path d="M ${x} ${y0+H} Q ${x+w} ${y0+H+7} ${x+2*w} ${y0+H} L ${x+w} ${y0} Z" fill="${k%4===0?'#cfdcf5':'#e8eefb'}" stroke="#1d2433" stroke-width="1.3"/>`
+        :`<path d="M ${x} ${y0} Q ${x+w} ${y0-7} ${x+2*w} ${y0} L ${x+w} ${y0+H} Z" fill="${k%4===1?'#fde3c8':'#fff1e2'}" stroke="#1d2433" stroke-width="1.3"/>`}
+  return`<svg class="zigfig" viewBox="0 0 ${W+110} ${H+58}" width="${W+110}" role="img" aria-label="원을 잘라 붙인 직사각형"><clipPath id="zc"><rect x="${x0+w/2}" y="${y0-8}" width="${W}" height="${H+16}"/></clipPath><g clip-path="url(#zc)">${g}</g>`+
+    `<line x1="${x0+w/2}" y1="${y0+H+22}" x2="${x0+w/2+W}" y2="${y0+H+22}" stroke="#e0832a" stroke-width="2.5"/><text x="${x0+w/2+W/2}" y="${y0+H+42}" text-anchor="middle" font-size="15" fill="#b35f12">가로 = 반둘레 (반지름 × π)</text>`+
+    `<line x1="${x0+w/2+W+12}" y1="${y0}" x2="${x0+w/2+W+12}" y2="${y0+H}" stroke="#2a4d9e" stroke-width="2.5"/><text x="${x0+w/2+W+20}" y="${y0+H/2+5}" font-size="15" fill="#2a4d9e">세로</text><text x="${x0+w/2+W+20}" y="${y0+H/2+23}" font-size="13" fill="#2a4d9e">= 반지름</text></svg>`}
+const HK_CIRC={w:'둘레 보면 π',say:'π는 <b>지름</b>을 둘레로 바꾸는 마법이에요. 반지름이면 × 2 해서 지름을 만들고, 지름에 π를 붙이면 둘레!',eq:'반지름 5 → 지름 10 → 둘레 10π'};
+const HK_AREA={w:'원을 직사각형으로',say:'원을 잘게 잘라 지그재그로 붙이면 <b>직사각형</b>이 돼요. 가로는 <b>반둘레</b>(반지름에 π), 세로는 <b>반지름</b>. 넓이 = 가로 × 세로!',eq:'반지름 5 → 가로 5π, 세로 5 → 넓이 25π',fig:svgZig};
+const uniqErr=(errs,ans)=>errs.filter((e,i)=>e.a!==ans&&errs.findIndex(x=>x.a===e.a)===i);
+function piCirc(r,fig){const useD=fig&&r()<0.4,rr=ri(r,2,8),d=2*rr;
+  const q=fig?`<div class="pifigw">${piSvg(false,useD,rr)}</div>그림의 원의 <b>둘레의 길이</b>`:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`;
+  const st=[useD?S_('지름 찾기 (그림에 지름이 있어요)',M_('지름'),d):S_('지름 구하기 (반지름 × 2)',M_(`${rr} × 2`),d),S_('지름에 π를 붙이면 둘레',M_(`${d} × π`),d,'pi')];
+  const errs=[E_(rr,'π는 <b>지름</b>을 둘레로 바꿔요. 반지름을 지름으로 먼저 바꿔 볼까요?',true),E_(rr*rr,'넓이를 구했어요. 둘레는 지름에 π를 붙여요.',true)];
+  if(useD)errs.push(E_(2*d,'지름에 바로 π를 붙여요. 지름을 또 2배 하지 않아요.',true));
+  return{q,ans:d,type:'pi',suffix:'cm',steps:st,errs:uniqErr(errs,d),hk:Object.assign({},HK_CIRC,fig?{say:'그림에서 <b>지름</b>을 찾아요. 반지름만 있으면 × 2. 지름에 π를 붙이면 둘레!'}:{})}}
+function piArea(r,fig){const useD=fig&&r()<0.4,rr=ri(r,2,8),d=2*rr,ans=rr*rr;
+  const q=fig?`<div class="pifigw">${piSvg(true,useD,rr)}</div>그림의 원의 <b>넓이</b>`:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`;
+  const st=[];if(useD)st.push(S_('반지름 찾기 (지름 ÷ 2)',M_(`${d} ÷ 2`),rr));
+  st.push(S_('가로 = 반둘레 (반지름에 π)',M_(`${rr} × π`),rr,'pi'),S_('세로 = 반지름',M_('세로'),rr),S_('넓이 = 가로 × 세로',M_(`${rr}π × ${rr}`),ans,'pi'));
+  const errs=[E_(2*rr*rr,'가로는 둘레의 <b>반</b>이에요. 반둘레 × 반지름으로 해 봐요.',true),E_(2*rr,'둘레를 구했어요. 넓이는 원을 직사각형으로 바꿔서 가로 × 세로예요.',true)];
+  if(useD)errs.push(E_(d*d,'지름을 그대로 썼어요. 세로는 반지름(지름 ÷ 2)이에요.',true));
+  return{q,ans,type:'pi',suffix:'cm²',steps:st,errs:uniqErr(errs,ans),hk:HK_AREA}}
 const BOX='<span class="cbox">?</span>';
 const FR=(n,d)=>`<span class="frs"><span>${n}</span><span>${d}</span></span>`;
 let SVGID=0;
@@ -393,10 +413,10 @@ const CALC=[
   gen(L,r){if(L===1){const k=ri(r,0,2);if(k===0){const a=ri(r,2,15),b=ri(r,2,10);return{q:M_(`${a}π + ${b}π`),ans:a+b,type:'pi',steps:[S_('수끼리 더해요',M_(`${a} + ${b}`),a+b),S_('π를 붙여요',M_(`${a+b} × π`),a+b,'pi')],errs:[E_(a*b,'곱했어요. π 앞의 수끼리 더해요.',true)]}}
      if(k===1){const a=ri(r,10,20),b=ri(r,2,9);return{q:M_(`${a}π − ${b}π`),ans:a-b,type:'pi',steps:[S_('수끼리 빼요',M_(`${a} − ${b}`),a-b),S_('π를 붙여요',M_(`${a-b} × π`),a-b,'pi')],errs:[E_(a+b,'더했어요. 빼기예요.',true)]}}
      const a=ri(r,2,5),b=ri(r,2,9);return{q:M_(`${a} × ${b}π`),ans:a*b,type:'pi',steps:[S_('수끼리 곱해요',M_(`${a} × ${b}`),a*b),S_('π를 붙여요',M_(`${a*b} × π`),a*b,'pi')],errs:[E_(a+b,'더했어요. 곱해요.',true)]}}
-   if(L===2){const rr=ri(r,2,8);return{q:`반지름 ${M_(rr+' cm')}인 원의 둘레<br>${M_('2 × π × '+rr)}`,ans:2*rr,type:'pi',suffix:'cm',steps:[S_('수끼리 곱해요',M_(`2 × ${rr}`),2*rr),S_('π를 붙여요',M_(`${2*rr} × π`),2*rr,'pi')],errs:[E_(rr,'2를 곱하지 않았어요.',true),E_(rr*rr,'넓이 공식을 썼어요. 둘레는 2 × π × 반지름이에요.',true)]}}
-   if(L===3)return piFig(r,false);
-   if(L===4){const rr=ri(r,2,8);return{q:`반지름 ${M_(rr+' cm')}인 원의 넓이<br>${M_(`π × ${rr}²`)}`,ans:rr*rr,type:'pi',suffix:'cm²',steps:[S_('제곱 먼저',M_(`${rr} × ${rr}`),rr*rr),S_('π를 붙여요',M_(`${rr*rr} × π`),rr*rr,'pi')],errs:[E_(2*rr,`${M_(`${rr} × 2`)}를 했어요. ${M_(`${rr}²`)}${J(rr,'은','는').slice(String(rr).length)} ${M_(`${rr} × ${rr}`)}${IYs(rr)}.`,true)]}}
-   return piFig(r,true)}},
+   if(L===2)return piCirc(r,false);
+   if(L===3)return piCirc(r,true);
+   if(L===4)return piArea(r,false);
+   return piArea(r,true)}},
  {id:'frac',grp:'solid',nm:'분수 곱하기',use:'부채꼴(중심각/360°), 뿔의 부피 ⅓, 구의 부피 4/3',lv:['1단계 · ½ ×, ⅓ ×','2단계 · 셋을 곱할 때','3단계 · 뿔과 구의 부피'],
   ways:[{t:'⅓ ×는 ÷ 3',idea:`${M_('⅓ × 12')}는 12를 <b>셋으로 똑같이 나눈 하나</b>예요. 그래서 ${M_('12 ÷ 3')}.`,
      ex(r){const a=ri(r,2,9)*3;return{q:M_(`⅓ × ${a}`),fig:svgGroups(a,3,1),ans:a/3,steps:[S_('3으로 나눠요',M_(`${a} ÷ 3`),a/3)]}},
@@ -594,7 +614,7 @@ const LINKS={
  signed:r=>[{p:`<p class="kbig">${M_('(+3) − (−5)')}</p><p>덧셈으로 바꾸면?</p>`,choices:['(+3) + (+5)','(+3) + (−5)','(−3) + (+5)'],ans:'(+3) + (+5)',ok:'빼는 수의 부호만 반대로 바꿔 더해요.'}]};
 /* 잇기 활동: ① 이 낱말을 떠올릴 계산 고르기 ② 이 계산에 떠올릴 낱말 고르기 ③ 그림·말 ↔ 식 */
 const keySample=(id,r)=>{const K=KEYS[id],T=CALC.find(t=>t.id===id);return T.gen(K.only?K.only[0]:1,r)};
-const keyFor=q=>{const K=!q.kw&&q.tid&&KEYS[q.tid];return K&&(!K.only||K.only.includes(q.lv))?K:null};
+const keyFor=q=>{if(q.hk)return q.hk;const K=!q.kw&&q.tid&&KEYS[q.tid];return K&&(!K.only||K.only.includes(q.lv))?K:null};
 function keyOthers(id,r,n){const seen=new Set([KEYS[id].w]),out=[];for(const t of shuffle(r,CALC.filter(t=>KEYS[t.id]))){const w=KEYS[t.id].w;if(seen.has(w))continue;seen.add(w);out.push(t);if(out.length>=n)break}return out}
 function keyRounds(id,r){const K=KEYS[id],mine=()=>plainQ(keySample(id,r).q);
   const o1=keyOthers(id,r,2),e1=mine(),r1={p:`<p class="kbig">💡 ${K.w}</p><p>이 낱말을 떠올려야 하는 계산은?</p>`,choices:shuffle(r,[e1,...o1.map(t=>plainQ(keySample(t.id,r).q))]),ans:e1,ok:`${K.cue} '${K.w}'${josa(K.w,'을','를').slice(K.w.length)} 떠올려요.`};
@@ -651,7 +671,7 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
       $('.oYes',io).onclick=()=>{busy=true;q.state='hint';onAnswer&&onAnswer(q,{ok:false,ms:null,counted:true,help:true});help(q,io,true)};$('.oNo',io).onclick=()=>stage(q,io);return}
     stage(q,io)}
   function keyCue(q){let c=$('.dcue',host);if(!c){c=el('<div class="dcue"></div>');$('.dq',host).after(c)}const K=keyFor(q);c.innerHTML='';if(!K)return;
-    const chip=()=>{c.innerHTML=`<button type="button" class="kchip" aria-expanded="false">💡 떠올릴 낱말: <b>${K.w}</b></button><div class="kpop" hidden>${K.say}<br>${M_(K.eq)}</div>`;const b=$('.kchip',c);b.onclick=()=>{const p=$('.kpop',c);p.hidden=!p.hidden;b.setAttribute('aria-expanded',String(!p.hidden))}};
+    const chip=()=>{c.innerHTML=`<button type="button" class="kchip" aria-expanded="false">💡 떠올릴 낱말: <b>${K.w}</b></button><div class="kpop" hidden>${K.fig?`<div class="kfigw">${K.fig()}</div>`:''}${K.say}<br>${M_(K.eq)}</div>`;const b=$('.kchip',c);b.onclick=()=>{const p=$('.kpop',c);p.hidden=!p.hidden;b.setAttribute('aria-expanded',String(!p.hidden))}};
     if(q.lv===1&&!q.retry&&!q.extra)chip();else{c.innerHTML='<button type="button" class="kchip ask">💡 무엇을 떠올릴까? (눌러서 보기)</button>';$('.kchip',c).onclick=chip}}
   function stage(q,io){io.innerHTML='';const t0=performance.now();
     io.appendChild(answerUI({type:q.type,suffix:q.suffix,choices:q.choices,mathChoices:q.mathChoices},v=>{if(busy)return true;const ms=performance.now()-t0,res=check({type:q.type,ans:q.ans},v);

@@ -1079,3 +1079,4 @@ body.t-dopen{overflow:hidden}
 .choices button.also{background:#e9f7ee;border-color:#2e8b57;color:#1e6b3f;cursor:default}.choices button.also::before{content:"○ "}
 .pifigw{display:flex;justify-content:center;margin:0 0 6px}.pifig{max-width:150px;height:auto}
 .calcLv{max-width:100%}.calcLv button{flex:0 1 auto;white-space:nowrap;padding:9px 12px;min-width:0}
+.kfigw{display:flex;justify-content:center;margin:2px 0 8px}.zigfig{max-width:100%;height:auto}
