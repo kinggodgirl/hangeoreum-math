@@ -364,7 +364,7 @@ function renderT1Guide(host,lid,spec){
       </div>
       <div class="box plain" style="margin-top:0">${g.problem}</div>
       <div class="ct-stage">
-        <div class="ct-fig">${g.fig?g.fig(hl):''}<div class="ct-fig-cap">지시에 따라 클릭하면 그림과 함께 확인해요</div></div>
+        <div class="ct-fig">${g.fig?g.fig(hl):''}<div class="ct-fig-cap">안내에 따라 눌러 보면 그림에서 바로 확인돼요</div></div>
         <div class="ct-guide">
           <div class="ct-gstep ${s0Done?'done':'cur'}">
             <div class="ct-gstep-h"><span class="ct-gnum">${s0Done?'✓':'1'}</span>이 문제에서 구하려는 것은 무엇인가요?</div>
@@ -407,7 +407,7 @@ function renderT1Guide(host,lid,spec){
     $$('[data-gk]',host).forEach(b=>b.onclick=()=>{
       const ch=g.givenChips.find(x=>x.k===b.dataset.gk),ms=Date.now()-stepShown;
       if(ch&&ch.ok){recordMetric(ms,null);foundGiven.add(ch.k);if(foundGiven.size>=needCnt)step=2;draw()}
-      else{recordMetric(ms,'given_trap');b.classList.add('bad');const m=$('#fgM1',host);if(m)m.innerHTML='<small style="color:var(--bad)">이 문제는 쓰지 않는 함정 조건이에요.</small>'}
+      else{recordMetric(ms,'given_trap');b.classList.add('bad');const m=$('#fgM1',host);if(m)m.innerHTML='<small style="color:var(--bad)">이 문제에서는 쓰지 않는 조건이에요. 다시 골라 봐요.</small>'}
     });
     $$('[data-p]',host).forEach(b=>b.onclick=()=>{
       const ms=Date.now()-stepShown;
@@ -473,7 +473,7 @@ function renderT1Practice(body,lid,spec){
   let qQueue=pool.slice(),idx=0,recheckKind=null,consecKind=null,rescued=false,doneSet=new Set();
   const draw=()=>{
     if(rescued){
-      body.innerHTML=`<div class="ct-rescue"><h3>잠깐! 방금 유형을 한 번 더 정리하고 올까요?</h3><p>같은 종류의 판단을 두 번 연속 헷갈렸어요. <b>유형 익히기</b>에서 그림과 지시를 따라 다시 확인하고 돌아오면 훨씬 쉬워요.</p>
+      body.innerHTML=`<div class="ct-rescue"><h3>잠깐! 방금 유형을 한 번 더 정리하고 올까요?</h3><p>같은 종류의 판단을 두 번 연속 헷갈렸어요. <b>유형 익히기</b>에서 그림과 안내를 따라 다시 확인하고 돌아오면 훨씬 쉬워요.</p>
         <div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#${lid}-steps">유형 익히기로 돌아가기 →</a><button type="button" class="btn ghost" id="t1RetryAll">차시 마무리 다시 풀기</button></div></div>`;
       const rb=$('#t1RetryAll',body);if(rb)rb.onclick=()=>{qQueue=pool.slice();idx=0;recheckKind=null;consecKind=null;rescued=false;doneSet=new Set();draw()};
       return;
@@ -749,7 +749,7 @@ function renderT3Concept(body,lid,spec){
   body.innerHTML=`
     <div class="ct-pass-bar">
       <span>개념을 이미 안다면 바로 복합 유형이나 차시 마무리로 넘어가세요.</span>
-      <a class="btn primary" href="#${lid}-steps">복합 유형 분해 연습 →</a>
+      <a class="btn primary" href="#${lid}-steps">복합 문제 쪼개서 연습하기 →</a>
     </div>
     <div class="cp-strat" style="margin-top:0">
       <h2>🌳 두걸음 핵심 전략 · 복합 문제 쪼개기</h2>
@@ -775,9 +775,9 @@ function renderT3Steps(body,lid,spec,initialCid){
         <div class="ct-hit-row" style="margin:0">${list.map(x=>`<button type="button" class="chip${x.id===cid?' on':''}" data-cid="${x.id}">${x.nm}</button>`).join('')}</div>
       </div>
       <div class="ct-combo">
-        <b>Step 1 · 이 문제는 기본 유형 중 <u>어느 두 가지</u>를 합쳐 놓았나요? (2개 선택)</b>
+        <b>1단계 · 이 문제는 기본 유형 중 <u>어느 두 가지</u>를 합쳐 놓았나요? (2개 고르기)</b>
         <div class="ct-combo-chips">${tyLabels.map((lb,i)=>`<button type="button" class="ct-hit${picked.has(i+1)?' sel':''}" data-ty="${i+1}" ${unlocked?'disabled':''}>${lb}</button>`).join('')}</div>
-        <div id="cStep1Msg">${unlocked?`<div class="feedback ok">✓ 조합 파악 완료! ${prob.comboWhy}</div>`:''}</div>
+        <div id="cStep1Msg">${unlocked?`<div class="feedback ok">✓ 딱 맞혔어요! ${prob.comboWhy}</div>`:''}</div>
       </div>
       <div id="cProbHost"></div>
     </div>`;
@@ -802,7 +802,7 @@ function renderT3Steps(body,lid,spec,initialCid){
       $('#cProbHost',body).innerHTML=`<div class="${figHtml?'ct-stage':''}">${figHtml?`<div class="ct-fig">${figHtml}</div>`:''}<div><p style="margin-top:0">${prob.title}</p><p class="muted">먼저 위에서 결합된 2개 유형을 고르면 풀이 입력이 열려요.</p></div></div>`;
     }else if(typeof renderProblem==='function'){
       renderProblem($('#cProbHost',body),prob,{mode:'steps',visual:true,rep:{lesson:lid,gen:prob.ptype,seed},onDone:({good,box})=>{
-        if(good&&typeof award==='function')award(8,null,'복합 유형 분해 문제를 풀었어요');
+        if(good&&typeof award==='function')award(8,null,'복합 문제를 단계별로 쪼개서 풀었어요');
         const row=document.createElement('div');row.className='next-row';row.style.justifyContent='flex-start';
         row.innerHTML=`<button type="button" class="btn primary" id="cMore">새 숫자로 한 번 더</button><a class="btn ghost" href="#${lid}-practice">실전 차시 마무리 →</a>`;
         box.appendChild(row);
@@ -826,7 +826,7 @@ function renderT3Practice(body,lid,spec){
   }).concat(cids.map((cid,k)=>{
     const cInfo=(spec.compoundList||[]).find(x=>x.id===cid)||{nm:cid};
     return{key:cid,cid,label:cInfo.nm,genKey:`${lid}:${cid.toLowerCase()}`,seed:baseSd+51+k*23,makeProb:sd=>spec.genCompound[cid](sd),
-      rescueDesc:`<b>${cInfo.nm}</b>을 두 번 연속 틀렸어요. 복합 유형 조합 분해에서 단계를 먼저 쪼개 보아요.`,rescueBtn:`${cInfo.nm} 분해 연습으로 →`};
+      rescueDesc:`<b>${cInfo.nm}</b>을 두 번 연속 틀렸어요. 복합 문제 쪼개서 풀기에서 단계를 먼저 나눠 보아요.`,rescueBtn:`${cInfo.nm} 쪼개서 연습하기 →`};
   }));
 
   renderAdaptivePractice(body,lid,{
@@ -849,7 +849,7 @@ function renderT3Practice(body,lid,spec){
         <ul style="margin:12px 0;padding-left:20px;line-height:1.8">${results.map(x=>`<li>${x.status==='first'?'⭐ <b>한 번에 통과</b>':'✓ <b>재확인 통과</b>'} · ${x.label}</li>`).join('')}</ul>
         <div class="ct-meta"><b>1초 체크 · 오늘 풀면서 가장 헷갈렸던 부분은?</b>
           <div class="ct-meta-row" id="t3Meta">${metaOpts.map(m=>`<button type="button" class="chip" data-m="${m}">${m}</button>`).join('')}</div>
-          <small class="muted" id="t3MetaDone">선택하면 선생님 화면에 기록돼요.</small>
+          <small class="muted" id="t3MetaDone">기록해 두면 다음에 꼭 맞는 연습을 고르는 데 도움이 돼요.</small>
         </div>
         <div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#home">처음 화면으로</a></div>
       </div>${bonusExploreHTML(lid)}`;

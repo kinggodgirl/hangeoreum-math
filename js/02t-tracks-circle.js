@@ -73,7 +73,7 @@ if(typeof HG_TRACKS==='object'){
         teacherEq:'현 중에서 중심을 지나는 현 = 지름',pairQ:'중심을 지나기만 하면 길이는 어떻게 되나요?',
         pairChoices:['그 원에서 가장 긴 현이 된다','가장 짧은 현이 된다'],pairAns:'그 원에서 가장 긴 현이 된다',
         calcPrompt:'반지름이 6 cm일 때 지름은 몇 cm인가요?',calcAns:12,calcTopic:'mul',calcExplain:'지름 = 반지름 × 2 = <b>12 cm</b>예요.'},
-      {id:'afg2',tyNo:2,title:'유형 2 · 도형 조건 판별하기',
+      {id:'afg2',tyNo:2,title:'유형 2 · 어떤 도형인지 구별하기',
         problem:'꼭짓점이 중심 O이고, 두 반지름이 이루는 각이 <b>180°</b>인 반원은 어떤 도형인지 찾으시오.',
         fig:()=>arcFig('semi'),wantChips:['부채꼴 · 활꼴 여부','다각형 개수','모선 길이'],wantAns:'부채꼴 · 활꼴 여부',wantHl:[],
         givenChips:[{k:'g1',t:'두 반지름 + 호 (부채꼴)',ok:true},{k:'g2',t:'지름(=현) + 호 (활꼴)',ok:true},{k:'t1',t:'꼭짓점이 원 위에 있음',ok:false}],
@@ -111,23 +111,23 @@ if(typeof HG_TRACKS==='object'){
     genCompound:{
       C1:seed=>{
         const r=(seed*1664525+1013904223)>>>0,radR=3+(r%6),diam=2*radR;
-        return{id:'C1',combo:[1,3],comboWhy:'① 그림·정의에서 지름 성질을 찾고(유형 1) → ② 반원·현 조건 판별(유형 3)',ptype:'arc:c1',
-          title:`한 원에서 길이가 가장 긴 현의 길이가 <b>${diam} cm</b>일 때, 이 원의 반지름과 반원의 중심각 크기를 차례대로 구하시오.`,
-          fig:{svg:()=>arcFig('diam')},finalQ:'반원의 중심각과 반지름의 차(중심각 − 반지름 수)가 아니라, 반지름은 몇 cm인가요?',
+        return{id:'C1',combo:[1,3],comboWhy:'① 그림·정의에서 지름 성질을 찾고(유형 1) → ② 반원·현 조건 구별(유형 3)',ptype:'arc:c1',
+          title:`한 원에서 길이가 가장 긴 현의 길이가 <b>${diam} cm</b>일 때, 반원의 성질을 확인하고 이 원의 <b>반지름</b>을 구하시오.`,
+          fig:{svg:()=>arcFig('diam')},finalQ:'이 원의 반지름은 몇 cm인가요?',
           steps:[
             {tag:'1단계 · 가장 긴 현의 이름',q:'한 원에서 가장 긴 현은 무엇인가요?',type:'choice',choices:['지름','반지름','호'],ans:'지름',hint:'원의 중심을 지나는 현이 가장 길어요.'},
-            {tag:'2단계 · 반지름 구하기',q:`지름이 ${diam} cm일 때 반지름은 몇 cm인가요?`,type:'num',ans:radR,suffix:'cm',hint:`${diam} ÷ 2`},
-            {tag:'3단계 · 반원의 성질 확인',q:'이 원의 지름으로 만든 반원은 부채꼴이면서 동시에 활꼴인가요?',type:'choice',choices:['예 (둘 다 맞아요)','아니요'],ans:'예 (둘 다 맞아요)',hint:'반원은 180° 부채꼴이자 지름(현)+호인 활꼴이에요.',ok:`반지름 ${radR} cm, 반원은 부채꼴이자 활꼴이에요!`}
+            {tag:'2단계 · 반원의 성질 확인',q:'이 원의 지름으로 만든 반원은 부채꼴이면서 동시에 활꼴인가요?',type:'choice',choices:['예 (둘 다 맞아요)','아니요'],ans:'예 (둘 다 맞아요)',hint:'반원은 180° 부채꼴이자 지름(현)+호인 활꼴이에요.'},
+            {tag:'3단계 · 반지름 구하기',q:`지름이 ${diam} cm일 때 반지름은 몇 cm인가요?`,type:'num',ans:radR,suffix:'cm',hint:`${diam} ÷ 2`,ok:`반지름은 ${radR} cm이고, 반원은 부채꼴이자 활꼴이에요!`}
           ]};
       },
       C2:seed=>{
         const r=(seed*22695477+1)>>>0,opt=r%2;
-        return{id:'C2',combo:[2,3],comboWhy:'① 꼭짓점이 중심인지 판별하고(유형 2) → ② 부채꼴·활꼴 정의 확인(유형 3)',ptype:'arc:c2',
+        return{id:'C2',combo:[2,3],comboWhy:'① 꼭짓점이 중심인지 구별하고(유형 2) → ② 부채꼴·활꼴 정의 확인(유형 3)',ptype:'arc:c2',
           title:opt?'그림처럼 꼭짓점이 원의 중심 O가 아닌 곳에 있는 도형과, 두 반지름과 호로 이루어진 도형을 비교할 때 옳은 설명을 찾으시오.':'두 반지름이 이루는 각이 180°일 때 생기는 도형에 대한 바른 판단을 찾으시오.',
-          fig:{svg:()=>arcFig(opt?'non_sec':'semi')},finalQ:'올바른 판단은?',
+          fig:{svg:()=>arcFig(opt?'non_sec':'semi')},finalQ:opt?'그림의 빨간 도형은 부채꼴인가요?':'중심각이 180°인 반원은 활꼴이기도 한가요?',
           steps:[
             {tag:'1단계 · 부채꼴 조건',q:'부채꼴이 되려면 꼭짓점이 반드시 어디에 있어야 하나요?',type:'choice',choices:['원의 중심 O','원 위의 한 점','원 밖'],ans:'원의 중심 O',hint:'두 변이 반지름이려면 중심에서 만나야 해요.'},
-            {tag:'2단계 · 종합 판단',q:opt?'그림의 빨간 도형은 부채꼴인가요?':'중심각 180°인 반원은 활꼴이기도 한가요?',type:'choice',choices:opt?['아니요 (중심이 아님)','예']:['예 (현+호이기도 함)','아니요'],ans:opt?'아니요 (중심이 아님)':'예 (현+호이기도 함)',hint:'정의 두 가지를 꼼꼼히 대조해요.',ok:'정확하게 구별했어요!'}
+            {tag:'2단계 · 종합 판단',q:opt?'그림의 빨간 도형은 부채꼴인가요?':'중심각 180°인 반원은 활꼴이기도 한가요?',type:'choice',choices:opt?['아니요 (중심이 아님)','예']:['예 (현+호이기도 함)','아니요'],ans:opt?'아니요 (중심이 아님)':'예 (현+호이기도 함)',hint:'두 가지 뜻을 차근차근 비교해 봐요.',ok:'정확하게 구별했어요!'}
           ]};
       }
     },
@@ -161,7 +161,7 @@ if(typeof HG_TRACKS==='object'){
     owlScenes:[
       {cap:'장면 ① 원의 둘레는 지름 × π!',say:'<span class="kw">둘레 보면 π</span>! π는 <b>지름</b>을 원의 둘레로 바꾸는 마법이에요. 반지름이 6이면 지름은 <span class="num">12</span> → 둘레는 <span class="num">12π</span>!',svg:()=>secFigS(6,null,360,{arcLab:'둘레 = 지름 × π',rLab:'r = 6'})},
       {cap:'장면 ② 원의 넓이는 지그재그 직사각형!',say:'원을 잘게 잘라 붙이면 직사각형이 돼요. 가로는 <span class="kw">반둘레(반지름 × π)</span>, 세로는 <span class="kw">반지름</span> → <span class="num">가로 × 세로</span>!',svg:()=>typeof svgZig==='function'?svgZig('가로 = 반둘레 (r × π)','= 반지름'):secFigS(6,null,360,{})},
-      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',say:'반지름 6, 중심각 <span class="num">60°</span> 부채꼴은 360÷6 = <span class="num">6조각 중 1개</span>! 원 둘레·넓이에 <span class="num">중심각/360</span>을 곱해요.',svg:()=>secFigS(6,null,60,{arcLab:'둘레 ÷ 6 = 2π',rLab:'6 cm'})},
+      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',say:'반지름 6, 중심각 <span class="num">60°</span> 부채꼴은 360÷60 = <span class="num">6조각 중 1개</span>! 원 둘레·넓이에 <span class="num">중심각/360</span>을 곱해요.',svg:()=>secFigS(6,null,60,{arcLab:'둘레 ÷ 6 = 2π',rLab:'6 cm'})},
       {cap:'장면 ④ 중심각 모를 땐: 호의 반 × 반지름!',say:'부채꼴도 잘게 잘라 붙이면 직사각형! 가로는 <span class="kw">호의 반(½l)</span>, 세로는 <span class="kw">반지름(r)</span> → <span class="num">호의 반 × 반지름</span>!',svg:()=>typeof svgZig==='function'?svgZig('가로 = 호의 반 (½ l)','= 반지름 r'):secFigS(6,null,120,{arcLab:'호 l',rLab:'r'}),
         ask:{q:'반지름 6 cm, 호의 길이 4π cm인 부채꼴의 넓이는?',choices:['12π cm²','24π cm²','6π cm²'],ans:'12π cm²',hint:'호의 반(2π) × 반지름(6)을 곱해요!',ok:'맞아요! 호의 반 2π × 반지름 6 = 12π cm²예요.'}},
       {cap:'장면 ⑤ 색칠한 도형의 둘레 함정!',exp:'warn',say:'색칠한 도형의 <b>둘레</b>를 구할 땐 둥근 호 2개뿐 아니라 <span class="warn">양쪽 곧은 선분 2개</span>도 꼭 더해야 해요!',svg:()=>secFigS(8,4,45,{perim:true,arcLab:'큰 호 + 작은 호 + 선분 2개!'})}
@@ -222,7 +222,7 @@ if(typeof HG_TRACKS==='object'){
         pitfall:'⚠️ 자주 하는 실수: 넓이는 빼고, 둘레를 물을 때는 작은 호도 <b>더하기</b> + 직선 2개도 더해요!'}
     },
     compoundList:[
-      {id:'C1',nm:'복합 ① · 넓이로 호·중심각 역산',sub:'반지름과 넓이로 호의 길이를 구하고 중심각까지 역산'},
+      {id:'C1',nm:'복합 ① · 넓이로 호·중심각 거꾸로 구하기',sub:'반지름과 넓이로 호의 길이를 구하고 중심각까지 거꾸로 구하기'},
       {id:'C2',nm:'복합 ② · 부채꼴 사이 넓이와 둘레',sub:'큰 부채꼴 − 작은 부채꼴과 양쪽 직선 테두리 둘레'},
       {id:'C3',nm:'복합 ③ · 정사각형·정삼각형과 부채꼴',sub:'도형 넓이 빼기 또는 3개 부채꼴(반원 180°) 합'},
       {id:'C4',nm:'복합 ④ · 조각 옮겨 모아 넓이 구하기',sub:'조각을 옮겨 하나의 큰 부채꼴·반원으로 넓이 구하기'}
@@ -233,13 +233,13 @@ if(typeof HG_TRACKS==='object'){
         const rr=[3,4,6][r%3],l=rr===3?pick(r,[2,4]):rr===4?pick(r,[2,4,6]):pick(r,[2,4,6]);
         const S=l*rr/2,ang=Math.round(360*l/(2*rr));
         if(!Number.isInteger(S)||ang>=360)return HG_TRACKS.specs.sector.genCompound.C1(seed+1);
-        return{id:'C1',combo:[4,5],comboWhy:'① 호의 반 × 반지름 = 넓이 식으로 호를 찾고(유형 4) → ② 중심각 역산(유형 5)',ptype:'sector:c1',
+        return{id:'C1',combo:[4,5],comboWhy:'① 호의 반 × 반지름 = 넓이 식으로 호를 찾고(유형 4) → ② 중심각 거꾸로 구하기(유형 5)',ptype:'sector:c1',
           title:`반지름이 <b>${rr} cm</b>이고 넓이가 <b>${S}π cm²</b>인 부채꼴의 호의 길이와 중심각의 크기를 차례로 구하시오.`,
           fig:{svg:()=>secFigS(rr,null,ang,{rLab:`${rr} cm`})},finalQ:'부채꼴의 중심각의 크기는 몇 도인가요?',
           steps:[
             {tag:'1단계 · 호의 반 구하기',q:`(호의 반) × ${rr} = ${S}π → 호의 반은?`,type:'pi',ans:l/2,suffix:'cm',hint:`${S} ÷ ${rr}π`},
             {tag:'2단계 · 호의 길이 구하기',q:'부채꼴의 호의 길이는?',type:'pi',ans:l,suffix:'cm',hint:`(${l/2}π) × 2`},
-            {tag:'3단계 · 중심각 역산',q:`호 ${l}π는 원 둘레 ${2*rr}π의 몇 분의 몇인가요? 중심각은 몇 도?`,type:'num',ans:ang,suffix:'°',hint:`360 × (${l} ÷ ${2*rr})`,ok:`호 ${l}π cm, 중심각 ${ang}°`}
+            {tag:'3단계 · 중심각 거꾸로 구하기',q:`호 ${l}π는 원 둘레 ${2*rr}π의 몇 분의 몇인가요? 중심각은 몇 도?`,type:'num',ans:ang,suffix:'°',hint:`360 × (${l} ÷ ${2*rr})`,ok:`호 ${l}π cm, 중심각 ${ang}°`}
           ]};
       },
       C2:seed=>{
@@ -257,7 +257,7 @@ if(typeof HG_TRACKS==='object'){
       C3:seed=>{
         const r=(seed*1103515245+12345)>>>0,a=[2,4,6,8][r%4],sq=a*a,qtr=sq/4;
         return{id:'C3',combo:[3,6],comboWhy:'① 반지름 a인 사분원 넓이를 구하고(유형 3) → ② 정사각형에서 빼기(유형 6)',ptype:'sector:c3',
-          title:`한 변의 길이가 <b>${a} cm</b>인 정사각형에서 반지름이 ${a} cm인 사분원(90°)을 빼고 남은 부분의 넓이(A − Bπ cm²)를 구할 때, <b>π가 붙은 항의 계수 B</b>를 구하시오.`,
+          title:`한 변의 길이가 <b>${a} cm</b>인 정사각형에서 반지름이 ${a} cm인 사분원(90°)을 오려 내려 해요. 정사각형에서 빼야 하는 <b>사분원의 넓이</b>를 구하시오.`,
           fig:{svg:()=>squareCornerSVG(a)},finalQ:'정사각형 넓이에서 빼야 하는 사분원의 넓이는 몇 cm²인가요?',
           steps:[
             {tag:'1단계 · 정사각형 전체 넓이',q:`정사각형의 넓이는? (${a} × ${a})`,type:'num',ans:sq,suffix:'cm²',hint:`${a} × ${a}`},
@@ -266,7 +266,7 @@ if(typeof HG_TRACKS==='object'){
       },
       C4:seed=>{
         const r=(seed*1664525+1013904223)>>>0,rr=[4,6,8,10][r%4],semi=rr*rr/2;
-        return{id:'C4',combo:[1,6],comboWhy:'① 조각을 옮겨 반원의 넓이 계산하고(유형 1) → ② 색칠 부분 재구성(유형 6)',ptype:'sector:c4',
+        return{id:'C4',combo:[1,6],comboWhy:'① 조각을 옮겨 반원의 넓이 계산하고(유형 1) → ② 색칠 부분 다시 모으기(유형 6)',ptype:'sector:c4',
           title:`한 변이 ${2*rr} cm인 정삼각형이나 원 조각을 회전 이동해 모았더니 반지름이 <b>${rr} cm</b>인 <b>반원</b> 1개와 같아졌어요. 모인 도형의 넓이를 구하시오.`,
           fig:{svg:()=>secFigS(rr,null,180,{rLab:`${rr} cm`,arcLab:'조각 모으면 반원'})},finalQ:'모인 도형의 넓이는 몇 cm²인가요?',
           steps:[
