@@ -218,8 +218,14 @@ function viewPractice(body,id){
      <div class="stat"><small>연속 정답</small><b id="sStreak">${P.streak}</b></div>
      <span class="lvl" id="sLvl"></span>${(DB._rev||[]).length?`<a class="lvl" style="margin-left:0;background:#fff" href="#review">복습 노트 ${dueReviews().length?'· 오늘 '+dueReviews().length+'문제':'· '+(DB._rev||[]).length+'문제 대기'}</a>`:''}</div><div id="tyHost"></div><div id="practHost"></div></div>`);
   body.appendChild(wrap);
-  const TL=PTYPES[id];P.ty=P.ty||{};let runN=0,runMode=null;
-  const acc=t=>{const x=P.ty[t.no];return x?`${x.ok} / ${x.n} 맞힘`:'아직 안 풀었어요'};
+  const TL=PTYPES[id];P.ty=P.ty||{};
+  /* 유형 별: ★1 한 번에 맞힌 문제 2개 · ★2 연속 3개 · ★3 연속 5개 → 별 3개면 그 유형 완성 */
+  const tyStars=x=>x?(x.best>=5?3:x.best>=3?2:x.ok>=2?1:0):0;
+  const starStr=k=>'★'.repeat(k)+'☆'.repeat(3-k);
+  const nextGoal=x=>{const k=tyStars(x),ok=x?x.ok:0,run=x?x.run||0:0;return k===0?`한 번에 맞히기 ${ok}/2`:k===1?`연속 정답 ${run}/3`:k===2?`연속 정답 ${run}/5`:'이 유형 완성!'};
+  const progHTML=T_=>{if(!T_)return'';const x=P.ty[T_.no],k=tyStars(x),run=x?x.run||0:0;
+    return`<div class="typrog"><span class="tystar s${k}" aria-label="별 ${k}개">${starStr(k)}</span><span class="tyrun">🔥 연속 정답 <b>${run}</b></span><span class="tygoal">${k<3?'다음 별: ':''}<b>${nextGoal(x)}</b></span>${k===3?'<span class="tydone">다른 유형도 도전해 봐요</span>':''}</div>`};
+  const acc=t=>{const x=P.ty[t.no];return x?`<span class="tystar s${tyStars(x)}">${starStr(tyStars(x))}</span> ${x.ok} / ${x.n} 맞힘`:'<span class="tystar s0">☆☆☆</span> 아직 안 풀었어요'};
   const weak=t=>{const x=P.ty[t.no];return x&&x.n>=2&&x.ok/x.n<0.6};
   const pickScreen=()=>{$('#practHost',wrap).innerHTML='';tyPicker($('#tyHost',wrap),{TL,head:'<b>유형 고르기</b><span>한 유형씩 연습하거나, 섞어서 풀며 어떤 유형인지 스스로 알아봐요. 많이 틀린 유형에는 <b>추천</b>이 붙어요.</span>',
     mix:'모든 유형이 섞여 나와요. 풀고 나면 어떤 유형이었는지 알려 줘요.',stat:acc,rec:weak,onPick:no=>{P.mode=no;save();next()}})};
@@ -229,7 +235,7 @@ function viewPractice(body,id){
     P.retry.forEach(x=>x.due--);const ri_=P.retry.findIndex(x=>x.due<=0);
     let rg=null;if(ri_>=0){seed=P.retry[ri_].seed;rg=P.retry[ri_].g||null;P.retry.splice(ri_,1);isRetry=true}else seed=newSeed();
     const TM=TL&&P.mode?TL.find(t=>t.no===P.mode):null;
-    if(TL){$('#tyHost',wrap).innerHTML=tyBar(TM,'유형 고르기');$('.tyback',wrap).onclick=()=>{if(!subLeave())pickScreen()};subEnter(pickScreen);liveSub(TM?`유형 ${TM.no} · ${TM.nm}`:'섞어서')}
+    if(TL){$('#tyHost',wrap).innerHTML=tyBar(TM,'유형 고르기')+progHTML(TM);$('.tyback',wrap).onclick=()=>{if(!subLeave())pickScreen()};subEnter(pickScreen);liveSub(TM?`유형 ${TM.no} · ${TM.nm}`:'섞어서')}
     // 섞어 풀기: 지난 차시(이미 공부를 시작한 차시) 문제를 열에 셋쯤 섞어요. 다시 도전 문제는 섞지 않아요.
     const mk=x=>GEN['mix_'+x]?'mix_'+x:GEN[x+'2']?x+'2':x;
     const prevL=LESSONS.filter(l=>l.ready&&l.unit===curL.unit&&l.no<curL.no&&GEN[l.id]&&OBJ(DB[l.id]).concept);
@@ -241,13 +247,14 @@ function viewPractice(body,id){
     renderProblem($('#practHost',wrap),prob,{mode:P.level>=2?'final':'steps',rep:{lesson:id,gen:gid,seed},onDone:({good,usedSteps,mode,wrongs,stepWrongs,revealed,box})=>{
       const lid=LESSON_OF[gid]||id;
       logAttempt({lesson:lid,kind:'practice',good,wrongs,mode,gen:gid,seed,ptype:prob.ptype,stepWrongs,revealed,mixed:!!mixL});
-      if(TY&&TY.lid===id){const x=P.ty[TY.T.no]=P.ty[TY.T.no]||{n:0,ok:0};x.n++;if(good&&wrongs===0)x.ok++}
+      let gained=0;if(TY&&TY.lid===id){const x=P.ty[TY.T.no]=P.ty[TY.T.no]||{n:0,ok:0};const k0=tyStars(x);x.n++;if(good&&wrongs===0){x.ok++;x.run=(x.run||0)+1;x.best=Math.max(x.best||0,x.run)}else x.run=0;gained=tyStars(x)-k0;
+        if(gained>0){const k=tyStars(x);award(k*5);toast(`유형 ${TY.T.no} 별 ${k}개! ${starStr(k)}${k===3?' 이 유형 완성이에요!':''}`)}}
       if(TY&&!TM)box.insertAdjacentHTML('afterbegin',`<div class="tyafter">이 문제는 <b>${TY.lid===id?'':(LESSONS.find(l=>l.id===TY.lid)||{}).title+' · '}유형 ${TY.T.no} · ${TY.T.nm}</b><span>${TY.T.key}</span></div>`);dayBump('prac');if(good&&wrongs===0)dayBump('clean');
       P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(gid,seed,lid);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
       if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else P.streak++}
       else{P.streak=0;P.fails++;if(!mixL)P.retry.push({seed,due:2,g:gid});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
-      if(runMode!==P.mode){runMode=P.mode;runN=0}runN++;
-      if(TL&&TM&&runN%5===0){const s=el(`<div class="tyswitch">같은 유형을 <b>${runN}문제</b> 풀었어요! 다른 유형도 해 볼까요? <button type="button" class="btn">🔀 다른 유형 고르기</button></div>`);$('button',s).onclick=()=>{if(!subLeave())pickScreen()};box.appendChild(s)}
+      if(TL&&TM){const pg=$('.typrog',wrap);if(pg)pg.outerHTML=progHTML(TM);const x=P.ty[TM.no],k=tyStars(x);
+        if(k===3&&gained>0||k===3&&(x.n%5===0)){const nx=TL.find(t=>t.no!==TM.no&&tyStars(P.ty[t.no])<3);const s=el(`<div class="tyswitch">🎉 <b>유형 ${TM.no}</b> 별 3개 완성! ${nx?`다음은 <b>유형 ${nx.no} · ${nx.nm}</b> 어때요?`:'모든 유형을 완성했어요. 섞어서 풀어 봐요!'} <button type="button" class="btn">🔀 다른 유형 고르기</button></div>`);$('button',s).onclick=()=>{if(!subLeave())pickScreen()};box.appendChild(s)}}
       upd();const nb=el('<button type="button" class="btn primary">다음 문제 →</button>');nb.onclick=next;box.appendChild(nb);nb.focus()}});
   }
   upd();if(TL&&PW_GO&&PW_GO.lid===id&&TL.some(t=>t.no===PW_GO.no)){P.mode=PW_GO.no;PW_GO=null;save();next()}else if(TL)pickScreen();else next();

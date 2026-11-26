@@ -1043,3 +1043,9 @@ body.t-dopen{overflow:hidden}
 .hw-b{display:inline-block;border:1.5px solid var(--ink);border-radius:9px;padding:2px 10px;background:#fff;font-weight:700;font-size:.92em;white-space:nowrap}
 .hw-b.dark{background:var(--ink);color:#fff}.hw-b.logo{border:0;background:none;font-family:'Gowun Batang',serif;font-size:1.05em}.hw-b.tab{border-radius:9px 9px 0 0}.hw-b.tab.on{background:#ffe266}.hw-b.dim{opacity:.55}
 .hw-b.hot{border-width:2px;box-shadow:0 0 0 3px #ffe26699}.hw-b.rec{background:#ffe266;border-color:#e0b800;font-size:.8em}.hw-b.round{border-radius:50%;padding:2px 9px}.hw-b.red{border-color:#c0504d;color:#c0504d}
+
+/* 유형 진행도: 별 · 연속 정답 */
+.typrog{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:-4px 0 10px;padding:8px 12px;background:#fffbe8;border:1.5px solid #f0dc8a;border-radius:12px;font-size:15px}
+.tystar{letter-spacing:1px;color:#c9a200;font-size:18px;line-height:1}.tystar.s0{color:#b9bfcc}.tpc .tystar{font-size:15px}
+.tyrun b,.tygoal b{font-weight:800}.tydone{color:#3f7d4e;font-weight:700}
+@media (max-width:760px){.typrog{font-size:14px;gap:4px 10px}}
