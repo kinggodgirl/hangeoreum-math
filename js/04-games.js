@@ -89,6 +89,14 @@ const SHOP=[
    {id:'night',nm:'밤하늘 별',p:55,cls:'f-night'},
    {id:'gold',nm:'반짝 골드',p:80,cls:'f-gold'},
    {id:'aura',nm:'무지개 오라',p:110,cls:'f-aura'}]},
+ {cat:'hat',nm:'모자',items:[
+   {id:'none',nm:'안 쓰기',p:0,ic:'🙂'},
+   {id:'party',nm:'파티 고깔',p:300,ic:'🎉'},
+   {id:'beanie',nm:'털모자',p:450,ic:'🧶'},
+   {id:'cap',nm:'야구 모자',p:600,ic:'🧢'},
+   {id:'grad',nm:'학사모',p:900,ic:'🎓'},
+   {id:'wizard',nm:'마법사 모자',p:1200,ic:'🧙'},
+   {id:'crown',nm:'왕관',p:1600,ic:'👑'}]},
  {cat:'hi',nm:'형광펜 색',items:[
    {id:'yellow',nm:'노랑',p:0,c:'#ffe266',s:'#fff6c7'},
    {id:'pink',nm:'분홍',p:40,c:'#ffb8d6',s:'#ffeaf3'},
@@ -117,6 +125,50 @@ function avatarThumb(eq,size=86){const it=shopItem('mini',eq&&eq.mini),fr=shopIt
 function avatarSVG(eq,size=120){return avatarThumb(eq,size)}
 function mini3DHTML(it,size=210,frCls='f-none'){const glb=`${MINI_BASE}/glb/${it.f}.glb`,png=`${MINI_BASE}/previews/${it.f}.png`;
   return`<div class="av-fr ${frCls}" style="width:${size+14}px;height:${size+14}px;margin:0 auto"><div class="mv-box mv-inner" style="width:${size}px;height:${size}px"><model-viewer src="${glb}" poster="${png}" animation-name="idle" alt="${it.nm} 3D 캐릭터" autoplay auto-rotate camera-controls interaction-prompt="none" shadow-intensity="0.55" style="width:${size}px;height:${size}px"></model-viewer></div></div><div class="mv-hint">끌어서 돌려 볼 수 있어요</div>`}
+/* 3D 모자: 캐릭터 GLB를 받아 head 뼈 아래에 모자 메시를 붙인 새 GLB(blob)를 만들어요 · 애니메이션 때 머리와 같이 움직여요 */
+const HAT_CACHE={};
+function hatParts(id,r){const P=[],C={red:[.93,.3,.36],pink:[1,.5,.7],yel:[1,.83,.25],blue:[.25,.45,.85],navy:[.13,.17,.32],ink:[.12,.12,.16],pur:[.45,.3,.75],gold:[1,.78,.2],wht:[.97,.97,.97],grn:[.3,.75,.55]};
+  const lathe=(prof,col,o={})=>P.push({k:'lathe',prof,col:C[col],...o}),box=(sz,at,col,o={})=>P.push({k:'box',sz,at,col:C[col],...o});
+  const ball=(rr,y,col,x=0,z=0)=>lathe([...Array(9)].map((_,i)=>{const t=-Math.PI/2+Math.PI*i/8;return[rr*Math.cos(t),y+rr*Math.sin(t)]}),col,{x,z});
+  const dome=(R,H,col,n=8)=>lathe([...Array(n+1)].map((_,i)=>{const t=Math.PI/2*i/n;return[R*Math.cos(t),H*Math.sin(t)]}),col);
+  if(id==='party'){const R=r*.55;lathe([[R,0],[0.012,0.4]],'pink');lathe([[R*1.02,0],[R*1.02,0.02],[R*.92,0.06]],'yel');ball(0.045,0.41,'yel')}
+  if(id==='beanie'){dome(r*1.02,r*.8,'red');lathe([[r*1.07,-0.01],[r*1.07,0.07],[r*1.03,0.075]],'wht');ball(0.06,r*.8+0.04,'wht')}
+  if(id==='cap'){dome(r*1.12,r*.7,'blue');box([r*1.5,0.018,0.2],[0,0.01,r*0.95+0.07],'blue');ball(0.025,r*.7,'blue')}
+  if(id==='grad'){lathe([[r*.98,0],[r*.98,0.11],[0,0.11]],'ink');box([r*2.3,0.025,r*2.3],[0,0.12,0],'ink',{ry:Math.PI/4});box([0.02,0.14,0.02],[r*1.05,0.06,0],'yel');ball(0.022,0.135,'yel')}
+  if(id==='wizard'){lathe([[r*1.75,0],[r*1.75,0.018],[r*.96,0.018]],'pur');lathe([[r*.96,0.018],[r*.6,0.3],[r*.3,0.48],[0.012,0.62]],'pur',{tilt:-0.18});lathe([[r*.98,0.02],[r*.9,0.1]],'yel')}
+  if(id==='crown'){const R=r*.72;lathe([[R,0],[R,0.11]],'gold',{metal:.5});for(let k=0;k<5;k++){const t=2*Math.PI*k/5;lathe([[0.055,0.1],[0,0.2]],'gold',{x:R*.92*Math.sin(t),z:R*.92*Math.cos(t),metal:.5});ball(0.022,0.21,'red',R*.92*Math.sin(t),R*.92*Math.cos(t))}}
+  return P}
+function hatGeom(pt){const pos=[],nor=[],idx=[];const seg=28,tl=pt.tilt||0,ry=pt.ry||0;
+  const put=(x,y,z,nx,ny,nz)=>{if(tl)z+=tl*y*y*3;if(ry){const c=Math.cos(ry),s_=Math.sin(ry);[x,z]=[x*c+z*s_,-x*s_+z*c];[nx,nz]=[nx*c+nz*s_,-nx*s_+nz*c]}
+    pos.push(x+(pt.x||0),y,z+(pt.z||0));nor.push(nx,ny,nz);return pos.length/3-1};
+  if(pt.k==='lathe'){const pr=pt.prof;for(let i=0;i<pr.length-1;i++){const[r0,y0]=pr[i],[r1,y1]=pr[i+1];let nr=y1-y0,ny=-(r1-r0);const L=Math.hypot(nr,ny)||1;nr/=L;ny/=L;const base=pos.length/3;
+      for(let j=0;j<=seg;j++){const t=2*Math.PI*j/seg,c=Math.cos(t),s_=Math.sin(t);put(r0*s_,y0,r0*c,nr*s_,ny,nr*c);put(r1*s_,y1,r1*c,nr*s_,ny,nr*c)}
+      for(let j=0;j<seg;j++){const a=base+2*j;idx.push(a,a+2,a+1,a+1,a+2,a+3)}}}
+  else{const[w,h,d]=pt.sz.map(v=>v/2),[cx,cy,cz]=pt.at;const F=[[[1,0,0],[0,1,0],[0,0,1]],[[-1,0,0],[0,1,0],[0,0,-1]],[[0,1,0],[0,0,1],[1,0,0]],[[0,-1,0],[0,0,-1],[1,0,0]],[[0,0,1],[1,0,0],[0,1,0]],[[0,0,-1],[-1,0,0],[0,1,0]]];
+    for(const[n,u,v]of F){const b0=pos.length/3;for(const[su,sv]of[[-1,-1],[1,-1],[1,1],[-1,1]]){const q=k=>n[k]*[w,h,d][k]+u[k]*su*[w,h,d][k]+v[k]*sv*[w,h,d][k];put(cx+q(0),cy+q(1),cz+q(2),n[0],n[1],n[2])}idx.push(b0,b0+1,b0+2,b0,b0+2,b0+3)}}
+  return{pos,nor,idx}}
+async function hatGLB(file,hatId){const key=file+'|'+hatId;if(HAT_CACHE[key])return HAT_CACHE[key];
+  const buf=await(await fetch(`${MINI_BASE}/glb/${file}.glb`)).arrayBuffer(),dv=new DataView(buf),jl=dv.getUint32(12,true);
+  const J=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,20,jl))),binOff=20+jl+8,binLen=dv.getUint32(20+jl,true);
+  (J.images||[]).forEach(im=>{if(im.uri&&!/^(data|blob|https?):/.test(im.uri))im.uri=new URL(`${MINI_BASE}/glb/${im.uri}`,location.href).href});
+  const N=J.nodes,hi=N.findIndex(n=>n.name==='head'),hm=N.find(n=>n.name==='head-mesh');if(hi<0||!hm)throw new Error('no head');
+  const pa=J.accessors[J.meshes[hm.mesh].primitives[0].attributes.POSITION];
+  let hy=0,hz=0;const walk=(i,y,z)=>{const t=N[i].translation||[0,0,0];y+=t[1];z+=t[2];if(i===hi){hy=y;hz=z;return true}return(N[i].children||[]).some(c=>walk(c,y,z))};J.scenes[J.scene||0].nodes.forEach(i=>walk(i,0,0));
+  const r=Math.min(pa.max[0],0.25)*1.06,top=pa.max[1]-hy,cz=(Math.max(pa.min[2],-0.2)+pa.max[2])/2-hz,sink=hatId==='crown'||hatId==='party'?0.03:0.13;
+  const parts=hatParts(hatId,r),chunks=[];let off=binLen+((4-binLen%4)%4);const prims=[];
+  const addView=(arr,T,target)=>{const b=new Uint8Array(new T(arr).buffer);const v={buffer:0,byteOffset:off,byteLength:b.length};if(target)v.target=target;chunks.push([off,b]);off+=b.length;off+=(4-off%4)%4;J.bufferViews.push(v);return J.bufferViews.length-1};
+  for(const pt of parts){const g=hatGeom(pt),mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];for(let i=0;i<g.pos.length;i++){const k=i%3;mn[k]=Math.min(mn[k],g.pos[i]);mx[k]=Math.max(mx[k],g.pos[i])}
+    const ap=J.accessors.push({bufferView:addView(g.pos,Float32Array,34962),componentType:5126,count:g.pos.length/3,type:'VEC3',min:mn,max:mx})-1;
+    const an=J.accessors.push({bufferView:addView(g.nor,Float32Array,34962),componentType:5126,count:g.nor.length/3,type:'VEC3'})-1;
+    const ai=J.accessors.push({bufferView:addView(g.idx,Uint16Array,34963),componentType:5123,count:g.idx.length,type:'SCALAR'})-1;
+    const mi=J.materials.push({name:'hat',doubleSided:true,pbrMetallicRoughness:{baseColorFactor:[...pt.col,1],metallicFactor:pt.metal||0,roughnessFactor:pt.metal?0.35:0.8}})-1;
+    prims.push({attributes:{POSITION:ap,NORMAL:an},indices:ai,material:mi})}
+  const mesh=J.meshes.push({name:'hat',primitives:prims})-1,node=N.push({name:'hat',mesh,translation:[0,top-sink,cz]})-1;(N[hi].children=N[hi].children||[]).push(node);
+  const bin=new Uint8Array(off);bin.set(new Uint8Array(buf,binOff,binLen),0);chunks.forEach(([o,b])=>bin.set(b,o));J.buffers[0].byteLength=off;
+  let js=new TextEncoder().encode(JSON.stringify(J));const jp=(4-js.length%4)%4;if(jp){const t=new Uint8Array(js.length+jp).fill(32);t.set(js);js=t}
+  const out=new Uint8Array(12+8+js.length+8+bin.length),o=new DataView(out.buffer);o.setUint32(0,0x46546C67,true);o.setUint32(4,2,true);o.setUint32(8,out.length,true);
+  o.setUint32(12,js.length,true);o.setUint32(16,0x4E4F534A,true);out.set(js,20);o.setUint32(20+js.length,bin.length,true);o.setUint32(24+js.length,0x004E4942,true);out.set(bin,28+js.length);
+  return HAT_CACHE[key]=URL.createObjectURL(new Blob([out],{type:'model/gltf-binary'}))}
 function mountSpin(host,render,{speed=0.6}={}){
   if(host&&host.id==='avMe'){mountAvatar(host,()=>myEq(),160);return}
   let yaw=0.6,last=0;host.innerHTML=render(yaw);if(reduced)return;
@@ -124,10 +176,11 @@ function mountSpin(host,render,{speed=0.6}={}){
   requestAnimationFrame(ts=>{last=ts;requestAnimationFrame(tick)})}
 function mountAvatar(host,getEq,size=210){let curKey='',token=0;
   function sync(){if(!host||!host.isConnected)return;const eq=getEq(),it=shopItem('mini',eq.mini),fr=shopItem('frame',eq.frame);
-    const key=it.id+':'+fr.id;if(key===curKey)return;
+    const hat=eq.hat&&eq.hat!=='none'?eq.hat:'';const key=it.id+':'+fr.id+':'+hat;if(key===curKey)return;
     curKey=key;const myTok=++token;
     host.innerHTML=mini3DHTML(it,size,fr.cls);const mv=$('model-viewer',host);
-    if(mv)mv.addEventListener('error',()=>{if(token===myTok)host.innerHTML=avatarThumb(eq,size)})}
+    if(mv)mv.addEventListener('error',()=>{if(token===myTok)host.innerHTML=avatarThumb(eq,size)});
+    if(mv&&hat)hatGLB(it.f,hat).then(u=>{if(token===myTok&&mv.isConnected)mv.src=u}).catch(()=>{})}
   sync();return sync}
 
 /* 캡슐 뽑기: 포인트 뽑기는 중복 없음 · 오늘의 계산 완료 시 무료 1회(무료는 이미 가진 캐릭터도 나올 수 있음) · 하루 최대 2회 */
@@ -172,7 +225,7 @@ function viewShop(){
   function draw(){$('#bal',app).textContent=balance();$$('.shopTabs button',app).forEach(b=>{const on=b.dataset.c===cat;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
     const C=shopCat(cat),E=myEq();
     $('#shopGrid',app).innerHTML=C.items.map(it=>{const own=owns(cat,it.id),on=E[cat]===it.id,sel=preview&&preview.cat===cat&&preview.id===it.id;
-      const pic=cat==='hi'?`<span class="hi-sw"><span style="background:linear-gradient(transparent 52%,${it.c} 52%)">형광펜</span></span>`:cat==='frame'?`<span class="av-fr ${it.cls} fr-sw"></span>`:miniThumbHTML(it,88);
+      const pic=cat==='hat'?`<span class="hat-ic">${it.ic}</span>`:cat==='hi'?`<span class="hi-sw"><span style="background:linear-gradient(transparent 52%,${it.c} 52%)">형광펜</span></span>`:cat==='frame'?`<span class="av-fr ${it.cls} fr-sw"></span>`:miniThumbHTML(it,88);
       const badge=it.r?`<span class="rar ${it.r}">${RAR_NM[it.r]}</span>`:'';
       return`<button type="button" class="shop-item ${on?'on':''} ${sel?'sel':''}" data-id="${it.id}" aria-pressed="${!!sel}">${badge}<span class="pic">${pic}</span><b>${it.nm}</b><small>${on?'쓰는 중':own?'가지고 있음':it.p+' 포인트'}</small></button>`}).join('');
     $$('#shopGrid .shop-item',app).forEach(b=>b.onclick=()=>setPreview({cat,id:b.dataset.id}));act();if(!gachaBusy&&!$('.gacha-res',app))drawGacha()}
