@@ -330,7 +330,7 @@ HG_TRACKS.register('inv',{
         fig:{svg:()=>owlPlane({a:m>0?1.5:-1.5,inv:a>0?4:-4,pts:[{x:px,y:py>4?3:py<-4?-3:py,lab:'교점 P'}]})},finalQ:'상수 a의 값은?',
         steps:[
           {tag:'1단계 · 교점 P의 y좌표 찾기',q:`점 P는 y = ${neg(m)}x 위의 점이에요. x = ${neg(px)}일 때 y = ?`,type:'sn',ans:py,ansText:neg(py),hint:`${neg(m)} × (${neg(px)})`},
-          {tag:'2단계 · 반비례 a = x × y 구하기',q:`점 P(${neg(px)}, ${neg(py)})가 y = a/x 위에도 있으므로 a = (${neg(px)}) × (${neg(py)}) = ?`,type:'sn',ans,ansText:neg(a),hint:`두 좌표의 곱`,ok:`a = ${neg(a)}`}
+          {tag:'2단계 · 반비례 a = x × y 구하기',q:`점 P(${neg(px)}, ${neg(py)})가 y = a/x 위에도 있으므로 a = (${neg(px)}) × (${neg(py)}) = ?`,type:'sn',ans:a,ansText:neg(a),hint:`두 좌표의 곱`,ok:`a = ${neg(a)}`}
         ]};
     },
     C3:seed=>{

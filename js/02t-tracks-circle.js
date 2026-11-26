@@ -161,7 +161,7 @@ if(typeof HG_TRACKS==='object'){
     owlScenes:[
       {cap:'장면 ① 원의 둘레는 지름 × π!',say:'<span class="kw">둘레 보면 π</span>! π는 <b>지름</b>을 원의 둘레로 바꾸는 마법이에요. 반지름이 6이면 지름은 <span class="num">12</span> → 둘레는 <span class="num">12π</span>!',svg:()=>secFigS(6,null,360,{arcLab:'둘레 = 지름 × π',rLab:'r = 6'})},
       {cap:'장면 ② 원의 넓이는 지그재그 직사각형!',say:'원을 잘게 잘라 붙이면 직사각형이 돼요. 가로는 <span class="kw">반둘레(반지름 × π)</span>, 세로는 <span class="kw">반지름</span> → <span class="num">가로 × 세로</span>!',svg:()=>typeof svgZig==='function'?svgZig('가로 = 반둘레 (r × π)','= 반지름'):secFigS(6,null,360,{})},
-      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',say:'반지름 6, 중심각 <span class="num">60°</span> 부채꼴은 360÷6 = <span class="num">6조각 중 1개</span>! 원 둘레·넓이에 <span class="num">중심각/360</span>을 곱해요.',svg:()=>secFigS(6,null,60,{arcLab:'둘레 ÷ 6 = 2π',rLab:'6 cm'})},
+      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',say:'반지름 6, 중심각 <span class="num">60°</span> 부채꼴은 360÷60 = <span class="num">6조각 중 1개</span>! 원 둘레·넓이에 <span class="num">중심각/360</span>을 곱해요.',svg:()=>secFigS(6,null,60,{arcLab:'둘레 ÷ 6 = 2π',rLab:'6 cm'})},
       {cap:'장면 ④ 중심각 모를 땐: 호의 반 × 반지름!',say:'부채꼴도 잘게 잘라 붙이면 직사각형! 가로는 <span class="kw">호의 반(½l)</span>, 세로는 <span class="kw">반지름(r)</span> → <span class="num">호의 반 × 반지름</span>!',svg:()=>typeof svgZig==='function'?svgZig('가로 = 호의 반 (½ l)','= 반지름 r'):secFigS(6,null,120,{arcLab:'호 l',rLab:'r'}),
         ask:{q:'반지름 6 cm, 호의 길이 4π cm인 부채꼴의 넓이는?',choices:['12π cm²','24π cm²','6π cm²'],ans:'12π cm²',hint:'호의 반(2π) × 반지름(6)을 곱해요!',ok:'맞아요! 호의 반 2π × 반지름 6 = 12π cm²예요.'}},
       {cap:'장면 ⑤ 색칠한 도형의 둘레 함정!',exp:'warn',say:'색칠한 도형의 <b>둘레</b>를 구할 땐 둥근 호 2개뿐 아니라 <span class="warn">양쪽 곧은 선분 2개</span>도 꼭 더해야 해요!',svg:()=>secFigS(8,4,45,{perim:true,arcLab:'큰 호 + 작은 호 + 선분 2개!'})}
