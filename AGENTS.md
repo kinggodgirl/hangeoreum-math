@@ -17,13 +17,13 @@
 | `js/06-unit-int.js` | 정수와 유리수 단원(`unit: 'int'`) | `LESSONS`, `STEPGEN`, `CALC_FOR`, `TERMS`, `BADGES` 확장 블록 |
 | `js/06c-unit-circle.js` | 원과 부채꼴 단원(`unit: 'circle'`, 차시 `arc` · `cent` · `sector`). 입체도형 사이트에서 함께 열림(`OPEN_UNITS`) | 함수 안에 넣어 전역 이름을 만들지 않음 · 그림은 SVG(`fig.svg`) |
 | `js/07-print-omr-boot.js` | 단원 필터링, 점검 학습지 인쇄, OMR 사진 채점, 라우터(`route`) 및 초기 실행 | 마지막에 로드되어야 함 |
-| `tests/verify.mjs` | 문법 검사 및 전체 연산 1,710문항 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
+| `tests/verify.mjs` | 문법 검사 및 전체 연산 1,770문항 자동 검증 스크립트 | PR/푸시 전 반드시 `node tests/verify.mjs` 실행 |
 
 ## 2. 공유 데이터 계약 (`DB` JSON)
 
 `DB`는 학생 기기 `localStorage`와 Supabase에 JSON으로 동기화됩니다(서버 저장 한도 300KB).
 - `DB._me`: 포인트(`pts`), 연속 일수(`streak`), 1회 보상(`once`), 배지(`badges`)
-- `DB._calc[topicId]`: `stars`(0~3), `unlock`(1~3), `best`, `ways`, `box`(0~5), `due`(YYYY-MM-DD)
+- `DB._calc[topicId]`: `stars`(0~주제의 단계 수), `unlock`(1~단계 수) · 단계 수는 `lv` 배열 길이(기본 3, `pi`는 5), `calcLvN(id)`로 구해요, `best`, `ways`, `box`(0~5), `due`(YYYY-MM-DD)
 - `DB._calcDiag`: 시작점 찾기 결과(`d`, `res`, `lvRes`, `plan`)
 - `DB._calcErrs`: 기초 연산 오개념 누적(`{tid, m, n, d}`, `tidyDB()`에서 상위 25건 유지)
 - `DB._facts[key]`: 곱셈구구 36칸 익힘 상태(`lv`, `d`, `n`, `w`)
