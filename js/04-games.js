@@ -62,24 +62,39 @@ function faceSVG(kind,x,y,u,boss){const k='#1d2640',e=10*u,f=v=>v.toFixed(1);
   else s=dot(x-e)+dot(x+e);
   return s+[-1,1].map(d=>`<ellipse cx="${f(x+d*17*u)}" cy="${f(y+7.5*u)}" rx="${f(4.6*u)}" ry="${f(2.8*u)}" fill="#ff8fa3" opacity=".55"/>`).join('')+
     `<path d="M${f(x-5*u)} ${f(y+7*u)} Q${f(x)} ${f(y+11*u)} ${f(x+5*u)} ${f(y+7*u)}" fill="none" stroke="${k}" stroke-width="${f(2.2*u)}" stroke-linecap="round"/>`}
-function hatSVG(kind,x,t,u,cy,r){const k='#1d2640',w=(1.8*u).toFixed(2),b=t+3*u,f=v=>v.toFixed(1);
-  switch(kind){
-    case'sprout':return`<path d="M${f(x)} ${f(b)} L${f(x)} ${f(b-12*u)}" stroke="#4f9a3a" stroke-width="${f(2.4*u)}" stroke-linecap="round"/><path d="M${f(x)} ${f(b-10*u)} Q${f(x-12*u)} ${f(b-21*u)} ${f(x-15*u)} ${f(b-8*u)} Q${f(x-6*u)} ${f(b-5*u)} ${f(x)} ${f(b-10*u)}Z" fill="#8fd16a" stroke="${k}" stroke-width="${w}"/><path d="M${f(x)} ${f(b-11*u)} Q${f(x+11*u)} ${f(b-23*u)} ${f(x+15*u)} ${f(b-11*u)} Q${f(x+6*u)} ${f(b-7*u)} ${f(x)} ${f(b-11*u)}Z" fill="#a6e07f" stroke="${k}" stroke-width="${w}"/>`;
-    case'ribbon':{const X=x+9*u,Y=b-3*u;return`<path d="M${f(X)} ${f(Y)} L${f(X-13*u)} ${f(Y-8*u)} L${f(X-13*u)} ${f(Y+8*u)}Z M${f(X)} ${f(Y)} L${f(X+13*u)} ${f(Y-8*u)} L${f(X+13*u)} ${f(Y+8*u)}Z" fill="#ff8fb8" stroke="${k}" stroke-width="${w}" stroke-linejoin="round"/><circle cx="${f(X)}" cy="${f(Y)}" r="${f(3.6*u)}" fill="#ff6fa3" stroke="${k}" stroke-width="${w}"/>`}
-    case'cap':return`<path d="M${f(x-16*u)} ${f(b)} Q${f(x-16*u)} ${f(b-17*u)} ${f(x)} ${f(b-17*u)} Q${f(x+16*u)} ${f(b-17*u)} ${f(x+16*u)} ${f(b)}Z" fill="#4f7ff0" stroke="${k}" stroke-width="${w}" stroke-linejoin="round"/><path d="M${f(x+4*u)} ${f(b)} L${f(x+30*u)} ${f(b+1*u)} Q${f(x+30*u)} ${f(b+5*u)} ${f(x+14*u)} ${f(b+4*u)}Z" fill="#3a63c9" stroke="${k}" stroke-width="${w}" stroke-linejoin="round"/><circle cx="${f(x)}" cy="${f(b-17*u)}" r="${f(2.2*u)}" fill="#ffe266" stroke="${k}" stroke-width="${w}"/>`;
-    case'headphones':{const R=r*1.04;return`<path d="M${f(x-R)} ${f(cy)} Q${f(x-R)} ${f(t-10*u)} ${f(x)} ${f(t-10*u)} Q${f(x+R)} ${f(t-10*u)} ${f(x+R)} ${f(cy)}" fill="none" stroke="${k}" stroke-width="${f(5.4*u)}" stroke-linecap="round"/><path d="M${f(x-R)} ${f(cy)} Q${f(x-R)} ${f(t-10*u)} ${f(x)} ${f(t-10*u)} Q${f(x+R)} ${f(t-10*u)} ${f(x+R)} ${f(cy)}" fill="none" stroke="#ff7a7a" stroke-width="${f(2.4*u)}" stroke-linecap="round"/>`+[-1,1].map(d=>`<rect x="${f(x+d*R-5*u)}" y="${f(cy-8*u)}" width="${f(10*u)}" height="${f(16*u)}" rx="${f(4*u)}" fill="#ff7a7a" stroke="${k}" stroke-width="${w}"/>`).join('')}
-    case'grad':return`<rect x="${f(x-11*u)}" y="${f(b-8*u)}" width="${f(22*u)}" height="${f(8*u)}" rx="${f(1.5*u)}" fill="#2b3350" stroke="${k}" stroke-width="${w}"/><path d="M${f(x-23*u)} ${f(b-11*u)} L${f(x)} ${f(b-19*u)} L${f(x+23*u)} ${f(b-11*u)} L${f(x)} ${f(b-4*u)}Z" fill="#2b3350" stroke="${k}" stroke-width="${w}" stroke-linejoin="round"/><path d="M${f(x)} ${f(b-11*u)} L${f(x+16*u)} ${f(b-8*u)} L${f(x+16*u)} ${f(b+3*u)}" fill="none" stroke="#ffd23f" stroke-width="${f(2*u)}" stroke-linecap="round"/><circle cx="${f(x+16*u)}" cy="${f(b+4*u)}" r="${f(2.2*u)}" fill="#ffd23f"/>`;
-    case'crown':return`<path d="M${f(x-16*u)} ${f(b)} L${f(x-17*u)} ${f(b-15*u)} L${f(x-8*u)} ${f(b-7*u)} L${f(x)} ${f(b-19*u)} L${f(x+8*u)} ${f(b-7*u)} L${f(x+17*u)} ${f(b-15*u)} L${f(x+16*u)} ${f(b)}Z" fill="#ffd23f" stroke="${k}" stroke-width="${w}" stroke-linejoin="round"/><circle cx="${f(x)}" cy="${f(b-4.5*u)}" r="${f(2.6*u)}" fill="#ff6b6b" stroke="${k}" stroke-width="${f(1.2*u)}"/><circle cx="${f(x-9*u)}" cy="${f(b-4*u)}" r="${f(1.8*u)}" fill="#6fb4ff"/><circle cx="${f(x+9*u)}" cy="${f(b-4*u)}" r="${f(1.8*u)}" fill="#7fdcb8"/>`;
-    case'wizard':return`<path d="M${f(x-17*u)} ${f(b)} L${f(x+5*u)} ${f(b-36*u)} L${f(x+17*u)} ${f(b)}Z" fill="#7b5cd6" stroke="${k}" stroke-width="${w}" stroke-linejoin="round"/><ellipse cx="${f(x)}" cy="${f(b)}" rx="${f(24*u)}" ry="${f(4.4*u)}" fill="#6a4cc4" stroke="${k}" stroke-width="${w}"/><path d="M${f(x-3*u)} ${f(b-14*u)} l${f(1.4*u)} ${f(3*u)} l${f(3.2*u)} ${f(0.4*u)} l${f(-2.4*u)} ${f(2.2*u)} l${f(0.7*u)} ${f(3.2*u)} l${f(-2.9*u)} ${f(-1.6*u)} l${f(-2.9*u)} ${f(1.6*u)} l${f(0.7*u)} ${f(-3.2*u)} l${f(-2.4*u)} ${f(-2.2*u)} l${f(3.2*u)} ${f(-0.4*u)}Z" fill="#ffe266"/><circle cx="${f(x+6*u)}" cy="${f(b-25*u)}" r="${f(1.6*u)}" fill="#ffe266"/>`;
-    default:return''}}
-
-/* 꾸미기 상점: 모은 포인트(누적)는 그대로, 쓸 수 있는 포인트 = 누적 − 쓴 포인트 */
+/* 꾸미기 상점: Kenney 3D 미니 캐릭터 + 프로필 프레임 + 형광펜 · 모은 포인트(누적)는 유지 */
+const MINI_BASE='assets/mini-characters';
+const RAR_NM={common:'일반',rare:'반짝',legend:'전설'};
+const RAR_W={common:60,rare:30,legend:10};
+const GACHA_COST=25,GACHA_MAX_DAY=2;
 const SHOP=[
- {cat:'shape',nm:'몸 모양',items:[{id:'cube',nm:'정육면체',p:0},{id:'tetra',nm:'정사면체',p:30},{id:'octa',nm:'정팔면체',p:60},{id:'dodeca',nm:'정십이면체',p:120},{id:'icosa',nm:'정이십면체',p:150}]},
- {cat:'color',nm:'몸 색',items:[{id:'sky',nm:'하늘',p:0,c:'#8ec5ff'},{id:'mint',nm:'민트',p:20,c:'#7fdcb8'},{id:'peach',nm:'복숭아',p:20,c:'#ffb59b'},{id:'lemon',nm:'레몬',p:20,c:'#ffe066'},{id:'lilac',nm:'라일락',p:30,c:'#c7a7ff'},{id:'coral',nm:'산호',p:30,c:'#ff8f8f'},{id:'leaf',nm:'잎새',p:30,c:'#9bd36a'},{id:'night',nm:'밤하늘',p:50,c:'#5b6b9a'}]},
- {cat:'eyes',nm:'눈',items:[{id:'dot',nm:'콩눈',p:0},{id:'sparkle',nm:'반짝눈',p:25},{id:'sleepy',nm:'졸린 눈',p:25},{id:'wink',nm:'윙크',p:30},{id:'glasses',nm:'동그란 안경',p:40}]},
- {cat:'hat',nm:'모자',items:[{id:'none',nm:'없음',p:0},{id:'sprout',nm:'새싹',p:20},{id:'ribbon',nm:'리본',p:30},{id:'cap',nm:'야구 모자',p:40},{id:'headphones',nm:'헤드폰',p:50},{id:'grad',nm:'졸업 모자',p:70},{id:'crown',nm:'왕관',p:100},{id:'wizard',nm:'마법사 모자',p:120}]},
- {cat:'hi',nm:'형광펜 색',items:[{id:'yellow',nm:'노랑',p:0,c:'#ffe266',s:'#fff6c7'},{id:'pink',nm:'분홍',p:40,c:'#ffb8d6',s:'#ffeaf3'},{id:'mint',nm:'민트',p:40,c:'#9ff0d0',s:'#e3fbf2'},{id:'sky',nm:'하늘',p:40,c:'#aee0ff',s:'#e6f5ff'},{id:'orange',nm:'주황',p:40,c:'#ffcb8e',s:'#fff0dd'}]}];
+ {cat:'mini',nm:'3D 캐릭터',items:[
+   {id:'fa',nm:'민지',f:'character-female-a',r:'common',p:0},
+   {id:'ma',nm:'준호',f:'character-male-a',r:'common',p:0},
+   {id:'fb',nm:'서연',f:'character-female-b',r:'common',p:45},
+   {id:'mb',nm:'도윤',f:'character-male-b',r:'common',p:45},
+   {id:'fc',nm:'하은',f:'character-female-c',r:'common',p:45},
+   {id:'mc',nm:'시우',f:'character-male-c',r:'common',p:45},
+   {id:'fd',nm:'지우',f:'character-female-d',r:'rare',p:75},
+   {id:'md',nm:'예준',f:'character-male-d',r:'rare',p:75},
+   {id:'fe',nm:'수아',f:'character-female-e',r:'rare',p:75},
+   {id:'me',nm:'건우',f:'character-male-e',r:'rare',p:75},
+   {id:'ff',nm:'별빛 소녀',f:'character-female-f',r:'legend',p:120},
+   {id:'mf',nm:'은하 소년',f:'character-male-f',r:'legend',p:120}]},
+ {cat:'frame',nm:'프로필 프레임',items:[
+   {id:'none',nm:'기본',p:0,cls:'f-none'},
+   {id:'sky',nm:'하늘 원',p:25,cls:'f-sky'},
+   {id:'mint',nm:'민트 모눈',p:25,cls:'f-mint'},
+   {id:'sakura',nm:'벚꽃 링',p:35,cls:'f-sakura'},
+   {id:'night',nm:'밤하늘 별',p:55,cls:'f-night'},
+   {id:'gold',nm:'반짝 골드',p:80,cls:'f-gold'},
+   {id:'aura',nm:'무지개 오라',p:110,cls:'f-aura'}]},
+ {cat:'hi',nm:'형광펜 색',items:[
+   {id:'yellow',nm:'노랑',p:0,c:'#ffe266',s:'#fff6c7'},
+   {id:'pink',nm:'분홍',p:40,c:'#ffb8d6',s:'#ffeaf3'},
+   {id:'mint',nm:'민트',p:40,c:'#9ff0d0',s:'#e3fbf2'},
+   {id:'sky',nm:'하늘',p:40,c:'#aee0ff',s:'#e6f5ff'},
+   {id:'orange',nm:'주황',p:40,c:'#ffcb8e',s:'#fff0dd'}]}];
 const shopCat=c=>SHOP.find(x=>x.cat===c);
 const shopItem=(c,id)=>{const C=shopCat(c);return C?(C.items.find(x=>x.id===id)||C.items[0]):null};
 function shopState(){const S=OBJ(DB._shop);S.spent=NUM(S.spent);S.own=OBJ(S.own);S.eq=OBJ(S.eq);DB._shop=S;return S}
@@ -92,27 +107,74 @@ function equipItem(c,id){if(!owns(c,id))return false;shopState().eq[c]=id;save()
 function buyItem(c,id){const it=shopItem(c,id);if(!it||it.id!==id)return false;if(owns(c,id))return equipItem(c,id);
   if(balance()<it.p){toast(`포인트가 ${it.p-balance()}만큼 모자라요.`);return false}
   const S=shopState();S.spent+=it.p;S.own[c+':'+id]=1;S.eq[c]=id;save();applyTheme();return true}
-function avatarSVG(eq,size=120,yaw=0.6,opt={}){const m=avMesh(eq.shape),cx=size/2,cy=size*0.58,r=size*0.27,u=r/40;
-  const{svg,top}=solidSVG(m,{yaw,pitch:0.36,cx,cy,r,color:shopItem('color',eq.color).c,sw:Math.max(1.4,size/52)});
-  return`<svg class="avatar" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${opt.shadow===false?'':`<ellipse cx="${cx}" cy="${(cy+r*1.12).toFixed(1)}" rx="${(r*0.85).toFixed(1)}" ry="${(r*0.15).toFixed(1)}" fill="rgba(29,38,64,.13)"/>`}${svg}${faceSVG(eq.eyes,cx,cy+r*0.06,u)}${hatSVG(eq.hat,cx,top,u,cy,r)}</svg>`}
-function mountSpin(host,render,{speed=0.6}={}){let yaw=0.6,last=0;host.innerHTML=render(yaw);if(reduced)return;
+
+/* 2D PNG 썸네일(목록·보스전·숫자야구) & 3D <model-viewer>(상점·내 기록) 하이브리드 렌더러 */
+function miniThumbHTML(it,size=88){const src=`${MINI_BASE}/previews/${it.f}.png`;
+  return`<img class="mini-thumb" src="${src}" alt="${it.nm}" width="${size}" height="${size}" loading="lazy" onerror="this.outerHTML='<span class=\\'mini-fb\\' style=\\'width:${size}px;height:${size}px\\'>${it.nm}<small>3D 캐릭터</small></span>'">`}
+function avatarThumb(eq,size=86){const it=shopItem('mini',eq&&eq.mini),fr=shopItem('frame',eq&&eq.frame);
+  return`<span class="av-fr ${fr.cls}" style="width:${size+10}px;height:${size+10}px">${miniThumbHTML(it,size)}</span>`}
+/* 기존 js/02-unit-solid.js(viewMe 등) 호환 래퍼 */
+function avatarSVG(eq,size=120){return avatarThumb(eq,size)}
+function mini3DHTML(it,size=210,frCls='f-none'){const glb=`${MINI_BASE}/glb/${it.f}.glb`,png=`${MINI_BASE}/previews/${it.f}.png`;
+  return`<div class="av-fr ${frCls}" style="width:${size+14}px;height:${size+14}px;margin:0 auto"><div class="mv-box mv-inner" style="width:${size}px;height:${size}px"><model-viewer src="${glb}" poster="${png}" alt="${it.nm} 3D 캐릭터" autoplay auto-rotate camera-controls interaction-prompt="none" shadow-intensity="0.55" style="width:${size}px;height:${size}px"></model-viewer></div></div><div class="mv-hint">끌어서 돌려 볼 수 있어요</div>`}
+function mountSpin(host,render,{speed=0.6}={}){
+  if(host&&host.id==='avMe'){mountAvatar(host,()=>myEq(),160);return}
+  let yaw=0.6,last=0;host.innerHTML=render(yaw);if(reduced)return;
   const tick=ts=>{if(!host.isConnected)return;if(ts-last>45){yaw+=Math.min(0.2,(ts-last)/1000*speed);last=ts;host.innerHTML=render(yaw)}requestAnimationFrame(tick)};
   requestAnimationFrame(ts=>{last=ts;requestAnimationFrame(tick)})}
+function mountAvatar(host,getEq,size=210){let curKey='',token=0;
+  function sync(){if(!host||!host.isConnected)return;const eq=getEq(),it=shopItem('mini',eq.mini),fr=shopItem('frame',eq.frame);
+    const key=it.id+':'+fr.id;if(key===curKey)return;
+    curKey=key;const myTok=++token;
+    host.innerHTML=mini3DHTML(it,size,fr.cls);const mv=$('model-viewer',host);
+    if(mv)mv.addEventListener('error',()=>{if(token===myTok)host.innerHTML=avatarThumb(eq,size)})}
+  sync();return sync}
+
+/* 착한 캡슐 뽑기: 100% 꽝 없음 · 중복 없음 · 오늘의 계산 완료 시 무료 1회 · 하루 최대 2회 */
+function gachaInfo(){const S=shopState(),t=today(),pool=shopCat('mini').items.filter(it=>it.p>0&&!owns('mini',it.id));
+  const used=S.gachaDay===t?NUM(S.gachaCnt):0,drillDone=NUM(dayState().c.drill)>0||OBJ(DB._drill).last===t;
+  const free=drillDone&&S.freeGachaDay!==t&&pool.length>0&&used<GACHA_MAX_DAY;
+  return{pool,used,left:Math.max(0,GACHA_MAX_DAY-used),free,total:shopCat('mini').items.filter(it=>it.p>0).length}}
+function pullGacha(){const g=gachaInfo();if(!g.pool.length)return{err:'all'};if(g.left<=0)return{err:'limit'};
+  if(!g.free&&balance()<GACHA_COST)return{err:'pts',need:GACHA_COST-balance()};
+  const S=shopState(),t=today();if(S.gachaDay!==t){S.gachaDay=t;S.gachaCnt=0}
+  if(g.free)S.freeGachaDay=t;else S.spent+=GACHA_COST;
+  S.gachaCnt=NUM(S.gachaCnt)+1;
+  const ws=g.pool.map(it=>RAR_W[it.r]||30);let roll=Math.random()*ws.reduce((a,b)=>a+b,0),won=g.pool[g.pool.length-1];
+  for(let i=0;i<g.pool.length;i++){roll-=ws[i];if(roll<=0){won=g.pool[i];break}}
+  S.own['mini:'+won.id]=1;save();return{won,free:g.free}}
+
 function viewShop(){
   crumbs.innerHTML=`<span class="sep">›</span><a href="#me">내 기록</a><span class="sep">›</span><span>꾸미기 상점</span>`;
-  let cat='shape',preview=null;
-  app.innerHTML=`<div class="unit-head"><div><h1>꾸미기 상점</h1><p>포인트로 내 캐릭터를 꾸며요. 물건을 사도 <b>모은 포인트 기록은 줄지 않고</b>, 쓸 수 있는 포인트만 줄어요.</p></div></div>
+  let cat='mini',preview=null,gachaBusy=false;
+  app.innerHTML=`<div class="unit-head"><div><h1>꾸미기 상점</h1><p>포인트로 내 3D 캐릭터와 프로필을 꾸며요. 물건을 사도 <b>모은 포인트 기록은 줄지 않고</b>, 쓸 수 있는 포인트만 줄어요.</p></div></div>
+   <div class="card panel gacha-card" id="gachaBox"></div>
    <div class="card panel shop"><div class="shop-top"><div class="av-stage" id="avBig"></div><div class="shop-info"><div class="stat"><small>쓸 수 있는 포인트</small><b class="rm" id="bal"></b></div><div class="shop-act" id="shopAct" aria-live="polite"></div></div></div>
    <div class="seg shopTabs" role="tablist">${SHOP.map(C=>`<button type="button" data-c="${C.cat}" role="tab">${C.nm}</button>`).join('')}</div><div class="shop-grid" id="shopGrid"></div></div>`;
   const eqNow=()=>{const e=myEq();if(preview&&preview.cat!=='hi')e[preview.cat]=preview.id;return e};
-  mountSpin($('#avBig',app),y=>avatarSVG(eqNow(),220,y));
-  function setPreview(p){preview=p;themePreview=p&&p.cat==='hi'?shopItem('hi',p.id):null;applyTheme();draw()}
+  const syncAv=mountAvatar($('#avBig',app),eqNow,210);
+  function drawGacha(resHTML=''){const g=gachaInfo(),got=g.total-g.pool.length,box=$('#gachaBox',app);
+    const btnTxt=!g.pool.length?'모든 3D 캐릭터를 모았어요 🎉':g.left<=0?`오늘 뽑기 완료 (${GACHA_MAX_DAY}/${GACHA_MAX_DAY})`:g.free?'🎁 오늘의 계산 무료 뽑기!':`🎁 캡슐 뽑기 (${GACHA_COST}포인트)`;
+    const dis=!g.pool.length||g.left<=0||(!g.free&&balance()<GACHA_COST)||gachaBusy;
+    box.innerHTML=`<div class="gacha-head"><h2>🎁 3D 미니 캐릭터 캡슐 뽑기</h2><button type="button" class="btn primary gachaGo" ${dis?'disabled':''}>${btnTxt}</button></div>
+      <p class="gacha-meta"><b>100% 꽝 없음 · 중복 없음!</b> 아직 없는 캐릭터만 나와요 · 모은 캐릭터 <b class="rm">${got}/${g.total}</b> · 오늘 남은 횟수 <b class="rm">${g.left}/${GACHA_MAX_DAY}</b>${g.free?' · <b style="color:var(--ok)">오늘의 계산 완료 무료권 사용 가능!</b>':' · 오늘의 계산을 끝내면 하루 1회 무료!'}</p>
+      ${resHTML?`<div class="gacha-stage">${resHTML}</div>`:''}`;
+    const gb=$('.gachaGo',box);
+    if(gb)gb.onclick=()=>{if(gachaBusy)return;gachaBusy=true;drawGacha('<div class="gacha-cap" aria-hidden="true">💊</div><p class="muted" style="margin:6px 0 0">캡슐이 열리고 있어요…</p>');
+      setTimeout(()=>{const r=pullGacha();gachaBusy=false;
+        if(r.err){drawGacha(`<p class="muted">${r.err==='pts'?`포인트가 ${r.need}만큼 모자라요.`:r.err==='limit'?'오늘 뽑기 횟수를 다 썼어요. 내일 다시 뽑아요!':'이미 모든 캐릭터를 모았어요!'}</p>`);return}
+        const w=r.won;celebrate(`${RAR_NM[w.r]} 캐릭터 ‘${w.nm}’를 얻었어요!`);
+        drawGacha(`<div class="gacha-res"><span class="rar ${w.r}">${RAR_NM[w.r]}</span><h3 style="margin:4px 0 8px">${w.nm}</h3>${mini3DHTML(w,170,shopItem('frame',myEq().frame).cls)}<p style="margin:10px 0 0"><button type="button" class="btn primary gEquip">바로 장착하기</button></p></div>`);
+        const ge=$('.gEquip',box);if(ge)ge.onclick=()=>{equipItem('mini',w.id);setPreview(null);toast(`${w.nm} 캐릭터로 바꿨어요!`);drawGacha('')};
+        draw()},reduced?0:650)}}
+  function setPreview(p){preview=p;themePreview=p&&p.cat==='hi'?shopItem('hi',p.id):null;applyTheme();syncAv();draw()}
   function draw(){$('#bal',app).textContent=balance();$$('.shopTabs button',app).forEach(b=>{const on=b.dataset.c===cat;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
     const C=shopCat(cat),E=myEq();
     $('#shopGrid',app).innerHTML=C.items.map(it=>{const own=owns(cat,it.id),on=E[cat]===it.id,sel=preview&&preview.cat===cat&&preview.id===it.id;
-      const pic=cat==='hi'?`<span class="hi-sw"><span style="background:linear-gradient(transparent 52%,${it.c} 52%)">형광펜</span></span>`:avatarSVG(Object.assign({},E,{[cat]:it.id}),96,0.6,{shadow:false});
-      return`<button type="button" class="shop-item ${on?'on':''} ${sel?'sel':''}" data-id="${it.id}" aria-pressed="${!!sel}"><span class="pic">${pic}</span><b>${it.nm}</b><small>${on?'쓰는 중':own?'가지고 있음':it.p+' 포인트'}</small></button>`}).join('');
-    $$('#shopGrid .shop-item',app).forEach(b=>b.onclick=()=>setPreview({cat,id:b.dataset.id}));act()}
+      const pic=cat==='hi'?`<span class="hi-sw"><span style="background:linear-gradient(transparent 52%,${it.c} 52%)">형광펜</span></span>`:cat==='frame'?`<span class="av-fr ${it.cls} fr-sw"></span>`:miniThumbHTML(it,88);
+      const badge=it.r?`<span class="rar ${it.r}">${RAR_NM[it.r]}</span>`:'';
+      return`<button type="button" class="shop-item ${on?'on':''} ${sel?'sel':''}" data-id="${it.id}" aria-pressed="${!!sel}">${badge}<span class="pic">${pic}</span><b>${it.nm}</b><small>${on?'쓰는 중':own?'가지고 있음':it.p+' 포인트'}</small></button>`}).join('');
+    $$('#shopGrid .shop-item',app).forEach(b=>b.onclick=()=>setPreview({cat,id:b.dataset.id}));act();if(!gachaBusy&&!$('.gacha-res',app))drawGacha()}
   function act(){const A=$('#shopAct',app);if(!preview){A.innerHTML='<span class="muted">아래에서 고르면 위 캐릭터에 먼저 입혀 볼 수 있어요.</span>';return}
     const it=shopItem(preview.cat,preview.id),own=owns(preview.cat,preview.id),on=myEq()[preview.cat]===preview.id;
     if(on){A.innerHTML=`<b>${it.nm}</b> <span class="muted">· 쓰는 중이에요</span>`;return}
@@ -168,7 +230,7 @@ function weekBarsHTML(st){const dayN=['월','화','수','목','금','토','일']
 function renderBossPage(host,st,opt={}){host._st=st;const pl=bossPlan(st),c=pl.cur,big=!!opt.big;const left=c?c.end-pl.dmg:0,pct=c?Math.max(0,Math.min(100,left/c.hp*100)):0;
   host.innerHTML=`<div class="card panel arena-card ${big?'big':''}">
    <div class="arena-top"><span class="stage-tag">${c?`이번 주 ${c.k+1}단계 보스`:'이번 주 완전 승리'}</span><span class="muted">${st.grade}학년 ${st.klass}반 · 보스는 매주 월요일에 새로 나타나요</span></div>
-   <div class="arena"><div class="boss-pic"></div><div class="dmg-layer"></div>${opt.teacher?'':`<div class="arena-me" title="내 캐릭터">${avatarSVG(myEq(),big?110:86,0.6,{shadow:false})}<small>나</small></div>`}</div>
+   <div class="arena"><div class="boss-pic"></div><div class="dmg-layer"></div>${opt.teacher?'':`<div class="arena-me" title="내 캐릭터">${avatarThumb(myEq(),big?110:86)}<small>나</small></div>`}</div>
    <h2 class="boss-name">${c?c.boss.nm:'이번 주 보스를 모두 물리쳤어요!'}</h2>
    ${c?`<div class="hpbar big" role="img" aria-label="보스 체력 ${left} / ${c.hp}"><i style="width:${pct.toFixed(1)}%"></i><span class="hpt">체력 <b class="rm hpl">${left}</b> / ${c.hp}</span></div>`:''}
    <div class="arena-stats"><div class="stat"><small>이번 주 우리 반 데미지</small><b class="rm aDmg">${pl.dmg}</b></div><div class="stat"><small>참여한 친구</small><b class="aAct">${NUM(st.active)}/${NUM(st.members)}명</b></div>${opt.teacher?'':`<div class="stat"><small>내가 준 데미지</small><b class="rm aMy">${NUM(st.my)}</b></div>`}</div>
@@ -306,7 +368,7 @@ const BB_REASON={expired:'15분 동안 아무도 들어오지 않아 방이 닫�
 function bbLogHTML(st,who){const L=(st.guesses||[]).filter(g=>g.who===who);if(!L.length)return'<li class="empty muted">아직 없어요</li>';
   return L.map(g=>`<li><span class="rn">${NUM(g.rnd)}</span><span class="gs rm">${g.guess?bbSpaced(g.guess):'<span class="muted">시간 초과</span>'}</span>${g.guess?sbHTML(NUM(g.s),NUM(g.b)):''}</li>`).join('')}
 function bbHead(st){const meP=st.me==='host'?st.host:st.guest,opP=st.me==='host'?st.guest:st.host;
-  return`<div class="bb-top"><div class="bb-p"><span class="bb-av">${avatarSVG(myEq(),54,0.6,{shadow:false})}</span><span><b>나</b><small>${st.cpu?'':esc(bbWho(meP,meP))}</small></span></div>
+  return`<div class="bb-top"><div class="bb-p"><span class="bb-av">${avatarThumb(myEq(),54)}</span><span><b>나</b><small>${st.cpu?'':esc(bbWho(meP,meP))}</small></span></div>
    <div class="bb-vs"><b>VS</b><small>${st.cpu?'연습 · 포인트 없음':NUM(st.stake)?`판돈 ${NUM(st.stake)}포인트`:'친선 경기'} · ${NUM(st.digits)}자리</small></div>
    <div class="bb-p opp"><span><b>${st.cpu?'컴퓨터':esc(bbWho(opP,meP))}</b><small>${st.cpu?(st.cpu==='hard'?'어려움':'쉬움'):'상대'}</small></span><span class="bb-av">${st.cpu?bossSVG(BOSSES[0],54,0.5):BB_ICON}</span></div></div>`}
 function renderBB(st){const host=$('#bbHost');if(!host)return;const prev=BB.st;BB.st=st;const key=st.status+'|'+(st.status==='setup'?(st.my_secret?'set':'unset'):'');
