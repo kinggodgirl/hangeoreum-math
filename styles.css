@@ -543,6 +543,7 @@ input[type=range]{width:100%;accent-color:var(--ink);height:32px}
 .shop-item.sel{outline:3px solid var(--accent);outline-offset:1px}
 .shop-item small{color:var(--ink-soft);font-size:13px}
 .shop-item .pic{height:96px;display:flex;align-items:center;justify-content:center}
+.hat-ic{font-size:52px;line-height:1}
 .hi-sw span{font-family:var(--display);font-size:22px;font-weight:700;padding:0 4px}
 .me-av{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .me-av .av-stage{width:150px;height:150px}
