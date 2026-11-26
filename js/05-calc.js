@@ -847,7 +847,7 @@ function examBase(){const S=new Set();if(!calcExamMode())return S;const isEx=id=
   const Q=CALC.filter(t=>calcVisible(t)&&calcStruggle(t.id)&&(isEx(t.id)||dr[t.id]===false)).map(t=>t.id);
   const anc=new Set(),up=x=>calcPre(x).forEach(p=>{if(!anc.has(p)){anc.add(p);up(p)}});EXAM_FOCUS.forEach(up);
   Q.filter(id=>!isEx(id)).forEach(id=>{if(anc.has(id)&&!calcDone(id))S.add(id)});
-  for(let i=0;i<Q.length;i++)calcPre(Q[i]).forEach(p=>{if(isEx(p)||S.has(p)||calcDone(p))return;const st=calcStruggle(p);if(st||NUM(calcPeek(p).stars)<1){S.add(p);if(st&&!Q.includes(p))Q.push(p)}});
+  for(let i=0;i<Q.length;i++)calcPre(Q[i]).forEach(p=>{if(isEx(p)||S.has(p)||calcDone(p))return;const st=calcStruggle(p);if(st||(NUM(calcPeek(p).stars)<1&&dr[p]!==true)){S.add(p);if(st&&!Q.includes(p))Q.push(p)}});
   return S}
 const inExam=t=>!calcExamMode()||EXAM_FOCUS.includes(t.id)||examBase().has(t.id);
 const examRank=id=>{const i=EXAM_FOCUS.indexOf(id);return i<0?(calcExamMode()&&examBase().has(id)?-1:99):i};
@@ -868,8 +868,9 @@ const CALC_PATHS=[
  {k:'sign',nm:'정수와 부호',ic:'➕',d:'부호가 있는 수를 더하고, 빼고, 곱하고, 나눠요. 중1 정수와 유리수의 바탕이에요.',ids:['signed','signsub','signmul']}];
 const calcPath=id=>{const P=CALC_PATHS.find(p=>p.ids.includes(id));if(!P)return null;const ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)}),i=ids.indexOf(id);return i<0?null:{P,ids,i,prev:ids[i-1]||null,next:ids[i+1]||null}};
 const calcNm=id=>(CALC.find(t=>t.id===id)||{}).nm||'';
-/* 한 갈래에서 지금 할 칸: 별을 하나도 못 받은 첫 칸(없으면 다 익히지 않은 첫 칸) */
-const pathNow=ids=>ids.find(id=>NUM(calcPeek(id).stars)<1)||ids.find(id=>!calcDone(id))||null;
+/* 한 갈래에서 지금 할 칸: 별을 하나도 못 받은 첫 칸(없으면 다 익히지 않은 첫 칸). 시작점 찾기에서 맞힌 칸은 건너뛰어요 */
+const diagOk=id=>OBJ(OBJ(DB._calcDiag).res)[id]===true;
+const pathNow=ids=>ids.find(id=>NUM(calcPeek(id).stars)<1&&!diagOk(id))||ids.find(id=>!calcDone(id)&&!diagOk(id))||ids.find(id=>!calcDone(id))||null;
 function ladderHTML(P,dueIds,plan,base=examBase()){const exam=calcExamMode(),ids=P.ids.filter(x=>{const t=CALC.find(c=>c.id===x);return t&&calcVisible(t)&&(!exam||EXAM_FOCUS.includes(x)||base.has(x))});if(!ids.length)return'';
   const now=pathNow(ids),done=ids.filter(calcDone).length,start=plan.find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1);
   return`<section class="card panel ladder" aria-label="${P.nm} 사다리"><div class="lad-h"><span class="lad-ic" aria-hidden="true">${P.ic}</span><div><h2>${P.nm} <small class="muted">${done} / ${ids.length}칸</small></h2><p class="muted">${P.d}</p></div></div>
@@ -1014,7 +1015,7 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
       io.appendChild(answerUI({type:q.type,suffix:q.suffix,choices:q.choices,mathChoices:q.mathChoices},v=>{if(busy)return true;const c=check({type:q.type,ans:q.ans},v);if(c==='nopi'){$('.dflash',app).textContent='π를 붙여서 답해요.';return false}busy=true;rec(q,c===true,performance.now()-t0);return true}));
       const sk=el('<p class="dhelp"><button type="button" class="t-mini">모르겠어요</button></p>');sk.firstChild.onclick=()=>{if(busy)return;busy=true;rec(q,false,null)};io.appendChild(sk)}
     function done(){const plan=DIAG_ORDER.filter(id=>res[id]===false),good=DIAG_ORDER.filter(id=>res[id]),nm=id=>CALC.find(t=>t.id===id).nm;DB._calcDiag={d:today(),res,lvRes,plan};
-      DIAG_ORDER.forEach(id=>{const s=calcState(id),lr=lvRes[id]||{};if(res[id]){s.unlock=calcLvN(id);if(!s.due){s.box=Math.max(s.box,1);s.due=addDays(today(),2)}}else if(lr[1]&&!lr[2]&&!lr[3]){s.unlock=Math.max(s.unlock,2)}else if(lr[1]&&lr[2]&&lr[3]===false){s.unlock=calcLvN(id)}});save();dayBump('calc');award(5,'calcdiag');
+      DIAG_ORDER.forEach(id=>{const s=calcState(id),lr=lvRes[id]||{};if(res[id]){s.unlock=calcLvN(id);if(!s.due){s.box=Math.max(s.box,1);s.due=addDays(today(),2)}}else if(lr[1]&&!lr[2]&&!lr[3]){s.unlock=Math.max(s.unlock,2)}else if(lr[1]&&lr[2]&&lr[3]===false){s.unlock=calcLvN(id)}});save();dayBump('diag');award(5,'calcdiag');
       app.innerHTML=`<div class="unit-head"><div><h1>시작점을 찾았어요</h1><p>잘하는 것은 지키고, 흔들리는 것부터 다져요.</p></div></div>
        ${good.length?`<div class="card panel"><h2 style="margin-top:0">잘하고 있어요</h2><p>${good.map(id=>`<span class="chip">${nm(id)}</span>`).join(' ')}</p><p class="muted" style="margin-bottom:0">이 주제들은 오늘의 계산에서 가끔 복습해요.</p></div>`:''}
        <div class="card panel"><h2 style="margin-top:0">${plan.length?'여기부터 해요':'기초가 튼튼해요!'}</h2>
@@ -1076,7 +1077,7 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
   const dd=OBJ(DB._drill).last===today(),dn=dueList().length,cl=calcLenPref();S.push({done:dd,t:'오늘의 계산',s:dd?'오늘 끝냈어요':dn?`복습할 주제 ${Math.min(cl<=5?2:3,dn)}개를 섞어서 ${cl}문제`:`섞어서 ${cl}문제 · ${cl<=5?'3분쯤':'5분쯤'}`,href:'#drill'});
   return S}
 /* 방과후: 선생님과 함께 할 것(T)을 위에, 혼자 할 것(S)을 아래에 나눠 보여요 */
-const GUIDE_WHO={T:['👩‍🏫 선생님과 함께','방과후 시간에 선생님과 같이 해요'],S:['🙋 혼자 하기','선생님이 다른 친구를 도와줄 때나 집에서 혼자 해요']};
+const GUIDE_WHO={T:['👩‍🏫 선생님과 함께','방과후 시간에 선생님과 같이 해요 · 혼자일 때는 아래 🙋 칸부터 해도 돼요'],S:['🙋 혼자 하기','선생님이 다른 친구를 도와줄 때나 집에서 혼자 해요']};
 function guideHTML(){const S0=guideSteps(),S=S0.filter(x=>x.who==='T').concat(S0.filter(x=>x.who!=='T')),ci=S.findIndex(x=>!x.done),n=S.filter(x=>x.done).length;
   return`<div class="g-head"><b class="t">오늘의 길잡이</b><span class="k">${n===S.length?'오늘 할 일을 다 했어요!':'위에서부터 하나씩 해 봐요'} · ${n}/${S.length}</span></div>
   <ol class="gsteps">${S.map((x,i)=>`${(x.who==='T'?'T':'S')!==(i?(S[i-1].who==='T'?'T':'S'):'')?`<li class="g-sub g-${x.who==='T'?'t':'s'}"><b>${GUIDE_WHO[x.who==='T'?'T':'S'][0]}</b><small>${GUIDE_WHO[x.who==='T'?'T':'S'][1]}</small></li>`:''}<li class="${x.done?'done':i===ci?'cur':''}"><span class="gn">${x.done?CHECK:i+1}</span><span class="gt"><b>${x.t}</b><small>${x.s}</small></span>${x.done&&!x.more?'':`<a class="btn ${i===ci?'primary':'ghost'}" href="${x.href}">${x.done?'더 하기':i===ci?'시작':'하기'}</a>`}</li>`).join('')}</ol>`}
