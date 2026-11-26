@@ -798,9 +798,16 @@ function wayFlow(body,T,w,onDone){const r=mulberry(newSeed()),ex=[];let g=0;whil
   see()}
 /* ── 문제 묶음 풀기 (연습·오늘의 계산 공통) ──
    틀리면: 오류에 맞는 피드백 → 쪼개서 같이 풀기 → 끝에 비슷한 문제로 다시 / 언제든 '쪼개서 풀기' / 두 번 연속 틀리면 도움 제안 */
-const PRAISE=['정답!','맞았어요!','좋아요!','바로 그거예요!'];
+const PRAISE=['맞았어요! 차근차근 했어요.','좋아요! 끝까지 생각했어요.','맞았어요! 침착하게 풀었어요.','바로 그거예요! 방법이 몸에 붙고 있어요.'];
+/* 포인트는 맞힌 개수가 아니라 행동에 줘요: 끝까지 하기 · 다시 해서 맞히기(+2, 한 세트 3번까지) · 처음 도전하는 단계(+3) · 별(+5).
+   이미 별을 받은 단계를 다시 하면 끝까지 포인트가 절반이에요 */
+const calcFinishPts=(n,rep)=>Math.ceil((n>=10?6:4)/(rep?2:1));
+const FIX_PTS=2,FIX_MAX=3;
+const PTS_RULE='포인트는 맞힌 개수가 아니라 <b>끝까지 하기 · 틀린 문제 다시 맞히기 · 새 단계 도전</b>으로 받아요.';
+function effortLine(fixed,fresh){return fixed?`틀린 문제 ${fixed}개를 다시 해서 맞혔어요. 실수를 고치는 게 실력이 느는 길이에요.`:fresh?'새 단계에 도전했어요. 조금 어려운 데 도전할 때 가장 많이 배워요.':'끝까지 해냈어요. 꾸준히 하면 계산이 점점 빨라져요.'}
+function ptsLine(L){L=L.filter(x=>x[1]>0);return L.length?`<p class="sum-space pts-why"><b>받은 포인트</b> ${L.map(([t,n])=>`${t} +${n}`).join(' · ')}<br><small class="muted">${PTS_RULE}</small></p>`:''}
 function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;q.type=q.type||'num'});
-  const counted=Q.filter(q=>!q.extra),queue=Q.slice(),log=[];let first=0,busy=false,missRun=0,streak=0;
+  const counted=Q.filter(q=>!q.extra),queue=Q.slice(),log=[];let first=0,fixed=0,busy=false,missRun=0,streak=0;
   const bar=()=>{const cur=queue[0];$('.dbar',host).innerHTML=counted.map(q=>`<i class="${q.state||(q===cur?'cur':'')}"></i>`).join('')};
   const flash=(h,c)=>{const f=$('.dflash',host);f.innerHTML=h;f.className='dflash'+(c?' '+c:'')};
   const again=q=>q.regen?Object.assign(q.regen(),{retry:true,state:null}):Object.assign({},q,{retry:true,state:null,tried:false});
@@ -819,7 +826,7 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
       if(res==='nopi'){flash('π를 붙여서 답해요. 예) 12π','bad');return false}
       if(res==='nosign'){flash('+ 또는 − 부호를 붙여 답해요.','bad');return false}
       busy=true;const counts=!q.retry&&!q.extra;onAnswer&&onAnswer(q,{ok:res===true,ms,counted:counts});
-      if(res===true){if(counts){q.state='ok';first++}missRun=0;streak++;queue.shift();flash(streak>=3&&streak%3===0?`${streak}문제 연속! 집중력이 좋아요.`:pick(Math.random,PRAISE),'ok');setTimeout(ask,reduced?0:450);return true}
+      if(res===true){if(counts){q.state='ok';first++}missRun=0;streak++;queue.shift();const fix=q.retry&&!q.extra;if(fix){fixed++;if(fixed<=FIX_MAX)award(FIX_PTS,null,'다시 해서 맞혔어요')}flash(fix?'다시 해서 맞혔어요! 틀린 걸 스스로 고쳤어요.':streak>=3&&streak%3===0?`${streak}문제 연속! 집중력이 좋아요.`:pick(Math.random,PRAISE),'ok');setTimeout(ask,reduced?0:450);return true}
       streak=0;if(counts){q.state='hint';missRun++}const why0=diagnose(q,v);if(why0){log.push(why0);if(counts)recordCalcErr(q.tid,why0)}const K=keyFor(q),why=(why0?`<span class="diag">${why0}</span><br>`:'')+(K?`<span class="kline">💡 ${K.w} · ${K.say}</span><br>`:'');
       if(q.steps&&q.steps.length){flash(`${why||'아쉬워요. '}<b>쪼개서</b> 같이 풀어 봐요.`,'bad');help(q,io,false)}
       else{flash(`${why}정답은 ${M_(fmtAns(q))}.${counts?' 끝에 한 번 더 나와요.':''}`,'bad');queue.shift();if(counts)queue.push(again(q));setTimeout(ask,reduced?0:2600)}
@@ -830,7 +837,7 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
       if(same){flash(`잘했어요! 정답은 ${M_(fmtAns(q))}.${counts?' <span class="muted">비슷한 문제가 끝에 한 번 더 나와요.</span>':''}`,'ok');io.insertAdjacentHTML('beforeend','<div class="next-row" style="justify-content:center"><button type="button" class="btn primary dNext">다음 문제 →</button></div>');$('.dNext',io).onclick=next}
       else{flash('이제 처음 문제의 답을 골라 보세요.');io.innerHTML='';io.appendChild(answerUI({type:q.type,suffix:q.suffix,choices:q.choices,mathChoices:q.mathChoices},v2=>{const c=check({type:q.type,ans:q.ans},v2);if(c===true){flash('맞았어요!','ok');setTimeout(next,reduced?0:600);return true}flash(c==='nopi'?'π를 붙여서 답해요.':'다시 생각해 봐요.');return false}))}}})}
   function finish(){bar();$('.dq',host).innerHTML='';$('.dNo',host).textContent='끝!';flash('');const cnt={};log.forEach(m=>{cnt[m]=(cnt[m]||0)+1});const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
-    onFinish&&onFinish(first,{tip:top&&top[1]>=2?top[0]:'',total:counted.length})}
+    onFinish&&onFinish(first,{tip:top&&top[1]>=2?top[0]:'',total:counted.length,fixed})}
   ask()}
 /* ── 화면: 기초 연산 목록 ── */
 /* 이번 시험 범위: 원과 부채꼴 ~ 입체도형 (구의 겉넓이·부피 제외). 범위가 바뀌면 이 두 줄만 고쳐요 */
@@ -991,10 +998,12 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}if(id==='map'
      <div class="card panel"><div class="drill"><div class="dbar"></div><div class="dmeta"><span class="dNo"></span><span class="dmr">${canSpeak?'<button type="button" class="say dSay" aria-label="문제 읽어 주기">🔊</button>':''}<button type="button" class="t-mini calcStop">그만하기</button></span></div><div class="dq"></div><div class="dflash" aria-live="polite"></div><div class="dIn"></div></div></div>`;
     $('.calcStop',app).onclick=()=>{if(id==='facts')save();draw()};
     drillRun(Q,{onAnswer:(q,res)=>{if(q.fact)factRecord(q.fact,res.ok,res.ms)},
-      onFinish:(first,info)=>{const st=calcState(id),n=info.total;st.n++;st.last=today();const pct=Math.round(first*100/n);if(st.best[L]==null||pct>NUM(st.best[L]))st.best[L]=pct;
-        const need=Math.ceil(n*0.8),star=first>=need&&L>st.stars;if(star)st.stars=L;calcSchedule(id,Math.round(first*10/n));save();dayBump('calc');if(first)award(first);if(star)award(5,'calc:'+id+':'+L);
-        $('.dIn',app).innerHTML=`<div class="feedback ${first>=need?'ok':''}" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${n}<br>${star?`${L}단계 별을 받았어요!${L<LV.length?' 다음 단계가 열렸어요.':' 이 계산은 다 익혔어요!'}`:first>=need?'잘했어요! 이미 받은 별이에요.':`${need}문제 이상 맞히면 별을 받아요. 쪼개서 푼 문제를 떠올리며 한 번 더 해 봐요.`}</div>
+      onFinish:(first,info)=>{const st=calcState(id),n=info.total,rep=L<=NUM(st.stars),prev=st.best[L]==null?null:NUM(st.best[L]);st.n++;st.last=today();const pct=Math.round(first*100/n);if(st.best[L]==null||pct>NUM(st.best[L]))st.best[L]=pct;
+        const need=Math.ceil(n*0.8),star=first>=need&&L>st.stars;if(star)st.stars=L;calcSchedule(id,Math.round(first*10/n));save();dayBump('calc');const fin=calcFinishPts(n,rep),fresh=!rep&&award(3,'calctry:'+id+':'+L,'새 단계 도전');award(fin,null,rep?'익힌 단계 다시 하기':'끝까지 했어요');if(star)award(5,'calc:'+id+':'+L,`${L}단계 별`);
+        const fx=Math.min(NUM(info.fixed),FIX_MAX),vsMe=prev==null?'':pct>prev?`<br>내 최고 기록 ${prev}% → 오늘 ${pct}%. 지난번의 나를 넘었어요!`:`<br>내 최고 기록 ${prev}% · 오늘 ${pct}%`;
+        $('.dIn',app).innerHTML=`<div class="feedback ${first>=need?'ok':''}" style="text-align:center"><b>${effortLine(NUM(info.fixed),fresh)}</b><br>처음에 맞힌 문제 <b class="rm">${first}</b> / ${n}${vsMe}<br>${star?`${L}단계 별을 받았어요!${L<LV.length?' 다음 단계가 열렸어요.':' 이 계산은 다 익혔어요!'}`:first>=need?'잘했어요! 이미 받은 별이에요.':`${need}문제 이상 맞히면 별을 받아요. 쪼개서 푼 문제를 떠올리며 한 번 더 해 봐요.`}</div>
           ${(()=>{const bs=calcPre(id).filter(x=>!calcDone(x));if(!(first<need&&bs.length))return'';const L=calcNm(bs[bs.length-1]);return`<p class="sum-tip lad-back"><b>바탕 다지기</b> ${bs.map(x=>`<a href="#calc-${x}">${calcNm(x)}</a>`).join(', ')}${josa(L,'을','를').slice(L.length)} 먼저 다지면 이 계산이 훨씬 쉬워져요.</p>`})()}
+          ${ptsLine([[rep?'익힌 단계 다시 하기':'끝까지',fin],['다시 맞힘',fx*FIX_PTS],['새 단계 도전',fresh?3:0],['별',star?5:0]])}
           ${info.tip?`<p class="sum-tip"><b>자주 나온 실수</b> ${info.tip}</p>`:''}
           <p class="sum-space">${id==='facts'?`구구단 표: 빠르게 맞힘 <b>${FACTS.filter(([a,b])=>fs0(fk(a,b)).lv>=2).length}</b>칸 · 익힘 <b>${factsKnown()}</b>칸. 다른 날 한 번 더 빠르게 맞히면 익힘이 돼요.<br>`:''}내일 오늘의 계산에서 다시 만나요. 하루 지나 다시 떠올리면 더 오래 기억해요.</p>
           <div class="next-row" style="justify-content:center"><button type="button" class="btn calcBack">${T.nm}</button><button type="button" class="btn primary calcAgain">${star&&L<LV.length?'다음 단계':'한 번 더'}</button></div>`;
@@ -1051,9 +1060,10 @@ function viewDrill(){crumbs.innerHTML=`<span class="sep">›</span><span>오늘�
       Object.keys(res).forEach(tid=>{if(tid==='facts')return;const s=calcState(tid),nm=CALC.find(t=>t.id===tid).nm;
         if(res[tid]==='bad'){s.box=Math.max(1,s.box-1);s.due=addDays(today(),1);again.push(nm)}else if(calcDue(tid)){s.box=Math.min(5,s.box+1);s.due=addDays(today(),BOX_DAYS[s.box]);up.push(nm)}});
       const need8=Math.ceil(info.total*0.8),isBest=timed&&first>=need8&&(!D.best||ms<D.best);if(isBest)D.best=ms;
-      D.last=today();D.lastScore=first;D.runs=(D.runs||0)+1;save();bump('drill');dayBump('drill');if(first>=need8)dayBump('drill8');if(first)award(first);award(5,'drill:'+today());
-      $('.dIn',app).innerHTML=`<div class="feedback ok" style="text-align:center">처음에 맞힌 문제 <b class="rm">${first}</b> / ${info.total}${timed?` · 걸린 시간 <b class="rm">${fmt(ms)}</b>`:''}${isBest?'<br>최고 기록이에요!':''}</div>
+      D.last=today();D.lastScore=first;D.runs=(D.runs||0)+1;save();bump('drill');dayBump('drill');if(first>=need8)dayBump('drill8');const fin=calcFinishPts(info.total,false),dayFirst=award(5,'drill:'+today(),'오늘의 계산 첫 완료');award(fin,null,'끝까지 했어요');const fx=Math.min(NUM(info.fixed),FIX_MAX);
+      $('.dIn',app).innerHTML=`<div class="feedback ok" style="text-align:center"><b>${effortLine(NUM(info.fixed),false)}</b><br>처음에 맞힌 문제 <b class="rm">${first}</b> / ${info.total}${timed?` · 걸린 시간 <b class="rm">${fmt(ms)}</b>`:''}${isBest?'<br>최고 기록이에요!':''}</div>
         ${up.length?`<p class="sum-space"><b>오래 기억 쪽으로 한 칸</b> ${up.join(', ')} · 다음 복습은 며칠 뒤예요.</p>`:''}${again.length?`<p class="sum-space"><b>내일 한 번 더</b> ${again.join(', ')}</p>`:''}
+        ${ptsLine([['끝까지',fin],['다시 맞힘',fx*FIX_PTS],['오늘 첫 완료',dayFirst?5:0]])}
         ${info.tip?`<p class="sum-tip"><b>자주 나온 실수</b> ${info.tip}</p>`:''}
         <div class="next-row" style="justify-content:center"><a class="btn" href="#calc">기초 연산</a><button type="button" class="btn primary dAgain">한 번 더</button></div>`;
       $('.dAgain',app).onclick=()=>viewDrill()}})}

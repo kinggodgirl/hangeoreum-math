@@ -88,7 +88,7 @@ function viewReview(){
     const item=L[0],prob=GEN[item.g](item.seed),L0=LESSONS.find(l=>l.id===item.lid);
     prob.title=`<span class="rv-from">${L0?L0.no+'차시 '+L0.title+' · ':''}${item.stage+1}번째 복습</span><br>`+prob.title;
     renderProblem(host,prob,{mode:'final',rep:{lesson:item.lid||LESSON_OF[item.g]||'review',gen:item.g,seed:item.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);dayBump('review');logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
-      if(ok){bump('review');award(5)}else award(1);
+      if(ok){bump('review');award(5,null,'복습 문제를 맞혔어요')}else award(1,null,'복습에 다시 왔어요');
       box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?(item.stage>=3?'졸업! 이 문제는 이제 나오지 않아요.':`한 번에 맞혔어요. ${[1,3,7][item.stage]}일 뒤에 한 번 더 나와요.`):'헷갈렸던 문제예요. 내일 다시 나와요.'}</span>`);
       const nb=el('<button type="button" class="btn primary">다음 →</button>');nb.onclick=next;box.appendChild(nb);stats()}})}
   next();
@@ -214,13 +214,13 @@ function viewSteps(body,id){
       const cl=$('.tryHost .step.cur',host),es=ex.steps[i];if(!cl||!es||$('.mstep',cl))return;
       cl.insertBefore(el(`<details class="mstep"><summary>선생님 풀이 · 같은 단계 보기</summary><div class="mq">${es.q}</div><div class="wk"><span class="wka">${fmtAns(es)}</span>${(es.why||es.hint||es.ok)?`<span class="wkw">${es.why||es.hint||es.ok}</span>`:''}</div></details>`),cl.firstChild)};
     renderProblem($('.tryHost',host),prob,{mode:'steps',visual:true,rep:{lesson:id,gen:key,seed},onStep:i=>setTimeout(()=>sync(i)),onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{sync(-1);logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:key,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
-      if(good){p.steps++;p.tyS[cur]=(p.tyS[cur]||0)+1;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(key,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요.</span>')}
+      if(good){p.steps++;p.tyS[cur]=(p.tyS[cur]||0)+1;save();$('.stat b',wrap).textContent=p.steps;award(10,null,'단계 문제를 끝까지 풀었어요')}else{award(4,null,'틀려도 끝까지 했어요');addReview(key,seed,id);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">이 문제는 복습 노트에 넣었어요.</span>')}
       const nx=TL.find(t=>t.no>cur);
       const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-k="same">같은 유형 하나 더</button><button type="button" class="btn ghost" data-k="ex">새 풀이 예시로</button>${nx?`<button type="button" class="btn primary" data-k="next">유형 ${nx.no} · ${nx.nm} →</button>`:`<a class="btn primary" href="#${id}-practice">혼자 풀러 가기 →</a>`}</span>`);
       $('[data-k=same]',nb).onclick=()=>pair(cur,exSeed);$('[data-k=ex]',nb).onclick=()=>pair(cur);if(nx)$('[data-k=next]',nb).onclick=()=>pair(nx.no);box.appendChild(nb)}})};
   const go=()=>{const seed=newSeed(),prob=GEN[SG0](seed);
     renderProblem($('#probHost',wrap),prob,{mode:'steps',visual:true,rep:{lesson:id,gen:SG0,seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{logAttempt({lesson:id,kind:'steps',good,wrongs,mode,gen:SG0,seed,ptype:prob.ptype,stepWrongs,revealed});dayBump('steps');
-      if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10)}else{award(4);addReview(SG0,seed,id)}
+      if(good){p.steps++;save();$('.stat b',wrap).textContent=p.steps;award(10,null,'단계 문제를 끝까지 풀었어요')}else{award(4,null,'틀려도 끝까지 했어요');addReview(SG0,seed,id)}
       const nb=el(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn">하나 더</button><a class="btn primary" href="#${id}-practice">혼자 풀러 가기 →</a></span>`);$('button',nb).onclick=go;box.appendChild(nb)}})};
   if(TL)pickScreen();else go();
 }
@@ -261,9 +261,9 @@ function viewPractice(body,id){
       const lid=LESSON_OF[gid]||id;
       logAttempt({lesson:lid,kind:'practice',good,wrongs,mode,gen:gid,seed,ptype:prob.ptype,stepWrongs,revealed,mixed:!!mixL});
       let gained=0;if(TY&&TY.lid===id){const x=P.ty[TY.T.no]=P.ty[TY.T.no]||{n:0,ok:0};const k0=tyStars(x);x.n++;if(good&&wrongs===0){x.ok++;x.run=(x.run||0)+1;x.best=Math.max(x.best||0,x.run)}else x.run=0;gained=tyStars(x)-k0;
-        if(gained>0){const k=tyStars(x);award(k*5);toast(`유형 ${TY.T.no} 별 ${k}개! ${starStr(k)}${k===3?' 이 유형 완성이에요!':''}`)}}
+        if(gained>0){const k=tyStars(x);award(k*5,null,`유형 별 ${k}개`);toast(`유형 ${TY.T.no} 별 ${k}개! ${starStr(k)}${k===3?' 이 유형 완성이에요!':''}`)}}
       if(TY&&!TM)box.insertAdjacentHTML('afterbegin',`<div class="tyafter">이 문제는 <b>${TY.lid===id?'':(LESSONS.find(l=>l.id===TY.lid)||{}).title+' · '}유형 ${TY.T.no} · ${TY.T.nm}</b>${TY.lid===id?` <span class="tystar s${tyStars(P.ty[TY.T.no])}">${starStr(tyStars(P.ty[TY.T.no]))}</span> <small>${nextGoal(P.ty[TY.T.no])}</small>`:''}<span>${TY.T.key}</span></div>`);dayBump('prac');if(good&&wrongs===0)dayBump('clean');
-      P.solved++;award(good?(mode==='final'&&!usedSteps&&prob.steps.length>1?5:3):1);if(!good||wrongs>=2){addReview(gid,seed,lid);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
+      P.solved++;{const solo=mode==='final'&&!usedSteps&&prob.steps.length>1;award(good?(solo?5:3):1,null,good?(solo?'단계 없이 혼자 풀었어요':'연습 문제를 풀었어요'):'끝까지 도전했어요')}if(!good||wrongs>=2){addReview(gid,seed,lid);box.insertAdjacentHTML('afterbegin','<span style="flex-basis:100%;font-size:15px">헷갈린 문제라 복습 노트에 넣었어요.</span>')}
       if(good){P.fails=0;if(prob.steps.length>1&&P.level<2){P.streak++;if(P.streak>=3){P.level=2;toast('3번 연속 성공! 이제 단계 없이 도전해요.')}}else P.streak++}
       else{P.streak=0;P.fails++;if(!mixL)P.retry.push({seed,due:2,g:gid});if(P.level>=2&&P.fails>=2){P.level=1;P.fails=0;toast('다시 단계를 따라 풀어 봐요.')}}
       if(TL&&TM){const pg=$('.typrog',wrap);if(pg)pg.outerHTML=progHTML(TM);const x=P.ty[TM.no],k=tyStars(x);
@@ -1336,6 +1336,7 @@ function mergeDB(L,S){L=L||{};S=S||{};const out={},newer=(+L._ts||0)>(+S._ts||0)
       if(!o||(x.stage||0)>(o.stage||0)||((x.stage||0)===(o.stage||0)&&String(x.due)>String(o.due)))m.set(id,x)});out[k]=[...m.values()];return}
     if(k==='_drill'){const o=mergeVal(a,b);const bs=[a&&a.best,b&&b.best].filter(v=>typeof v==='number');if(bs.length)o.best=Math.min(...bs);out[k]=o;return}
     if(k==='_me'&&a&&b){const o=mergeVal(a,b);const la=a.last||'',lb=b.last||'';o.streak=(la===lb?Math.max(a.streak||0,b.streak||0):(la>lb?a.streak:b.streak))||0;
+      if(Array.isArray(a.days)||Array.isArray(b.days))o.days=[...new Set([...(Array.isArray(a.days)?a.days:[]),...(Array.isArray(b.days)?b.days:[])])].filter(x=>typeof x==='string').sort().slice(-14);
       if(a.badges&&b.badges){o.badges={};new Set([...Object.keys(a.badges),...Object.keys(b.badges)]).forEach(x=>{o.badges[x]=[a.badges[x],b.badges[x]].filter(Boolean).sort()[0]})}
       out[k]=o;return}
     if(a&&b&&typeof a==='object'&&typeof b==='object'&&(a.prac||b.prac)){const o=mergeVal(Object.assign({},a,{prac:null}),Object.assign({},b,{prac:null}));
