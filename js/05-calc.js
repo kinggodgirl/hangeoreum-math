@@ -833,10 +833,11 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
     onFinish&&onFinish(first,{tip:top&&top[1]>=2?top[0]:'',total:counted.length})}
   ask()}
 /* ── 화면: 기초 연산 목록 ── */
-const EXAM_FOCUS=['pi','frac','pow','area','surf','sub','eq','signed','signmul','div','fracbase','unit','mul'];
-const EXAM_TAG={pi:'원·부채꼴·입체',frac:'부채꼴·뿔·구',pow:'원·입체',area:'입체 겉넓이',surf:'입체 겉넓이',sub:'정비례·입체',eq:'정비례·반비례',signed:'정비례·반비례',signmul:'정비례·반비례',div:'반비례·나눗셈',fracbase:'부채꼴 약분',unit:'입체 부피',mul:'반비례 곱'};
+/* 이번 시험 범위: 원과 부채꼴 ~ 입체도형 (구의 겉넓이·부피 제외). 범위가 바뀌면 이 두 줄만 고쳐요 */
+const EXAM_FOCUS=['pi','frac','fracbase','pow','area','surf','unit','ratio','sub','eq','mul','div'];
+const EXAM_TAG={pi:'원·부채꼴·기둥·뿔',frac:'부채꼴·뿔의 부피',fracbase:'부채꼴 약분',pow:'원·입체',area:'겉넓이',surf:'기둥의 겉넓이',unit:'부피',ratio:'중심각·호·넓이의 비',sub:'다면체 개수',eq:'몇 각기둥',mul:'넓이·부피',div:'삼각형·뿔'};
 const examRank=id=>{const i=EXAM_FOCUS.indexOf(id);return i<0?99:i};
-const CALC_GRP=[['solid','원·부채꼴 · 입체도형 핵심 계산','이번 시험 범위(원과 부채꼴·입체도형·정비례/반비례)에 바로 나오는 계산이에요.'],['mid','중1 핵심 연산','부호·분수·소수·약수와 배수. 정비례·반비례와 부채꼴 계산의 바탕이에요.'],['base','기초 다지기','모든 계산의 바탕이에요. 흔들리는 부분부터 챙겨요.']];
+const CALC_GRP=[['solid','원·부채꼴 · 입체도형 핵심 계산','이번 시험 범위(원과 부채꼴·입체도형)에 바로 나오는 계산이에요.'],['mid','중1 핵심 연산','부호·분수·소수·약수와 배수. 정비례·반비례와 부채꼴 계산의 바탕이에요.'],['base','기초 다지기','모든 계산의 바탕이에요. 흔들리는 부분부터 챙겨요.']];
 const calcVisible=t=>!SITE.calcGroups||SITE.calcGroups.includes(t.grp);
 /* 선생님이 지금 먼저 하게 할 기초 연산 주제(config의 SITE.calcNow로 바꿀 수 있어요, ''이면 끔). 다 익힐 때까지 홈·길잡이 맨 앞에 나와요 */
 const CALC_NOW=typeof SITE.calcNow==='string'?SITE.calcNow:'pi';
@@ -946,7 +947,7 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
        ${good.length?`<div class="card panel"><h2 style="margin-top:0">잘하고 있어요</h2><p>${good.map(id=>`<span class="chip">${nm(id)}</span>`).join(' ')}</p><p class="muted" style="margin-bottom:0">이 주제들은 오늘의 계산에서 가끔 복습해요.</p></div>`:''}
        <div class="card panel"><h2 style="margin-top:0">${plan.length?'여기부터 해요':'기초가 튼튼해요!'}</h2>
         ${plan.length?`<ol class="dg-plan">${plan.map(id=>`<li><a href="#calc-${id}"><b>${nm(id)}</b><span>${DIAG_WHY[id]}</span></a></li>`).join('')}</ol><p class="muted">하루에 한 주제씩, 생각하는 법부터 익혀요.</p><p style="margin:0"><a class="btn primary" href="#calc-${plan[0]}">${nm(plan[0])} 시작하기</a></p>`
-          :'<p>이번 시험 핵심 연산(원·부채꼴, 입체도형, 정비례·반비례)으로 바로 넘어가요.</p><p style="margin:0"><a class="btn primary" href="#calc-pi">π가 있는 계산 시작하기</a></p>'}</div>
+          :'<p>이번 시험 핵심 연산(원과 부채꼴, 입체도형)으로 바로 넘어가요.</p><p style="margin:0"><a class="btn primary" href="#calc-pi">π가 있는 계산 시작하기</a></p>'}</div>
        <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`}
     ask()}}
 /* ── 오늘의 계산: 복습할 주제(간격 반복) + 곱셈구구 + 지난 주제를 섞어서 10문제 ── */
