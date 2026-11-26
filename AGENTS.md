@@ -45,7 +45,12 @@
 2. **브랜치 & PR 전용 워크플로우**:
    - `main` 브랜치에 직접 푸시하지 마세요. 반드시 `main`에서 새 브랜치를 따서 작업한 뒤 **Pull Request(PR)** 를 생성합니다.
    - 브랜치 이름 규칙: Antigravity는 `agy/t<번호>-<요약>`, Claude Code는 `claude/t<번호>-<요약>` (클라우드 앱이 자동 생성한 `claude/...` 브랜치명을 쓸 경우 PR 제목 맨 앞에 `[Txx]`를 반드시 표기하세요).
-   - 모든 PR은 GitHub Actions(`node tests/verify.mjs`) 통과 후 사용자가 확인·머지합니다.
+   - **자동 머지**: 선생님 확인을 기다리지 않아요. `node tests/verify.mjs`(GitHub Actions 포함)가 통과하면 PR을 올린 AI가 스스로 머지합니다. 단, Supabase SQL 실행처럼 선생님 손이 필요한 단계는 PR 본문과 대화에 따로 알립니다.
+   - **머지 전 안전장치** (셋 다 지킨 뒤에만 머지):
+     1. 머지 직전에 최신 `main`을 내 브랜치에 합치고(`git fetch origin main && git merge origin/main`), 충돌이 나면 상대 AI 코드를 덮어쓰지 말고 멈춰서 선생님께 원인만 알립니다. 합친 뒤 `node tests/verify.mjs`를 다시 통과시킵니다.
+     2. PR이 바꾼 파일이 내 작업의 허용 파일(`Scope`) 안에만 있는지 확인합니다. 상대 AI가 `COLLAB.md`에서 '진행 중'으로 맡은 파일이 섞여 있으면 머지하지 않고 그 부분을 빼거나 상대에게 넘깁니다.
+     3. 상대 AI의 PR이나 브랜치는 머지·푸시·삭제하지 않습니다. 각자 자기 PR만 머지합니다.
+   - **브랜치 삭제**: `main`에 머지가 끝난 브랜치(`git branch -r --merged origin/main`으로 확인)만 지웁니다. 열린 PR이 있거나 아직 머지되지 않은 브랜치, 지금 다른 세션이 쓰는 브랜치는 지우지 않습니다.
 3. **충돌 방지 (파일 소유권 & 신규 차시 분리)**:
    - `COLLAB.md`에 지정된 **허용 파일(`Scope`)** 만 수정하고, 다른 AI가 진행 중인 파일은 건드리지 마세요.
    - 새 입체도형 차시는 이미 비대한 `js/02-unit-solid.js`(214KB)에 직접 누적하지 말고, `js/06c-unit-circle.js` 패턴처럼 **IIFE(`(() => { ... })()`)로 감싼 독립 파일**(`js/02r-solid-rot.js`, `js/02v-solid-vol.js` 등)로 분리하세요.
