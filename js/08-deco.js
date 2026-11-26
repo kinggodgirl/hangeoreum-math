@@ -20,7 +20,7 @@ function decorate(){const h=(location.hash||'').replace('#','')||'home';if(DECO.
   $$('.boss-card .g-head .t',A).forEach(t=>dxAdd(t,'dragon','dx-h'));
   $$('.bb-strip > svg:first-child',A).forEach(sv=>sv.replaceWith(dxImg('baseball','dx-s')));
   $$('.calc-chip.start',A).forEach(t=>dxAdd(t,'compass','dx-c','beforeend'));
-  $$('.card.unit.ready',A).forEach(t=>dxAdd(t,/unit-circle/.test(t.getAttribute('href')||'')?'compass':'die','dx-corner dx-top','beforeend'));
+  $$('.card.unit.ready',A).forEach(t=>dxAdd(t,/unit-circle/.test(t.getAttribute('href')||'')||t.dataset.u==='circle'?'compass':'die','dx-corner dx-top','beforeend'));
   /* 차시 목록 · 탭 */
   $$('.card.lesson.ready',A).forEach(c=>{const m=/#([a-z]+)/.exec(c.getAttribute('href')||''),t=c.querySelector('b');if(t)dxAdd(t,(m&&DX_LESSON[m[1]])||'cube','dx-l')});
   $$('.tabs .tab[data-tab]',A).forEach(b=>{const tl=b.querySelector('.tl');if(tl&&DX_TAB[b.dataset.tab])dxAdd(tl,DX_TAB[b.dataset.tab],'dx-t')});

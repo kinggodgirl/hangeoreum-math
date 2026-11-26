@@ -35,22 +35,33 @@ function viewHome(){
     <div>
       <h1>다음 수업은 <span class="mark">한 걸음 먼저</span>,<br>배운 것은 한 걸음씩 다시.</h1>
       <p>정규 수업 전에 <b>미리 보기</b>로 낱말과 그림을 익히고, 수업이 끝나면 <b>같이 풀기 → 혼자 풀기</b>로 다져요. 어려운 문제는 단계로 나누어 풀어요.</p>
-      <p style="margin-top:18px"><a class="btn primary" href="${UNIT_HASH}">${UI_.start}</a></p>
+      <p class="hero-go">${HOME_UNITS().map((u,i)=>`<a class="btn ${i?'':'primary'}" href="#unit-${u}">${unitOf(u).start}</a>`).join('')}</p>
     </div>
     <div>${UNIT_ID==="solid"?'<div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div>':`<div class="hero-fig svgfig">${typeof heroArt==="function"?heroArt():""}</div>`}</div>
   </section>
   <div class="card guide" id="guide">${guideHTML()}</div>
+  <div class="sec-title"><h2>열린 단원</h2><span>${HOME_UNITS().length}개 단원 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*LESSON_REQ}</span></div>
+  <div class="units units-big">${HOME_UNITS().map(unitCardHTML).join('')}</div>
   <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
   <div class="game-row${STANDALONE?' solo':''}"><div class="card mis-card" id="misCard">${missionCardHTML()}</div>${STANDALONE?'':`<div class="card boss-card" id="bossCard">${bossCardHTML()}</div>`}</div>
   ${STANDALONE?'':`<a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>`}
   <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
   <div class="calc-strip">${homeCalcChips()}</div>
-  <div class="sec-title"><h2>1학년 단원</h2><span>지금은 ${OPEN_UNITS.map(u=>unitOf(u).name).join(' · ')} 단원을 열어 두었어요 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*LESSON_REQ}</span></div>
-  <div class="units">${OPEN_UNITS.slice().sort((x,y)=>UNITS.findIndex(z=>z[0]===unitOf(x).ch)-UNITS.findIndex(z=>z[0]===unitOf(y).ch)).map(u=>{const I=unitOf(u),i=UNITS.findIndex(x=>x[0]===I.ch),n=LESSONS.filter(l=>l.ready&&(l.unit||'solid')===u).length;return`<a class="card unit ready" href="#unit-${u}"><span class="no">${String(i+1).padStart(2,'0')}</span><b>${I.name}</b>${I.name!==I.ch?`<small class="uch">${I.ch}</small>`:''}<span class="st">열려 있음 · ${n}개 차시 →</span></a>`}).join('')}</div>
-  <p class="units-soon">준비 중인 단원: ${UNITS.filter(x=>!x[1]).map(x=>x[0]).join(' · ')}</p>`;
+  <p class="units-soon">1학년 준비 중인 단원: ${UNITS.filter(x=>!x[1]).map(x=>x[0]).join(' · ')}</p>`;
   if(UNIT_ID==='solid'){const v=new Viewer($('#heroCv'),{auto:true,yaw:-0.4,pitch:0.4,pad:0.38});v.setMesh(SOLIDS.p6.mk())}
   if(isStudent())loadClass();
 }
+/* 홈의 단원 카드: 단원 이름 · 차시별 진행 · 이어서 하기 (최근에 공부한 단원이 앞에) */
+/* 교과서(지학사 수학 1) 대단원 번호 */
+const ROMAN_OF={'소인수분해':'Ⅰ','정수와 유리수':'Ⅱ','문자의 사용과 식':'Ⅲ','일차방정식':'Ⅲ','좌표평면과 그래프':'Ⅳ','기본 도형':'Ⅴ','평면도형의 성질':'Ⅵ','입체도형의 성질':'Ⅶ','자료의 정리와 해석':'Ⅷ'};
+function HOME_UNITS(){const chi=u=>UNITS.findIndex(z=>z[0]===unitOf(u).ch),lu=DB._last&&(LESSONS.find(l=>l.id===DB._last.id)||{}).unit;
+  return OPEN_UNITS.slice().sort((x,y)=>((y===lu)-(x===lu))||((y===UNIT_ID)-(x===UNIT_ID))||chi(x)-chi(y))}
+function unitCardHTML(u){const I=unitOf(u),ci=UNITS.findIndex(z=>z[0]===I.ch),L=LESSONS.filter(l=>l.ready&&!l.hidden&&(l.unit||'solid')===u);
+  const d=L.reduce((a,l)=>a+lessonDone(l.id),0),tot=L.length*LESSON_REQ,nx=L.find(l=>lessonDone(l.id)<LESSON_REQ),pct=tot?Math.round(d/tot*100):0;
+  return`<div class="card unit ready ucard" data-u="${u}"><a class="uc-h" href="#unit-${u}"><span class="uc-ch">${ROMAN_OF[I.ch]||''} ${I.ch}</span><b>${I.name}</b></a>
+    <div class="uc-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><small class="uc-n">진행 ${d}/${tot}</small>
+    <ul class="uc-ls">${L.map(l=>`<li><a href="#${l.id}"><span class="n">${l.no}</span><span class="t">${l.title}</span><span class="pips">${pipsOf(l.id)}</span></a></li>`).join('')}</ul>
+    <a class="btn ${nx?'primary':''} uc-go" href="${nx?'#'+nx.id:'#unit-'+u}">${d===0?'시작하기':nx?`이어서 · ${nx.no}차시 ${nx.title}`:'모두 마쳤어요 · 다시 보기'} →</a></div>`}
 function viewMe(){
   crumbs.innerHTML=`<span class="sep">›</span><span>내 기록</span>`;const M=me();setTimeout(()=>{const b=$('.meOut');if(b)b.onclick=async()=>{await studentLogout();toast('로그아웃했어요.');viewMe()}},0);
   app.innerHTML=`<div class="unit-head"><div><h1>내 기록</h1><p>포인트는 정답보다 <b>끝까지 해 본 것</b>에 더 많이 줘요.</p></div></div>
