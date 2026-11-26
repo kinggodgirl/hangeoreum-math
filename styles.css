@@ -1020,3 +1020,26 @@ body.t-dopen{overflow:hidden}
   .t-mem .t-nmi{width:104px}
   .lvgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* 사용법 · 어떻게 하나요? */
+.tybar .tyback{border:2px solid var(--ink);font-weight:700;background:#fff}
+.tyswitch{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#fff8d6;border:1.5px solid #e8c84a;border-radius:12px;padding:10px 12px;font-size:15px}
+.howbtn{background:#fff;border:2px solid var(--ink);color:var(--ink);font:inherit;font-weight:700;font-size:14px;border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:40px;flex:none}
+.howbtn .hi{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:15px}
+.howbtn[hidden]{display:none}
+@media (max-width:760px){.howbtn{padding:0;width:40px;height:40px;justify-content:center;border-width:2px}.howbtn .ht{display:none}.howbtn .hi{width:28px;height:28px;font-size:17px}}
+.howpop{position:fixed;inset:0;z-index:80;background:rgba(20,24,40,.45);display:grid;place-items:center;padding:16px}
+.howcard{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.howh{display:flex;align-items:center;gap:8px;font-size:18px}.howx{margin-left:auto;background:none;border:0;font-size:20px;cursor:pointer;min-width:44px;min-height:44px}
+.howol{padding-left:22px;margin:10px 0;font-size:16px;line-height:1.65}.howol li{margin:4px 0}.hownav{font-size:14px;color:var(--muted,#555);background:#f4f5f8;border-radius:10px;padding:10px 12px;margin:8px 0}
+.howact{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.hw-top h1{margin:0 0 6px}.hw-toc{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:15px}
+.hw-s h2{display:flex;align-items:center;gap:10px;margin:0 0 10px}.hw-n{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-size:18px;flex:none}
+.hw-s ol{font-size:17px;line-height:1.75;padding-left:24px;margin:8px 0}.hw-tip{background:#fff8d6;border-radius:10px;padding:10px 12px;font-size:15px;margin-top:8px}.hw-go{margin:10px 0 0}
+.hw-mock{border:1.5px dashed #b9bfd0;border-radius:14px;padding:12px;background:#fafbfd;margin:6px 0 10px;font-size:15px}
+.hw-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.hw-c{color:var(--muted,#555)}.hw-row{display:flex;gap:8px;flex-wrap:wrap}
+.hw-card{border:1.5px solid #cfd4e2;border-radius:12px;padding:8px 12px;background:#fff;min-width:120px}.hw-card.on{border-color:var(--ink);box-shadow:0 0 0 2px #ffe266}
+.hw-tabs{display:flex;gap:6px;flex-wrap:wrap}.hw-q{background:#fff;border-radius:10px;padding:10px;border:1px solid #dfe3ec}.hw-hint{margin-top:8px;color:#8a5a00;font-size:14px}
+.hw-b{display:inline-block;border:1.5px solid var(--ink);border-radius:9px;padding:2px 10px;background:#fff;font-weight:700;font-size:.92em;white-space:nowrap}
+.hw-b.dark{background:var(--ink);color:#fff}.hw-b.logo{border:0;background:none;font-family:'Gowun Batang',serif;font-size:1.05em}.hw-b.tab{border-radius:9px 9px 0 0}.hw-b.tab.on{background:#ffe266}.hw-b.dim{opacity:.55}
+.hw-b.hot{border-width:2px;box-shadow:0 0 0 3px #ffe26699}.hw-b.rec{background:#ffe266;border-color:#e0b800;font-size:.8em}.hw-b.round{border-radius:50%;padding:2px 9px}.hw-b.red{border-color:#c0504d;color:#c0504d}
