@@ -303,14 +303,14 @@ const WORKED=[
 const TY_LABELS=['유형 1 · 몇 배','유형 2 · 비로 구하기','유형 3 · 세 호의 비(360°)','유형 4 · 도형·정비례 성질(반원 180°)'];
 
 function makeC1(seed){
-  const r=seed*1664525+1013904223>>>0;
+  const r=(seed*1664525+1013904223)>>>0;
   const sets=[[1,2,3],[1,3,2],[2,3,4],[2,2,5],[1,4,5],[2,3,5],[3,4,5],[3,3,6]];
   const[a,b,c]=sets[r%sets.length],t=a+b+c,one=360/t;
   const targets=[['AB',a],['BC',b],['CA',c]];
-  const[wn,wv]=targets[(r>>3)%3];
+  const[wn,wv]=targets[(r>>>3)%3];
   const wantAng=one*wv;
-  const k=(one%3===0&&wantAng/3>=15&&(r>>5)%2)?3:2;
-  const d=Math.round(wantAng/k),L=2+((r>>7)%6),ans=L*k;
+  const k=(one%3===0&&wantAng/3>=15&&(r>>>5)%2)?3:2;
+  const d=Math.round(wantAng/k),L=2+((r>>>7)%6),ans=L*k;
   return{
     id:'C1',combo:[3,1],comboWhy:'① 세 호의 비로 목표 중심각을 먼저 구하고(유형 3) → ② 기준 부채꼴의 몇 배인지 적용(유형 1)',
     ptype:'cent:c1',
@@ -325,7 +325,7 @@ function makeC1(seed){
 }
 
 function makeC2(seed){
-  const r=seed*22695477+1>>>0;
+  const r=(seed*22695477+1)>>>0;
   const specs=[
     {abc:[2,3,4],want:'AB',wv:2,refAng:60,p:3,q:4},   // t=9, one=40, want=80°, 60:80=3:4
     {abc:[1,3,5],want:'BC',wv:3,refAng:80,p:2,q:3},   // t=9, one=40, want=120°, 80:120=2:3
@@ -334,7 +334,7 @@ function makeC2(seed){
     {abc:[3,4,8],want:'BC',wv:4,refAng:72,p:3,q:4}    // t=15, one=24, want=96°, 72:96=3:4
   ];
   const sp=specs[r%specs.length],[a,b,c]=sp.abc,t=a+b+c,one=360/t,wantAng=one*sp.wv;
-  const m=2+((r>>4)%4),refVal=sp.p*m,ans=sp.q*m;
+  const m=2+((r>>>4)%4),refVal=sp.p*m,ans=sp.q*m;
   return{
     id:'C2',combo:[3,2],comboWhy:'① 세 호의 비로 목표 중심각을 찾고(유형 3) → ② 기준 중심각과 간단한 비로 넓이 구하기(유형 2)',
     ptype:'cent:c2',
@@ -349,7 +349,7 @@ function makeC2(seed){
 }
 
 function makeC3(seed){
-  const r=seed*1103515245+12345>>>0;
+  const r=(seed*1103515245+12345)>>>0;
   const specs=[
     {a:72,b:108,p:2,q:3},
     {a:80,b:100,p:4,q:5},
@@ -357,7 +357,7 @@ function makeC3(seed){
     {a:75,b:105,p:5,q:7},
     {a:108,b:72,p:3,q:2}
   ];
-  const sp=specs[r%specs.length],m=2+((r>>4)%4),L=sp.p*m,ans=sp.q*m;
+  const sp=specs[r%specs.length],m=2+((r>>>4)%4),L=sp.p*m,ans=sp.q*m;
   return{
     id:'C3',combo:[4,2],comboWhy:'① 반원의 성질(평각 180°)로 빈 중심각을 먼저 구하고(유형 4) → ② 중심각의 비로 호 구하기(유형 2)',
     ptype:'cent:c3',
