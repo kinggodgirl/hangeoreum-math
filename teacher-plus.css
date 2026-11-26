@@ -24,3 +24,9 @@
 .t-flag.ok{border-color:#2f8f5b;background:#e8f6ee;color:#1d6b40}
 /* 좁은 화면에서 표가 화면 전체를 밀어내지 않고 표 안에서만 옆으로 넘기게 */
 .t-cols>*{min-width:0}
+/* 👀 학생 화면 보기 (보기 전용) */
+.t-peek{width:100%;margin:10px 0 4px;justify-content:center}
+.t-peek small{font-weight:400;opacity:.85}
+.peek-bar{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 16px;background:#1d2a44;color:#fff;font-size:15px}
+.peek-bar small{opacity:.8}
+.peek-bar .btn{background:#fff;color:#1d2a44;border-color:#fff;min-height:36px;padding:4px 14px}
