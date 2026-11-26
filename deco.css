@@ -1,0 +1,24 @@
+/* 꾸미기 아이콘 (js/08-deco.js) · Fluent Emoji 3D */
+.dx{display:inline-block;vertical-align:middle;pointer-events:none;user-select:none;flex:none}
+.dx-h{width:30px;height:30px;margin:-4px 8px 0 0}
+.sec-title > h2 .dx-h{width:32px;height:32px}
+.dx-g{width:30px;height:30px;margin:0 2px 0 0}
+.dx-s{width:26px;height:26px;margin-right:8px}
+.calc-chip.start{position:relative;padding-right:44px}.dx-c{position:absolute;right:8px;top:50%;margin-top:-15px;width:30px;height:30px}
+.dx-t{width:22px;height:22px;margin:-3px 5px 0 0}
+.dx-i{width:20px;height:20px;margin:-3px 3px 0 0}
+.dx-p{width:30px;height:30px;margin:-4px 2px 0 0}
+.card.lesson,.card.unit{position:relative;overflow:hidden}
+.dx-corner{position:absolute;right:10px;bottom:10px;width:54px;height:54px;opacity:.95;transition:transform .25s ease}
+.card.lesson:hover .dx-corner,.card.unit:hover .dx-corner{transform:translateY(-3px) rotate(-6deg) scale(1.06)}
+.dx-l{width:28px;height:28px;margin:-4px 6px 0 0}
+.dx-top{top:10px;bottom:auto;width:44px;height:44px}
+.dx-dim{filter:grayscale(1);opacity:.35}
+.gsteps > li{align-items:center}
+@media (max-width:760px){
+  .dx-h{width:26px;height:26px;margin-right:6px}.sec-title > h2 .dx-h{width:28px;height:28px}
+  .dx-g{width:26px;height:26px}.dx-corner{width:42px;height:42px;right:8px;bottom:8px}
+  .tabs .dx-t{display:none}
+}
+@media (prefers-reduced-motion: reduce){.dx-corner{transition:none}}
+@media print{.dx{display:none!important}}
