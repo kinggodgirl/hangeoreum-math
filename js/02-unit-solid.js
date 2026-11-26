@@ -96,7 +96,7 @@ function viewReview(){
 /* 화면: 단원 */
 function pipsOf(id){const p=DB[id];const v=p?{concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac&&p.prac.solved>=5}:{};return TABS.map(t=>`<span class="pip ${v[t.id]?'on':''}" title="${t.t}"></span>`).join('')}
 function homeCalcChips(){const due=dueList(),dg=OBJ(DB._calcDiag),exam=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t)&&!calcDone(t.id)),plan=calcPlan().map(id=>CALC.find(t=>t.id===id)),rest=CALC.filter(calcVisible).sort((a,b)=>examRank(a.id)-examRank(b.id)||NUM(calcPeek(a.id).stars)-NUM(calcPeek(b.id).stars));
-  const nowT=calcNowT(),list=[nowT,...due,...exam,...plan,...rest].filter((t,i,a)=>t&&a.indexOf(t)===i).slice(0,dg.d?4:3);
+  const nowT=calcNowT(),list=[nowT,...due,...exam,...plan,...rest].filter((t,i,a)=>t&&a.indexOf(t)===i&&inExam(t)).slice(0,dg.d?4:3);
   const chip=t=>`<a class="calc-chip${t===nowT?' now':''}" href="#calc-${t.id}"><b>${t.nm}</b>${t===nowT?'<small class="now">먼저 해요</small>':''}${calcDue(t.id)?'<small class="due">복습할 때</small>':starRow(Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)),calcLvN(t.id))}</a>`;
   return(nowT?chip(nowT):'')+(dg.d?'':`<a class="calc-chip start" href="#calc-start"><b>시작점 찾기</b><small>처음이면 여기부터</small></a>`)+list.filter(t=>t!==nowT).map(chip).join('')}
 function viewUnit(u=UNIT_ID){const I=unitOf(u);
