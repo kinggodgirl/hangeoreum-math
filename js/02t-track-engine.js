@@ -894,7 +894,7 @@ function renderT3Concept(body,lid,spec){
     <div class="cp-strat" style="margin-top:0">
       <h2>🌳 두걸음 핵심 전략 · 복합 문제 쪼개기</h2>
       <div class="cp-strat-cards">
-        ${list.map((c,i)=>`<div class="cp-scard"><span class="cp-sbadge">조합 ${i+1}</span><b>${c.nm}</b><small>${c.sub}</small></div>`).join('')}
+        ${list.map((c,i)=>`<div class="cp-scard"><span class="cp-sbadge">복합 ${i+1}</span><b>${c.nm}</b><small>${c.sub}</small></div>`).join('')}
       </div>
     </div>
     <div class="next-row"><a class="btn primary" href="#${lid}-practice">3단계 실전 차시 마무리 →</a></div>
@@ -909,7 +909,9 @@ function renderT3Steps(body,lid,spec,initialCid){
   const noPick=spec.comboPick!==true;
   const WK=spec.worked?Object.values(spec.worked).filter(w=>w&&w.nm).sort((a,b)=>a.no-b.no):[];
   const keyTypesHTML=()=>WK.length?`<details class="ct-keyty"><summary>📌 이번 차시의 핵심 유형이에요 <small>(${WK.length}가지 · 눌러서 펼치기)</small></summary>
-      <div class="ct-keyty-grid">${WK.map(w=>{let f='';try{f=w.fig?w.fig():''}catch(e){}return`<div class="ct-keyty-card"><b>유형 ${w.no} · ${w.nm}</b><div class="ct-keyty-fig">${f}</div><p>${w.prob||''}</p></div>`}).join('')}</div></details>`:'';
+      <div class="ct-keyty-grid">${WK.map(w=>{let f='';try{f=w.fig?w.fig((w.steps&&w.steps[0]&&w.steps[0].hl)||[]):''}catch(e){}
+        const how=Array.isArray(w.steps)&&w.steps.length?w.steps.map(st=>String(st.t||'').replace(/^[①-⑳]\s*/,'')).filter(Boolean).join(' → '):'';
+        return`<div class="ct-keyty-card"><b>유형 ${w.no} · ${w.nm}</b><div class="ct-keyty-fig">${f}</div><p>${w.prob||''}</p>${how?`<div class="ct-keyty-how">💡 ${how}</div>`:''}</div>`}).join('')}</div></details>`:'';
   let cid=initialCid||(list[0]&&list[0].id),seed=typeof newSeed==='function'?newSeed():11,picked=new Set(),unlocked=noPick,shownAt=Date.now();
 
   const draw=()=>{
@@ -992,7 +994,7 @@ function renderT3Practice(body,lid,spec){
       if(typeof save==='function')save();
       if(typeof award==='function')award(20,lid+':t3','두걸음 실전 차시 마무리를 통과했어요');
 
-      const metaOpts=spec.t3MetaOpts||['유형 조합 찾기','조건 파악·식 세우기','계산 실수','없음'];
+      const metaOpts=spec.t3MetaOpts||['풀이 순서 잡기','조건 파악·식 세우기','계산 실수','없음'];
       host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌳 두걸음 실전 차시 마무리 통과!</b><br>기본 유형과 복합 유형 ${cids.length}가지를 모두 해결했어요.</div>
         <ul style="margin:12px 0;padding-left:20px;line-height:1.8">${results.map(x=>`<li>${x.status==='first'?'⭐ <b>한 번에 통과</b>':'✓ <b>재확인 통과</b>'} · ${x.label}</li>`).join('')}</ul>
         <div class="ct-meta"><b>1초 체크 · 오늘 풀면서 가장 헷갈렸던 부분은?</b>
