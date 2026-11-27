@@ -200,8 +200,9 @@
 .owl-dot:disabled{opacity:.45;cursor:default}
 .owl-shake{animation:owlShake .4s ease}
 @keyframes owlShake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.arc-sym{position:relative;display:inline-block;padding-top:.32em;line-height:1;font-family:'Times New Roman',Times,serif;font-style:italic;font-weight:700}
-.arc-sym::before{content:'';position:absolute;left:8%;right:8%;top:0;height:.55em;border:2px solid currentColor;border-color:currentColor transparent transparent transparent;border-radius:50%}
+.arc-sym{position:relative;display:inline-block;padding:.42em .06em 0;line-height:1;font-family:'Times New Roman',Times,serif;font-style:italic;font-weight:700;white-space:nowrap}
+.arc-sym .arc-sym-c{position:absolute;left:0;top:.02em;width:100%;height:.42em;overflow:visible}
+.arc-sym .arc-sym-c path{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;vector-effect:non-scaling-stroke}
 @media (prefers-reduced-motion: reduce){.owl-stage [data-b],.owl-stage .ob-rot,.owl-stage .ob-pop,.owl-hint,.owl-line.now{animation:none}}
 /* [T21] 기초 연산 한 단계 끝 → 다음 할 일 안내 */
 .calc-nudge{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin:0 0 12px;padding:14px 16px;border-radius:14px;background:#fff8e1;border:1.5px solid #f0c476;animation:owlFade .4s ease}

@@ -166,6 +166,8 @@ function owlAvatarSVG(exp='normal'){
    data-b가 없는 예전 장면은 주황 선이 그려지듯 나타나고, 자막은 문장마다 나눠서 보여 줘요. */
 const OWL_HL_RE=/^#e08a1e$/i;
 function owlReduce(){try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+/* 호 기호: <span class="arc-sym">AB</span>를 글자 위 굽은 선(SVG)으로 바꿔요. 글꼴·브라우저와 상관없이 같은 모양이에요 */
+function arcSymHTML(html){return String(html||'').replace(/<span class="arc-sym">([^<]+)<\/span>/g,(m,t)=>`<span class="arc-sym" role="img" aria-label="호 ${t}"><svg class="arc-sym-c" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><path d="M6 21 Q50 -5 94 21"/></svg>${t}</span>`)}
 function owlBeats(sc){
   if(Array.isArray(sc.beats)&&sc.beats.length)return sc.beats.map(b=>typeof b==='string'?{say:b}:b);
   const s=String(sc.say||''),parts=s.split(/(?<=[.!?])\s+/).filter(x=>x.trim());
@@ -207,7 +209,7 @@ function mountOwlShow(host,lid,spec,opt={}){
     }
     const av=$('.owl-av',host);if(av)av.innerHTML=owlAvatarSVG(bt.exp||sc.exp||'normal');
     const bub=$('#owlBub',host);
-    if(bub)bub.innerHTML=bs.slice(0,beat+1).map((x,i)=>`<p class="owl-line${i===beat?' now':''}">${x.say}</p>`).join('');
+    if(bub)bub.innerHTML=bs.slice(0,beat+1).map((x,i)=>`<p class="owl-line${i===beat?' now':''}">${arcSymHTML(x.say)}</p>`).join('');
     const ak=$('#owlAskHost',host);
     if(ak){
       ak.innerHTML=showAsk?`<div class="owl-ask">
@@ -221,7 +223,7 @@ function mountOwlShow(host,lid,spec,opt={}){
       });
     }
     const sum=$('#owlSumHost',host);
-    if(sum)sum.innerHTML=finished&&Array.isArray(spec.owlSummary)&&spec.owlSummary.length?`<div class="owl-sum"><b>📌 부엉 쌤 핵심 정리</b><ul>${spec.owlSummary.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:'';
+    if(sum)sum.innerHTML=finished&&Array.isArray(spec.owlSummary)&&spec.owlSummary.length?`<div class="owl-sum"><b>📌 부엉 쌤 핵심 정리</b><ul>${spec.owlSummary.map(x=>`<li>${arcSymHTML(x)}</li>`).join('')}</ul></div>`:'';
     const pg=$('.owl-pg',host);if(pg)pg.innerHTML=`장면 ${idx+1} / ${scenes.length}${bs.length>1?` <span class="owl-bdots">${bs.map((_,i)=>`<i class="${i<=beat?'on':''}"></i>`).join('')}</span>`:''}`;
     const pv=$('#owlPrev',host);if(pv)pv.disabled=idx===0&&beat===0;
     $$('.owl-dot',host).forEach((d,i)=>{d.className='owl-dot'+(i<idx||(finished&&i===idx)?' done':i===idx?' on':'');d.disabled=i>seen});
