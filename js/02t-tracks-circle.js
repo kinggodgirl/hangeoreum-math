@@ -159,14 +159,17 @@ function secFigS(R,rIn,th,opt={}){
   const C=[155,140],radR=86,a0=90-th/2,a1=90+th/2;
   /* [T23] 원 전체(360°): 부채꼴 경로는 시작점=끝점이라 그려지지 않아요 → 원으로 그리고 반지름(또는 지름)을 표시해요 */
   if(th>=360){
-    let c=`<circle cx="${C[0]}" cy="${C[1]}" r="${radR}" fill="${opt.askPerim?'#fff7ec':HLs}" stroke="${opt.askPerim?HL:INK}" stroke-width="${opt.askPerim?5.5:2.4}"/>`;
+    let c=`<circle cx="${C[0]}" cy="${C[1]}" r="${radR}" fill="${opt.plain?'#eef2f8':opt.askPerim?'#fff7ec':HLs}" stroke="${opt.askPerim?HL:INK}" stroke-width="${opt.askPerim?5.5:2.4}"/>`;
     if(opt.dLab)c+=ln(pol(C,radR,180),pol(C,radR,0),BL,2.6)+dot(pol(C,radR,180),3.5)+dot(pol(C,radR,0),3.5)+tx([C[0],C[1]-16],opt.dLab,{sans:true,col:BL,size:15});
     else if(opt.rLab)c+=ln(C,pol(C,radR,0),BL,2.6)+dot(pol(C,radR,0),3.5)+tx([C[0]+radR/2,C[1]-16],opt.rLab,{sans:true,col:BL,size:15});
     c+=dot(C,4)+tx([C[0]-14,C[1]+16],'O',{size:16});
     return svgB(310,235,c,'원 그림');
   }
   /* [T20] askPerim: 둘레를 묻는 문제(테두리 전체 주황) · noAng: 중심각을 묻는 문제라 각도 숫자 숨김 */
-  let s=`<path d="${secD(C,radR,a0,a1)}" fill="${opt.askPerim?'#fff7ec':HLs}" stroke="${INK}" stroke-width="2.4"/>`;
+  /* [T23] plain: 빠른 구별(글을 읽고 구할 것 고르기)이라 주황 없이 · askArc: 호의 길이를 물을 때 호만 주황 */
+  const fillC=opt.plain?'#eef2f8':(opt.askPerim||opt.askArc)?'#fff7ec':HLs;
+  let s=`<path d="${secD(C,radR,a0,a1)}" fill="${fillC}" stroke="${INK}" stroke-width="2.4"/>`;
+  if(opt.askArc&&!rIn)s+=`<path d="${arcD(C,radR,a0,a1)}" fill="none" stroke="${HL}" stroke-width="5.5" stroke-linecap="round"/>`;
   if(rIn){const rr=radR*(rIn/R);s+=`<path d="${secD(C,rr,a0,a1)}" fill="#fff" stroke="${INK}" stroke-width="2"/>`;
     if(opt.perim)s+=`<path d="${arcD(C,radR,a0,a1)}" fill="none" stroke="${BL}" stroke-width="4.5"/><path d="${arcD(C,rr,a0,a1)}" fill="none" stroke="${BL}" stroke-width="4"/>`+ln(pol(C,rr,a0),pol(C,radR,a0),RD,3.5)+ln(pol(C,rr,a1),pol(C,radR,a1),RD,3.5);
     if(opt.askPerim)s+=`<path d="${arcD(C,radR,a0,a1)}" fill="none" stroke="${HL}" stroke-width="5.5" stroke-linecap="round"/><path d="${arcD(C,rr,a0,a1)}" fill="none" stroke="${HL}" stroke-width="5.5" stroke-linecap="round"/>`+ln(pol(C,rr,a0),pol(C,radR,a0),HL,5.5)+ln(pol(C,rr,a1),pol(C,radR,a1),HL,5.5)}
@@ -176,8 +179,8 @@ function secFigS(R,rIn,th,opt={}){
   return svgB(310,235,s,'부채꼴 그림');
 }
 
-function squareCornerSVG(a){
-  const g=`<rect x="65" y="30" width="150" height="150" fill="${HLs}" stroke="${INK}" stroke-width="2.4"/>`+
+function squareCornerSVG(a,plain){
+  const g=`<rect x="65" y="30" width="150" height="150" fill="${plain?'#eef2f8':HLs}" stroke="${INK}" stroke-width="2.4"/>`+
     `<path d="M 65 180 L 65 30 A 150 150 0 0 1 215 180 Z" fill="#fff" stroke="${INK}" stroke-width="2"/>`+
     tx([140,196],`한 변 ${a} cm`,{sans:true,size:15,col:BL});
   return svgB(280,220,g,'정사각형에서 사분원 뺀 도형');
@@ -196,19 +199,43 @@ const S1_CH=['호의 길이 · cm','넓이 · cm²','둘레의 길이 · cm','�
 function sectorRapid(k,seed){
   const r=[3,4,5,6,8,9][seed%6],th=[60,90,120,150,45][Math.floor(seed/6)%5],d=2*r,r3=[3,6,9][seed%3];
   const P=(t,f,ans,why)=>({fig:`<div style="font-size:17px;line-height:1.55;text-align:left;margin:0 0 8px;padding:10px 12px;border-radius:12px;background:#f6f8fc">${t}</div>${f}`,ans,why});
-  const sec=o=>secFigS(r,null,th,o);
+  const sec=o=>secFigS(r,null,th,Object.assign({plain:true},o));
   switch(k){
     case 0:return P(`반지름의 길이가 ${r} cm, 중심각의 크기가 ${th}°인 부채꼴의 호의 길이를 구하시오.`,sec({rLab:`${r} cm`}),S1_CH[0],'굽은 선의 <b>길이</b>를 구하니까 단위는 <b>cm</b>예요.');
     case 1:return P(`반지름의 길이가 ${r} cm, 중심각의 크기가 ${th}°인 부채꼴의 넓이를 구하시오.`,sec({rLab:`${r} cm`}),S1_CH[1],'색칠한 만큼의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
     case 2:return P(`반지름의 길이가 ${r} cm, 중심각의 크기가 ${th}°인 부채꼴의 둘레의 길이를 구하시오.`,sec({rLab:`${r} cm`}),S1_CH[2],'테두리를 한 바퀴 잰 <b>둘레의 길이</b>라서 단위는 <b>cm</b>예요.');
-    case 3:return P(`반지름의 길이가 ${r3} cm이고 호의 길이가 ${2*r3/3}π cm인 부채꼴의 넓이를 구하시오.`,secFigS(r3,null,120,{rLab:`${r3} cm`,arcLab:`${2*r3/3}π cm`,noAng:true}),S1_CH[1],'문제에 cm가 나오지만 구하는 건 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
-    case 4:return P(`반지름의 길이가 ${r} cm이고 넓이가 ${r}π cm²인 부채꼴의 호의 길이를 구하시오.`,secFigS(r,null,360/r,{rLab:`${r} cm`,noAng:true}),S1_CH[0],'문제에 cm²가 나오지만 구하는 건 <b>호의 길이</b>라서 단위는 <b>cm</b>예요.');
-    case 5:return P(`반지름의 길이가 ${r3} cm이고 호의 길이가 ${2*r3/3}π cm인 부채꼴의 중심각의 크기를 구하시오.`,secFigS(r3,null,120,{rLab:`${r3} cm`,arcLab:`${2*r3/3}π cm`,noAng:true}),S1_CH[3],'<b>중심각의 크기</b>는 각도라서 단위는 <b>°(도)</b>예요.');
-    case 6:return P(`지름의 길이가 ${d} cm인 원의 넓이를 구하시오.`,secFigS(r,null,360,{noAng:true,dLab:`${d} cm`}),S1_CH[1],'원 안쪽 전체의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
-    case 7:return P(`반지름의 길이가 ${r} cm인 원의 둘레의 길이를 구하시오.`,secFigS(r,null,360,{noAng:true,rLab:`${r} cm`,askPerim:true}),S1_CH[2],'원 테두리 한 바퀴의 <b>길이</b>라서 단위는 <b>cm</b>예요.');
-    case 8:return P(`그림과 같이 중심이 같은 두 부채꼴로 만든 색칠한 부분의 둘레의 길이를 구하시오.`,secFigS(2*r,r,90,{}),S1_CH[2],'색칠한 부분의 테두리 <b>둘레의 길이</b>라서 단위는 <b>cm</b>예요.');
-    default:return P(`한 변의 길이가 ${d} cm인 정사각형에서 사분원을 뺀 색칠한 부분의 넓이를 구하시오.`,squareCornerSVG(d),S1_CH[1],'색칠한 부분의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
+    case 3:return P(`반지름의 길이가 ${r3} cm이고 호의 길이가 ${2*r3/3}π cm인 부채꼴의 넓이를 구하시오.`,secFigS(r3,null,120,{rLab:`${r3} cm`,arcLab:`${2*r3/3}π cm`,noAng:true,plain:true}),S1_CH[1],'문제에 cm가 나오지만 구하는 건 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
+    case 4:return P(`반지름의 길이가 ${r} cm이고 넓이가 ${r}π cm²인 부채꼴의 호의 길이를 구하시오.`,secFigS(r,null,360/r,{rLab:`${r} cm`,noAng:true,plain:true}),S1_CH[0],'문제에 cm²가 나오지만 구하는 건 <b>호의 길이</b>라서 단위는 <b>cm</b>예요.');
+    case 5:return P(`반지름의 길이가 ${r3} cm이고 호의 길이가 ${2*r3/3}π cm인 부채꼴의 중심각의 크기를 구하시오.`,secFigS(r3,null,120,{rLab:`${r3} cm`,arcLab:`${2*r3/3}π cm`,noAng:true,plain:true}),S1_CH[3],'<b>중심각의 크기</b>는 각도라서 단위는 <b>°(도)</b>예요.');
+    case 6:return P(`지름의 길이가 ${d} cm인 원의 넓이를 구하시오.`,secFigS(r,null,360,{noAng:true,dLab:`${d} cm`,plain:true}),S1_CH[1],'원 안쪽 전체의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
+    case 7:return P(`반지름의 길이가 ${r} cm인 원의 둘레의 길이를 구하시오.`,secFigS(r,null,360,{noAng:true,rLab:`${r} cm`,plain:true}),S1_CH[2],'원 테두리 한 바퀴의 <b>길이</b>라서 단위는 <b>cm</b>예요.');
+    case 8:return P(`그림과 같이 중심이 같은 두 부채꼴로 만든 색칠한 부분의 둘레의 길이를 구하시오.`,secFigS(2*r,r,90,{plain:true}),S1_CH[2],'색칠한 부분의 테두리 <b>둘레의 길이</b>라서 단위는 <b>cm</b>예요.');
+    default:return P(`한 변의 길이가 ${d} cm인 정사각형에서 사분원을 뺀 색칠한 부분의 넓이를 구하시오.`,squareCornerSVG(d,true),S1_CH[1],'색칠한 부분의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
   }
+}
+
+/* [T23] 첫걸음 차시 마무리: 유형 1·2·4 식 고르기(보기 4개, 틀리면 make로 숫자를 바꾼 비슷한 문제). 주황 = 구할 것 */
+const shufS=(sd,arr)=>{const a=arr.slice();let x=(sd*2654435761)>>>0;for(let i=a.length-1;i>0;i--){x=(x*1103515245+12345)>>>0;const j=x%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+function t1Circ(sd){
+  const r=[3,4,5,6,7,8,9][sd%7],ans=`${2*r} × π`;
+  return{id:'t1c'+sd,kind:'circ',make:t1Circ,q:`반지름의 길이가 <b>${r} cm</b>인 원의 <b>둘레의 길이</b>를 구하는 식으로 옳은 것을 고르세요.`,
+    fig:()=>secFigS(r,null,360,{rLab:`${r} cm`,askPerim:true}),
+    choices:shufS(sd,[ans,`${r} × π`,`${r} × ${r} × π`,`${r} × 2`]),ans,
+    hint:'둘레 하면 π! π는 지름을 둘레로 바꾸는 수예요. 먼저 지름을 구해요.',why:`지름 ${r} × 2 = ${2*r}에 π를 곱해요. 둘레 = <b>${2*r} × π = ${2*r}π cm</b>예요.`};
+}
+function t1Arc(sd){
+  const r=[3,4,5,6,8,9][sd%6],th=[60,90,120,150][Math.floor(sd/6)%4],D=2*r,ans=`${D}π × ${th}/360`;
+  return{id:'t1a'+sd,kind:'arc',make:t1Arc,q:`반지름의 길이가 <b>${r} cm</b>, 중심각의 크기가 <b>${th}°</b>인 부채꼴의 <b>호의 길이</b>를 구하는 식으로 옳은 것을 고르세요.`,
+    fig:()=>secFigS(r,null,th,{rLab:`${r} cm`,arcLab:'? cm',askArc:true}),
+    choices:shufS(sd,[ans,`${r*r}π × ${th}/360`,`${D}π × 360/${th}`,`${r}π × ${th}/360`]),ans,
+    hint:'호의 길이는 원의 둘레(지름 × π)에서 중심각/360만큼이에요.',why:`원의 둘레 ${D}π에 ${th}/360을 곱해요. 식은 <b>${ans}</b>예요.`};
+}
+function t1Half(sd){
+  const r=[3,4,5,6,8,9][sd%6],k=[2,4,6,8][Math.floor(sd/6)%4],P=n=>n===1?'π':n+'π',ans=`${P(k/2)} × ${r}`;
+  return{id:'t1h'+sd,kind:'half',make:t1Half,q:`반지름의 길이가 <b>${r} cm</b>, 호의 길이가 <b>${k}π cm</b>인 부채꼴의 <b>넓이</b>를 구하는 식으로 옳은 것을 고르세요.`,
+    fig:()=>secFigS(r,null,120,{rLab:`${r} cm`,arcLab:`${k}π cm`,noAng:true}),
+    choices:shufS(sd,[ans,`${k}π × ${r}`,`${P(k/2)} × ${2*r}`,`${k}π × ${2*r}`]),ans,
+    hint:'잘라 붙이면 직사각형! 가로는 호의 반, 세로는 반지름이에요.',why:`호의 반 ${P(k/2)} × 반지름 ${r}이라서 식은 <b>${ans}</b>예요.`};
 }
 
 /* ── 1차시 arc 등록 ── */
@@ -335,8 +362,11 @@ if(typeof HG_TRACKS==='object'){
   /* ── 3차시 sector 등록 ── */
   HG_TRACKS.register('sector',{
     kind:'proc',
+    /* [T23] 복합 문제는 푸는 길이 여러 가지(예: C1은 유형 4→5도, 유형 3→2도 돼요)라 '어느 두 유형?' 고르기를 빼요 */
+    comboPick:false,
     schemaRapid:{n:8,kinds:10,title:'무엇을 구할까요?',q:'이 문제에서 <b>구해야 하는 것</b>과 <b>답의 단위</b>를 고르세요.',
       choices:S1_CH,check:[2,3,4,5,8],make:(k,seed)=>sectorRapid(k,Math.floor(seed/10))},
+    t1Check:[t1Circ(5),t1Arc(8),t1Half(3)],
     compoundBridgeNo:6,
     /* [T21] 부엉 쌤 그림극: 둘레를 펴 보고(π), 잘라 붙이고(넓이), 조각으로 나누고(중심각/360), 둘레를 한 바퀴 따라가요 */
     owlScenes:[
@@ -374,26 +404,26 @@ if(typeof HG_TRACKS==='object'){
     ],
     firstGuide:[
       {id:'sfg1',tyNo:1,title:'유형 1 · 원의 둘레와 넓이',
-        problem:'반지름의 길이가 <b>5 cm</b>인 원의 둘레(kπ cm)에서 k를 구하시오.',
-        fig:()=>secFigS(5,null,360,{rLab:'5 cm',askPerim:true}),wantChips:['원 둘레의 π 앞 숫자 (k)','원의 넓이','중심각'],wantAns:'원 둘레의 π 앞 숫자 (k)',wantHl:[],
+        problem:'반지름의 길이가 <b>5 cm</b>인 원의 <b>둘레의 길이</b>를 구하시오.',
+        fig:()=>secFigS(5,null,360,{rLab:'5 cm',askPerim:true}),wantChips:['원의 둘레의 길이','원의 넓이','중심각'],wantAns:'원의 둘레의 길이',wantHl:[],
         givenChips:[{k:'r',t:'반지름 5 cm',ok:true},{k:'f',t:'둘레 = 지름 × π',ok:true},{k:'t',t:'중심각 60°',ok:false}],
-        teacherEq:'지름 = 5 × 2 = 10 → 둘레 = 10π cm',pairQ:'둘레를 구할 때 반지름 5를 왜 먼저 2배 했나요?',
+        teacherEq:'지름 = 5 × 2 = 10 → 둘레 = 지름 × π',pairQ:'둘레를 구할 때 반지름 5를 왜 먼저 2배 했나요?',
         pairChoices:['π는 지름을 둘레로 바꾸니까','넓이 공식을 쓰려고'],pairAns:'π는 지름을 둘레로 바꾸니까',
-        calcPrompt:'지름 = 5 × 2 = ? (cm)',calcAns:10,calcTopic:'pi',calcExplain:'지름 10 cm → 둘레는 <b>10π cm</b>예요.'},
+        calcPrompt:'원의 둘레의 길이는 몇 cm인가요? (π를 붙여 써요. 예: 8π)',calcAns:10,calcTopic:'pi',calcExplain:'지름 10 × π = <b>10π cm</b>예요.'},
       {id:'sfg2',tyNo:2,title:'유형 2 · 부채꼴 호의 길이',
-        problem:'반지름이 <b>6 cm</b>, 중심각이 <b>60°</b>인 부채꼴의 호의 길이(kπ cm)에서 k를 구하시오.',
-        fig:()=>secFigS(6,null,60,{arcLab:'?π',rLab:'6 cm'}),wantChips:['부채꼴 호의 길이 (π 앞 숫자)','부채꼴 넓이','지름'],wantAns:'부채꼴 호의 길이 (π 앞 숫자)',wantHl:[],
+        problem:'반지름이 <b>6 cm</b>, 중심각이 <b>60°</b>인 부채꼴의 <b>호의 길이</b>를 구하시오.',
+        fig:()=>secFigS(6,null,60,{arcLab:'? cm',rLab:'6 cm',askArc:true}),wantChips:['부채꼴의 호의 길이','부채꼴의 넓이','지름'],wantAns:'부채꼴의 호의 길이',wantHl:[],
         givenChips:[{k:'r',t:'반지름 6 cm (지름 12)',ok:true},{k:'a',t:'중심각 60° (1/6 조각)',ok:true},{k:'t',t:'높이 8 cm',ok:false}],
-        teacherEq:'원 둘레 12π × (60/360) = 12π ÷ 6 = 2π',pairQ:'왜 원 둘레 12π를 <b>6</b>으로 나누었나요?',
-        pairChoices:['360° ÷ 60° = 6조각 중 1개라서','반지름이 6 cm라서'],pairAns:'360° ÷ 60° = 6조각 중 1개라서',
-        calcPrompt:'12 ÷ 6 = ? (π 앞 숫자)',calcAns:2,calcTopic:'frac',calcExplain:'12π ÷ 6 = <b>2π cm</b>예요.'},
+        teacherEq:'원 둘레 12π × 60/360 = 12π × 1/6 = 2π',pairQ:'왜 원 둘레 12π에 <b>60/360</b>을 곱했나요?',
+        pairChoices:['부채꼴은 원 전체 360° 중 60°만큼이라서','반지름이 6 cm라서'],pairAns:'부채꼴은 원 전체 360° 중 60°만큼이라서',
+        calcPrompt:'호의 길이는 몇 cm인가요? (π를 붙여 써요. 예: 8π)',calcAns:2,calcTopic:'frac',calcExplain:'12π × 60/360 = 12π × 1/6 = <b>2π cm</b>예요.'},
       {id:'sfg3',tyNo:4,title:'유형 4 · 호의 길이로 부채꼴 넓이 구하기',
-        problem:'반지름이 <b>5 cm</b>, 호의 길이가 <b>6π cm</b>인 부채꼴의 넓이(kπ cm²)에서 k를 구하시오.',
-        fig:()=>secFigS(5,null,120,{arcLab:'6π cm',rLab:'5 cm'}),wantChips:['부채꼴 넓이 (π 앞 숫자)','중심각 크기','원 둘레'],wantAns:'부채꼴 넓이 (π 앞 숫자)',wantHl:[],
+        problem:'반지름이 <b>5 cm</b>, 호의 길이가 <b>6π cm</b>인 부채꼴의 <b>넓이</b>를 구하시오.',
+        fig:()=>secFigS(5,null,120,{arcLab:'6π cm',rLab:'5 cm'}),wantChips:['부채꼴의 넓이','중심각의 크기','원의 둘레'],wantAns:'부채꼴의 넓이',wantHl:[],
         givenChips:[{k:'r',t:'반지름 5 cm',ok:true},{k:'l',t:'호의 길이 6π cm',ok:true},{k:'t',t:'중심각 90°',ok:false}],
         teacherEq:'가로(호의 반 3π) × 세로(반지름 5) = 15π',pairQ:'식에서 <b>3π</b>는 어떻게 나온 수인가요?',
         pairChoices:['호의 길이 6π의 반','반지름 5의 반'],pairAns:'호의 길이 6π의 반',
-        calcPrompt:'3 × 5 = ? (π 앞 숫자)',calcAns:15,calcTopic:'mul',calcExplain:'(호의 반 3π) × (반지름 5) = <b>15π cm²</b>예요.'}
+        calcPrompt:'부채꼴의 넓이는 몇 cm²인가요? (π를 붙여 써요. 예: 8π)',calcAns:15,calcTopic:'mul',calcExplain:'(호의 반 3π) × (반지름 5) = <b>15π cm²</b>예요.'}
     ],
     stratRows:[
       ['반지름 r·중심각 x','원 전체 × x/360','둘레(지름×π) 또는 넓이(반둘레×반지름) × (x/360)'],
@@ -405,7 +435,7 @@ if(typeof HG_TRACKS==='object'){
       1:{no:1,nm:'원의 둘레와 넓이',prob:'반지름이 6 cm인 원의 둘레와 넓이를 구하시오.',fig:()=>secFigS(6,null,360,{rLab:'6 cm'}),
         steps:[{t:'① 둘레: 지름 × π',hl:[],body:'반지름 6 → 지름 <b>12 cm</b> → 둘레 <b>12π cm</b>'},{t:'② 넓이: 가로 = 반둘레',hl:[],body:'반둘레 = <b>6π cm</b>'},{t:'③ 가로 × 세로(반지름)',hl:[],body:'6π × 6 = <b>36π cm²</b>'}],
         pitfall:'⚠️ 자주 하는 실수: 넓이와 둘레 공식(12π vs 36π)을 바꾸어 쓰지 마세요!'},
-      2:{no:2,nm:'반지름·중심각 → 호의 길이',prob:'반지름 6 cm, 중심각 60°인 부채꼴의 호의 길이는?',fig:()=>secFigS(6,null,60,{arcLab:'? cm',rLab:'6 cm'}),
+      2:{no:2,nm:'반지름·중심각 → 호의 길이',prob:'반지름 6 cm, 중심각 60°인 부채꼴의 호의 길이는?',fig:()=>secFigS(6,null,60,{arcLab:'? cm',rLab:'6 cm',askArc:true}),
         steps:[{t:'① 원 전체 둘레',hl:[],body:'지름 12 × π = <b>12π cm</b>'},{t:'② 몇 분의 몇 조각?',hl:[],body:'60/360 = <b>1/6</b>'},{t:'③ 곱하기',hl:[],body:'12π × 1/6 = <b>2π cm</b>'}],
         pitfall:'⚠️ 자주 하는 실수: 답에 π를 빼먹지 않도록 꼭 확인해요!'},
       3:{no:3,nm:'반지름·중심각 → 넓이',prob:'반지름 6 cm, 중심각 60°인 부채꼴의 넓이는?',fig:()=>secFigS(6,null,60,{rLab:'6 cm'}),
@@ -418,7 +448,7 @@ if(typeof HG_TRACKS==='object'){
         steps:[{t:'① 원 둘레 구하기',hl:[],body:'지름 12 × π = <b>12π cm</b>'},{t:'② 호 ÷ 원 둘레 약분',hl:[],body:'4π / 12π = <b>1/3</b>'},{t:'③ 360° × 분수',hl:[],body:'360° × 1/3 = <b>120°</b>'}],
         pitfall:'⚠️ 자주 하는 실수: 호의 반으로 나누지 말고 원래 호의 길이(4π)를 그대로 써요.'},
       6:{no:6,nm:'색칠한 부분의 넓이 (큰 것 − 작은 것)',prob:'반지름 8 cm, 4 cm, 중심각 90°인 두 부채꼴 사이 넓이',fig:()=>secFigS(8,4,90,{rLab:'8 cm'}),
-        steps:[{t:'① 큰 부채꼴 넓이',hl:[],body:'64π ÷ 4 = <b>16π cm²</b>'},{t:'② 작은 부채꼴 넓이',hl:[],body:'16π ÷ 4 = <b>4π cm²</b>'},{t:'③ 빼기 (둘레는 직선도!)',hl:[],body:'16π − 4π = <b>12π cm²</b>'}],
+        steps:[{t:'① 큰 부채꼴 넓이',hl:[],body:'64π × 90/360 = 64π × 1/4 = <b>16π cm²</b>'},{t:'② 작은 부채꼴 넓이',hl:[],body:'16π × 90/360 = 16π × 1/4 = <b>4π cm²</b>'},{t:'③ 빼기 (둘레는 직선도!)',hl:[],body:'16π − 4π = <b>12π cm²</b>'}],
         pitfall:'⚠️ 자주 하는 실수: 넓이는 빼고, 둘레를 물을 때는 작은 호도 <b>더하기</b> + 직선 2개도 더해요!'}
     },
     compoundList:[
