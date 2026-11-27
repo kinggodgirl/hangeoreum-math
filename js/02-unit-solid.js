@@ -54,8 +54,8 @@ function viewHome(){
 /* 홈의 단원 카드: 단원 이름 · 차시별 진행 · 이어서 하기 (최근에 공부한 단원이 앞에) */
 /* 교과서(지학사 수학 1) 대단원 번호 */
 const ROMAN_OF={'소인수분해':'Ⅰ','정수와 유리수':'Ⅱ','문자의 사용과 식':'Ⅲ','일차방정식':'Ⅲ','좌표평면과 그래프':'Ⅳ','기본 도형':'Ⅴ','평면도형의 성질':'Ⅵ','입체도형의 성질':'Ⅶ','자료의 정리와 해석':'Ⅷ'};
-function HOME_UNITS(){const chi=u=>UNITS.findIndex(z=>z[0]===unitOf(u).ch),lu=DB._last&&(LESSONS.find(l=>l.id===DB._last.id)||{}).unit;
-  return OPEN_UNITS.slice().sort((x,y)=>((y===lu)-(x===lu))||((y===UNIT_ID)-(x===UNIT_ID))||chi(x)-chi(y))}
+/* [T21] 교과서 단원 순서로 고정해요(최근에 공부한 단원을 앞으로 옮기지 않아요: 순서가 매번 바뀌어 헷갈렸어요) */
+function HOME_UNITS(){const chi=u=>UNITS.findIndex(z=>z[0]===unitOf(u).ch);return OPEN_UNITS.slice().sort((x,y)=>chi(x)-chi(y))}
 function unitCardHTML(u){const I=unitOf(u),ci=UNITS.findIndex(z=>z[0]===I.ch),L=LESSONS.filter(l=>l.ready&&!l.hidden&&(l.unit||'solid')===u);
   const d=L.reduce((a,l)=>a+lessonDone(l.id),0),tot=L.length*LESSON_REQ,nx=L.find(l=>lessonDone(l.id)<LESSON_REQ),pct=tot?Math.round(d/tot*100):0;
   return`<div class="card unit ready ucard" data-u="${u}"><a class="uc-h" href="#unit-${u}"><span class="uc-ch">${ROMAN_OF[I.ch]||''} ${I.ch}</span><b>${I.name}</b></a>

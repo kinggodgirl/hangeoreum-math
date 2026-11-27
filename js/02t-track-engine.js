@@ -160,85 +160,132 @@ function owlAvatarSVG(exp='normal'){
   </svg>`;
 }
 
+/* [T21] 부엉 쌤 그림극 v2: 버튼 대신 화면 빈 곳을 누르면 한 줄씩 넘어가요(Space·Enter·→ 키도 돼요).
+   장면 = {cap, exp, svg()→SVG 문자열, beats:['한 줄', {say, exp}, …] (없으면 say), ask}
+   그림 안 <g data-b="n">는 n번째 줄에서 나타나요(0이면 장면 시작). 그 안의 class="dr" 선은 펜으로 그리듯 나타나요.
+   data-b가 없는 예전 장면은 주황 선이 그려지듯 나타나고, 자막은 문장마다 나눠서 보여 줘요. */
+const OWL_HL_RE=/^#e08a1e$/i;
+function owlReduce(){try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+function owlBeats(sc){
+  if(Array.isArray(sc.beats)&&sc.beats.length)return sc.beats.map(b=>typeof b==='string'?{say:b}:b);
+  const s=String(sc.say||''),parts=s.split(/(?<=[.!?])\s+/).filter(x=>x.trim());
+  const bal=x=>(x.match(/<span\b/g)||[]).length===(x.match(/<\/span>/g)||[]).length&&(x.match(/<b>/g)||[]).length===(x.match(/<\/b>/g)||[]).length;
+  return(parts.length>1&&parts.length<=4&&parts.every(bal)?parts:[s]).map(say=>({say}));
+}
+function owlDraw(root){
+  if(!root||owlReduce())return;
+  $$('.dr',root).forEach((e,i)=>{
+    if(typeof e.getTotalLength!=='function')return;
+    let L=0;try{L=e.getTotalLength()}catch(x){}
+    if(!(L>0))return;
+    e.style.transition='none';e.style.strokeDasharray=L+' '+L;e.style.strokeDashoffset=L;
+    const go=()=>{e.style.transition=`stroke-dashoffset ${Math.min(1.5,0.55+L/320).toFixed(2)}s ease-in-out ${(i*0.3).toFixed(2)}s`;e.style.strokeDashoffset='0'};
+    e.addEventListener('transitionend',()=>{e.style.strokeDasharray='';e.style.strokeDashoffset='';e.style.transition=''},{once:true});
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(go));else go();
+  });
+}
 function mountOwlShow(host,lid,spec,opt={}){
   const scenes=typeof spec.owlScenes==='function'?spec.owlScenes():(spec.owlScenes||[]);
   if(!scenes.length){host.innerHTML='';return}
-  let idx=0,typedLen=0,typingT=null,askedDone=new Set(),finished=false;
+  const B=scenes.map(owlBeats);
+  let idx=0,beat=0,seen=0,finished=false;const askedDone=new Set();
+  const plain=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
 
-  const stopType=()=>{if(typingT){clearInterval(typingT);typingT=null}};
-  const plainLen=html=>String(html||'').replace(/<[^>]+>/g,'').length;
-
-  const draw=()=>{
-    stopType();
-    const sc=scenes[Math.min(idx,scenes.length-1)];
-    const full=sc.say||'';
-    const needAsk=sc.ask&&!askedDone.has(idx);
-    const isLast=idx>=scenes.length-1;
-
-    host.innerHTML=`<div class="owl-wrap">
+  const paint=anim=>{
+    const sc=scenes[idx],bs=B[idx],bt=bs[beat]||bs[0],atEnd=beat>=bs.length-1,showAsk=!!sc.ask&&atEnd,needAsk=showAsk&&!askedDone.has(idx),isLast=idx>=scenes.length-1;
+    const svg=$('.owl-stage svg',host);
+    if(svg){
+      const gs=$$('[data-b]',svg);
+      gs.forEach(g=>{const n=+g.getAttribute('data-b');g.style.display=n<=beat?'':'none'});
+      if(anim){
+        gs.filter(g=>+g.getAttribute('data-b')===beat).forEach(owlDraw);
+        if(!gs.length&&beat===0){
+          $$('path,line,polyline,circle',svg).forEach(e=>{const fl=e.getAttribute('fill');if(OWL_HL_RE.test(e.getAttribute('stroke')||'')&&(e.tagName.toLowerCase()==='line'||!fl||fl==='none'))e.classList.add('dr')});
+          owlDraw(svg);
+        }
+      }
+    }
+    const av=$('.owl-av',host);if(av)av.innerHTML=owlAvatarSVG(bt.exp||sc.exp||'normal');
+    const bub=$('#owlBub',host);
+    if(bub)bub.innerHTML=bs.slice(0,beat+1).map((x,i)=>`<p class="owl-line${i===beat?' now':''}">${x.say}</p>`).join('');
+    const ak=$('#owlAskHost',host);
+    if(ak){
+      ak.innerHTML=showAsk?`<div class="owl-ask">
+        <div class="owl-ask-q">✋ 잠깐 확인! ${sc.ask.q}</div>
+        <div class="ct-hit-row" id="owlAskBtns">${sc.ask.choices.map(c=>`<button type="button" class="ct-hit${askedDone.has(idx)&&c===sc.ask.ans?' ok':''}" data-oa="${c}"${askedDone.has(idx)?' disabled':''}>${c}</button>`).join('')}</div>
+        <div id="owlAskMsg">${askedDone.has(idx)?`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`:''}</div></div>`:'';
+      $$('[data-oa]',ak).forEach(b=>b.onclick=()=>{
+        const msg=$('#owlAskMsg',ak);
+        if(b.dataset.oa===sc.ask.ans){askedDone.add(idx);b.classList.add('ok');$$('[data-oa]',ak).forEach(x=>x.disabled=true);if(msg)msg.innerHTML=`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`;paintHint()}
+        else{b.classList.add('bad');b.disabled=true;if(msg)msg.innerHTML=`<div class="ct-cool" style="margin-top:6px">💡 ${sc.ask.hint}</div>`}
+      });
+    }
+    const sum=$('#owlSumHost',host);
+    if(sum)sum.innerHTML=finished&&Array.isArray(spec.owlSummary)&&spec.owlSummary.length?`<div class="owl-sum"><b>📌 부엉 쌤 핵심 정리</b><ul>${spec.owlSummary.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:'';
+    const pg=$('.owl-pg',host);if(pg)pg.innerHTML=`장면 ${idx+1} / ${scenes.length}${bs.length>1?` <span class="owl-bdots">${bs.map((_,i)=>`<i class="${i<=beat?'on':''}"></i>`).join('')}</span>`:''}`;
+    const pv=$('#owlPrev',host);if(pv)pv.disabled=idx===0&&beat===0;
+    $$('.owl-dot',host).forEach((d,i)=>{d.className='owl-dot'+(i<idx||(finished&&i===idx)?' done':i===idx?' on':'');d.disabled=i>seen});
+    paintHint();
+    void needAsk;void isLast;
+  };
+  const paintHint=()=>{
+    const h=$('.owl-hint',host);if(!h)return;
+    const sc=scenes[idx],atEnd=beat>=B[idx].length-1,needAsk=!!sc.ask&&atEnd&&!askedDone.has(idx),isLast=idx>=scenes.length-1;
+    h.className='owl-hint'+(finished?' fin':needAsk?' ask':'');
+    h.innerHTML=finished?'✓ 개념을 끝까지 봤어요. 장면 점을 누르면 다시 볼 수 있어요.'
+      :needAsk?'✋ 질문에 답하면 다음으로 넘어가요.'
+      :isLast&&atEnd?'👆 화면을 누르면 핵심 정리가 나와요.'
+      :'👆 화면 빈 곳을 누르면 다음으로 넘어가요.';
+  };
+  const enter=()=>{
+    const sc=scenes[idx],hadFocus=typeof host.contains==='function'&&typeof document==='object'&&host.contains(document.activeElement);
+    seen=Math.max(seen,idx);
+    host.innerHTML=`<div class="owl-wrap owl-tap" tabindex="0" role="group" aria-label="부엉 쌤 개념 그림극. 화면을 누르면 다음으로 넘어가요.">
       <div class="owl-top">
-        <span class="owl-title">🦉 부엉 쌤의 1분 개념 그림극</span>
-        <div class="owl-dots">${scenes.map((_,i)=>`<button type="button" class="owl-dot${i<idx?' done':i===idx?' on':''}" data-oi="${i}" aria-label="${i+1}장면"></button>`).join('')}</div>
+        <span class="owl-title">🦉 부엉 쌤의 개념 그림극</span>
+        <div class="owl-dots">${scenes.map((_,i)=>`<button type="button" class="owl-dot" data-oi="${i}" aria-label="${i+1}장면"></button>`).join('')}</div>
       </div>
       <div class="owl-stage owl-new">${sc.svg?sc.svg():''}${sc.cap?`<div class="owl-cap">${sc.cap}</div>`:''}</div>
-      <div class="owl-row">
-        <div class="owl-av">${owlAvatarSVG(sc.exp||'normal')}</div>
-        <div class="owl-bub" id="owlBub" title="누르면 자막이 바로 다 나와요">${full}</div>
-      </div>
-      ${needAsk?`<div class="owl-ask">
-        <div class="owl-ask-q">✋ 잠깐 확인! ${sc.ask.q}</div>
-        <div class="ct-hit-row" id="owlAskBtns">${sc.ask.choices.map(c=>`<button type="button" class="ct-hit" data-oa="${c}">${c}</button>`).join('')}</div>
-        <div id="owlAskMsg"></div>
-      </div>`:''}
-      ${finished&&Array.isArray(spec.owlSummary)&&spec.owlSummary.length?`<div class="owl-sum"><b>📌 부엉 쌤 핵심 요약</b><ul>${spec.owlSummary.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}
+      <div class="owl-row"><div class="owl-av"></div><div class="owl-bub" id="owlBub" aria-live="polite"></div></div>
+      <div id="owlAskHost"></div><div id="owlSumHost"></div>
       <div class="owl-ctrl">
-        <div>
-          <button type="button" class="btn ghost" id="owlPrev" ${idx<=0?'disabled':''}>◀ 이전</button>
-          <button type="button" class="btn ghost" id="owlReplay">↺ 처음부터</button>
-        </div>
-        <span class="muted">${idx+1} / ${scenes.length}</span>
-        <button type="button" class="btn primary" id="owlNext" ${needAsk?'disabled':''}>${isLast?(finished?'개념 다 봤어요 ✓':'완료하고 정리 보기 ✓'):'다음 장면 ▶'}</button>
+        <div><button type="button" class="btn ghost mini" id="owlPrev">◀ 이전</button> <button type="button" class="btn ghost mini" id="owlReplay">↺ 처음부터</button>${typeof canSpeak!=='undefined'&&canSpeak&&typeof speak==='function'?' <button type="button" class="btn ghost mini say" id="owlSay" aria-label="자막 읽어 주기">🔊 듣기</button>':''}</div>
+        <span class="owl-pg muted"></span>
       </div>
+      <div class="owl-hint"></div>
     </div>`;
-
-    $$('[data-oi]',host).forEach(b=>b.onclick=()=>{
-      const target=+b.dataset.oi;
-      if(target<=idx||askedDone.size>=idx){idx=target;draw()}
-    });
-    const prevBtn=$('#owlPrev',host);if(prevBtn)prevBtn.onclick=()=>{if(idx>0){idx--;draw()}};
-    const repBtn=$('#owlReplay',host);if(repBtn)repBtn.onclick=()=>{idx=0;finished=false;draw()};
-    const nxBtn=$('#owlNext',host);
-    if(nxBtn)nxBtn.onclick=()=>{
-      if(needAsk)return;
-      if(!isLast){idx++;draw()}
-      else{
-        finished=true;
-        const p=lesProg(lid);p.concept=true;
-        if(typeof save==='function')save();
-        if(typeof award==='function')award(5,lid+':owl','부엉 쌤 개념 영상을 끝까지 봤어요');
-        if(opt.onFinish)opt.onFinish();
-        draw();
-      }
-    };
-    $$('[data-oa]',host).forEach(b=>b.onclick=()=>{
-      const v=b.dataset.oa;
-      if(v===sc.ask.ans){
-        askedDone.add(idx);
-        b.classList.add('ok');
-        $$('[data-oa]',host).forEach(x=>x.disabled=true);
-        const msg=$('#owlAskMsg',host);
-        if(msg)msg.innerHTML=`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`;
-        const nb=$('#owlNext',host);if(nb)nb.disabled=false;
-      }else{
-        b.classList.add('bad');
-        const msg=$('#owlAskMsg',host);
-        if(msg)msg.innerHTML=`<div class="ct-cool" style="margin-top:6px">💡 ${sc.ask.hint}</div>`;
-      }
-    });
-    void plainLen(full);
-    void typedLen;
+    const wrap=$('.owl-wrap',host);
+    wrap.onclick=e=>{if(e.target.closest&&e.target.closest('button,a,input,select,label,.owl-ask,.owl-sum'))return;next()};
+    wrap.onkeydown=e=>{if(e.target!==wrap)return;if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}};
+    $$('[data-oi]',host).forEach(b=>b.onclick=()=>{const t=+b.dataset.oi;if(t<=seen){idx=t;beat=0;enter()}});
+    $('#owlPrev',host).onclick=prev;
+    $('#owlReplay',host).onclick=()=>{idx=0;beat=0;enter()};
+    const sy=$('#owlSay',host);if(sy)sy.onclick=()=>{const bt=B[idx][beat];speak(plain(bt&&bt.say),sy)};
+    if(hadFocus&&wrap.focus)try{wrap.focus({preventScroll:true})}catch(e){}
+    paint(true);
   };
-  draw();
+  const next=()=>{
+    if(finished)return;
+    const sc=scenes[idx];
+    if(beat<B[idx].length-1){beat++;paint(true);return}
+    if(sc.ask&&!askedDone.has(idx)){const a=$('.owl-ask',host);if(a){a.classList.remove('owl-shake');void a.offsetWidth;a.classList.add('owl-shake')}return}
+    if(idx<scenes.length-1){idx++;beat=0;enter();return}
+    finished=true;
+    const p=lesProg(lid);p.concept=true;p.tday=today();
+    if(typeof save==='function')save();
+    if(typeof award==='function')award(5,lid+':owl','부엉 쌤 개념 그림극을 끝까지 봤어요');
+    if(opt.onFinish)opt.onFinish();
+    paint(false);
+    const s=$('#owlSumHost',host);if(s&&s.scrollIntoView)try{s.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}
+  };
+  const prev=()=>{
+    if(beat>0){beat--;paint(false);return}
+    if(idx>0){idx--;beat=B[idx].length-1;enter()}
+  };
+  /* 접힌 상자(details) 안에 있으면 펼칠 때 장면을 처음부터 다시 그려요(애니메이션이 숨은 채 끝나지 않게) */
+  const det=host.closest&&host.closest('details');
+  if(det&&det.addEventListener)det.addEventListener('toggle',()=>{if(det.open&&!finished){beat=0;enter()}});
+  enter();
 }
 
 /* ── 4. 🌱 첫걸음 렌더러 ── */
@@ -276,7 +323,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
   const queue=kinds.slice(0,total).map(k=>({k,seed:newSeedFor(k)}));
   let idx=0,good=0,nextT=null;
   const finish=()=>{
-    p.t1SchemaDone=true;if(typeof save==='function')save();
+    p.t1SchemaDone=true;p.tday=today();if(typeof save==='function')save();
     if(typeof award==='function')award(5,lid+':t1schema','주황색 표시를 모두 구별했어요');
     host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별하기 ${queue.length}문제 완료!</b> 한 번에 맞힌 문제 ${good}개예요. ${spec.kind==='concept'?'방금 본 모양의 이름을 <b>개념 보기</b>에서 다시 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
       <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}${(spec.firstGuide||[]).length?`<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button>`:spec.kind==='concept'?'':`<a class="btn primary" href="#${lid}-practice">첫걸음 차시 마무리 →</a>`}</div></div>`;
@@ -287,7 +334,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
     if(!host.isConnected)return;
     if(idx>=queue.length)return finish();
     const cur=queue[idx],it=R.make(cur.k,cur.seed),shownAt=Date.now();
-    let missed=false;
+    let missed=false;const bothPick=new Set();
     host.innerHTML=`<div class="ct-card ct-schema ct-rapid">
       <div class="ct-card-h"><h2>${R.title||'주황색은 무엇일까요?'}</h2><div class="ct-schema-prog">${queue.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${queue.length}</span></div></div>
       <div class="ct-stage">
@@ -302,8 +349,10 @@ function renderT1Rapid(host,lid,spec,onNextPart){
     btns.forEach(btn=>btn.onclick=()=>{
       const v=btn.dataset.v,ms=Date.now()-shownAt;
       if(it.also&&it.also[v]){btn.disabled=true;msg.innerHTML=`<div class="ct-cool">💡 ${it.also[v]}</div>`;return}
+      /* [T21] 이름이 두 개인 그림(반원 = 부채꼴 + 활꼴): 어느 쪽을 먼저 골라도 '하나 더'를 고르게 해요 */
+      if(it.both&&it.both.includes(v)){bothPick.add(v);btn.disabled=true;btn.classList.add('ok');if(it.both.some(x=>!bothPick.has(x))){msg.innerHTML=`<div class="ct-cool">👍 맞아요! 이 도형은 <b>이름이 하나 더</b> 있어요. 나머지 하나도 골라 보세요.</div>`;return}}
       btns.forEach(b=>b.disabled=true);
-      if(v===it.ans){
+      if(v===it.ans||(it.both&&it.both.includes(v))){
         recordMetric(ms,null);
         btn.classList.add('ok');
         if(!missed)good++;
@@ -313,8 +362,8 @@ function renderT1Rapid(host,lid,spec,onNextPart){
         missed=true;
         recordMetric(ms,ms<FAST_MS?'schema_fast_wrong':'schema_wrong');
         btn.classList.add('bad');
-        const ok=btns.find(b=>b.dataset.v===it.ans);if(ok)ok.classList.add('ok');
-        msg.innerHTML=`<div class="ct-cool">${ms<FAST_MS?FAST_MSG+'<br>':''}정답: <b>${it.ans}</b><br>${it.why}</div>
+        const okV=it.both||[it.ans];btns.filter(b=>okV.includes(b.dataset.v)).forEach(b=>b.classList.add('ok'));
+        msg.innerHTML=`<div class="ct-cool">${ms<FAST_MS?FAST_MSG+'<br>':''}정답: <b>${okV.join(', ')}</b><br>${it.why}</div>
           <div class="next-row" style="justify-content:flex-start"><button type="button" class="btn primary" id="rqAgain">${queue.length<total+4?'같은 종류 한 번 더 →':'다음 그림 →'}</button></div>`;
         if(queue.length<total+4)queue.splice(idx+1,0,{k:cur.k,seed:newSeedFor(cur.k)});
         const ab=$('#rqAgain',host);if(ab)ab.onclick=()=>{idx++;draw()};
@@ -331,7 +380,7 @@ function renderT1Schema(host,lid,spec,onNextPart){
   const draw=()=>{
     if(coolTimer){clearTimeout(coolTimer);coolTimer=null}
     if(idx>=QS.length){
-      p.t1SchemaDone=true;if(typeof save==='function')save();
+      p.t1SchemaDone=true;p.tday=today();if(typeof save==='function')save();
       if(typeof award==='function')award(5,lid+':t1schema','맞는지 아닌지 모두 구별했어요');
       host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별 연습 ${QS.length}문항 완료!</b> ${spec.kind==='concept'?'방금 본 모양에 어떤 이름이 붙는지 <b>개념 보기</b>에서 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
         <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button></div></div>`;
@@ -393,7 +442,7 @@ function renderT1Guide(host,lid,spec){
       if(good){
         twinDone=true;
         p.t1Solo[g.tyNo]=true;
-        p.trackDone=Math.max(Number(p.trackDone)||0,1);
+        p.tday=today();p.trackDone=Math.max(Number(p.trackDone)||0,1);
         scheduleTypeRev(lid,g.tyNo,wrongs>0);
         if(typeof save==='function')save();
         if(typeof award==='function')award(5,lid+':solo:'+g.tyNo,'도움 없이 혼자 확인 1문제를 풀었어요');
@@ -534,13 +583,15 @@ function renderT1Concept(body,lid,spec){
 function renderT1Practice(body,lid,spec){
   const p=lesProg(lid);
   /* [T20] schemaRapid.check = 마무리에 섞을 빠른 구별 종류 번호들. 틀리면 같은 종류의 다른 그림(make)으로 다시 확인해요. */
-  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:R.q,fig:()=>it.fig,choices:R.choices,ans:it.ans,also:it.also,why:it.why,hint:`정답은 <b>${it.ans}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
+  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:R.q,fig:()=>it.fig,choices:R.choices,ans:it.ans,also:it.also,both:it.both,why:it.why,hint:`정답은 <b>${(it.both||[it.ans]).join(', ')}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
   const rapidPool=R&&Array.isArray(R.check)?R.check.map(rapidItem):[];
   const basePool=spec.t1Check&&spec.t1Check.length?spec.t1Check:(rapidPool.length?[]:(spec.schemaQs||[]).map((q,i)=>({id:'t1q'+i,kind:'k'+i,q:q.q,fig:q.fig,choices:q.choices,ans:q.ans,hint:q.hint})));
   const pool=rapidPool.concat(basePool);
   if(rapidPool.length)for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
   let qQueue=pool.slice(),idx=0,recheckKind=null,consecKind=null,rescued=false,doneSet=new Set();
+  let bothPick=new Set();
   const draw=()=>{
+    bothPick=new Set();
     if(rescued){
       body.innerHTML=`<div class="ct-rescue"><h3>잠깐! 방금 유형을 한 번 더 정리하고 올까요?</h3><p>같은 종류의 판단을 두 번 연속 헷갈렸어요. <b>유형 익히기</b>에서 그림과 안내를 따라 다시 확인하고 돌아오면 훨씬 쉬워요.</p>
         <div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#${lid}-steps">유형 익히기로 돌아가기 →</a><button type="button" class="btn ghost" id="t1RetryAll">차시 마무리 다시 풀기</button></div></div>`;
@@ -548,7 +599,7 @@ function renderT1Practice(body,lid,spec){
       return;
     }
     if(idx>=qQueue.length){
-      p.trackDone=Math.max(Number(p.trackDone)||0,1);
+      p.tday=today();p.trackDone=Math.max(Number(p.trackDone)||0,1);
       p.concept=true;
       if(typeof save==='function')save();
       if(typeof award==='function')award(10,lid+':t1','첫걸음 차시 마무리를 통과했어요');
@@ -575,7 +626,8 @@ function renderT1Practice(body,lid,spec){
     $$('#t1Ch .ct-hit',body).forEach(b=>b.onclick=()=>{
       const ms=Date.now()-shownAt;
       if(item.also&&item.also[b.dataset.v]){b.disabled=true;$('#t1Msg',body).innerHTML=`<div class="ct-cool">💡 ${item.also[b.dataset.v]}</div>`;return}
-      if(b.dataset.v===item.ans){
+      if(item.both&&item.both.includes(b.dataset.v)){bothPick.add(b.dataset.v);b.disabled=true;b.classList.add('ok');if(item.both.some(x=>!bothPick.has(x))){$('#t1Msg',body).innerHTML=`<div class="ct-cool">👍 맞아요! 이 도형은 <b>이름이 하나 더</b> 있어요. 나머지 하나도 골라 보세요.</div>`;return}}
+      if(b.dataset.v===item.ans||(item.both&&item.both.includes(b.dataset.v))){
         recordMetric(ms,null);
         doneSet.add(item.kind);consecKind=null;recheckKind=null;
         b.classList.add('ok');$$('#t1Ch .ct-hit',body).forEach(x=>x.disabled=true);
@@ -612,7 +664,7 @@ function renderT2Concept(body,lid,spec){
       <a class="btn primary" href="#${lid}-practice">바로 차시 마무리 도전 →</a>
     </div>
     <details class="ct-wx" style="margin-bottom:14px">
-      <summary class="ct-wx-toggle"><span class="ct-wx-tag">🦉 부엉 쌤 개념 영상</span><span class="ct-wx-sum">그림으로 핵심 원리 1분 복습하기</span><span class="ct-wx-chev">펼치기 ▾</span></summary>
+      <summary class="ct-wx-toggle"><span class="ct-wx-tag">🦉 부엉 쌤 개념 그림극</span><span class="ct-wx-sum">화면을 누르며 그림으로 핵심 원리 복습하기</span><span class="ct-wx-chev">펼치기 ▾</span></summary>
       <div class="ct-wx-body" id="t2OwlHost"></div>
     </details>
     ${rows.length?`<div class="cp-strat" style="margin-top:0">
@@ -698,7 +750,7 @@ function renderT2Steps(body,lid,spec,initialTypeNo,openWorked){
       renderProblem($('#t2ProbHost',body),prob,{mode:'steps',visual:true,rep:{lesson:lid,gen:gKey,seed:probSeed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
         if(typeof logAttempt==='function')logAttempt({lesson:lid,kind:'steps',good,wrongs,mode,gen:gKey,seed:probSeed,ptype:prob.ptype,stepWrongs,revealed});
         if(good){
-          p.steps=(Number(p.steps)||0)+1;p.tyS[curNo]=(p.tyS[curNo]||0)+1;
+          p.steps=(Number(p.steps)||0)+1;p.tday=today();p.tyS[curNo]=(p.tyS[curNo]||0)+1;
           scheduleTypeRev(lid,curNo,wrongs>0);
           if(typeof save==='function')save();
           if(typeof award==='function')award(10,null,'유형 변형 문제를 풀었어요');
@@ -792,7 +844,7 @@ function renderT2Practice(body,lid,spec){
     items,
     onRescue:it=>{renderT2Steps(body,lid,spec,it.tyNo,true)},
     onPass:(host,results)=>{
-      p.trackDone=Math.max(Number(p.trackDone)||0,2);
+      p.tday=today();p.trackDone=Math.max(Number(p.trackDone)||0,2);
       p.concept=true;p.steps=Math.max(Number(p.steps)||0,1);
       p.prac=p.prac||{solved:0,streak:0,level:1,fails:0,retry:[]};
       p.prac.solved=Math.max(Number(p.prac.solved)||0,5);
@@ -905,7 +957,7 @@ function renderT3Practice(body,lid,spec){
     items,
     onRescue:it=>{if(it.cid)renderT3Steps(body,lid,spec,it.cid);else renderT2Steps(body,lid,spec,it.tyNo,true)},
     onPass:(host,results)=>{
-      p.trackDone=3;p.concept=true;p.steps=Math.max(Number(p.steps)||0,1);
+      p.tday=today();p.trackDone=3;p.concept=true;p.steps=Math.max(Number(p.steps)||0,1);
       p.prac=p.prac||{solved:0,streak:0,level:1,fails:0,retry:[]};
       p.prac.solved=Math.max(Number(p.prac.solved)||0,5);
       TL.forEach(t=>{
@@ -1117,10 +1169,35 @@ if(typeof viewHome==='function'){
   };
 }
 
+/* [T21] 오늘의 길잡이의 『교과서 한 걸음』 칸: 순서를 정해 두었어요.
+   ① 마지막으로 공부한 차시가 아직 안 끝났으면 그 차시를 이어서 ② 아니면 교과서 순서(단원 → 차시 번호)로 안 끝난 첫 차시.
+   끝남 = 고른 걸음(🌱·🌿·🌳)의 차시 마무리 통과. 다음에 할 탭도 걸음에 맞춰 알려 줘요. */
+const TRACK_NM={1:'🌱 첫걸음',2:'🌿 한걸음',3:'🌳 두걸음'};
+function guideLessonOrder(){
+  const chi=l=>{const I=typeof unitOf==='function'?unitOf(l.unit||'solid'):null;return typeof UNITS!=='undefined'&&I?UNITS.findIndex(z=>z[0]===I.ch):0};
+  return LESSONS.filter(l=>l.ready&&!l.hidden).slice().sort((a,b)=>chi(a)-chi(b)||(a.no-b.no));
+}
+function guideLessonDone(l){return SPECS[l.id]?window.lessonTrackDone(l.id)>=curTrack(l.id):(typeof lessonDone==='function'&&lessonDone(l.id)>=(typeof LESSON_REQ==='number'?LESSON_REQ:3))}
+function guideLessonStep(){
+  const L=guideLessonOrder();if(!L.length)return null;
+  const last=DB._last&&L.find(l=>l.id===DB._last.id);
+  const cur=(last&&!guideLessonDone(last))?last:L.find(l=>!guideLessonDone(l));
+  const t=typeof today==='function'?today():'';
+  if(!cur)return{les:true,done:L.some(l=>OBJ(DB[l.id]).tday===t),more:true,t:'열린 차시를 모두 마쳤어요',s:'두걸음이나 복습 추천으로 실력을 다져요',href:'#'+L[L.length-1].id};
+  const unitNm=typeof unitOf==='function'?unitOf(cur.unit||'solid').name:'';
+  if(!SPECS[cur.id])return null;
+  const p=lesProg(cur.id),tr=curTrack(cur.id),spec=SPECS[cur.id],td=window.lessonTrackDone(cur.id);
+  const order=tr===1?(spec.kind==='concept'?['steps','concept','practice']:['concept','steps','practice']):['steps','practice'];
+  const isDone={concept:!!p.concept,steps:tr===1?!!p.t1SchemaDone:Number(p.steps)>0,practice:td>=tr};
+  const tab=order.find(k=>!isDone[k])||'practice';
+  const TAB={concept:'개념 보기 · 부엉 쌤 그림극',steps:tr===1?'유형 익히기 · 구별하기':tr===2?'유형 익히기 · 대표 예제':'유형 익히기 · 복합 문제',practice:'차시 마무리'};
+  return{les:true,done:p.tday===t,more:true,t:`${cur.no}차시 ${cur.title}`,s:`${unitNm} · ${TRACK_NM[tr]} · ${last===cur&&(p.concept||p.t1SchemaDone||Number(p.steps)>0)?'이어서 ':''}${TAB[tab]}`,href:`#${cur.id}-${tab}`};
+}
 if(typeof guideSteps==='function'){
   const prevGS=guideSteps;
   guideSteps=function(){
     const S=prevGS.apply(this,arguments);
+    if(Array.isArray(S)){const li=S.findIndex(x=>/^\d+차시 |^열린 차시를/.test(x.t)),G=guideLessonStep();if(li>=0&&G)S[li]=G}
     const need=typeof DB==='object'&&DB&&DB._needCalc;
     if(!need||!need.id||!Array.isArray(S))return S;
     const t=typeof CALC!=='undefined'&&CALC.find(c=>c.id===need.id);
