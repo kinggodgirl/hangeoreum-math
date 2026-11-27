@@ -20,7 +20,7 @@ function arcQuiz(kind){
   let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#9aa3b5" stroke-width="2"/>`;
   if(kind==='chord')s+=`<path d="M ${pt(A)} L ${pt(B)}" ${TH}/>`+dot(A)+dot(B);
   else if(kind==='diam'){const D=pol(C,R,215);s+=`<path d="M ${pt(B)} L ${pt(D)}" ${TH}/>`+dot(B)+dot(D)}
-  else if(kind==='non_sec'){const Q=[150,175];s+=`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 0 ${pt(B)} Z" fill="${HLs}" ${TH}/>`+dot(Q,4)}
+  else if(kind==='non_sec'){const Q=[150,175];s+=`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 1 ${pt(B)} Z" fill="${HLs}" ${TH}/>`+dot(Q,4)}
   else if(kind==='semi')s+=`<path d="${secD(C,R,0,180)}" fill="${HLs}" ${TH}/>`;
   s+=dot(C,4)+tx([C[0],C[1]+(kind==='semi'?18:16)],'O',{size:16});
   return svgB(300,232,s,'원 O');
@@ -77,7 +77,7 @@ function owlArcScene(k){
   }else if(k===5){/* 부채꼴이 아닌 경우 */
     const Q=[C[0]-6,C[1]+52];
     s+=owArcBase({noAB:false});
-    s+=OB(0,`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 0 ${pt(B)} Z" fill="${HLs}" stroke="none"/>`+drL(Q,A,HL,5)+drL(Q,B,HL,5)+drP(`M ${pt(B)} A ${R} ${R} 0 0 1 ${pt(A)}`,HL,5)+popDot(Q,4.5,RD)+tx([Q[0]+16,Q[1]+8],'P',{col:RD}));
+    s+=OB(0,`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 1 ${pt(B)} Z" fill="${HLs}" stroke="none"/>`+drL(Q,A,HL,5)+drL(Q,B,HL,5)+drP(`M ${pt(B)} A ${R} ${R} 0 0 0 ${pt(A)}`,HL,5)+popDot(Q,4.5,RD)+tx([Q[0]+16,Q[1]+8],'P',{col:RD}));
     s+=OB(1,drL(C,A,RD,2.4,' stroke-dasharray="5 6"')+drL(C,B,RD,2.4,' stroke-dasharray="5 6"')+`<g class="ob-pop">${tx([C[0],C[1]+R+20],'꼭짓점이 O가 아니에요!',{sans:true,col:RD,size:14})}</g>`);
   }else{/* 반원 */
     const L=pol(C,R,180),Rt=pol(C,R,0);
@@ -148,7 +148,7 @@ function arcFig(kind,o){
   else if(kind==='diam'){const D=pol(C,R,215);s+=ln(B,D,BL,4.5)+dot(B)+dot(D)+tx([150,145],'지름 = 중심 지나는 현',{sans:true,col:BL,size:14})}
   else if(kind==='sector'){s+=`<path d="${secD(C,R,35,145)}" fill="${HLs}" stroke="${INK}" stroke-width="2.4"/>`+tx([150,72],'반지름 2개 + 호',{sans:true,col:HL,size:14})}
   else if(kind==='seg'){s+=`<path d="${arcD(C,R,35,145)} Z" fill="${BLs}" stroke="${INK}" stroke-width="2.4"/>`+tx([150,62],'현 + 호 (활꼴)',{sans:true,col:BL,size:14})}
-  else if(kind==='non_sec'){const Q=[150,175];s+=`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 0 ${pt(B)} Z" fill="#fbe9e9" stroke="${RD}" stroke-width="2.6"/>`+dot(Q,4.5,RD)+tx([150,192],'중심 O가 아님!',{sans:true,col:RD,size:13})}
+  else if(kind==='non_sec'){const Q=[150,175];s+=`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 1 ${pt(B)} Z" fill="#fbe9e9" stroke="${RD}" stroke-width="2.6"/>`+dot(Q,4.5,RD)+tx([150,192],'중심 O가 아님!',{sans:true,col:RD,size:13})}
   else if(kind==='semi'){s+=`<path d="${secD(C,R,0,180)}" fill="#e5f4ea" stroke="${INK}" stroke-width="2.5"/>`+tx([150,86],'반원 (180°)',{sans:true,col:'#2b7a4b',size:15})}
   s+=dot(C,4)+tx([C[0],C[1]+16],'O',{size:15});
   return svgB(300,246,s,'원과 부채꼴 그림');
@@ -218,7 +218,7 @@ if(typeof HG_TRACKS==='object'){
         return{fig:pr.fig.svg(),ans:st.ans,why:st.ok||'',also:st.also||null}}},
     /* [T21] 부엉 쌤 그림극: 화면을 누를 때마다 한 줄씩 나오고, 선이 그려지듯 나타나요. 교과서 194~195쪽 순서(호 → 현 → 부채꼴·중심각 → 활꼴) */
     owlScenes:[
-      {cap:'장면 ① 호와 기호 ⌒AB',svg:()=>owlArcScene(1),beats:[
+      {cap:'장면 ① 호와 그 기호',svg:()=>owlArcScene(1),beats:[
         '원 O를 그렸어요. 가운데 점 O가 <b>원의 중심</b>이에요.',
         '원 위에 서로 다른 두 점 <b>A</b>, <b>B</b>를 잡아요.',
         'A에서 원을 따라 B까지 가 보세요. 원 위의 두 점 사이에 있는 원의 일부분을 <b>호 AB</b>라고 해요.',
