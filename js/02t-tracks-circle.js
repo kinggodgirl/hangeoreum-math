@@ -207,6 +207,7 @@ function sectorRapid(k,seed){
 if(typeof HG_TRACKS==='object'){
   HG_TRACKS.register('arc',{
     kind:'concept',
+    comboPick:false,
     /* [T19][T20] 첫걸음 구별하기(A1·A2): 주황 표시가 연달아 떠요. 0~9 = GEN.arcName 종류, 10 = 반원, 11 = 중심각이 180°보다 큰 부채꼴
        check = 첫걸음 차시 마무리에 섞어 내는 종류(틀리면 같은 종류의 다른 그림으로 다시 확인) */
     schemaRapid:{n:10,kinds:12,q:'원 O에서 <b>주황색으로 표시한 것</b>은 무엇일까요?',
