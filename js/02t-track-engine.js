@@ -228,6 +228,7 @@ function mountOwlShow(host,lid,spec,opt={}){
     const pv=$('#owlPrev',host);if(pv)pv.disabled=idx===0&&beat===0;
     $$('.owl-dot',host).forEach((d,i)=>{d.className='owl-dot'+(i<idx||(finished&&i===idx)?' done':i===idx?' on':'');d.disabled=i>seen});
     paintHint();
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,file:'js/02t-track-engine.js',fn:'mountOwlShow',section:'부엉 쌤 개념 극장',owlScene:idx+1,owlTotal:scenes.length,owlBeat:beat+1,owlBeatTotal:bs.length,owlCap:sc.cap||''});
     void needAsk;void isLast;
   };
   const paintHint=()=>{
@@ -336,6 +337,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
     if(!host.isConnected)return;
     if(idx>=queue.length)return finish();
     const cur=queue[idx],it=R.make(cur.k,cur.seed),shownAt=Date.now();
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:1,tab:'steps',subtab:'A. 빠른 구별',section:'',file:'js/02t-track-engine.js',fn:'renderT1Rapid',rapidKind:cur.k,rapidSeed:cur.seed,rapidIdx:idx+1,rapidTotal:queue.length,schemaId:'',guideId:'',inSolo:false,prob:null});
     let missed=false;const bothPick=new Set();
     host.innerHTML=`<div class="ct-card ct-schema ct-rapid">
       <div class="ct-card-h"><h2>${R.title||'주황색은 무엇일까요?'}</h2><div class="ct-schema-prog">${queue.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${queue.length}</span></div></div>
@@ -390,6 +392,7 @@ function renderT1Schema(host,lid,spec,onNextPart){
       return;
     }
     const q=QS[idx];shownAt=Date.now();
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:1,tab:'steps',subtab:'A. 개념 구별',section:'',file:'js/02t-track-engine.js',fn:'renderT1Schema',schemaId:q.id||('q'+(idx+1)),schemaIdx:idx+1,schemaTotal:QS.length,rapidIdx:0,guideId:'',inSolo:false,prob:null});
     host.innerHTML=`<div class="ct-card ct-schema">
       <div class="ct-card-h"><h2>맞을까? 아닐까? 구별하기</h2><div class="ct-schema-prog">${QS.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${QS.length}</span></div></div>
       <div class="ct-stage">
@@ -438,6 +441,7 @@ function renderT1Guide(host,lid,spec){
       return;
     }
     soloHost.innerHTML=`<div class="ct-solo"><div class="ct-solo-h"><span>🌟 혼자 확인 · 방금 푼 문제 비슷하게 1문제</span><button type="button" class="btn ghost mini" id="fgTwinNew">🔄 다른 숫자</button></div><div id="fgTwinBody"></div></div>`;
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:1,tab:'steps',subtab:'B. 선생님과 같이 따라 풀기',file:'js/02t-track-engine.js',fn:'renderT1Guide → mountSoloTwin',guideId:g.id,tyNo:g.tyNo,guideStep:4,inSolo:true});
     const nb=$('#fgTwinNew',soloHost);if(nb)nb.onclick=()=>{twinSeed=(twinSeed+19)%99999+1;mountSoloTwin()};
     renderProblem($('#fgTwinBody',soloHost),prob,{mode:'final',visual:true,rep:{lesson:lid,gen:key,seed:twinSeed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
       if(typeof logAttempt==='function')logAttempt({lesson:lid,kind:'steps',good,wrongs,mode,gen:key,seed:twinSeed,ptype:prob.ptype,stepWrongs,revealed});
@@ -467,6 +471,7 @@ function renderT1Guide(host,lid,spec){
     clearAutoNav();
     const g=GUIDE[gIdx];
     if(!g){host.innerHTML='';return}
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:1,tab:'steps',subtab:'B. 선생님과 같이 따라 풀기',section:'',file:'js/02t-track-engine.js',fn:'renderT1Guide',guideId:g.id,tyNo:g.tyNo,guideStep:step,inSolo:false,rapidIdx:0,schemaId:'',prob:null});
     const hl=step===0?[]:step===1?(foundGiven.size?g.givenChips.filter(c=>foundGiven.has(c.k)&&c.hl).map(c=>c.hl):(g.wantHl||[])):(g.wantHl||[]);
     stepShown=Date.now();
     const s0Done=step>0,s1Done=step>1,s2Done=step>2,s3Done=step>3;
@@ -616,6 +621,7 @@ function renderT1Practice(body,lid,spec){
       return;
     }
     const item=qQueue[idx],shownAt=Date.now();
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:1,tab:'practice',subtab:'차시 마무리',section:'',file:'js/02t-track-engine.js',fn:'renderT1Practice',schemaId:item.id||item.kind,schemaIdx:idx+1,schemaTotal:qQueue.length,rapidIdx:0,guideId:'',inSolo:false,prob:null});
     body.innerHTML=`<div class="ct-chk-bar"><b>🌱 첫걸음 차시 마무리</b><span>진행 ${Math.min(doneSet.size,pool.length)} / ${pool.length}</span></div>
       ${recheckKind===item.kind?'<div class="ct-recheck">💡 실수일 수 있어요! 같은 종류 문제를 한 번 더 확인해 볼게요.</div>':''}
       <div class="ct-card"><div class="ct-stage">
@@ -689,6 +695,7 @@ function renderT2Steps(body,lid,spec,initialTypeNo,openWorked){
 
   const draw=()=>{
     if(!curNo){
+      if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:2,tab:'steps',subtab:'유형 고르기',section:'',file:'js/02t-track-engine.js',fn:'renderT2Steps',tyNo:0,workedOpen:false,prob:null});
       body.innerHTML=`<div class="ct-card">
         <div class="ct-card-h"><h2>유형 고르기</h2><span class="muted">각 유형마다 대표 예제를 접어 두고 변형 문제를 연습해요</span></div>
         <div class="tpick">${TL.map(t=>{
@@ -701,6 +708,7 @@ function renderT2Steps(body,lid,spec,initialTypeNo,openWorked){
       return;
     }
     const W=spec.worked&&spec.worked[curNo],T_=TL.find(t=>t.no===curNo)||{no:curNo,nm:''};
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:2,tab:'steps',subtab:`유형 ${T_.no} · ${T_.nm}`,section:'',file:'js/02t-track-engine.js',fn:'renderT2Steps',tyNo:curNo,workedOpen:wxOpen,workedStep:wxStep});
     body.innerHTML=`
       <div class="tybar"><span class="tyn">유형 ${T_.no}</span><b>${T_.nm}</b><button type="button" class="btn tyback" id="t2Back">🔀 다른 유형 고르기</button></div>
       <div id="t2WxHost"></div>
@@ -739,8 +747,8 @@ function renderT2Steps(body,lid,spec,initialTypeNo,openWorked){
           </div>
         </div>`;
       }
-      const tg=$('#t2WxToggle',wxHost);if(tg)tg.onclick=()=>{wxOpen=!wxOpen;drawWx()};
-      $$('[data-ws]',wxHost).forEach(b=>b.onclick=()=>{wxStep=+b.dataset.ws;drawWx()});
+      const tg=$('#t2WxToggle',wxHost);if(tg)tg.onclick=()=>{wxOpen=!wxOpen;if(typeof HG_LOC!=='undefined')HG_LOC.set({workedOpen:wxOpen,workedStep:wxStep});drawWx()};
+      $$('[data-ws]',wxHost).forEach(b=>b.onclick=()=>{wxStep=+b.dataset.ws;if(typeof HG_LOC!=='undefined')HG_LOC.set({workedOpen:wxOpen,workedStep:wxStep});drawWx()});
     };
 
     const back=$('#t2Back',body);if(back)back.onclick=()=>{curNo=null;draw()};
@@ -790,6 +798,7 @@ function renderAdaptivePractice(body,lid,cfg){
     if(idx>=queue.length){cfg.onPass(body,results);return}
 
     const cur=queue[idx],prob=cur.makeProb(cur.seed),shownAt=Date.now();
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,tab:'practice',subtab:'차시 마무리',section:'',file:'js/02t-track-engine.js',fn:'renderAdaptivePractice',schemaIdx:idx+1,schemaTotal:queue.length,schemaId:cur.key,tyNo:cur.tyNo||0,cid:cur.cid||''});
     body.innerHTML=`<div class="ct-chk-bar"><b>${cfg.title}</b><span>남은 문항 · ${idx+1} / ${queue.length}</span></div>
       ${cur.recheck?'<div class="ct-recheck">💡 단순 실수일 수 있어요! 같은 유형의 숫자만 바꾼 문제를 한 번 더 확인해요.</div>':''}
       <div class="ct-card" id="chkHost"></div>`;
@@ -897,6 +906,7 @@ function renderT3Steps(body,lid,spec,initialCid){
     const gen=spec.genCompound&&spec.genCompound[cid];
     if(!gen){body.innerHTML='';return}
     const prob=gen(seed),wantSet=new Set(prob.combo);shownAt=Date.now();
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:3,tab:'steps',subtab:'복합 유형 도전',section:'',file:'js/02t-track-engine.js',fn:'renderT3Steps',cid,unlocked,rapidSeed:seed,prob:unlocked?null:{lesson:lid,gen:'compound_'+cid,seed,ptype:prob.ptype,mode:'preview',step:0,totalSteps:prob.steps.length,title:prob.title}});
     body.innerHTML=`<div class="ct-card">
       <div class="ct-card-h"><h2>복합 문제 쪼개서 풀기</h2>
         <div class="ct-hit-row" style="margin:0">${list.map(x=>`<button type="button" class="chip${x.id===cid?' on':''}" data-cid="${x.id}">${x.nm}</button>`).join('')}</div>
@@ -1077,6 +1087,7 @@ function viewTrackLesson(id,tab){
   });
 
   if(typeof DB==='object'&&DB){DB._last={id,tab:activeTab};if(typeof save==='function')save()}
+  if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:id,track:tr,tab:activeTab,subtab:'',section:'',file:'js/02t-track-engine.js',fn:'viewTrackLesson',owlScene:0,rapidIdx:0,schemaId:'',guideId:'',tyNo:0,cid:'',inSolo:false,prob:null});
   const body=$('#ctBody',app);
   if(tr===1){
     if(activeTab==='steps')renderT1Steps(body,id,spec);
@@ -1129,6 +1140,7 @@ window.viewDailyRev=function(){
   const draw=()=>{
     if(idx>=queue.length){finish();return}
     const item=queue[idx],prob=GEN[item.genKey](item.seed);
+    if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:item.lid,file:'js/02t-track-engine.js',fn:'viewDailyRev',section:'복습 추천',tyNo:item.tyNo,schemaIdx:idx+1,schemaTotal:queue.length});
     prob.title=`<span class="rv-from">${item.L.no}차시 ${item.L.title} · 유형 ${item.tyNo} (${item.T.nm})</span><br>`+stripTB(prob.title);
     app.innerHTML=`<div class="ct-chk-bar"><b>📅 [복습 추천] 이틀 연속 숙달 확인</b><span>문제 ${idx+1} / ${queue.length} · 2분</span></div><div class="ct-card" id="drevHost"></div>`;
     renderProblem($('#drevHost',app),prob,{mode:'final',visual:true,rep:{lesson:item.lid,gen:item.genKey,seed:item.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
