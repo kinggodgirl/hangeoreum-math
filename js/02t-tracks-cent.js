@@ -17,8 +17,13 @@ const svgAng=(C,a0,a1,lab,o={})=>{
   return`<path d="${arcD(C,r,a0,a1)}" fill="none" stroke="${o.col||INK}" stroke-width="${o.w||2}"/>`+(lab?svgTx(pol(C,lr,mid),lab,{size:o.size||17,col:o.col||INK}):'');
 };
 
+function lenBowD(C,R,a0,a1,off){const A=pol(C,R,a0),B=pol(C,R,a1),ch=2*R*Math.sin(Math.abs(a1-a0)*Math.PI/360),M=pol(C,R+Math.min(off,ch*0.28),(a0+a1)/2),
+  ax=A[0],ay=A[1],bx=B[0],by=B[1],mx=M[0],my=M[1],d=2*(ax*(by-my)+bx*(my-ay)+mx*(ay-by)),
+  ux=((ax*ax+ay*ay)*(by-my)+(bx*bx+by*by)*(my-ay)+(mx*mx+my*my)*(ay-by))/d,uy=((ax*ax+ay*ay)*(mx-bx)+(bx*bx+by*by)*(ax-mx)+(mx*mx+my*my)*(bx-ax))/d,
+  rr=Math.hypot(ax-ux,ay-uy),side=P=>(bx-ax)*(P[1]-ay)-(by-ay)*(P[0]-ax),lg=side([ux,uy])*side(M)<0?0:1;
+  return`M ${pt(A)} A ${f1(rr)} ${f1(rr)} 0 ${lg} 0 ${pt(B)}`}
 function ctTwoSec(opt){
-  const{a,b,l1,l2,mode='arc',hl=[],showChord=false,diffRadius=false,semi=false}=opt;
+  const{a,b,l1,l2,mode='arc',hl=[],showChord=false,diffRadius=false,semi=false,lenMark=false}=opt;
   const has=k=>hl.includes(k);
   if(diffRadius){
     const c1=[100,145],r1=64,c2=[265,145],r2=88;
@@ -48,8 +53,12 @@ function ctTwoSec(opt){
   }
   s+=svgAng(C,A0,A1,a+'°',{col:has('ang1')?BL:INK,w:has('ang1')?3.2:2,size:16});
   s+=svgAng(C,B0,B1,b==null?'?°':b+'°',{col:has('ang2')?(b==null?HL:BL):INK,w:has('ang2')?3.2:2,size:16});
-  if(l1)s+=svgTx(pol(C,R+24,(A0+A1)/2),l1,{size:16,sans:true,col:has('val1')?askC(l1):INK});
-  if(l2)s+=svgTx(pol(C,R+24,(B0+B1)/2),l2,{size:16,sans:true,col:has('val2')?askC(l2):INK});
+  /* [cent 다듬기] lenMark: 교과서처럼 호의 두 끝을 잇는 둥근 점선으로 '이 호의 길이'임을 보여 줘요 */
+  const bow=(x0,x1,col)=>`<path d="${lenBowD(C,R,x0,x1,15)}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 6.5"/>`;
+  if(lenMark&&mode==='arc'){if(l1)s+=bow(A0,A1,has('val1')?askC(l1):INK);if(l2)s+=bow(B0,B1,has('val2')?askC(l2):INK)}
+  const lr=lenMark&&mode==='arc'?36:24;
+  if(l1)s+=svgTx(pol(C,R+lr,(A0+A1)/2),l1,{size:16,sans:true,col:has('val1')?askC(l1):INK});
+  if(l2)s+=svgTx(pol(C,R+lr,(B0+B1)/2),l2,{size:16,sans:true,col:has('val2')?askC(l2):INK});
   s+=svgDot(C,4)+svgTx([C[0],C[1]+16],'O',{size:16});
   return svgBox(380,285,s,'한 원 안의 두 부채꼴');
 }
@@ -135,20 +144,20 @@ const SCHEMA_QS=[
 const FIRST_GUIDE=[
   {id:'fg1',tyNo:1,title:'유형 1 · 몇 배로 호의 길이 구하기',
     problem:'한 원에서 중심각이 <b>40°</b>인 부채꼴의 호의 길이가 <b>3 cm</b>일 때, 중심각이 <b>120°</b>인 부채꼴의 호의 길이 <i>x</i> cm를 구하시오.',
-    fig:hl=>ctTwoSec({a:40,b:120,l1:'3 cm',l2:'x cm',mode:'arc',hl}),
+    fig:hl=>ctTwoSec({a:40,b:120,l1:'3 cm',l2:'x cm',mode:'arc',hl,lenMark:true}),
     wantChips:['120° 부채꼴의 호의 길이 (x cm)','40° 부채꼴의 넓이','원의 반지름'],wantAns:'120° 부채꼴의 호의 길이 (x cm)',wantHl:['val2'],
     givenChips:[{k:'a',t:'중심각 40°',ok:true,hl:'ang1'},{k:'l1',t:'40°의 호 3 cm',ok:true,hl:'val1'},{k:'b',t:'중심각 120°',ok:true,hl:'ang2'},{k:'trap',t:'반지름 5 cm',ok:false}],
-    teacherEq:'120 ÷ 40 = 3 (배) → x = 3 × 3',pairQ:'식 앞쪽 <b>120 ÷ 40</b>은 문제의 어떤 숫자를 나눈 것인가요?',
-    pairChoices:['큰 중심각 ÷ 작은 중심각','호의 길이 ÷ 중심각'],pairAns:'큰 중심각 ÷ 작은 중심각',
+    teacherEq:'40 × 3 = 120 이므로, 3 × 3 = <i>x</i>',pairQ:'식 앞쪽 <b>40 × 3 = 120</b>에서 40과 120은 문제의 어떤 숫자인가요?',
+    pairChoices:['작은 중심각과 큰 중심각','호의 길이와 중심각'],pairAns:'작은 중심각과 큰 중심각',
     calcPrompt:'3 × 3 = ? (cm)',calcAns:9,calcTopic:'mul',calcExplain:'중심각이 <b>3배</b>이므로 호의 길이도 3 × 3 = <b>9 cm</b>예요.'},
   {id:'fg2',tyNo:2,title:'유형 2 · 중심각의 비로 호의 길이 구하기',
     problem:'한 원에서 중심각이 <b>50°</b>인 부채꼴의 호의 길이가 <b>10 cm</b>일 때, 중심각이 <b>70°</b>인 부채꼴의 호의 길이 <i>x</i> cm를 구하시오.',
-    fig:hl=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl}),
+    fig:hl=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl,lenMark:true}),
     wantChips:['70° 부채꼴의 호의 길이 (x cm)','50° 부채꼴의 중심각','원의 지름'],wantAns:'70° 부채꼴의 호의 길이 (x cm)',wantHl:['val2'],
     givenChips:[{k:'a',t:'중심각 50°',ok:true,hl:'ang1'},{k:'l1',t:'50°의 호 10 cm',ok:true,hl:'val1'},{k:'b',t:'중심각 70°',ok:true,hl:'ang2'},{k:'trap',t:'둘레 36 cm',ok:false}],
-    teacherEq:'50 : 70 = 10 : x → 5 : 7 = 10 : x',pairQ:'비례식에서 <b>10</b>은 두 중심각 중 어느 쪽의 짝인가요?',
+    teacherEq:'50 : 70 = 10 : <i>x</i> → 5 : 7 = 10 : <i>x</i><br>앞앞: 5 × 2 = 10 이므로, 뒤뒤: 7 × 2 = <i>x</i>',pairQ:'비례식에서 <b>10</b>은 두 중심각 중 어느 쪽의 짝인가요?',
     pairChoices:['50° 부채꼴의 호의 길이','70° 부채꼴의 호의 길이'],pairAns:'50° 부채꼴의 호의 길이',
-    calcPrompt:'5칸이 10 cm → 1칸 2 cm → 7칸 = ? (cm)',calcAns:14,calcTopic:'ratio',calcExplain:'1칸 = 2 cm, 7칸 = 2 × 7 = <b>14 cm</b>예요.'},
+    calcPrompt:'앞앞 5 × 2 = 10 이므로, 뒤뒤 7 × 2 = ? (cm)',calcAns:14,calcTopic:'ratio',calcExplain:'앞끼리 2배니까 뒤끼리도 2배, x = 7 × 2 = <b>14 cm</b>예요.'},
   {id:'fg3',tyNo:3,title:'유형 3 · 세 호의 비로 중심각 구하기',
     problem:'원 O에서 <span class="arcs">AB</span> : <span class="arcs">BC</span> : <span class="arcs">CA</span> = <b>2 : 3 : 4</b>일 때, <span class="arcs">BC</span>에 대한 중심각의 크기를 구하시오.',
     fig:hl=>ctThreeArcs(2,3,4,{want:'BC',hl}),
@@ -163,11 +172,11 @@ const WORKED=[
   null,
   {no:1,nm:'중심각 비교 ① 몇 배',prob:'한 원에서 중심각이 <b>40°</b>인 호가 <b>3 cm</b>일 때, <b>120°</b>인 호 <i>x</i> cm를 구하시오.',
     fig:hl=>ctTwoSec({a:40,b:120,l1:'3 cm',l2:'x cm',mode:'arc',hl}),
-    steps:[{t:'① 어디를 먼저 볼까?',hl:['ang1','ang2'],body:'두 중심각 40°와 120°가 딱 나누어떨어지는지 먼저 확인해요.'},{t:'② 중심각이 몇 배인지 구하기',hl:['ang1','ang2'],body:'120 ÷ 40 = <b>3배</b>'},{t:'③ 호의 길이도 같은 배 곱하기',hl:['val1','val2'],body:'3 × 3 = <b>9 cm</b>'}],
-    pitfall:'⚠️ 자주 하는 실수: 120° → 40°처럼 작아질 때는 곱하지 말고 나누어야(÷ 3) 해요!'},
+    steps:[{t:'① 어디를 먼저 볼까?',hl:['ang1','ang2'],body:'두 중심각 40°와 120°가 딱 나누어떨어지는지 먼저 확인해요.'},{t:'② 중심각이 몇 배인지 구하기',hl:['ang1','ang2'],body:'40 × <b>3</b> = 120 (3배)'},{t:'③ 호의 길이도 같은 배 곱하기',hl:['val1','val2'],body:'3 × 3 = <i>x</i>, <i>x</i> = <b>9 cm</b>'}],
+    pitfall:'⚠️ 120° → 40°처럼 작아질 때도 곱셈으로 써요: 40 × 3 = 120 이므로, <i>x</i> × 3 = 9 → <i>x</i> = 3'},
   {no:2,nm:'중심각 비교 ② 비',prob:'한 원에서 중심각이 <b>50°</b>인 호가 <b>10 cm</b>일 때, <b>70°</b>인 호 <i>x</i> cm를 구하시오.',
     fig:hl=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl}),
-    steps:[{t:'① 중심각의 비 간단히 하기',hl:['ang1','ang2'],body:'50 : 70 = <b>5 : 7</b>'},{t:'② 1칸의 크기 구하기',hl:['val1'],body:'5칸이 10 cm → <b>1칸 = 2 cm</b>'},{t:'③ 구하는 칸 수만큼 곱하기',hl:['val2'],body:'7칸 → 2 × 7 = <b>14 cm</b>'}],
+    steps:[{t:'① 중심각의 비 간단히 하기',hl:['ang1','ang2'],body:'50 : 70 = <b>5 : 7</b> → 5 : 7 = 10 : <i>x</i>'},{t:'② 앞앞 비교',hl:['ang1','val1'],body:'5 × <b>2</b> = 10 (앞끼리 2배)'},{t:'③ 뒤뒤도 같은 배',hl:['ang2','val2'],body:'7 × 2 = <b>14 cm</b> (<i>x</i>가 앞에 있으면 뒤끼리 먼저 비교해요)'}],
     pitfall:'⚠️ 자주 하는 실수: 50 : 70 = x : 10처럼 각과 길이의 짝 순서를 뒤집지 마세요.'},
   {no:3,nm:'호의 비로 중심각 구하기',prob:'원 O에서 <span class="arcs">AB</span> : <span class="arcs">BC</span> : <span class="arcs">CA</span> = <b>2 : 3 : 4</b>일 때, <span class="arcs">BC</span>의 중심각은?',
     fig:hl=>ctThreeArcs(2,3,4,{want:'BC',hl}),
@@ -202,7 +211,7 @@ function makeC2(seed){
     fig:{svg:()=>ctThreeArcs(a,b,c,{want:sp.want,hl:['want','ang']})},finalQ:`<span class="arcs">${sp.want}</span>에 대한 부채꼴의 넓이는?`,
     steps:[
       {tag:'1단계 · 중심각 구하기',q:`<span class="arcs">${sp.want}</span>(${sp.wv}칸)의 중심각은?`,type:'num',ans:wantAng,suffix:'°',hint:`(360 ÷ ${t}) × ${sp.wv}`},
-      {tag:'2단계 · 중심각의 비로 넓이 구하기',q:`${sp.refAng} : ${wantAng} = ${sp.p} : ${sp.q}예요. ${sp.p}칸이 ${refVal} cm²이면 ${sp.q}칸은?`,type:'num',ans,suffix:'cm²',hint:`(${refVal} ÷ ${sp.p}) × ${sp.q}`,ok:`${ans} cm²`}
+      {tag:'2단계 · 앞앞 뒤뒤 비교로 넓이 구하기',q:`${sp.refAng} : ${wantAng} = ${sp.p} : ${sp.q} = ${refVal} : <i>x</i>예요. 앞끼리 ${sp.p} × ${m} = ${refVal}이면 뒤끼리 <i>x</i>는?`,type:'num',ans,suffix:'cm²',hint:`${sp.q} × ${m}`,ok:`${sp.q} × ${m} = ${ans} cm²`}
     ]};
 }
 
@@ -215,7 +224,7 @@ function makeC3(seed){
     fig:{svg:()=>ctTwoSec({a:sp.a,b:sp.b,l1:`${L} cm`,l2:'x cm',mode:'arc',semi:true,hl:['ang1','val1']})},finalQ:'나머지 호의 길이 <i>x</i>는 몇 cm인가요?',
     steps:[
       {tag:'1단계 · 반원 성질(180°)',q:`반원 180° − ${sp.a}° = ?`,type:'num',ans:sp.b,suffix:'°',hint:`180 − ${sp.a}`},
-      {tag:'2단계 · 중심각의 비로 호 구하기',q:`${sp.a} : ${sp.b} = ${sp.p} : ${sp.q}. ${sp.p}칸이 ${L} cm일 때 ${sp.q}칸은?`,type:'num',ans,suffix:'cm',hint:`(${L} ÷ ${sp.p}) × ${sp.q}`,ok:`${ans} cm`}
+      {tag:'2단계 · 앞앞 뒤뒤 비교로 호 구하기',q:`${sp.a} : ${sp.b} = ${sp.p} : ${sp.q} = ${L} : <i>x</i>예요. 앞끼리 ${sp.p} × ${m} = ${L}이면 뒤끼리 <i>x</i>는?`,type:'num',ans,suffix:'cm',hint:`${sp.q} × ${m}`,ok:`${sp.q} × ${m} = ${ans} cm`}
     ]};
 }
 
@@ -296,7 +305,9 @@ const OWL_SCENES=[
   {cap:'장면 ③ 딱 떨어지면 몇 배, 아니면 비',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl:['ang1','ang2']}),beats:[
     '중심각이 <span class="num">50°</span>일 때 호가 <span class="num">10 cm</span>예요. 중심각이 <span class="num">70°</span>이면 호는 몇 cm일까요?',
     '70 ÷ 50은 나누어떨어지지 않아요. 이럴 때는 <span class="kw">비</span>로 써요. 중심각끼리, 호끼리 같은 순서로 <b>50 : 70 = 10 : x</b>',
-    '50 : 70을 간단히 하면 5 : 7이에요. 1칸이 10 ÷ 5 = 2 cm이니까 7칸은 <b>x = 14</b>예요.']},
+    '50 : 70을 간단히 하면 5 : 7이에요. 그래서 <b>5 : 7 = 10 : x</b>예요.',
+    '<span class="kw">앞앞</span> 비교: 5 × 2 = 10, 앞끼리 2배예요. <span class="kw">뒤뒤</span>도 2배라서 7 × 2 = <b>x = 14</b>예요.',
+    {say:'x가 앞에 있으면 뒤끼리 먼저 비교해요. 5 : 7 = x : 21이면 7 × 3 = 21이니까 x = 5 × 3 = <b>15</b>예요.',exp:'happy'}]},
   {cap:'장면 ④ 세 호를 합치면 원 한 바퀴',svg:()=>ctThreeArcs(2,3,4,{want:'BC',hl:['want','ang']}),beats:[
     '원 위의 세 점 A, B, C가 만든 세 호의 길이의 비가 <span class="num">2 : 3 : 4</span>예요.',
     '세 호를 모두 합치면 원 한 바퀴예요. 그래서 중심각도 모두 합치면 <span class="num">360°</span>예요.',
@@ -315,8 +326,11 @@ const OWL_SCENES=[
 
 /* [T20] 첫걸음 구별하기(C1): 한 원에서 중심각만 2배로 바꾼 두 부채꼴. 주황 표시가 2배가 되는지 가려요.
    종류 0 호 · 1 넓이 · 2 현 · 3 반지름 · 4 부채꼴의 둘레 · 5 활꼴의 넓이 */
-const RAPID_CH=['2배가 돼요','2배보다 작아져요','2배보다 커져요','변하지 않아요'];
-const RAPID_ANS=['2배가 돼요','2배가 돼요','2배보다 작아져요','변하지 않아요','2배보다 작아져요','2배보다 커져요'];
+/* [cent 다듬기] 첫걸음은 보기 2개로: 2배가 되는지 아닌지만 가려요. 주황 표시가 무엇인지는 문제 글에 이름으로 적어요 */
+const RAPID_CH=['2배가 돼요','2배가 되지 않아요'];
+const RAPID_ANS=['2배가 돼요','2배가 돼요','2배가 되지 않아요','2배가 되지 않아요','2배가 되지 않아요','2배가 되지 않아요'];
+const RAPID_NM=['호의 길이','부채꼴의 넓이','현의 길이','반지름의 길이','부채꼴의 둘레','활꼴의 넓이'];
+const rapidQ=k=>`한 원에서 중심각이 2배가 되면, 주황색으로 표시한 <b class="ct-rq-nm">${RAPID_NM[k]}</b>도 2배가 될까요?`;
 const RAPID_WHY=['한 원에서 중심각이 2배가 되면 <b>호의 길이도 2배</b>가 돼요.','한 원에서 중심각이 2배가 되면 <b>부채꼴의 넓이도 2배</b>가 돼요.',
   '현의 길이는 중심각에 정비례하지 않아요. 중심각이 2배가 되어도 현은 <b>2배보다 짧아요</b>.','반지름은 원이 같으면 그대로예요. 중심각과 상관없이 <b>변하지 않아요</b>.',
   '부채꼴의 둘레 = 호 + 반지름 2개예요. 호만 2배가 되고 반지름은 그대로라서 <b>2배보다 작아요</b>.','활꼴 = 부채꼴 − 삼각형이에요. 중심각이 2배가 되면 활꼴의 넓이는 <b>2배보다 더 커져요</b>.'];
@@ -373,16 +387,16 @@ if(typeof HG_TRACKS==='object'){
     t2Order:[1,3,4,2],
     compoundBridgeNo:2,
     owlScenes:OWL_SCENES,
-    owlSummary:['한 원에서 중심각이 같으면 호의 길이, 넓이, 현의 길이가 각각 같아요.','한 원에서 호의 길이와 넓이는 중심각의 크기에 <b>정비례</b>해요.','현의 길이는 중심각에 정비례하지 않아요 (2배가 되어도 2배보다 짧아요).','딱 떨어지면 몇 배, 안 떨어지면 비(1칸 찾기) · 세 호의 비는 360°를 전체 칸 수로 나눠요.'],
+    owlSummary:['한 원에서 중심각이 같으면 호의 길이, 넓이, 현의 길이가 각각 같아요.','한 원에서 호의 길이와 넓이는 중심각의 크기에 <b>정비례</b>해요.','현의 길이는 중심각에 정비례하지 않아요 (2배가 되어도 2배보다 짧아요).','딱 떨어지면 몇 배, 안 떨어지면 비를 간단히 해서 앞앞 뒤뒤 비교 · 세 호의 비는 360°를 전체 칸 수로 나눠요.'],
     schemaRapid:{n:6,kinds:6,title:'중심각이 2배가 되면?',q:'두 부채꼴은 <b>한 원</b>에서 중심각만 2배로 바꾼 거예요. <b>주황색으로 표시한 것</b>은 어떻게 될까요?',
       choices:RAPID_CH,check:[0,2,4,5],
-      make:(k,seed)=>({fig:ctRapidFig(k,Math.floor(seed/6)),ans:RAPID_ANS[k],why:RAPID_WHY[k]})},
+      make:(k,seed)=>({fig:ctRapidFig(k,Math.floor(seed/6)),q:rapidQ(k),ans:RAPID_ANS[k],why:RAPID_WHY[k]})},
     schemaQs:SCHEMA_QS,
     firstGuide:FIRST_GUIDE,
     t1Check:T1_CHECK_POOL,
     stratRows:[
-      ['딱 나누어떨어지는 두 각<br><small>예: 40°와 120°</small>','몇 배인지 확인','120 ÷ 40 = 3배 → 호·넓이 × 3 (작아지면 ÷)'],
-      ['안 나누어떨어지는 두 각<br><small>예: 50°와 70°</small>','간단한 비 · 1칸','50 : 70 = 5 : 7 → 1칸 구하고 칸 수 곱하기'],
+      ['딱 나누어떨어지는 두 각<br><small>예: 40°와 120°</small>','몇 배인지 확인','40 × 3 = 120 이므로, 3 × 3 = x (작아질 때도 x × 3 = 9처럼 곱셈으로)'],
+      ['안 나누어떨어지는 두 각<br><small>예: 50°와 70°</small>','간단한 비 · 앞앞 뒤뒤','5 : 7 = 10 : x → 앞끼리 × 2 = 뒤끼리 × 2 (x가 앞이면 뒤끼리 먼저)'],
       ['원 위의 세 점 (호의 비)<br><small>예: 2 : 3 : 4</small>','원 한 바퀴 = 360°','전체 9칸 → 360° ÷ 9 = 40°(1칸)'],
       ['현의 길이 비교','예외 조심!','중심각이 같으면 현도 같지만, 2배일 때는 2배보다 짧음']
     ],
