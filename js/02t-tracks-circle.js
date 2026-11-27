@@ -25,15 +25,119 @@ function arcQuiz(kind){
   s+=dot(C,4)+tx([C[0],C[1]+(kind==='semi'?18:16)],'O',{size:16});
   return svgB(300,232,s,'원 O');
 }
-/* [T20] 빠른 구별 추가 종류: 10 반원(부채꼴이면서 활꼴), 11 중심각이 180°보다 큰 부채꼴 */
+/* [T20] 빠른 구별 추가 종류: 10 반원(부채꼴이면서 활꼴), 11 중심각이 180°보다 큰 부채꼴
+   [T21] 반원은 두 이름(both)을 모두 골라야 넘어가요. 어느 쪽을 먼저 골라도 똑같이 '하나 더' 안내가 나와요. */
 function arcExtraRapid(k,seed){
   const C=[150,140],R=100,a0=(seed*37)%360,TH=`stroke="${HL}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"`;
   const span=k===10?180:200+(seed*13)%50,a1=a0+span;
   let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="${INK}" stroke-width="2.4"/>`+`<path d="${secD(C,R,a0,a1)}" fill="${HLs}" ${TH}/>`;
   s+=dot(pol(C,R,a0),4.5)+dot(pol(C,R,a1),4.5)+dot(C)+tx(pol(C,22,a0+span/2+180),'O',{size:20});
   const fig=svgB(300,280,s,'원 O');
-  return k===10?{fig,ans:'부채꼴',why:'두 반지름과 호로 둘러싸였으니 <b>부채꼴</b>이에요. 지름도 현이라서 <b>활꼴</b>이기도 해요.',also:{'활꼴':'맞아요, 반원은 <b>활꼴</b>이기도 해요. 두 반지름과 호로도 둘러싸여 있어요. 다른 이름도 하나 더 골라 보세요.'}}
+  return k===10?{fig,ans:'부채꼴',both:['부채꼴','활꼴'],why:'반원은 반지름 2개와 호로 둘러싸여서 <b>부채꼴</b>이고, 현(지름)과 호로 둘러싸여서 <b>활꼴</b>이기도 해요.'}
     :{fig,ans:'부채꼴',why:'중심각이 180°보다 커도 두 반지름과 호로 둘러싸이면 <b>부채꼴</b>이에요.',also:null};
+}
+/* ── [T21] 부엉 쌤 그림극 그림: <g data-b="n">는 n번째 줄에서 나타나고, class="dr" 선은 그려지듯 나타나요 ── */
+const OB=(b,inner)=>`<g data-b="${b}">${inner}</g>`;
+const drP=(d,col,w,o='')=>`<path class="dr" d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${o}/>`;
+const drL=(P,Q,col,w,o='')=>drP(`M ${pt(P)} L ${pt(Q)}`,col,w,o);
+const popDot=(P,r=4.5,col=INK)=>`<circle class="ob-pop" cx="${f1(P[0])}" cy="${f1(P[1])}" r="${r}" fill="${col}"/>`;
+/* 호 기호: 글자 위에 굽은 선 (교과서 기호 ⌒AB) */
+const arcSymSVG=(P,s,o={})=>{const sz=o.size||22,w=sz*0.36*s.length+6,y=P[1]-sz*0.62;
+  return tx(P,s,{size:sz,col:o.col||INK})+`<path d="M ${f1(P[0]-w/2)} ${f1(y+5)} Q ${f1(P[0])} ${f1(y-6)} ${f1(P[0]+w/2)} ${f1(y+5)}" fill="none" stroke="${o.col||INK}" stroke-width="2.2" stroke-linecap="round"/>`};
+const OW_C=[160,124],OW_R=88,OW_A=145,OW_B=35;
+function owArcBase(o={}){const C=OW_C,R=OW_R,A=pol(C,R,OW_A),B=pol(C,R,OW_B);
+  return`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#9aa3b5" stroke-width="2"/>`+(o.noAB?'':dot(A,4.5)+dot(B,4.5)+tx(pol(C,R+16,OW_A),'A')+tx(pol(C,R+16,OW_B),'B'))+dot(C,4)+tx([C[0],C[1]+17],'O',{size:16})}
+function owlArcScene(k){
+  const C=OW_C,R=OW_R,A=pol(C,R,OW_A),B=pol(C,R,OW_B),W=320,H=258;
+  let s='';
+  if(k===1){/* 호 AB와 기호 */
+    s+=OB(0,drP(`M ${C[0]+R} ${C[1]} A ${R} ${R} 0 1 0 ${C[0]-R} ${C[1]} A ${R} ${R} 0 1 0 ${C[0]+R} ${C[1]}`,INK,2.2)+dot(C,4)+tx([C[0],C[1]+17],'O',{size:16}));
+    s+=OB(1,popDot(A)+popDot(B)+tx(pol(C,R+16,OW_A),'A')+tx(pol(C,R+16,OW_B),'B'));
+    s+=OB(2,drP(arcD(C,R,OW_B,OW_A),HL,7)+tx(pol(C,R-22,90),'호 AB',{sans:true,col:HL,size:15}));
+    s+=OB(3,`<rect x="200" y="214" width="112" height="38" rx="9" fill="#fff8eb" stroke="${HL}" stroke-width="1.6"/>`+tx([232,234],'기호',{sans:true,size:13,col:'#9a5a12'})+arcSymSVG([278,236],'AB',{size:21,col:HL}));
+    const P=pol(C,R,270);
+    s+=OB(4,drP(arcD(C,R,OW_A,OW_B+360),BL,4.5,' stroke-dasharray="2 9"')+popDot(P,4.5,BL)+tx(pol(C,R+15,270),'C',{col:BL}));
+  }else if(k===2){/* 현과 지름 */
+    s+=OB(0,owArcBase()+`<path d="${arcD(C,R,OW_B,OW_A)}" fill="none" stroke="#e7c9a0" stroke-width="5" stroke-linecap="round"/>`);
+    s+=OB(1,drL(A,B,HL,6)+tx([C[0],A[1]-14],'현 AB',{sans:true,col:HL,size:15}));
+    const Ps=[300,255].map(a=>pol(C,R,a));
+    s+=OB(2,Ps.map(P=>drL(B,P,'#7c8aa8',3)+dot(P,4,'#7c8aa8')).join(''));
+    const D=pol(C,R,OW_B+180);
+    s+=OB(3,drL(B,D,BL,6)+popDot(D,4.5,BL)+tx([D[0]-30,D[1]+2],'지름',{sans:true,col:BL,size:15}));
+  }else if(k===3){/* 부채꼴과 중심각 */
+    s+=OB(0,owArcBase());
+    s+=OB(1,drL(C,A,INK,3.2)+drL(C,B,INK,3.2)+tx([C[0]-58,C[1]-12],'반지름',{sans:true,size:13,col:'#55607a'})+tx([C[0]+58,C[1]-12],'반지름',{sans:true,size:13,col:'#55607a'}));
+    s+=OB(2,`<path d="${secD(C,R,OW_B,OW_A)}" fill="${HLs}" stroke="none" opacity=".85"/>`+ln(C,A,INK,3.2)+ln(C,B,INK,3.2)+drP(arcD(C,R,OW_B,OW_A),HL,6)+tx(pol(C,R*0.76,90),'부채꼴 AOB',{sans:true,col:'#9a5a12',size:14}));
+    s+=OB(3,drP(arcD(C,26,OW_B,OW_A),BL,3)+tx(pol(C,42,90),'중심각',{sans:true,col:BL,size:13}));
+  }else if(k===4){/* 활꼴 */
+    s+=owArcBase();
+    s+=OB(0,drL(A,B,INK,3.4)+tx([C[0],A[1]+15],'현 AB',{sans:true,size:13,col:'#55607a'}));
+    s+=OB(1,`<path d="${arcD(C,R,OW_B,OW_A)} Z" fill="${BLs}" stroke="none"/>`+ln(A,B,INK,3.4)+drP(arcD(C,R,OW_B,OW_A),HL,6)+tx([C[0],C[1]-R+26],'활꼴',{sans:true,col:BL,size:15}));
+    s+=OB(2,`<g class="ob-pop">${tx([62,232],'부채꼴 = 반지름 2개 + 호',{sans:true,size:13,col:'#9a5a12',anchor:'start'})}</g>`+`<g class="ob-pop">${tx([62,252],'활꼴 = 현 + 호',{sans:true,size:13,col:BL,anchor:'start'})}</g>`);
+  }else if(k===5){/* 부채꼴이 아닌 경우 */
+    const Q=[C[0]-6,C[1]+52];
+    s+=owArcBase({noAB:false});
+    s+=OB(0,`<path d="M ${pt(Q)} L ${pt(A)} A ${R} ${R} 0 0 0 ${pt(B)} Z" fill="${HLs}" stroke="none"/>`+drL(Q,A,HL,5)+drL(Q,B,HL,5)+drP(`M ${pt(B)} A ${R} ${R} 0 0 1 ${pt(A)}`,HL,5)+popDot(Q,4.5,RD)+tx([Q[0]+16,Q[1]+8],'P',{col:RD}));
+    s+=OB(1,drL(C,A,RD,2.4,' stroke-dasharray="5 6"')+drL(C,B,RD,2.4,' stroke-dasharray="5 6"')+`<g class="ob-pop">${tx([C[0],C[1]+R+20],'꼭짓점이 O가 아니에요!',{sans:true,col:RD,size:14})}</g>`);
+  }else{/* 반원 */
+    const L=pol(C,R,180),Rt=pol(C,R,0);
+    s+=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#9aa3b5" stroke-width="2"/>`;
+    s+=OB(0,`<path d="${secD(C,R,0,180)}" fill="#e5f4ea" stroke="none"/>`+drP(arcD(C,R,0,180),HL,6)+ln(L,Rt,INK,2.6)+dot(L,4.5)+dot(Rt,4.5)+dot(C,4)+tx([L[0]-14,L[1]],'A')+tx([Rt[0]+14,Rt[1]],'B')+tx([C[0],C[1]+17],'O',{size:16})+drP(arcD(C,22,0,180),INK,2)+tx([C[0],C[1]-36],'180°',{size:15}));
+    s+=OB(1,drL(C,L,BL,6)+drL(C,Rt,BL,6)+tx([C[0]-44,C[1]+20],'반지름',{sans:true,col:BL,size:13})+tx([C[0]+44,C[1]+20],'반지름',{sans:true,col:BL,size:13})+`<g class="ob-pop">${tx([C[0],C[1]+R+4],'반지름 2개 + 호 → 부채꼴',{sans:true,col:BL,size:14})}</g>`);
+    s+=OB(2,drL(L,Rt,'#2b7a4b',7)+`<g class="ob-pop">${tx([C[0],C[1]+R+26],'현(지름) + 호 → 활꼴',{sans:true,col:'#2b7a4b',size:14})}</g>`);
+  }
+  return svgB(W,H+(k===6?10:0),s,'원과 부채꼴 그림극');
+}
+/* [T21] 3차시 sector 부엉 쌤 그림극 그림 */
+function owlSecScene(k){
+  if(k===1){/* 원의 둘레 = 지름 × π, 둘레를 펴 보기 */
+    const C=[170,88],R=46,d=2*R,L=Math.PI*d,x0=170-L/2,y=196;
+    let s=OB(0,drP(`M ${C[0]+R} ${C[1]} A ${R} ${R} 0 1 0 ${C[0]-R} ${C[1]} A ${R} ${R} 0 1 0 ${C[0]+R} ${C[1]}`,HL,5)+dot(C,3.6)+tx([C[0]+14,C[1]+14],'O',{size:15}));
+    s+=OB(1,drL(pol(C,R,180),pol(C,R,0),BL,4)+tx([C[0],C[1]-14],'지름 12 cm',{sans:true,size:13,col:BL}));
+    s+=OB(2,drL([x0,y],[x0+L,y],HL,5)+[0,1,2].map(i=>`<g class="ob-pop">${ln([x0+i*d+3,y+18],[x0+(i+1)*d-3,y+18],BL,4)}</g>`).join('')+ln([x0+3*d+3,y+18],[x0+L,y+18],'#9fb3dd',4)+tx([x0+L/2,y-16],'둘레를 쭉 편 길이',{sans:true,size:13,col:HL})+tx([x0+L/2,y+38],'지름 3개와 조금 더 (약 3.14배)',{sans:true,size:13,col:BL}));
+    return svgB(340,250,s,'원의 둘레를 펴서 지름과 비교하기');
+  }
+  if(k===2){/* 원을 잘라 붙여 직사각형 */
+    const C=[70,96],R=50,n=8,t=360/n;
+    let s=OB(0,[...Array(n)].map((_,i)=>`<path d="${secD(C,R,i*t,(i+1)*t)}" fill="${i%2?BLs:HLs}" stroke="${INK}" stroke-width="1.4"/>`).join('')+dot(C,3));
+    const w=Math.PI*R/(n/2),x0=150,y0=66,h=R;let z='';
+    for(let i=0;i<n;i++){const up=i%2===0,xl=x0+i*w/2,xr=xl+w,xm=(xl+xr)/2;
+      z+=up?`<path d="M ${f1(xm)} ${y0} L ${f1(xr)} ${y0+h} Q ${f1(xm)} ${y0+h+8} ${f1(xl)} ${y0+h} Z" fill="${HLs}" stroke="${INK}" stroke-width="1.4"/>`
+        :`<path d="M ${f1(xm)} ${y0+h} L ${f1(xl)} ${y0} Q ${f1(xm)} ${y0-8} ${f1(xr)} ${y0} Z" fill="${BLs}" stroke="${INK}" stroke-width="1.4"/>`}
+    s+=OB(1,`<g class="ob-pop">${z}</g>`+tx([134,96],'→',{size:24}));
+    const W=w*(n+1)/2;
+    s+=OB(2,drL([x0,y0+h+26],[x0+W,y0+h+26],HL,4)+tx([x0+W/2,y0+h+42],'가로 = 반둘레 (반지름 × π)',{sans:true,size:12.5,col:HL})+drL([x0+W+10,y0],[x0+W+10,y0+h],BL,4)+tx([x0+W+14,y0+h/2],'반지름',{sans:true,size:12.5,col:BL,anchor:'start'}));
+    s+=OB(3,`<g class="ob-pop">${tx([200,205],'원의 넓이 = 반둘레 × 반지름',{sans:true,size:16,col:INK})}</g>`);
+    return svgB(400,230,s,'원을 잘라 붙여 직사각형 만들기');
+  }
+  if(k===3){/* 360 ÷ 60 = 6조각 중 1조각 */
+    const C=[170,118],R=92;
+    let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#9aa3b5" stroke-width="2"/>`+dot(C,3.6)+tx([C[0]+12,C[1]+16],'O',{size:15});
+    s+=OB(0,ln(C,pol(C,R,60),INK,2.6)+ln(C,pol(C,R,120),INK,2.6)+drP(arcD(C,24,60,120),INK,2)+tx(pol(C,40,90),'60°',{size:14}));
+    s+=OB(1,[180,240,300,0].map(a=>drL(C,pol(C,R,a),'#7c8aa8',2,' stroke-dasharray="5 5"')).join('')+[1,2,3,4,5,6].map(i=>`<g class="ob-pop">${tx(pol(C,R*0.78,90+(i-1)*60),i,{size:15,col:'#55607a'})}</g>`).join(''));
+    s+=OB(2,drP(arcD(C,R,60,120),HL,6)+tx(pol(C,R+18,90),'호 = 12π × 60/360 = 2π',{sans:true,size:13,col:HL}));
+    s+=OB(3,`<path d="${secD(C,R,60,120)}" fill="${HLs}" stroke="none" opacity=".9"/>`+ln(C,pol(C,R,60),INK,2.6)+ln(C,pol(C,R,120),INK,2.6)+`<path d="${arcD(C,R,60,120)}" fill="none" stroke="${HL}" stroke-width="6" stroke-linecap="round"/>`+`<g class="ob-pop">${tx([C[0],C[1]+R+20],'넓이 = 36π × 60/360 = 6π',{sans:true,size:13,col:'#9a5a12'})}</g>`);
+    return svgB(340,250,s,'원을 6조각으로 나누기');
+  }
+  if(k===4){/* 부채꼴도 잘라 붙이면 직사각형 */
+    const C=[80,150],R=100,a0=60,a1=120,n=6,t=(a1-a0)/n;
+    let s=OB(0,[...Array(n)].map((_,i)=>`<path d="${secD(C,R,a0+i*t,a0+(i+1)*t)}" fill="${i%2?BLs:HLs}" stroke="${INK}" stroke-width="1.3"/>`).join('')+dot(C,3)+tx([C[0],C[1]+15],'O',{size:14})+tx(pol(C,R+14,90),'호 l',{size:14,col:BL})+tx(pol(C,R/2,52),'r',{size:15,col:BL}));
+    const arcL=rad(a1-a0)*R,w=arcL/(n/2),x0=168,y0=48,h=R*0.9;let z='';
+    for(let i=0;i<n;i++){const up=i%2===0,xl=x0+i*w/2,xr=xl+w,xm=(xl+xr)/2;
+      z+=up?`<path d="M ${f1(xm)} ${f1(y0+h)} L ${f1(xl)} ${y0} Q ${f1(xm)} ${y0-5} ${f1(xr)} ${y0} Z" fill="${HLs}" stroke="${INK}" stroke-width="1.3"/>`
+        :`<path d="M ${f1(xm)} ${y0} L ${f1(xr)} ${f1(y0+h)} Q ${f1(xm)} ${f1(y0+h+5)} ${f1(xl)} ${f1(y0+h)} Z" fill="${BLs}" stroke="${INK}" stroke-width="1.3"/>`}
+    s+=OB(1,`<g class="ob-pop">${z}</g>`+tx([140,100],'→',{size:24}));
+    const W=w*(n+1)/2;
+    s+=OB(2,drL([x0,y0+h+20],[x0+W,y0+h+20],HL,4)+tx([x0+W/2,y0+h+36],'가로 = 호의 반 (½ l)',{sans:true,size:12.5,col:HL})+drL([x0+W+10,y0],[x0+W+10,y0+h],BL,4)+tx([x0+W+14,y0+h/2],'세로 = r',{sans:true,size:12.5,col:BL,anchor:'start'}));
+    return svgB(370,210,s,'부채꼴을 잘라 붙여 직사각형 만들기');
+  }
+  /* k===5 색칠한 도형의 둘레: 큰 호 → 작은 호 → 곧은 선분 2개 */
+  const C=[170,190],R=150,r=75,a0=60,a1=120;
+  let s=`<path d="M ${pt(pol(C,r,a0))} L ${pt(pol(C,R,a0))} A ${R} ${R} 0 0 0 ${pt(pol(C,R,a1))} L ${pt(pol(C,r,a1))} A ${r} ${r} 0 0 1 ${pt(pol(C,r,a0))} Z" fill="${HLs}" stroke="${INK}" stroke-width="1.6"/>`+`<path d="${secD(C,r,a0,a1)}" fill="none" stroke="#b5bece" stroke-width="1.4" stroke-dasharray="4 5"/>`+dot(C,3.4)+tx([C[0]+14,C[1]-4],'O',{size:15});
+  s+=OB(1,drP(arcD(C,R,a0,a1),BL,6)+tx(pol(C,R+14,90),'① 큰 호',{sans:true,size:13,col:BL}));
+  s+=OB(2,drP(arcD(C,r,a0,a1),BL,6)+tx(pol(C,r-16,90),'② 작은 호',{sans:true,size:13,col:BL}));
+  s+=OB(3,drL(pol(C,r,a0),pol(C,R,a0),RD,6)+drL(pol(C,r,a1),pol(C,R,a1),RD,6)+tx(pol(C,(R+r)/2+6,a0-9),'③ 4 cm',{sans:true,size:13,col:RD})+tx(pol(C,(R+r)/2+6,a1+9),'④ 4 cm',{sans:true,size:13,col:RD}));
+  return svgB(340,215,s,'색칠한 도형의 둘레 차례로 따라가기');
 }
 function arcFig(kind,o){
   if(o&&o.quiz)return arcQuiz(kind);
@@ -112,15 +216,39 @@ if(typeof HG_TRACKS==='object'){
         if(k>=10)return arcExtraRapid(k,seed);
         const pr=GEN.arcName(k+10*(Math.floor(seed/12)+1)),st=pr.steps[pr.steps.length-1];
         return{fig:pr.fig.svg(),ans:st.ans,why:st.ok||'',also:st.also||null}}},
+    /* [T21] 부엉 쌤 그림극: 화면을 누를 때마다 한 줄씩 나오고, 선이 그려지듯 나타나요. 교과서 194~195쪽 순서(호 → 현 → 부채꼴·중심각 → 활꼴) */
     owlScenes:[
-      {cap:'장면 ① 굽으면 호, 곧으면 현!',say:'원 위의 두 점 A, B를 잡았어요. <span class="kw">원을 따라 굽게</span> 이으면 <b>호 AB</b>, <span class="kw">곧게 선분</span>으로 이으면 <b>현 AB</b>예요.',svg:()=>arcFig('arc')},
-      {cap:'장면 ② 가장 긴 현 = 지름',say:'여러 현 중에서 <span class="num">원의 중심 O</span>를 지나가는 현이 바로 <b>지름</b>이에요. 지름도 현의 한 종류예요!',svg:()=>arcFig('diam')},
-      {cap:'장면 ③ 부채꼴 vs 활꼴',say:'피자 조각처럼 <span class="kw">두 반지름 + 호</span>로 둘러싸이면 <b>부채꼴</b>! 활처럼 <span class="kw">현 + 호</span>로 둘러싸이면 <b>활꼴</b>이에요.',svg:()=>arcFig('sector')},
-      {cap:'장면 ④ 꼭짓점이 중심 O인가요?',exp:'warn',say:'부채꼴처럼 생겨도 <span class="warn">꼭짓점이 중심 O가 아니면</span> 부채꼴이 아니에요!',svg:()=>arcFig('non_sec'),
-        ask:{q:'중심각이 180°인 반원은 부채꼴이자 무엇이기도 할까요?',choices:['활꼴','다면체','직선'],ans:'활꼴',hint:'반원의 지름도 원 위의 두 점을 이은 "현"이에요!',ok:'맞아요! 지름(현) + 호로 둘러싸여서 반원은 부채꼴이면서 활꼴이에요.'}},
-      {cap:'장면 ⑤ 이름표 총정리!',exp:'happy',say:'이제 헷갈리지 않죠? 반원은 <span class="kw">부채꼴 ○ · 활꼴 ○</span>라는 특별 친구까지 기억해 둬요!',svg:()=>arcFig('semi')}
+      {cap:'장면 ① 호와 기호 ⌒AB',svg:()=>owlArcScene(1),beats:[
+        '원 O를 그렸어요. 가운데 점 O가 <b>원의 중심</b>이에요.',
+        '원 위에 서로 다른 두 점 <b>A</b>, <b>B</b>를 잡아요.',
+        'A에서 원을 따라 B까지 가 보세요. 원 위의 두 점 사이에 있는 원의 일부분을 <b>호 AB</b>라고 해요.',
+        '호 AB는 기호로 <span class="arc-sym">AB</span>와 같이 나타내요. AB 위에 굽은 선을 그려요.',
+        {say:'반대쪽으로 돌아가는 긴 호도 있어요. 보통 <span class="arc-sym">AB</span>는 <span class="kw">짧은 쪽 호</span>이고, 긴 쪽은 그 위에 점 C를 잡아 <span class="arc-sym">ACB</span>로 나타내요.',exp:'happy'}]},
+      {cap:'장면 ② 곧게 이으면 현',svg:()=>owlArcScene(2),beats:[
+        '이번에는 두 점 A, B를 원을 따라가지 않고 <span class="kw">곧게</span> 이어 볼게요.',
+        '원 위의 두 점을 이은 선분을 <b>현</b>이라고 해요. 이 선분은 <b>현 AB</b>예요. 굽은 선은 호, 곧은 선분은 현!',
+        '점 B에서 원 위의 여러 점까지 현을 그어 보면 길이가 모두 달라요.',
+        {say:'그중에서 <span class="num">원의 중심 O</span>를 지나는 현이 <b>지름</b>이에요. 지름은 가장 긴 현이에요.',exp:'happy'}]},
+      {cap:'장면 ③ 부채꼴과 중심각',svg:()=>owlArcScene(3),beats:[
+        '이번에는 원의 중심 O에서 시작해 볼게요.',
+        'O에서 A, B까지 두 <b>반지름</b> OA, OB를 그어요.',
+        '두 반지름 OA, OB와 <span class="arc-sym">AB</span>로 둘러싸인 도형을 <b>부채꼴 AOB</b>라고 해요. 피자 한 조각 모양이에요.',
+        {say:'두 반지름이 이루는 ∠AOB를 부채꼴 AOB의 <b>중심각</b>이라고 해요. <span class="arc-sym">AB</span>에 대한 중심각이라고도 해요.',exp:'happy'}]},
+      {cap:'장면 ④ 현과 호로 둘러싸이면 활꼴',svg:()=>owlArcScene(4),beats:[
+        '두 점 A, B를 곧게 이어 <b>현 AB</b>를 그어요.',
+        '현 AB와 <span class="arc-sym">AB</span>로 둘러싸인 도형을 <b>활꼴</b>이라고 해요. 활처럼 생겼죠?',
+        {say:'무엇으로 둘러싸였는지 보면 돼요. <span class="kw">반지름 2개 + 호</span>는 부채꼴, <span class="kw">현 + 호</span>는 활꼴이에요.',exp:'happy'}]},
+      {cap:'장면 ⑤ 꼭짓점이 중심 O인가요?',exp:'warn',svg:()=>owlArcScene(5),beats:[
+        '이 도형도 피자 조각처럼 생겼어요. 그런데 꼭짓점이 중심 O가 아니라 점 P예요.',
+        'PA, PB는 중심 O에서 나온 선분이 아니라서 <span class="warn">반지름이 아니에요</span>. 그래서 이 도형은 <span class="warn">부채꼴이 아니에요</span>.'],
+        ask:{q:'부채꼴이 되려면 두 선분은 어디에서 시작해야 할까요?',choices:['원의 중심 O','원 위의 아무 점','원 안의 아무 점','원 밖의 점'],ans:'원의 중심 O',hint:'부채꼴은 두 반지름과 호로 둘러싸여요. 반지름은 어디에서 시작하나요?',ok:'맞아요! 두 선분이 중심 O에서 시작하는 반지름이어야 부채꼴이에요.'}},
+      {cap:'장면 ⑥ 반원은 이름이 두 개',exp:'happy',svg:()=>owlArcScene(6),beats:[
+        '중심각이 <span class="num">180°</span>인 부채꼴을 그려 볼게요. 바로 <b>반원</b>이에요.',
+        'OA, OB는 반지름이에요. <span class="kw">반지름 2개 + 호</span>로 둘러싸였으니 <b>부채꼴</b>이에요.',
+        '그런데 선분 AB는 지름, 곧 <b>현</b>이기도 해요. <span class="kw">현 + 호</span>로 둘러싸였으니 <b>활꼴</b>이기도 해요.'],
+        ask:{q:'반원을 부르는 이름으로 옳은 것은?',choices:['부채꼴이면서 활꼴','부채꼴만','활꼴만','어느 것도 아니에요'],ans:'부채꼴이면서 활꼴',hint:'반지름 2개로도, 현(지름) 하나로도 볼 수 있어요.',ok:'맞아요! 반원은 부채꼴이면서 활꼴이에요. 구별하기에서도 두 이름을 모두 골라요.'}}
     ],
-    owlSummary:['원을 따라 굽은 선 = 호 / 두 점을 곧게 이은 선분 = 현','지름은 중심을 지나는 가장 긴 현','반지름 2개+호 = 부채꼴(꼭짓점이 꼭 중심 O!) / 현+호 = 활꼴','반원은 부채꼴이면서 활꼴이에요.'],
+    owlSummary:['원 위의 두 점 사이에 있는 원의 일부분 = <b>호 AB</b>, 기호 <span class="arc-sym">AB</span> (보통 짧은 쪽 호)','원 위의 두 점을 이은 선분 = <b>현 AB</b> · 중심 O를 지나는 현 = <b>지름</b>(가장 긴 현)','두 반지름 + 호 = <b>부채꼴</b> (꼭짓점이 꼭 중심 O) · 두 반지름이 이루는 각 = <b>중심각</b>','현 + 호 = <b>활꼴</b> · 반원은 부채꼴이면서 활꼴'],
     schemaQs:[
       {id:'aq1',q:'원 O에서 <b>주황색으로 표시한 도형</b>의 이름으로 알맞은 것을 고르시오.',fig:()=>arcFig('non_sec',{quiz:true}),choices:['부채꼴','활꼴','반원','어느 것도 아니에요'],ans:'어느 것도 아니에요',hint:'두 변이 원의 중심 O에서 나오는 반지름인지 보세요.',why:'꼭짓점이 중심 O가 아니라서 부채꼴이 아니에요.'},
       {id:'aq2',q:'원 O에서 <b>주황색으로 표시한 선분</b>의 이름을 고르시오.',fig:()=>arcFig('chord',{quiz:true}),choices:['반지름','지름','현','호'],ans:'현',hint:'양 끝이 어디에 있는지 보세요.',why:'원 위의 두 점을 곧게 이은 선분은 현이에요.'},
@@ -201,13 +329,33 @@ if(typeof HG_TRACKS==='object'){
     schemaRapid:{n:8,kinds:10,title:'무엇을 구할까요?',q:'이 문제에서 <b>구해야 하는 것</b>과 <b>답의 단위</b>를 고르세요.',
       choices:S1_CH,check:[2,3,4,5,8],make:(k,seed)=>sectorRapid(k,Math.floor(seed/10))},
     compoundBridgeNo:6,
+    /* [T21] 부엉 쌤 그림극: 둘레를 펴 보고(π), 잘라 붙이고(넓이), 조각으로 나누고(중심각/360), 둘레를 한 바퀴 따라가요 */
     owlScenes:[
-      {cap:'장면 ① 원의 둘레는 지름 × π!',say:'<span class="kw">둘레 보면 π</span>! π는 <b>지름</b>을 원의 둘레로 바꾸는 마법이에요. 반지름이 6이면 지름은 <span class="num">12</span> → 둘레는 <span class="num">12π</span>!',svg:()=>secFigS(6,null,360,{arcLab:'둘레 = 지름 × π',rLab:'r = 6'})},
-      {cap:'장면 ② 원의 넓이는 지그재그 직사각형!',say:'원을 잘게 잘라 붙이면 직사각형이 돼요. 가로는 <span class="kw">반둘레(반지름 × π)</span>, 세로는 <span class="kw">반지름</span> → <span class="num">가로 × 세로</span>!',svg:()=>typeof svgZig==='function'?svgZig('가로 = 반둘레 (r × π)','= 반지름'):secFigS(6,null,360,{})},
-      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',say:'반지름 6, 중심각 <span class="num">60°</span> 부채꼴은 360÷60 = <span class="num">6조각 중 1개</span>! 원 둘레·넓이에 <span class="num">중심각/360</span>을 곱해요.',svg:()=>secFigS(6,null,60,{arcLab:'둘레 ÷ 6 = 2π',rLab:'6 cm'})},
-      {cap:'장면 ④ 중심각 모를 땐: 호의 반 × 반지름!',say:'부채꼴도 잘게 잘라 붙이면 직사각형! 가로는 <span class="kw">호의 반(½l)</span>, 세로는 <span class="kw">반지름(r)</span> → <span class="num">호의 반 × 반지름</span>!',svg:()=>typeof svgZig==='function'?svgZig('가로 = 호의 반 (½ l)','= 반지름 r'):secFigS(6,null,120,{arcLab:'호 l',rLab:'r'}),
-        ask:{q:'반지름 6 cm, 호의 길이 4π cm인 부채꼴의 넓이는?',choices:['12π cm²','24π cm²','6π cm²'],ans:'12π cm²',hint:'호의 반(2π) × 반지름(6)을 곱해요!',ok:'맞아요! 호의 반 2π × 반지름 6 = 12π cm²예요.'}},
-      {cap:'장면 ⑤ 색칠한 도형의 둘레 함정!',exp:'warn',say:'색칠한 도형의 <b>둘레</b>를 구할 땐 둥근 호 2개뿐 아니라 <span class="warn">양쪽 곧은 선분 2개</span>도 꼭 더해야 해요!',svg:()=>secFigS(8,4,45,{perim:true,arcLab:'큰 호 + 작은 호 + 선분 2개!'})}
+      {cap:'장면 ① 원의 둘레 = 지름 × π',svg:()=>owlSecScene(1),beats:[
+        '반지름이 <span class="num">6 cm</span>인 원이에요. 주황색 선이 원의 <b>둘레</b>예요.',
+        '중심 O를 지나는 지름은 6 × 2 = <span class="num">12 cm</span>예요.',
+        '둘레를 쭉 펴서 지름과 비교해 보면 지름 3개보다 조금 더 길어요. 약 3.14배, 이 수를 <b>π</b>라고 해요.',
+        {say:'그래서 <b>원의 둘레 = 지름 × π</b>예요. 이 원의 둘레는 12 × π = <span class="num">12π cm</span>예요.',exp:'happy'}]},
+      {cap:'장면 ② 원의 넓이 = 반둘레 × 반지름',svg:()=>owlSecScene(2),beats:[
+        '원을 피자처럼 똑같이 8조각으로 잘라요.',
+        '조각을 위아래로 엇갈려 붙이면 직사각형에 가까워져요. 많이 자를수록 더 직사각형이 돼요.',
+        '가로는 둘레의 반, 곧 <span class="kw">반둘레(반지름 × π)</span>이고 세로는 <span class="kw">반지름</span>이에요.',
+        {say:'그래서 <b>원의 넓이 = 반둘레 × 반지름</b>이에요. 반지름이 6이면 6π × 6 = <span class="num">36π cm²</span>예요.',exp:'happy'}]},
+      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',svg:()=>owlSecScene(3),beats:[
+        '반지름이 <span class="num">6 cm</span>이고 중심각이 <span class="num">60°</span>인 부채꼴이에요.',
+        '360 ÷ 60 = <span class="num">6</span>이니까, 원을 똑같이 6조각으로 나눈 것 중 1조각이에요.',
+        '그래서 호의 길이는 원의 둘레 12π의 <span class="num">60/360</span>, 곧 <b>2π cm</b>예요.',
+        {say:'넓이도 똑같이 원의 넓이 36π의 60/360, 곧 <b>6π cm²</b>예요. 원 전체에 <span class="kw">중심각/360</span>을 곱하면 돼요.',exp:'happy'}]},
+      {cap:'장면 ④ 중심각을 모를 때: 호의 반 × 반지름',svg:()=>owlSecScene(4),beats:[
+        '이번에는 중심각을 몰라요. 반지름 r와 호의 길이 l만 알아요.',
+        '부채꼴도 잘게 잘라 엇갈려 붙이면 직사각형에 가까워져요.',
+        '가로는 <span class="kw">호의 반(½ l)</span>, 세로는 <span class="kw">반지름 r</span>이에요. 그래서 <b>부채꼴의 넓이 = 호의 반 × 반지름</b>이에요.'],
+        ask:{q:'반지름이 6 cm, 호의 길이가 4π cm인 부채꼴의 넓이는?',choices:['12π cm²','24π cm²','6π cm²','4π cm²'],ans:'12π cm²',hint:'호의 반(2π)에 반지름(6)을 곱해요.',ok:'맞아요! 호의 반 2π × 반지름 6 = 12π cm²예요.'}},
+      {cap:'장면 ⑤ 둘레는 한 바퀴 빙 둘러요',exp:'warn',svg:()=>owlSecScene(5),beats:[
+        '색칠한 도형의 <b>둘레</b>를 구해 볼게요. 둘레는 도형을 한 바퀴 빙 둘러싼 선이에요.',
+        '먼저 바깥쪽 <span class="kw">① 큰 호</span>를 따라가요.',
+        '다음은 안쪽 <span class="kw">② 작은 호</span>예요.',
+        {say:'마지막으로 <span class="warn">③, ④ 곧은 선분 2개</span>! 이걸 빼먹기 쉬워요. 둘레 = 큰 호 + 작은 호 + 선분 2개예요.',exp:'warn'}]}
     ],
     owlSummary:['원 둘레 = 지름 × π / 원 넓이 = 반둘레(rπ) × 반지름(r)','부채꼴 호·넓이 = 원 전체 × (중심각 / 360)','중심각 모를 때 부채꼴 넓이 = (호의 반) × (반지름)','색칠한 도형 둘레 = 모든 둥근 호 + 곧은 직선 변 모두 더하기!'],
     schemaQs:[

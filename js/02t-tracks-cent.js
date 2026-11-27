@@ -248,13 +248,69 @@ function makeC5(seed){
 
 const GEN_COMPOUND={C1:makeC1,C2:makeC2,C3:makeC3,C4:makeC4,C5:makeC5};
 
+/* ── [T21] 부엉 쌤 그림극: <g data-b="n">는 n번째 줄에서 나타나요. class="dr" 선은 그려지듯, ob-rot은 돌아가며 나타나요 ── */
+const OB=(b,inner)=>`<g data-b="${b}">${inner}</g>`;
+const drP=(d,col,w,o='')=>`<path class="dr" d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${o}/>`;
+const drL=(P,Q,col,w,o='')=>drP(`M ${pt(P)} L ${pt(Q)}`,col,w,o);
+const rot=(C,deg,inner)=>`<g class="ob-rot" style="transform-origin:${f1(C[0])}px ${f1(C[1])}px;--r0:${deg}deg">${inner}</g>`;
+function owlCentScene(k){
+  if(k===1){/* 같은 중심각은 돌려서 포개져요 (교과서 195쪽) */
+    const C=[170,128],R=92,t=50,a0=200,b0=30;
+    let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#b5bece" stroke-width="1.8"/>`+svgDot(C,3.6)+svgTx([C[0]+4,C[1]+18],'O',{size:16});
+    s+=OB(0,`<path d="${secD(C,R,b0,b0+t)}" fill="${BLs}" stroke="${INK}" stroke-width="2.2"/>`+`<path d="${arcD(C,R,b0,b0+t)}" fill="none" stroke="${BL}" stroke-width="5" stroke-linecap="round"/>`+svgAng(C,b0,b0+t,t+'°',{col:BL,size:15,r:22,lr:42}));
+    s+=OB(0,`<path d="${secD(C,R,a0,a0+t)}" fill="${HLs}" stroke="${INK}" stroke-width="2.2" opacity=".9"/>`+svgAng(C,a0,a0+t,t+'°',{col:HL,size:15,r:22,lr:42}));
+    s+=OB(1,rot(C,-(a0-b0),`<path d="${secD(C,R,b0,b0+t)}" fill="${HLs}" fill-opacity=".45" stroke="${HL}" stroke-width="3"/>`));
+    s+=OB(2,`<g class="ob-pop">${svgTx([C[0],C[1]+R+22],'호의 길이 같음 · 넓이 같음 · 현의 길이 같음',{sans:true,size:13,col:INK})}</g>`);
+    return svgBox(340,250,s,'중심각이 같은 두 부채꼴을 돌려서 포개기');
+  }
+  if(k===2){/* 2배, 3배로 붙이기 */
+    const C=[170,150],R=100,t=40,a0=70;
+    let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#b5bece" stroke-width="1.8"/>`+svgDot(C,3.6)+svgTx([C[0],C[1]+18],'O',{size:16});
+    const piece=(i,col)=>`<path d="${secD(C,R,a0+i*t,a0+(i+1)*t)}" fill="${col}" stroke="${INK}" stroke-width="2"/>`+`<path d="${arcD(C,R,a0+i*t,a0+(i+1)*t)}" fill="none" stroke="${BL}" stroke-width="5" stroke-linecap="round"/>`+svgTx(pol(C,R+18,a0+(i+.5)*t),'3 cm',{size:13,col:BL});
+    s+=OB(0,piece(0,BLs)+svgAng(C,a0,a0+t,'40°',{col:INK,size:14,r:20,lr:40}));
+    s+=OB(1,rot(C,t,piece(1,'#e8eefb')));
+    s+=OB(2,rot(C,2*t,piece(2,BLs)));
+    s+=OB(3,drP(arcD(C,R+30,a0,a0+3*t),HL,4)+`<g class="ob-pop">${svgTx([C[0],C[1]+R+26],'중심각 120° (3배) → 호 9 cm (3배)',{sans:true,size:14,col:HL})}</g>`);
+    return svgBox(340,290,s,'40° 부채꼴을 2개, 3개 붙이기');
+  }
+  if(k===4){/* 현은 2배가 되지 않아요 */
+    const C=[170,130],R=96,A=pol(C,R,205),Bp=pol(C,R,250),D=pol(C,R,295);
+    let s=`<circle cx="${C[0]}" cy="${C[1]}" r="${R}" fill="none" stroke="#b5bece" stroke-width="1.8"/>`+svgDot(C,3.6)+svgTx([C[0],C[1]-18],'O',{size:16});
+    s+=OB(0,svgLn(C,A,INK,2)+svgLn(C,Bp,INK,2)+svgAng(C,205,250,'45°',{size:13,r:20,lr:38})+drL(A,Bp,BL,5)+svgDot(A)+svgDot(Bp)+svgTx(pol(C,R+15,205),'A')+svgTx(pol(C,R+15,250),'B'));
+    s+=OB(1,svgLn(C,D,INK,2)+svgAng(C,250,295,'45°',{size:13,r:20,lr:38})+drL(Bp,D,BL,5)+svgDot(D)+svgTx(pol(C,R+15,295),'C'));
+    s+=OB(2,drL(A,D,HL,6)+`<g class="ob-pop">${svgTx([C[0],C[1]+R+24],'현 AC < 현 AB + 현 BC',{sans:true,size:15,col:HL})}</g>`);
+    return svgBox(340,258,s,'중심각이 2배인 현 비교');
+  }
+  return'';
+}
 const OWL_SCENES=[
-  {cap:'장면 ① 조각이 2배, 3배 늘어나면?',say:'<span class="kw">한 원</span> 안에서 <span class="num">40°</span> 피자 조각을 2개, 3개 이어 붙여 볼까요? <span class="kw">둥근 테두리(호)</span>와 <span class="kw">넓이</span>가 똑같이 2배, 3배 커져요!',svg:()=>ctSliceStack(40,2,'3 cm')},
-  {cap:'장면 ② 딱 떨어지면 몇 배, 안 떨어지면 비!',say:'<span class="num">40° → 120°</span>처럼 딱 떨어지면 <b>× 3배</b>! <span class="num">50° → 70°</span>처럼 안 나누어떨어지면 <span class="kw">5 : 7 비</span>로 1칸부터 찾아요.',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'14 cm',mode:'arc',hl:['ang1','ang2']})},
-  {cap:'장면 ③ 원 위의 세 점은 모두 360°!',say:'원 위의 세 점이 만든 세 호의 비가 <span class="num">2 : 3 : 4</span>라면? 원 한 바퀴 <span class="num">360°</span>를 전체 <span class="num">9칸</span>으로 나누어 1칸을 구해요!',svg:()=>ctThreeArcs(2,3,4,{want:'BC',hl:['want','ang']})},
-  {cap:'장면 ④ 현의 길이 함정 조심!',exp:'warn',say:'곧은 선분 <span class="warn">현</span>은 삼각형 지름길처럼 질러 가기 때문에 중심각이 2배여도 <span class="warn">2배보다 짧아요</span>!',svg:()=>ctTwoSec({a:120,b:60,l1:'꺾인 2개 vs 곧은 현',l2:'60°',mode:'arc',showChord:true,hl:['chord']}),
-    ask:{q:'한 원에서 중심각의 크기가 2배가 되어도 2배가 되지 않는 것은?',choices:['현의 길이','호의 길이','부채꼴의 넓이'],ans:'현의 길이',hint:'지름길로 곧장 가는 선분을 골라요.',ok:'정확해요! 호와 넓이는 정비례하지만 현은 2배보다 짧아요.'}},
-  {cap:'장면 ⑤ 반지름이 다르면 안 돼요!',say:'작은 원의 60°와 큰 원의 60°는 호의 길이가 달라요. 반드시 <span class="kw">한 원 또는 합동인 원</span>에서만 정비례가 성립해요!',exp:'happy',svg:()=>ctTwoSec({a:60,b:60,diffRadius:true})}
+  {cap:'장면 ① 중심각이 같으면 포개져요',svg:()=>owlCentScene(1),beats:[
+    '한 원에 중심각이 <span class="num">50°</span>로 같은 부채꼴 두 개가 있어요.',
+    '주황 부채꼴을 중심 O를 축으로 빙글 돌려 볼게요. 파란 부채꼴에 꼭 포개져요!',
+    {say:'꼭 포개지니까 한 원에서 중심각이 같으면 <b>호의 길이도, 넓이도 같아요</b>. 현의 길이도 같아요.',exp:'happy'}]},
+  {cap:'장면 ② 2배, 3배로 붙여 보기',svg:()=>owlCentScene(2),beats:[
+    '한 원에서 중심각이 <span class="num">40°</span>이고 호의 길이가 <span class="num">3 cm</span>인 부채꼴이에요.',
+    '똑같은 부채꼴을 돌려서 옆에 붙이면 중심각은 <span class="num">80°</span>, 2배가 돼요. 호의 길이도 3 + 3 = <span class="num">6 cm</span>, 2배예요.',
+    '하나 더 붙이면 중심각 <span class="num">120°</span>, 3배! 호의 길이도 <span class="num">9 cm</span>, 3배가 돼요. 넓이도 똑같이 3배예요.',
+    {say:'그래서 한 원에서 호의 길이와 넓이는 중심각의 크기에 <b>정비례</b>해요.',exp:'happy'}]},
+  {cap:'장면 ③ 딱 떨어지면 몇 배, 아니면 비',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl:['ang1','ang2']}),beats:[
+    '중심각이 <span class="num">50°</span>일 때 호가 <span class="num">10 cm</span>예요. 중심각이 <span class="num">70°</span>이면 호는 몇 cm일까요?',
+    '70 ÷ 50은 나누어떨어지지 않아요. 이럴 때는 <span class="kw">비</span>로 써요. 중심각끼리, 호끼리 같은 순서로 <b>50 : 70 = 10 : x</b>',
+    '50 : 70을 간단히 하면 5 : 7이에요. 1칸이 10 ÷ 5 = 2 cm이니까 7칸은 <b>x = 14</b>예요.']},
+  {cap:'장면 ④ 세 호를 합치면 원 한 바퀴',svg:()=>ctThreeArcs(2,3,4,{want:'BC',hl:['want','ang']}),beats:[
+    '원 위의 세 점 A, B, C가 만든 세 호의 길이의 비가 <span class="num">2 : 3 : 4</span>예요.',
+    '세 호를 모두 합치면 원 한 바퀴예요. 그래서 중심각도 모두 합치면 <span class="num">360°</span>예요.',
+    '2 + 3 + 4 = <span class="num">9칸</span>으로 나누면 1칸은 360 ÷ 9 = <span class="num">40°</span>예요.',
+    {say:'호 BC는 3칸이니까 호 BC에 대한 중심각은 40 × 3 = <b>120°</b>예요.',exp:'happy'}]},
+  {cap:'장면 ⑤ 현은 2배가 되지 않아요',exp:'warn',svg:()=>owlCentScene(4),beats:[
+    '중심각이 <span class="num">45°</span>인 현 AB를 그었어요.',
+    '옆에 똑같이 45°인 현 BC를 하나 더 그었어요. A에서 C까지 중심각은 <span class="num">90°</span>, 2배예요.',
+    {say:'그런데 현 AC는 곧게 질러가서 현 AB + 현 BC보다 <span class="warn">짧아요</span>. 중심각이 2배가 되어도 현의 길이는 <span class="warn">2배가 되지 않아요</span>!',exp:'warn'}],
+    ask:{q:'한 원에서 중심각의 크기에 정비례하지 <b>않는</b> 것은?',choices:['현의 길이','호의 길이','부채꼴의 넓이','어느 것도 아니에요'],ans:'현의 길이',hint:'굽은 길(호)과 곧게 질러가는 길(현) 중에서 어느 쪽이 2배보다 짧았는지 떠올려요.',ok:'정확해요! 호의 길이와 넓이는 정비례하지만 현의 길이는 정비례하지 않아요.'}},
+  {cap:'장면 ⑥ 크기가 다른 원이면 안 돼요',exp:'happy',svg:()=>ctTwoSec({a:60,b:60,diffRadius:true}),beats:[
+    '작은 원과 큰 원에 중심각이 똑같이 <span class="num">60°</span>인 부채꼴이 있어요.',
+    '중심각은 같아도 큰 원의 호가 더 길어요. 원의 크기가 다르기 때문이에요.',
+    '그래서 정비례는 꼭 <span class="kw">한 원</span> 또는 <span class="kw">크기가 같은 원</span>에서만 써요.']}
 ];
 
 /* [T20] 첫걸음 구별하기(C1): 한 원에서 중심각만 2배로 바꾼 두 부채꼴. 주황 표시가 2배가 되는지 가려요.
@@ -317,7 +373,7 @@ if(typeof HG_TRACKS==='object'){
     t2Order:[1,3,4,2],
     compoundBridgeNo:2,
     owlScenes:OWL_SCENES,
-    owlSummary:['같은 원에서 호의 길이와 넓이는 중심각에 정비례해요.','현의 길이는 중심각에 정비례하지 않아요 (2배보다 짧음!).','딱 떨어지면 몇 배, 안 떨어지면 간단한 비(1칸), 세 호의 비는 360°를 전체 칸 수로 나눠요.'],
+    owlSummary:['한 원에서 중심각이 같으면 호의 길이, 넓이, 현의 길이가 각각 같아요.','한 원에서 호의 길이와 넓이는 중심각의 크기에 <b>정비례</b>해요.','현의 길이는 중심각에 정비례하지 않아요 (2배가 되어도 2배보다 짧아요).','딱 떨어지면 몇 배, 안 떨어지면 비(1칸 찾기) · 세 호의 비는 360°를 전체 칸 수로 나눠요.'],
     schemaRapid:{n:6,kinds:6,title:'중심각이 2배가 되면?',q:'두 부채꼴은 <b>한 원</b>에서 중심각만 2배로 바꾼 거예요. <b>주황색으로 표시한 것</b>은 어떻게 될까요?',
       choices:RAPID_CH,check:[0,2,4,5],
       make:(k,seed)=>({fig:ctRapidFig(k,Math.floor(seed/6)),ans:RAPID_ANS[k],why:RAPID_WHY[k]})},

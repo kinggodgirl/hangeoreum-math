@@ -177,3 +177,33 @@
 .ct-rapid .ct-schema-prog{flex-wrap:wrap;gap:4px}.ct-rapid .ct-dot-step{width:20px;height:20px;font-size:11px}
 @keyframes ctPop{from{opacity:0;transform:translateY(6px) scale(.92)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.ct-rapid .ct-hit,.ct-rapid .ct-rapid-fig{animation:none}}
+/* [T21] 부엉 쌤 그림극 v2: 빈 곳 눌러 넘기기 · 한 줄씩 자막 · 그려지는 선 · 호 기호 */
+.owl-tap{cursor:pointer;-webkit-user-select:none;user-select:none;outline:none}
+.owl-tap:focus-visible{box-shadow:0 0 0 3px #bfd3f7}
+.owl-tap .owl-bub{cursor:inherit}
+.owl-line{margin:0 0 6px;color:#8a93a6;font-size:14.5px;line-height:1.5}
+.owl-line:last-child{margin-bottom:0}
+.owl-line.now{color:var(--ink,#1d2640);font-size:16.5px;animation:owlFade .35s ease}
+.owl-stage [data-b]{animation:obIn .5s ease both}
+@keyframes obIn{from{opacity:0}to{opacity:1}}
+.owl-stage .ob-rot{transform-box:view-box;animation:obRot 1.1s ease-in-out .15s both}
+@keyframes obRot{from{transform:rotate(var(--r0,0deg))}to{transform:rotate(0deg)}}
+.owl-stage .ob-pop{transform-box:fill-box;transform-origin:center;animation:obPop .45s cubic-bezier(.3,1.6,.6,1) both}
+@keyframes obPop{from{transform:scale(0)}to{transform:scale(1)}}
+.owl-hint{margin-top:10px;text-align:center;font-size:13.5px;color:#5c6a8a;animation:owlHint 1.8s ease-in-out infinite}
+.owl-hint.ask{color:#b0661a;animation:none;font-weight:700}
+.owl-hint.fin{color:#2b7a4b;animation:none;font-weight:700}
+@keyframes owlHint{0%,100%{opacity:.55}50%{opacity:1}}
+.owl-bdots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.owl-bdots i{width:6px;height:6px;border-radius:50%;background:#d8e1f0}
+.owl-bdots i.on{background:#7c98d6}
+.owl-dot:disabled{opacity:.45;cursor:default}
+.owl-shake{animation:owlShake .4s ease}
+@keyframes owlShake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.arc-sym{position:relative;display:inline-block;padding-top:.32em;line-height:1;font-family:'Times New Roman',Times,serif;font-style:italic;font-weight:700}
+.arc-sym::before{content:'';position:absolute;left:8%;right:8%;top:0;height:.55em;border:2px solid currentColor;border-color:currentColor transparent transparent transparent;border-radius:50%}
+@media (prefers-reduced-motion: reduce){.owl-stage [data-b],.owl-stage .ob-rot,.owl-stage .ob-pop,.owl-hint,.owl-line.now{animation:none}}
+/* [T21] 기초 연산 한 단계 끝 → 다음 할 일 안내 */
+.calc-nudge{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin:0 0 12px;padding:14px 16px;border-radius:14px;background:#fff8e1;border:1.5px solid #f0c476;animation:owlFade .4s ease}
+.calc-nudge>b{font-size:18px}
+.calc-nudge .cn-go{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:4px}

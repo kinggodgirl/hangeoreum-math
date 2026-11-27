@@ -1007,8 +1007,13 @@ function viewCalcTopic(id){if(id==='start'){viewCalcStart();return}if(id==='map'
           ${info.tip?`<p class="sum-tip"><b>자주 나온 실수</b> ${info.tip}</p>`:''}
           <p class="sum-space">${id==='facts'?`구구단 표: 빠르게 맞힘 <b>${FACTS.filter(([a,b])=>fs0(fk(a,b)).lv>=2).length}</b>칸 · 익힘 <b>${factsKnown()}</b>칸. 다른 날 한 번 더 빠르게 맞히면 익힘이 돼요.<br>`:''}내일 오늘의 계산에서 다시 만나요. 하루 지나 다시 떠올리면 더 오래 기억해요.</p>
           <div class="next-row" style="justify-content:center"><button type="button" class="btn calcBack">${T.nm}</button><button type="button" class="btn primary calcAgain">${star&&L<LV.length?'다음 단계':'한 번 더'}</button></div>`;
-        if(star)celebrate('');$('.calcBack',app).onclick=()=>draw();$('.calcAgain',app).onclick=()=>{if(star&&L<LV.length)L++;run()}}})}
+        calcNextNudge($('.dIn',app));if(star)celebrate('');$('.calcBack',app).onclick=()=>draw();$('.calcAgain',app).onclick=()=>{if(star&&L<LV.length)L++;run()}}})}
   draw()}
+/* [T21] 기초 연산 한 단계를 끝내면 폭죽 + 오늘의 길잡이에서 아직 안 한 다음 할 일로 안내해요 */
+function calcNextNudge(box){if(!box)return;const first=NUM(dayState().c.calc)===1,S=typeof guideSteps==='function'?guideSteps():[],nx=S.find(x=>!x.done&&!/^기초 연산 · /.test(x.t));
+  box.insertAdjacentHTML('afterbegin',`<div class="calc-nudge"><b>🎉 ${first?'오늘의 할 일 하나를 끝냈어요!':'한 단계 더 해냈어요!'}</b><span>${nx?`다른 것을 하러 가 볼까요? 다음 할 일은 <b>${nx.t}</b>예요.`:'오늘의 길잡이에 있는 할 일을 모두 했어요. 정말 멋져요!'}</span>
+    <span class="cn-go">${nx?`<a class="btn primary" href="${nx.href}">${nx.t} →</a>`:''}<a class="btn ghost" href="#home">오늘의 길잡이 보기</a></span></div>`);
+  const n=$('.calc-nudge',box);setTimeout(()=>{if(typeof confettiAt==='function')confettiAt(n,true)},60)}
 /* ── 시작점 찾기: 맞았는지 하나씩 알려 주지 않고, 끝나고 추천 순서만 ── */
 const DIAG=[['add',1],['add2',2],['facts',1],['facts',2],['facts',3],['div',1],['div',2],['order',1],['order',2],['fracbase',1],['fracbase',2]];
 const DIAG_ORDER=['add','add2','facts','div','order','fracbase'];
@@ -1086,9 +1091,8 @@ function guideSteps(){const S=[],D=dayState(),due=dueReviews().length;
     S.push({done:cdone,more:true,t:`기초 연산 · ${tp.nm}`,s:cdone?'오늘 한 세트 했어요':sub,href:'#calc-'+tp.id})}
   const dd=OBJ(DB._drill).last===today(),dn=dueList().length,cl=calcLenPref();S.push({done:dd,t:'오늘의 계산',s:dd?'오늘 끝냈어요':dn?`복습할 주제 ${Math.min(cl<=5?2:3,dn)}개를 섞어서 ${cl}문제`:`섞어서 ${cl}문제 · ${cl<=5?'3분쯤':'5분쯤'}`,href:'#drill'});
   return S}
-/* 방과후: 선생님과 함께 할 것(T)을 위에, 혼자 할 것(S)을 아래에 나눠 보여요 */
-const GUIDE_WHO={T:['👩‍🏫 선생님과 함께','방과후 시간에 선생님과 같이 해요 · 혼자일 때는 아래 🙋 칸부터 해도 돼요'],S:['🙋 혼자 하기','선생님이 다른 친구를 도와줄 때나 집에서 혼자 해요']};
-function guideHTML(){const S0=guideSteps(),S=S0.filter(x=>x.who==='T').concat(S0.filter(x=>x.who!=='T')),ci=S.findIndex(x=>!x.done),n=S.filter(x=>x.done).length;
+/* [T21] '선생님과 함께 / 혼자 하기' 나누기는 뺐어요(선생님 의견: 혼자 하나 같이 하나 비슷해요). 위에서부터 한 줄로 보여요 */
+function guideHTML(){const S=guideSteps(),ci=S.findIndex(x=>!x.done),n=S.filter(x=>x.done).length;
   return`<div class="g-head"><b class="t">오늘의 길잡이</b><span class="k">${n===S.length?'오늘 할 일을 다 했어요!':'위에서부터 하나씩 해 봐요'} · ${n}/${S.length}</span></div>
-  <ol class="gsteps">${S.map((x,i)=>`${(x.who==='T'?'T':'S')!==(i?(S[i-1].who==='T'?'T':'S'):'')?`<li class="g-sub g-${x.who==='T'?'t':'s'}"><b>${GUIDE_WHO[x.who==='T'?'T':'S'][0]}</b><small>${GUIDE_WHO[x.who==='T'?'T':'S'][1]}</small></li>`:''}<li class="${x.done?'done':i===ci?'cur':''}"><span class="gn">${x.done?CHECK:i+1}</span><span class="gt"><b>${x.t}</b><small>${x.s}</small></span>${x.done&&!x.more?'':`<a class="btn ${i===ci?'primary':'ghost'}" href="${x.href}">${x.done?'더 하기':i===ci?'시작':'하기'}</a>`}</li>`).join('')}</ol>`}
+  <ol class="gsteps">${S.map((x,i)=>`<li class="${x.done?'done':i===ci?'cur':''}"><span class="gn">${x.done?CHECK:i+1}</span><span class="gt"><b>${x.t}</b><small>${x.s}</small></span>${x.done&&!x.more?'':`<a class="btn ${i===ci?'primary':'ghost'}" href="${x.href}">${x.done?'더 하기':i===ci?'시작':'하기'}</a>`}</li>`).join('')}</ol>`}
 

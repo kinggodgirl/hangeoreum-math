@@ -33,7 +33,7 @@ function goalApplyPrefs(k,force){const set=(key,v)=>{if(force||lsGet(key,null)==
   set('hangeoreum-calc-exam',k!=='calc');set('hangeoreum-calc-len',k==='up'?10:5)}
 function goalChoose(k){const g=goalBy(k);if(!g)return;const old=myGoal(),R=goalRec(DB),t=today(),h=Array.isArray(OBJ(DB._goal).h)?DB._goal.h.slice(-5):[];
   h.push([k,t]);DB._goal={k,d:t,rec:R?R.k:null,h};goalApplyPrefs(k,true);save();if(!old)award(5,'goal');
-  toast(old&&old.k===k?`${g.ic} ${g.nm}, 이 길로 계속 가요!`:`${g.ic} ${jo(g.nm,'을','를')} 골랐어요. 언제든 바꿀 수 있어요.`)}
+  toast(old&&old.k===k?`${g.ic} ${g.nm}, 이 길로 계속 가요!`:`${g.ic} ${jo(g.nm,'을','를')} 골랐어요. 내 기록에서 언제든 바꿀 수 있어요.`)}
 /* 🌿 길: 시작점 찾기에서 흔들린 계산(별 0개)을 먼저 해요. 다 하면 null → 선생님이 정한 계산(calcNowT)으로 넘어가요.
    홈 계산 칩(02-unit-solid.js)과 길잡이가 같은 칸을 가리키게 이 함수 하나로 정해요 */
 function goalCalcFirst(){const G=myGoal();if(!G||G.k!=='base')return null;
@@ -56,14 +56,18 @@ function goalMount(){const box=$('#goalCard');if(!box)return;box.innerHTML=goalC
   const sel=k=>{pick=k;$$('.goal-opt',box).forEach(b=>b.classList.toggle('on',b.dataset.k===k))};
   $$('.goal-opt',box).forEach(b=>b.onclick=()=>sel(b.dataset.k));
   $$('.goalOpen',box).forEach(b=>b.onclick=()=>{const m=$('.goal-more',box);if(m){m.hidden=!m.hidden;if(!m.hidden)m.scrollIntoView({block:'nearest',behavior:'smooth'})}});
-  $$('.goalOk',box).forEach(b=>b.onclick=()=>{if(!pick){toast('길을 하나 골라 주세요.');return}goalChoose(pick);viewHome()});
-  $$('.goalUp',box).forEach(b=>b.onclick=()=>{goalChoose(b.dataset.k);viewHome()})}
-/* 홈: 오늘의 길잡이 위에 '나의 길' 카드 */
+  const redraw=()=>(/^#me/.test(location.hash||'')?viewMe:viewHome)();
+  $$('.goalOk',box).forEach(b=>b.onclick=()=>{if(!pick){toast('길을 하나 골라 주세요.');return}goalChoose(pick);redraw()});
+  $$('.goalUp',box).forEach(b=>b.onclick=()=>{goalChoose(b.dataset.k);redraw()})}
+/* [T21] 홈: 아직 길을 고르지 않았을 때만 오늘의 길잡이 위에 '나의 길 고르기' 카드. 고른 뒤에는 내 기록(#me)에서 바꿔요 */
 {const _home=viewHome;viewHome=function(){_home.apply(this,arguments);
-  const gd=$('#guide');if(!gd||$('#goalCard'))return;const c=el('<div class="card guide goal-card" id="goalCard"></div>');gd.parentNode.insertBefore(c,gd);goalMount()}}
+  if(myGoal())return;const gd=$('#guide');if(!gd||$('#goalCard'))return;const c=el('<div class="card guide goal-card" id="goalCard"></div>');gd.parentNode.insertBefore(c,gd);goalMount()}}
+/* [T21] 내 기록: 로그인 상자 아래에 '나의 길' 카드(바꾸기 · 올라가기 · 2주 뒤 다시 고르기) */
+{const _me=viewMe;viewMe=function(){_me.apply(this,arguments);
+  const ac=$('.acct',app);if(!ac||$('#goalCard'))return;const c=el('<div class="card panel guide goal-card" id="goalCard"></div>');ac.insertAdjacentElement('afterend',c);goalMount()}}
 /* 기초 연산 화면: 처음 기기에서는 고른 길에 맞춰 시험 모드·문제 수를 정해요 */
 {const _calc=viewCalc;viewCalc=function(){const G=myGoal();if(G)goalApplyPrefs(G.k,false);_calc.apply(this,arguments);
-  if(!G||!$('.unit-head',app))return;const g=goalBy(G.k);$('.unit-head',app).insertAdjacentHTML('afterend',`<p class="goal-line">${g.ic} <b>${g.nm}</b> · ${g.aim} <a href="#home">길 바꾸기</a></p>`)}}
+  if(!G||!$('.unit-head',app))return;const g=goalBy(G.k);$('.unit-head',app).insertAdjacentHTML('afterend',`<p class="goal-line">${g.ic} <b>${g.nm}</b> · ${g.aim} <a href="#me">길 바꾸기</a></p>`)}}
 /* 오늘의 길잡이: 고른 길에 맞춰 할 일을 조금 바꿔요 */
 {const _gs=guideSteps;guideSteps=function(){const S=_gs.apply(this,arguments),G=myGoal();if(!G)return S;
   const li=S.findIndex(x=>/^\d+차시 /.test(x.t)),ci=S.findIndex(x=>/^기초 연산 · /.test(x.t)&&x.href!=='#calc-start');
@@ -73,8 +77,9 @@ function goalMount(){const box=$('#goalCard');if(!box)return;box.innerHTML=goalC
       if(id){const t=CALC.find(c=>c.id===id),st=calcPeek(id),cd=S[ci].done;S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${t.nm}`,s:cd?'오늘 한 세트 했어요':due?'복습할 때예요':`수 감각 사다리 · ${Math.min(calcLvN(id),NUM(st.stars)+1)}단계`,href:'#calc-'+id})}}}
   else if(G.k==='base'){
     const T=goalCalcFirst();if(T&&ci>=0){const cd=S[ci].done,lv=Math.min(calcLvN(T.id),NUM(calcPeek(T.id).stars)+1);S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${T.nm}`,s:cd?'오늘 한 세트 했어요':`시작점 찾기에서 흔들린 계산이에요 · ${lv}단계`,href:'#calc-'+T.id})}
-    /* 혼자 할 때 순서: 기초 연산 → 차시 혼자 풀기 → 오늘의 계산 */
-    const L=S.findIndex(x=>/^\d+차시 /.test(x.t)&&x.who!=='T'),C=S.findIndex(x=>/^기초 연산 · /.test(x.t));
-    if(L>=0&&C>L){const[x]=S.splice(L,1);S.splice(C,0,x)}}
+  }
   else if(G.k==='up'&&li>=0&&/-explore$/.test(S[li].href))S[li]=Object.assign({},S[li],{s:'더 알아보기 · 탐구 활동까지 도전해요'});
+  /* [T21] 순서: 🌱·🌿 길은 기초 연산 → 교과서 한 걸음, 🌳 길은 교과서 한 걸음 → 기초 연산 (복습 노트는 맨 위, 오늘의 계산은 맨 아래 그대로) */
+  const L=S.findIndex(x=>/^\d+차시 |^열린 차시를/.test(x.t)),C=S.findIndex(x=>/^기초 연산 · /.test(x.t));
+  if(G.k!=='up'&&L>=0&&C>L){const[x]=S.splice(C,1);S.splice(L,0,x)}
   return S}}
