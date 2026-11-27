@@ -36,18 +36,29 @@ function secFig(o){const C=[200,170],R=112,th=o.th,mid=o.mid!=null?o.mid:90,a0=m
   const m=52,xs=P.map(q=>q[0]),ys=P.map(q=>q[1]),x0=Math.min(...xs)-m,y0=Math.min(...ys)-m,x1=Math.max(...xs)+m,y1=Math.max(...ys)+m;
   return`<svg viewBox="${f1(x0)} ${f1(y0)} ${f1(x1-x0)} ${f1(y1-y0)}" class="cfig" role="img" aria-label="부채꼴" style="max-width:${Math.round(x1-x0)}px;width:100%;max-height:300px;font-family:${MF}">${s}</svg>`}
 /* 한 원 안의 두 부채꼴 */
-/* 교과서식 호의 길이 표시: 호의 두 끝점을 잇고 바깥으로 볼록한 둥근 점선 (06c·02t 공용 규칙) */
-function lenBowD(C,R,a0,a1,off){const A=pol(C,R,a0),B=pol(C,R,a1),ch=2*R*Math.sin(Math.abs(a1-a0)*Math.PI/360),M=pol(C,R+Math.min(off,ch*0.28),(a0+a1)/2),
-  ax=A[0],ay=A[1],bx=B[0],by=B[1],mx=M[0],my=M[1],d=2*(ax*(by-my)+bx*(my-ay)+mx*(ay-by)),
-  ux=((ax*ax+ay*ay)*(by-my)+(bx*bx+by*by)*(my-ay)+(mx*mx+my*my)*(ay-by))/d,uy=((ax*ax+ay*ay)*(mx-bx)+(bx*bx+by*by)*(ax-mx)+(mx*mx+my*my)*(bx-ax))/d,
-  rr=Math.hypot(ax-ux,ay-uy),side=(P)=>(bx-ax)*(P[1]-ay)-(by-ay)*(P[0]-ax),lg=side([ux,uy])*side(M)<0?0:1;
-  return`M ${f1(ax)} ${f1(ay)} A ${f1(rr)} ${f1(rr)} 0 ${lg} 0 ${f1(bx)} ${f1(by)}`}
+/* 교과서식 호의 길이 치수선: 연장선 2개 + 동심 실선 호 + 양끝 안쪽 화살표 + 가운데 글자 자리 (06c·02t 공용) */
+function arcDim(C,R,a0,a1,label,opt={}){const col=opt.col||INK,sz=opt.size||20,rd=opt.rd||(R+26),ext=opt.ext||(R+34),span=a1-a0,mid=(a0+a1)/2;
+  let s=ln(pol(C,R,a0),pol(C,ext,a0),{col,w:1.5})+ln(pol(C,R,a1),pol(C,ext,a1),{col,w:1.5});
+  const arrow=(ang,dir)=>{const t=pol(C,rd,ang),ra=rad(ang),bx=dir*Math.sin(ra),by=dir*Math.cos(ra),nx=Math.cos(ra),ny=-Math.sin(ra),L=9.2,W=3.1,N=7.0;
+    const p1=[t[0]+bx*L+nx*W,t[1]+by*L+ny*W],p2=[t[0]+bx*N,t[1]+by*N],p3=[t[0]+bx*L-nx*W,t[1]+by*L-ny*W];
+    return`<path d="M ${pt(t)} L ${pt(p1)} L ${pt(p2)} L ${pt(p3)} Z" fill="${col}"/>`};
+  s+=arrow(a0,-1)+arrow(a1,1);
+  const tipDeg=(5.2/rd)*180/Math.PI,tw=String(label||'').length*sz*0.56+14,gapDeg=(tw/2/rd)*180/Math.PI;
+  if(span/2>gapDeg+tipDeg+2.5){
+    s+=`<path d="${arcD(C,rd,a0+tipDeg,mid-gapDeg)}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    s+=`<path d="${arcD(C,rd,mid+gapDeg,a1-tipDeg)}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    if(label)s+=tx(pol(C,rd,mid),label,{size:sz,col});
+  }else{
+    if(span>2*tipDeg)s+=`<path d="${arcD(C,rd,a0+tipDeg,a1-tipDeg)}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    if(label){const m=mid,cs=Math.cos(rad(m));s+=tx(pol(C,rd+18,m),label,{size:sz,col,anchor:cs>0.35?'start':cs<-0.35?'end':'middle'})}
+  }
+  return s}
 function twoSec(a,b,l1,l2,area,flip){const C=[210,165],R=100,gap=34,tot=a+gap+b,s0=90-tot/2+(flip?180:0),A0=s0,A1=s0+a,B0=A1+gap,B1=B0+b;
   let s=circ(C,R)+`<path d="${secD(C,R,A0,A1)}" fill="${area?SH:'none'}" stroke="${INK}" stroke-width="2.6"/><path d="${secD(C,R,B0,B1)}" fill="${area?BLs:'none'}" stroke="${INK}" stroke-width="2.6"/>`+dot(C);
   s+=angMk(C,A0,A1,a+'°')+angMk(C,B0,B1,b+'°');
-  [[A0,A1,l1],[B0,B1,l2]].forEach(([x0,x1,l])=>{const m=(x0+x1)/2,q=pol(C,R+(area?30:40),m),cs=Math.cos(rad(m));
-    if(!area&&l)s+=`<path d="${lenBowD(C,R,x0,x1,16)}" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 6.5"/>`;
-    s+=tx(q,l,{size:20,anchor:cs>0.35?'start':cs<-0.35?'end':'middle'})});
+  [[A0,A1,l1],[B0,B1,l2]].forEach(([x0,x1,l])=>{if(!l)return;
+    if(!area)s+=arcDim(C,R,x0,x1,l,{col:INK,size:20});
+    else{const m=(x0+x1)/2,q=pol(C,R+30,m),cs=Math.cos(rad(m));s+=tx(q,l,{size:20,anchor:cs>0.35?'start':cs<-0.35?'end':'middle'})}});
   return svgW(420,330,s+labO(C,(A0+B1)/2+180),'한 원 안의 두 부채꼴')}
 /* 원 위의 세 점 (호의 비) */
 function three(a,b,c,want){const C=[150,140],R=96,t=a+b+c,aA=110,aB=aA+360*a/t,aC=aB+360*b/t;

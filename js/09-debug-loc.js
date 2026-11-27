@@ -46,7 +46,7 @@ const setProb=p=>{S.prob=p||null};
 const format=()=>{
   const lines=['[한 걸음 수학 위치·코드 보고]'];
   const h=(typeof location==='object'&&location.hash)?location.hash:'#'+(S.hash||'home');
-  const cr=(typeof crumbs!=='undefined'&&crumbs)?strip(crumbs.textContent).replace(/\s*›\s*/g,' › ').replace(/^›\s*/,''):'';
+  const cr=(typeof crumbs!=='undefined'&&crumbs)?strip(crumbs.textContent).replace(/\s*›\s*/g,' › ').replace(/^\s*›\s*/,''):'';
   lines.push(`• 계정/주소: ${typeof isStudent==='function'&&isStudent()?`${AUTH.grade}-${AUTH.klass}-${AUTH.num}`:'비로그인'} · ${h}`);
   const L=S.lesson&&typeof LESSONS!=='undefined'?LESSONS.find(x=>x.id===S.lesson):null;
   const pathParts=[];

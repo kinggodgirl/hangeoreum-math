@@ -11,17 +11,36 @@ const arcD=(C,R,a0,a1)=>`M ${pt(pol(C,R,a0))} A ${R} ${R} 0 ${Math.abs(a1-a0)>18
 const secD=(C,R,a0,a1)=>`M ${pt(C)} L ${pt(pol(C,R,a0))} A ${R} ${R} 0 ${Math.abs(a1-a0)>180?1:0} 0 ${pt(pol(C,R,a1))} Z`;
 const svgLn=(P,Q,col=INK,w=2.4,dash='')=>`<line x1="${f1(P[0])}" y1="${f1(P[1])}" x2="${f1(Q[0])}" y2="${f1(Q[1])}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"${dash?` stroke-dasharray="${dash}"`:''}/>`;
 const svgDot=(P,r=4,col=INK)=>`<circle cx="${f1(P[0])}" cy="${f1(P[1])}" r="${r}" fill="${col}"/>`;
-const svgTx=(P,s,o={})=>`<text x="${f1(P[0])}" y="${f1(P[1])}" font-size="${o.size||18}" text-anchor="${o.anchor||'middle'}" dominant-baseline="central" fill="${o.col||INK}" ${o.sans?`font-family="'IBM Plex Sans KR',sans-serif" font-weight="700"`:''} ${o.it?'font-style="italic"':''} stroke="#fff" stroke-width="3.2" paint-order="stroke">${s}</text>`;
+const svgTx=(P,s,o={})=>`<text x="${f1(P[0])}" y="${f1(P[1])}" font-size="${o.size||18}" text-anchor="${o.anchor||'middle'}" dominant-baseline="central" fill="${o.col||INK}" ${o.sans?`font-family="'IBM Plex Sans KR',sans-serif" font-weight="700"`:''} ${o.it?'font-style="italic"':''} stroke="#fff" stroke-width="3.2" paint-order="stroke">${String(s).replace(/(^|[^A-Za-z])x(?![A-Za-z])/g,'$1<tspan font-style="italic" font-family="Times New Roman,serif">x</tspan>')}</text>`;
 const svgAng=(C,a0,a1,lab,o={})=>{
   const r=o.r||24,mid=(a0+a1)/2,sp=Math.abs(a1-a0),lr=o.lr||(sp>=150?42:Math.min(72,Math.max(40,48/Math.max(0.35,Math.sin(sp*Math.PI/360)))));
   return`<path d="${arcD(C,r,a0,a1)}" fill="none" stroke="${o.col||INK}" stroke-width="${o.w||2}"/>`+(lab?svgTx(pol(C,lr,mid),lab,{size:o.size||17,col:o.col||INK}):'');
 };
 
-function lenBowD(C,R,a0,a1,off){const A=pol(C,R,a0),B=pol(C,R,a1),ch=2*R*Math.sin(Math.abs(a1-a0)*Math.PI/360),M=pol(C,R+Math.min(off,ch*0.28),(a0+a1)/2),
-  ax=A[0],ay=A[1],bx=B[0],by=B[1],mx=M[0],my=M[1],d=2*(ax*(by-my)+bx*(my-ay)+mx*(ay-by)),
-  ux=((ax*ax+ay*ay)*(by-my)+(bx*bx+by*by)*(my-ay)+(mx*mx+my*my)*(ay-by))/d,uy=((ax*ax+ay*ay)*(mx-bx)+(bx*bx+by*by)*(ax-mx)+(mx*mx+my*my)*(bx-ax))/d,
-  rr=Math.hypot(ax-ux,ay-uy),side=P=>(bx-ax)*(P[1]-ay)-(by-ay)*(P[0]-ax),lg=side([ux,uy])*side(M)<0?0:1;
-  return`M ${pt(A)} A ${f1(rr)} ${f1(rr)} 0 ${lg} 0 ${pt(B)}`}
+/* 교과서식 호의 길이 치수선: 연장선 2개 + 동심 실선 호 + 양끝 안쪽 화살표 + 가운데 글자 자리 (06c·02t 공용) */
+function arcDim(C,R,a0,a1,label,opt={}){
+  const col=opt.col||INK,sz=opt.size||16,rd=opt.rd||(R+24),ext=opt.ext||(R+32),span=a1-a0,mid=(a0+a1)/2;
+  let s=svgLn(pol(C,R,a0),pol(C,ext,a0),col,1.5)+svgLn(pol(C,R,a1),pol(C,ext,a1),col,1.5);
+  const arrow=(ang,dir)=>{
+    const t=pol(C,rd,ang),ra=rad(ang),bx=dir*Math.sin(ra),by=dir*Math.cos(ra),nx=Math.cos(ra),ny=-Math.sin(ra);
+    const L=9.2,W=3.1,N=7.0;
+    const p1=[t[0]+bx*L+nx*W,t[1]+by*L+ny*W],p2=[t[0]+bx*N,t[1]+by*N],p3=[t[0]+bx*L-nx*W,t[1]+by*L-ny*W];
+    return`<path d="M ${pt(t)} L ${pt(p1)} L ${pt(p2)} L ${pt(p3)} Z" fill="${col}"/>`;
+  };
+  s+=arrow(a0,-1)+arrow(a1,1);
+  const tipDeg=(5.2/rd)*180/Math.PI;
+  const plainLen=String(label||'').replace(/<[^>]+>/g,'').length;
+  const tw=plainLen*sz*0.56+14,gapDeg=(tw/2/rd)*180/Math.PI;
+  if(span/2>gapDeg+tipDeg+2.5){
+    s+=`<path d="${arcD(C,rd,a0+tipDeg,mid-gapDeg)}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    s+=`<path d="${arcD(C,rd,mid+gapDeg,a1-tipDeg)}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    if(label)s+=svgTx(pol(C,rd,mid),label,{size:sz,sans:true,col});
+  }else{
+    if(span>2*tipDeg)s+=`<path d="${arcD(C,rd,a0+tipDeg,a1-tipDeg)}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    if(label)s+=svgTx(pol(C,rd+18,mid),label,{size:sz,sans:true,col});
+  }
+  return s;
+}
 function ctTwoSec(opt){
   const{a,b,l1,l2,mode='arc',hl=[],showChord=false,diffRadius=false,semi=false,lenMark=false}=opt;
   const has=k=>hl.includes(k);
@@ -53,12 +72,14 @@ function ctTwoSec(opt){
   }
   s+=svgAng(C,A0,A1,a+'°',{col:has('ang1')?BL:INK,w:has('ang1')?3.2:2,size:16});
   s+=svgAng(C,B0,B1,b==null?'?°':b+'°',{col:has('ang2')?(b==null?HL:BL):INK,w:has('ang2')?3.2:2,size:16});
-  /* [cent 다듬기] lenMark: 교과서처럼 호의 두 끝을 잇는 둥근 점선으로 '이 호의 길이'임을 보여 줘요 */
-  const bow=(x0,x1,col)=>`<path d="${lenBowD(C,R,x0,x1,15)}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 6.5"/>`;
-  if(lenMark&&mode==='arc'){if(l1)s+=bow(A0,A1,has('val1')?askC(l1):INK);if(l2)s+=bow(B0,B1,has('val2')?askC(l2):INK)}
-  const lr=lenMark&&mode==='arc'?36:24;
-  if(l1)s+=svgTx(pol(C,R+lr,(A0+A1)/2),l1,{size:16,sans:true,col:has('val1')?askC(l1):INK});
-  if(l2)s+=svgTx(pol(C,R+lr,(B0+B1)/2),l2,{size:16,sans:true,col:has('val2')?askC(l2):INK});
+  /* [cent 다듬기] lenMark: 교과서처럼 연장선 + 동심 실선 호 + 양끝 화살표 + 가운데 숫자로 '호의 길이'를 보여 줘요 */
+  if(lenMark&&mode==='arc'){
+    if(l1)s+=arcDim(C,R,A0,A1,l1,{col:has('val1')?askC(l1):INK,size:16});
+    if(l2)s+=arcDim(C,R,B0,B1,l2,{col:has('val2')?askC(l2):INK,size:16});
+  }else{
+    if(l1)s+=svgTx(pol(C,R+24,(A0+A1)/2),l1,{size:16,sans:true,col:has('val1')?askC(l1):INK});
+    if(l2)s+=svgTx(pol(C,R+24,(B0+B1)/2),l2,{size:16,sans:true,col:has('val2')?askC(l2):INK});
+  }
   s+=svgDot(C,4)+svgTx([C[0],C[1]+16],'O',{size:16});
   return svgBox(380,285,s,'한 원 안의 두 부채꼴');
 }
@@ -174,11 +195,11 @@ const FIRST_GUIDE=[
 const WORKED=[
   null,
   {no:1,nm:'중심각 비교 ① 몇 배',prob:'한 원에서 중심각이 <b>40°</b>인 호가 <b>3 cm</b>일 때, <b>120°</b>인 호 <i>x</i> cm를 구하시오.',
-    fig:hl=>ctTwoSec({a:40,b:120,l1:'3 cm',l2:'x cm',mode:'arc',hl}),
+    fig:hl=>ctTwoSec({a:40,b:120,l1:'3 cm',l2:'x cm',mode:'arc',hl,lenMark:true}),
     steps:[{t:'① 어디를 먼저 볼까?',hl:['ang1','ang2'],body:'두 중심각 40°와 120°가 딱 나누어떨어지는지 먼저 확인해요.'},{t:'② 중심각이 몇 배인지 구하기',hl:['ang1','ang2'],body:'40 × <b>3</b> = 120 (3배)'},{t:'③ 호의 길이도 같은 배 곱하기',hl:['val1','val2'],body:'3 × 3 = <i>x</i>, <i>x</i> = <b>9 cm</b>'}],
     pitfall:'⚠️ 120° → 40°처럼 작아질 때도 곱셈으로 써요: 40 × 3 = 120 이므로, <i>x</i> × 3 = 9 → <i>x</i> = 3'},
   {no:2,nm:'중심각 비교 ② 비',prob:'한 원에서 중심각이 <b>50°</b>인 호가 <b>10 cm</b>일 때, <b>70°</b>인 호 <i>x</i> cm를 구하시오.',
-    fig:hl=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl}),
+    fig:hl=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl,lenMark:true}),
     steps:[{t:'① 중심각의 비 간단히 하기',hl:['ang1','ang2'],body:'50 : 70 = <b>5 : 7</b> → 5 : 7 = 10 : <i>x</i>'},{t:'② 앞앞 비교',hl:['ang1','val1'],body:'5 × <b>2</b> = 10 (앞끼리 2배)'},{t:'③ 뒤뒤도 같은 배',hl:['ang2','val2'],body:'7 × 2 = <b>14 cm</b> (<i>x</i>가 앞에 있으면 뒤끼리 먼저 비교해요)'}],
     pitfall:'⚠️ 자주 하는 실수: 50 : 70 = x : 10처럼 각과 길이의 짝 순서를 뒤집지 마세요.'},
   {no:3,nm:'호의 비로 중심각 구하기',prob:'원 O에서 <span class="arcs">AB</span> : <span class="arcs">BC</span> : <span class="arcs">CA</span> = <b>2 : 3 : 4</b>일 때, <span class="arcs">BC</span>의 중심각은?',
@@ -305,7 +326,7 @@ const OWL_SCENES=[
     '똑같은 부채꼴을 돌려서 옆에 붙이면 중심각은 <span class="num">80°</span>, 2배가 돼요. 호의 길이도 3 + 3 = <span class="num">6 cm</span>, 2배예요.',
     '하나 더 붙이면 중심각 <span class="num">120°</span>, 3배! 호의 길이도 <span class="num">9 cm</span>, 3배가 돼요. 넓이도 똑같이 3배예요.',
     {say:'그래서 한 원에서 호의 길이와 넓이는 중심각의 크기에 <b>정비례</b>해요.',exp:'happy'}]},
-  {cap:'장면 ③ 딱 떨어지면 몇 배, 아니면 비',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl:['ang1','ang2']}),beats:[
+  {cap:'장면 ③ 딱 떨어지면 몇 배, 아니면 비',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl:['ang1','ang2'],lenMark:true}),beats:[
     '중심각이 <span class="num">50°</span>일 때 호가 <span class="num">10 cm</span>예요. 중심각이 <span class="num">70°</span>이면 호는 몇 cm일까요?',
     '70 ÷ 50은 나누어떨어지지 않아요. 이럴 때는 <span class="kw">비</span>로 써요. 중심각끼리, 호끼리 같은 순서로 <b>50 : 70 = 10 : x</b>',
     '50 : 70을 간단히 하면 5 : 7이에요. 그래서 <b>5 : 7 = 10 : x</b>예요.',
