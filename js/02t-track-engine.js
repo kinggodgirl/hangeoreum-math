@@ -904,8 +904,12 @@ function renderT3Concept(body,lid,spec){
 function renderT3Steps(body,lid,spec,initialCid){
   const list=spec.compoundList||[],TL=(typeof PTYPES==='object'&&PTYPES[lid])||[];
   const tyLabels=TL.map(t=>`유형 ${t.no} · ${t.nm}`);
-  /* [T21] spec.comboPick===false인 차시(지금은 arc만)는 '어느 두 유형?' 고르기 없이 바로 풀어요. 다른 차시는 그대로예요 */
-  const noPick=spec.comboPick===false;
+  /* [T23] 복합 문제는 푸는 길이 여러 가지라 '어느 두 유형?' 고르기는 모든 차시에서 빼요(선생님 결정).
+     다시 켜려면 차시 스펙에 comboPick:true. 대신 위에 접을 수 있는 '핵심 유형' 대표 문제 그림을 보여 줘요 */
+  const noPick=spec.comboPick!==true;
+  const WK=spec.worked?Object.values(spec.worked).filter(w=>w&&w.nm).sort((a,b)=>a.no-b.no):[];
+  const keyTypesHTML=()=>WK.length?`<details class="ct-keyty"><summary>📌 이번 차시의 핵심 유형이에요 <small>(${WK.length}가지 · 눌러서 펼치기)</small></summary>
+      <div class="ct-keyty-grid">${WK.map(w=>{let f='';try{f=w.fig?w.fig():''}catch(e){}return`<div class="ct-keyty-card"><b>유형 ${w.no} · ${w.nm}</b><div class="ct-keyty-fig">${f}</div><p>${w.prob||''}</p></div>`}).join('')}</div></details>`:'';
   let cid=initialCid||(list[0]&&list[0].id),seed=typeof newSeed==='function'?newSeed():11,picked=new Set(),unlocked=noPick,shownAt=Date.now();
 
   const draw=()=>{
@@ -917,6 +921,7 @@ function renderT3Steps(body,lid,spec,initialCid){
       <div class="ct-card-h"><h2>복합 문제 쪼개서 풀기</h2>
         <div class="ct-hit-row" style="margin:0">${list.map(x=>`<button type="button" class="chip${x.id===cid?' on':''}" data-cid="${x.id}">${x.nm}</button>`).join('')}</div>
       </div>
+      ${keyTypesHTML()}
       ${noPick?'':`<div class="ct-combo">
         <b>1단계 · 이 문제는 기본 유형 중 <u>어느 두 가지</u>를 합쳐 놓았나요? (2개 고르기)</b>
         <div class="ct-combo-chips">${tyLabels.map((lb,i)=>`<button type="button" class="ct-hit${picked.has(i+1)?' sel':''}" data-ty="${i+1}" ${unlocked?'disabled':''}>${lb}</button>`).join('')}</div>
