@@ -85,3 +85,14 @@
 - `INDEX.md`: 단원별 쪽 번호 목차 (PDF 쪽 = 교과서 쪽). 먼저 이걸 보고 필요한 쪽만 읽어요.
 - `수학1_본문_텍스트.txt`: 쪽마다 `===== p.194 =====` 표시가 있는 본문 텍스트.
 - Antigravity는 로컬 작업 폴더의 교과서 PDF를 참고해 핵심 문항·조건만 요약한 스펙 문서를 `docs/specs/Txx-*.md`에 올립니다(원문 텍스트 복붙·커밋 금지).
+
+## 6. SVG 도형 표기 표준
+
+- **호의 길이 치수선 (교과서식 `arcDim` 표준 — 전 차시 공통)**:
+  - 점선(`stroke-dasharray`, 구 `lenBowD`) 사용 금지.
+  - 구성: 반지름 연장선 2개(`R` → `R+32~34`, `stroke-width="1.5"`) + 동심 실선 치수 호(`rd = R+24~26`, `stroke-width="1.5"`, `stroke-linecap="round"`) + 연장선에 맞닿는 양끝 스텔스 화살표(`L=9.2, W=3.1, N=7.0`) + 라벨 중앙 여백(일반각 `span/2 > gapDeg + tipDeg + 2.5`일 때 호 가운데를 비워 `pol(C, rd, mid)`에 배치, 좁은 각은 연속 호 바깥 `pol(C, rd+18, mid)`에 배치) + 단독 미지수 `x` 이탤릭(`Times New Roman, serif`).
+  - 참조 구현: `js/02t-tracks-cent.js` · `js/06c-unit-circle.js`의 `arcDim(C, R, a0, a1, label, opt)`. 앞으로 `sector` 등 다른 차시·문항에서 호의 길이를 그릴 때도 동일 함수·규격을 재사용합니다.
+- **공통 SVG 원칙 요약**:
+  - 색: 주황(`#e08a1e`) = 구할 것(묻는 것), 파랑(`#2a4d9e`) = 주어진 것, 잉크(`#1d2640`) = 기본 도형.
+  - 문제 SVG(`quiz: true`)에는 정답 해설 라벨 금지, 원호 `sweep-flag` 방향과 라벨 겹침은 브라우저에서 육안 확인.
+  - 수학 기호(호 `⌒`)는 글꼴/CSS 대신 SVG(`arcSymHTML` / `<span class="arc-sym">`) 사용.
