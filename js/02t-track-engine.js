@@ -342,7 +342,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
       <div class="ct-stage">
         <div class="ct-fig ct-rapid-fig">${it.fig}</div>
         <div>
-          <p class="ct-schema-q">${R.q||'주황색으로 표시한 것은?'}</p>
+          <p class="ct-schema-q">${it.q||R.q||'주황색으로 표시한 것은?'}</p>
           <div class="ct-hit-row" id="rqOpts">${R.choices.map((c,i)=>`<button type="button" class="ct-hit" style="--i:${i}" data-v="${c}">${c}</button>`).join('')}</div>
           <div id="rqMsg" aria-live="polite"></div>
         </div>
@@ -585,7 +585,7 @@ function renderT1Concept(body,lid,spec){
 function renderT1Practice(body,lid,spec){
   const p=lesProg(lid);
   /* [T20] schemaRapid.check = 마무리에 섞을 빠른 구별 종류 번호들. 틀리면 같은 종류의 다른 그림(make)으로 다시 확인해요. */
-  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:R.q,fig:()=>it.fig,choices:R.choices,ans:it.ans,also:it.also,both:it.both,why:it.why,hint:`정답은 <b>${(it.both||[it.ans]).join(', ')}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
+  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:it.q||R.q,fig:()=>it.fig,choices:R.choices,ans:it.ans,also:it.also,both:it.both,why:it.why,hint:`정답은 <b>${(it.both||[it.ans]).join(', ')}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
   const rapidPool=R&&Array.isArray(R.check)?R.check.map(rapidItem):[];
   const basePool=spec.t1Check&&spec.t1Check.length?spec.t1Check:(rapidPool.length?[]:(spec.schemaQs||[]).map((q,i)=>({id:'t1q'+i,kind:'k'+i,q:q.q,fig:q.fig,choices:q.choices,ans:q.ans,hint:q.hint})));
   const pool=rapidPool.concat(basePool);

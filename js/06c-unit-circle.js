@@ -36,10 +36,18 @@ function secFig(o){const C=[200,170],R=112,th=o.th,mid=o.mid!=null?o.mid:90,a0=m
   const m=52,xs=P.map(q=>q[0]),ys=P.map(q=>q[1]),x0=Math.min(...xs)-m,y0=Math.min(...ys)-m,x1=Math.max(...xs)+m,y1=Math.max(...ys)+m;
   return`<svg viewBox="${f1(x0)} ${f1(y0)} ${f1(x1-x0)} ${f1(y1-y0)}" class="cfig" role="img" aria-label="부채꼴" style="max-width:${Math.round(x1-x0)}px;width:100%;max-height:300px;font-family:${MF}">${s}</svg>`}
 /* 한 원 안의 두 부채꼴 */
+/* 교과서식 호의 길이 표시: 호의 두 끝점을 잇고 바깥으로 볼록한 둥근 점선 (06c·02t 공용 규칙) */
+function lenBowD(C,R,a0,a1,off){const A=pol(C,R,a0),B=pol(C,R,a1),ch=2*R*Math.sin(Math.abs(a1-a0)*Math.PI/360),M=pol(C,R+Math.min(off,ch*0.28),(a0+a1)/2),
+  ax=A[0],ay=A[1],bx=B[0],by=B[1],mx=M[0],my=M[1],d=2*(ax*(by-my)+bx*(my-ay)+mx*(ay-by)),
+  ux=((ax*ax+ay*ay)*(by-my)+(bx*bx+by*by)*(my-ay)+(mx*mx+my*my)*(ay-by))/d,uy=((ax*ax+ay*ay)*(mx-bx)+(bx*bx+by*by)*(ax-mx)+(mx*mx+my*my)*(bx-ax))/d,
+  rr=Math.hypot(ax-ux,ay-uy),side=(P)=>(bx-ax)*(P[1]-ay)-(by-ay)*(P[0]-ax),lg=side([ux,uy])*side(M)<0?0:1;
+  return`M ${f1(ax)} ${f1(ay)} A ${f1(rr)} ${f1(rr)} 0 ${lg} 0 ${f1(bx)} ${f1(by)}`}
 function twoSec(a,b,l1,l2,area,flip){const C=[210,165],R=100,gap=34,tot=a+gap+b,s0=90-tot/2+(flip?180:0),A0=s0,A1=s0+a,B0=A1+gap,B1=B0+b;
   let s=circ(C,R)+`<path d="${secD(C,R,A0,A1)}" fill="${area?SH:'none'}" stroke="${INK}" stroke-width="2.6"/><path d="${secD(C,R,B0,B1)}" fill="${area?BLs:'none'}" stroke="${INK}" stroke-width="2.6"/>`+dot(C);
   s+=angMk(C,A0,A1,a+'°')+angMk(C,B0,B1,b+'°');
-  [[A0,A1,l1],[B0,B1,l2]].forEach(([x0,x1,l])=>{const m=(x0+x1)/2,q=pol(C,R+30,m),cs=Math.cos(rad(m));s+=tx(q,l,{size:20,anchor:cs>0.35?'start':cs<-0.35?'end':'middle'})});
+  [[A0,A1,l1],[B0,B1,l2]].forEach(([x0,x1,l])=>{const m=(x0+x1)/2,q=pol(C,R+(area?30:40),m),cs=Math.cos(rad(m));
+    if(!area&&l)s+=`<path d="${lenBowD(C,R,x0,x1,16)}" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 6.5"/>`;
+    s+=tx(q,l,{size:20,anchor:cs>0.35?'start':cs<-0.35?'end':'middle'})});
   return svgW(420,330,s+labO(C,(A0+B1)/2+180),'한 원 안의 두 부채꼴')}
 /* 원 위의 세 점 (호의 비) */
 function three(a,b,c){const C=[150,140],R=96,t=a+b+c,aA=110,aB=aA+360*a/t,aC=aB+360*b/t;
@@ -91,9 +99,9 @@ CONCEPT.cent=body=>{
   body.innerHTML=foldPanel('중심각과 호',`<p class="lead">한 원에서 부채꼴의 <b class="mark">호의 길이와 넓이는 중심각의 크기에 정비례</b>해요. 중심각이 2배면 호도 2배, 넓이도 2배.</p>`,
    fold(1,'중심각이 몇 배면, 호도 몇 배','40° 조각을 붙여 보기',`<div class="figbox">${svgW(300,270,circ(CC,CR,{col:'#9aa3b5',w:1.6})+[0,1,2].map(i=>`<path d="${secD(CC,CR,40*i,40*i+40)}" fill="${i?BLs:HLs}" stroke="${INK}" stroke-width="2.2"/>`).join('')+[0,1,2].map(i=>tx(pol(CC,CR+22,40*i+20),'3 cm',{size:17}))+dot(CC))}</div>
      <p>중심각이 40°인 부채꼴의 호가 3 cm이면, 120°는 40° 조각 <b>3개</b>라서 호는 3 × 3 = <b>9 cm</b>예요.</p>
-     <div class="box" style="margin:0">① 중심각이 몇 배인지 구해요 (120 ÷ 40 = 3) → ② 호의 길이·넓이에도 똑같이 곱해요. 거꾸로 작아지면 나눠요.</div>`,true)+
+     <div class="box" style="margin:0">① 중심각이 몇 배인지 곱셈으로 찾아요 (40 × 3 = 120) → ② 호의 길이·넓이에도 똑같이 곱해요 (3 × 3 = <i class="math">x</i>). 작아질 때도 <i class="math">x</i> × 3 = 9처럼 곱셈으로 써요.</div>`,true)+
    fold(2,'몇 배로 안 나눠지면, 비로','50° : 70° = 5 : 7',`<p style="margin-top:0">중심각 50°의 호가 10 cm일 때 70°의 호는? 70 ÷ 50은 딱 나누어떨어지지 않아요.</p>
-     <div class="box">중심각의 비 50 : 70 = <b>5 : 7</b> → 호의 비도 5 : 7<br>5칸이 10 cm → 1칸 = 10 ÷ 5 = 2 cm → 7칸 = 2 × 7 = <b>14 cm</b></div>
+     <div class="box">중심각의 비 50 : 70 = <b>5 : 7</b> → 비례식 5 : 7 = 10 : <i class="math">x</i><br>앞앞 비교: 5 × 2 = 10 → 뒤뒤도 × 2: 7 × 2 = <b>14 cm</b></div>
      <p style="margin-bottom:0">원 위의 세 점이 원을 <b>2 : 3 : 4</b>로 나누면, 중심각도 2 : 3 : 4예요. 전체 9칸이 360°이므로 1칸 = 40°.</p>`)+
    fold(3,'현은 정비례하지 않아요','중심각 2배 ≠ 현 2배',`<div class="figbox">${(()=>{const P0=pol(CC,CR,20),P1=pol(CC,CR,80),P2=pol(CC,CR,140);return svgW(300,270,circ(CC,CR)+ln(CC,P0,{w:1.6})+ln(CC,P1,{w:1.6})+ln(CC,P2,{w:1.6})+ln(P0,P1,{col:HL,w:3.4})+ln(P1,P2,{col:HL,w:3.4})+ln(P0,P2,{col:BL,w:3.4,dash:'7 5'})+dot(CC)+angMk(CC,20,80,'60°',{size:16})+angMk(CC,80,140,'60°',{size:16,r:30}))})()}</div>
      <p>중심각 60° 두 개의 현(주황)을 이으면 꺾인 길이예요. 중심각 120°의 현(파랑)은 곧게 가니까 <b>더 짧아요</b>.</p>
@@ -158,18 +166,22 @@ GEN.centMul=seed=>{const r=mulberry(seed),area=r()<0.35;let a,b,L,x,k,up;
   for(;;){a=pick(r,ANG);k=pick(r,[2,3,4]);up=r()<0.6;if(up){b=a*k;if(a+b>300)continue;L=ri(r,2,9);x=L*k}else{if(a%k)continue;b=a/k;if(b<15||a+b>300)continue;const m=ri(r,2,7);L=m*k;x=m}break}
   const u=area?'cm²':'cm',w=area?'넓이':'호의 길이',fig=twoSec(a,b,`${L} ${u}`,`x ${u}`,area,r()<0.5);
   return{ptype:'cent:mul',sig:(up?'up':'down')+(area?'S':'L'),title:`그림과 같이 한 원에서 중심각의 크기가 ${a}°인 부채꼴의 ${w}가 ${L} ${u}일 때, 중심각의 크기가 ${b}°인 부채꼴의 ${w} <i class="math">x</i> ${u}를 구하시오.`,fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:`<i class="math">x</i>의 값은?`,steps:up?[
-    {tag:'중심각이 몇 배인지',q:`${b}°는 ${a}°의 몇 배인가요?`,type:'num',ans:k,suffix:'배',hint:`${b} ÷ ${a}`,ok:`${b} = ${a} × ${k}`},
-    {tag:`${w}도 같은 배`,q:`${w}도 ${k}배예요. <i class="math">x</i>는?`,type:'num',ans:x,suffix:u,hint:`${L} × ${k}`,ok:`${L} × ${k} = ${x}`}]:[
-    {tag:'중심각이 몇 배인지',q:`큰 쪽 ${a}°는 작은 쪽 ${b}°의 몇 배인가요?`,type:'num',ans:k,suffix:'배',hint:`${a} ÷ ${b}`,ok:`${b}° = ${a}° ÷ ${k}`},
-    {tag:`${w}도 같은 수로 나누기`,q:`구하는 부채꼴은 중심각이 ${k}로 나눈 크기예요. <i class="math">x</i>는?`,type:'num',ans:x,suffix:u,hint:`${L} ÷ ${k}`,ok:`${L} ÷ ${k} = ${x}`}]}};
+    {tag:'중심각이 몇 배인지',q:`${a} × □ = ${b}일 때 □는?`,type:'num',ans:k,suffix:'배',hint:`${b} ÷ ${a}`,ok:`${a} × ${k} = ${b}`},
+    {tag:`${w}도 같은 배`,q:`${a} × ${k} = ${b} 이므로, ${L} × ${k} = <i class="math">x</i>. <i class="math">x</i>는?`,type:'num',ans:x,suffix:u,hint:`${L} × ${k}`,ok:`${L} × ${k} = ${x}`}]:[
+    {tag:'중심각이 몇 배인지',q:`${b} × □ = ${a}일 때 □는?`,type:'num',ans:k,suffix:'배',hint:`${a} ÷ ${b}`,ok:`${b} × ${k} = ${a}`},
+    {tag:`${w}도 같은 배`,q:`${b} × ${k} = ${a} 이므로, <i class="math">x</i> × ${k} = ${L}. <i class="math">x</i>는?`,type:'num',ans:x,suffix:u,hint:`${k}에 무엇을 곱하면 ${L}이 되는지 생각해요.`,ok:`${x} × ${k} = ${L}`}]}};
 GEN.centRatio=seed=>{const r=mulberry(seed),area=r()<0.35;let p,q,a,b;
   for(;;){p=ri(r,2,9);q=ri(r,2,9);if(p===q||gcd(p,q)!==1||p%q===0||q%p===0)continue;const g=pick(r,[5,10,15,20]);a=p*g;b=q*g;if(a+b>300||a<20||b<20)continue;break}
-  const m=ri(r,1,4),L=p*m,x=q*m,u=area?'cm²':'cm',w=area?'넓이':'호의 길이',fig=twoSec(a,b,`${L} ${u}`,`x ${u}`,area,r()<0.5);
+  const m=ri(r,2,5),L=p*m,x=q*m,u=area?'cm²':'cm',w=area?'넓이':'호의 길이',fig=twoSec(a,b,`${L} ${u}`,`x ${u}`,area,r()<0.5);
   const ok=`${p} : ${q}`,wr=[`${q} : ${p}`,`${a/5} : ${b/5}`!==ok?`${a/5} : ${b/5}`:`${p+1} : ${q}`,`${p} : ${q+1}`].filter(s=>s!==ok);
+  /* [cent 다듬기] 비례식은 작은 중심각부터 써요. 앞앞 뒤뒤 비교: 아는 쪽끼리 몇 배인지 보고, x 쪽도 같은 배. x가 앞에 있으면 뒤끼리 먼저 비교해요 */
+  const xF=a>b,P1=xF?q:p,P2=xF?p:q,X='<i class="math">x</i>',eq=xF?`${P1} : ${P2} = ${X} : ${L}`:`${P1} : ${P2} = ${L} : ${X}`,
+    kn=xF?'뒤':'앞',xn=xF?'앞':'뒤',S1=xF?`${Math.min(a,b)} : ${Math.max(a,b)}`:`${a} : ${b}`,okS=xF?`${q} : ${p}`:ok;
+  const ch=xF?[okS,...[...new Set(wr)].slice(0,3).map(t=>t.split(' : ').reverse().join(' : '))]:[ok,...[...new Set(wr)].slice(0,3)];
   return{ptype:'cent:ratio',sig:area?'S':'L',title:`그림과 같이 한 원에서 중심각의 크기가 ${a}°인 부채꼴의 ${w}가 ${L} ${u}일 때, 중심각의 크기가 ${b}°인 부채꼴의 ${w} <i class="math">x</i> ${u}를 구하시오.`,fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:`<i class="math">x</i>의 값은?`,steps:[
-    {tag:'중심각의 비',q:`${a} : ${b}를 가장 간단한 자연수의 비로 나타내면?`,type:'choice',choices:shuffle(r,[ok,...[...new Set(wr)].slice(0,3)]),ans:ok,hint:`${a}와 ${b}를 같은 수로 나눠요. 두 수 모두 ${gcd(a,b)}로 나누어떨어져요.`,ok:`${w}의 비도 ${ok}예요.`},
-    {tag:'한 칸의 크기',q:`${p}칸이 ${L} ${u}예요. 1칸은?`,type:'num',ans:m,suffix:u,hint:`${L} ÷ ${p}`},
-    {tag:'구하는 칸 수만큼',q:`<i class="math">x</i>는 ${q}칸이에요. <i class="math">x</i>는?`,type:'num',ans:x,suffix:u,hint:`${m} × ${q}`,ok:`${m} × ${q} = ${x}`}]}};
+    {tag:'중심각의 비',q:`${S1}를 가장 간단한 자연수의 비로 나타내면?`,type:'choice',choices:shuffle(r,[...new Set(ch)]),ans:okS,hint:`두 수를 같은 수로 나눠요. 두 수 모두 ${gcd(a,b)}로 나누어떨어져요.`,ok:`${w}의 비도 ${okS}예요. 비례식 ${eq}`},
+    {tag:`${kn}${kn} 비교`,q:`${eq}에서 ${kn}끼리 비교해요. ${xF?P2:P1} × □ = ${L}일 때 □는?`,type:'num',ans:m,suffix:'배',hint:`${L} ÷ ${xF?P2:P1}`,ok:`${xF?P2:P1} × ${m} = ${L}`},
+    {tag:`${xn}${xn}도 같은 배`,q:`${xn}끼리도 ${m}배예요. ${xF?P1:P2} × ${m} = ${X}. ${X}는?`,type:'num',ans:x,suffix:u,hint:`${xF?P1:P2} × ${m}`,ok:`${xF?P1:P2} × ${m} = ${x}`}]}};
 GEN.centThree=seed=>{const r=mulberry(seed);let a,b,c,t;for(;;){t=pick(r,[6,8,9,10,12,15,18,20]);a=ri(r,1,t-2);b=ri(r,1,t-a-1);c=t-a-b;if(c>=1&&new Set([a,b,c]).size>=2&&Math.min(a,b,c)*6>=t&&Math.max(a,b,c)*2<=t)break}
   const one=360/t,want=pick(r,[['AB',a],['BC',b],['CA',c]]),fig=three(a,b,c),arc=s=>`<span class="arcs">${s}</span>`;
   return{ptype:'cent:three',title:`그림의 원 O에서 ${arc('AB')} : ${arc('BC')} : ${arc('CA')} = ${a} : ${b} : ${c}일 때, ${arc(want[0])}에 대한 중심각의 크기를 구하시오.`,fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:`${arc(want[0])}에 대한 중심각은 몇 도인가요?`,steps:[
@@ -228,8 +240,8 @@ Object.assign(PTYPES,{
   arc:[{no:1,nm:'그림 보고 이름 맞추기',tb:'개념',key:'<b>굽으면 호, 곧으면 현</b> · 현 중에서 중심을 지나면 <b>지름</b> · 반지름 2개 + 호 → <b>부채꼴</b> · 현 + 호 → <b>활꼴</b> · 두 반지름이 이루는 각 → <b>중심각</b>',pt:['arc:pic'],src:['arcPic']},
     {no:2,nm:'헷갈리는 그림 구별하기',tb:'기초',key:'① 선분 · 굽은 선 · 도형 · 각 중 무엇인지 → ② 끝점이 어디 있는지, 꼭짓점이 <b>중심</b>인지 보기',pt:['arc:name'],src:['arcName']},
     {no:3,nm:'옳지 않은 것 고르기',tb:'기초',key:'지름도 <b>현</b> · 반원은 <b>부채꼴이면서 활꼴</b> · 부채꼴의 꼭짓점은 <b>중심</b>',pt:['arc:tf'],src:['arcTF']}],
-  cent:[{no:1,nm:'중심각 비교 ① 몇 배',tb:'기초',key:'중심각이 <b>몇 배</b>면 호의 길이·넓이도 <b>몇 배</b> (작아지면 나누기)',pt:['cent:mul'],src:['centMul']},
-    {no:2,nm:'중심각 비교 ② 비',tb:'기초',key:'중심각의 비 = 호의 길이의 비 = 넓이의 비 → <b>1칸</b>을 구하고 칸 수만큼 곱하기',pt:['cent:ratio'],src:['centRatio']},
+  cent:[{no:1,nm:'중심각 비교 ① 몇 배',tb:'기초',key:'중심각이 <b>몇 배</b>면 호의 길이·넓이도 <b>몇 배</b> (40 × 3 = 120 이므로, 3 × 3 = <i>x</i>)',pt:['cent:mul'],src:['centMul']},
+    {no:2,nm:'중심각 비교 ② 비',tb:'기초',key:'중심각의 비 = 호의 길이의 비 → 비례식에서 <b>앞앞 뒤뒤 비교</b> (앞끼리 몇 배면 뒤끼리도 몇 배, <i>x</i>가 앞에 있으면 뒤끼리 먼저)',pt:['cent:ratio'],src:['centRatio']},
     {no:3,nm:'호의 비로 중심각 구하기',tb:'204쪽 · 스스로 마무리하기',key:'호의 비 = 중심각의 비 · 한 바퀴 <b>360°</b>를 전체 칸 수로 나누기',pt:['cent:three'],src:['centThree']},
     {no:4,nm:'정비례 ○× (현은 예외)',tb:'기초',key:'호의 길이·넓이는 중심각에 <b>정비례</b> · <b>현</b>의 길이는 정비례하지 않아요',pt:['cent:tf'],src:['centTF']}],
   sector:[{no:1,nm:'원의 둘레와 넓이',tb:'기초',key:'둘레 보면 π! <b>지름 × π</b> · 넓이는 원을 직사각형으로: <b>반둘레 × 반지름</b>',pt:['sector:circ'],src:['sectorCirc']},
