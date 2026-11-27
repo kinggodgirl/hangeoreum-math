@@ -76,9 +76,12 @@ function ctThreeArcs(a,b,c,opt={}){
     }
     s+=svgLn(C,pol(C,R,p0),INK,1.6,'4 4');
   });
-  if(hl.includes('ang')){const tg=segs.find(x=>x[0]===want);if(tg)s+=svgAng(C,tg[1],tg[2],'?°',{col:HL,w:3})}
+  const tg=segs.find(x=>x[0]===want);
+  if(hl.includes('ang')&&tg)s+=svgAng(C,tg[1],tg[2],'?°',{col:HL,w:3});
+  const others=segs.filter(x=>x!==tg).sort((u,v)=>(v[2]-v[1])-(u[2]-u[1]));
+  const oAng=(others[0][1]+others[0][2])/2;
   s+=svgDot(pol(C,R,aA),4.5)+svgDot(pol(C,R,aB),4.5)+svgDot(pol(C,R,aC),4.5)+svgDot(C,4);
-  s+=svgTx(pol(C,R+20,aA),'A',{it:true})+svgTx(pol(C,R+20,aB),'B',{it:true})+svgTx(pol(C,R+20,aC),'C',{it:true})+svgTx([C[0]+14,C[1]+10],'O',{size:16});
+  s+=svgTx(pol(C,R+20,aA),'A',{it:true})+svgTx(pol(C,R+20,aB),'B',{it:true})+svgTx(pol(C,R+20,aC),'C',{it:true})+svgTx(pol(C,19,oAng),'O',{size:16});
   return svgBox(330,276,s,'원 위의 세 점');
 }
 

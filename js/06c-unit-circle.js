@@ -50,9 +50,19 @@ function twoSec(a,b,l1,l2,area,flip){const C=[210,165],R=100,gap=34,tot=a+gap+b,
     s+=tx(q,l,{size:20,anchor:cs>0.35?'start':cs<-0.35?'end':'middle'})});
   return svgW(420,330,s+labO(C,(A0+B1)/2+180),'한 원 안의 두 부채꼴')}
 /* 원 위의 세 점 (호의 비) */
-function three(a,b,c){const C=[150,140],R=96,t=a+b+c,aA=110,aB=aA+360*a/t,aC=aB+360*b/t;
+function three(a,b,c,want){const C=[150,140],R=96,t=a+b+c,aA=110,aB=aA+360*a/t,aC=aB+360*b/t;
+  const segs=[['AB',aA,aB],['BC',aB,aC],['CA',aC,aA+360]],tg=want?segs.find(x=>x[0]===want):null;
   const L=(ang,s)=>tx(pol(C,R+22,ang),s,{size:21,it:true});
-  return svgW(300,280,circ(C,R)+dot(pol(C,R,aA))+dot(pol(C,R,aB))+dot(pol(C,R,aC))+dot(C)+ln(C,pol(C,R,aC),{w:1.6,dash:'5 4'})+ln(C,pol(C,R,aA),{w:1.6,dash:'5 4'})+L(aA,'A')+L(aB,'B')+L(aC,'C')+tx([C[0]+18,C[1]+10],'O',{size:20}),'원 위의 세 점')}
+  let s=circ(C,R,{col:tg?'#9aa3b5':INK,w:2.2});
+  if(tg){
+    s+=`<path d="${secD(C,R,tg[1],tg[2])}" fill="${HLs}" stroke="${INK}" stroke-width="2.2"/>`;
+    s+=`<path d="${arcD(C,R,tg[1],tg[2])}" fill="none" stroke="${HL}" stroke-width="5.5" stroke-linecap="round"/>`;
+  }
+  segs.forEach(([,p0])=>{s+=ln(C,pol(C,R,p0),{w:1.6,dash:'5 4'})});
+  if(tg)s+=angMk(C,tg[1],tg[2],'?°',{col:HL,size:18});
+  const others=segs.filter(x=>x!==tg).sort((u,v)=>(v[2]-v[1])-(u[2]-u[1]));
+  const oAng=(others[0][1]+others[0][2])/2;
+  return svgW(300,280,s+dot(pol(C,R,aA),4.5)+dot(pol(C,R,aB),4.5)+dot(pol(C,R,aC),4.5)+dot(C)+L(aA,'A')+L(aB,'B')+L(aC,'C')+tx(pol(C,21,oAng),'O',{size:20}),'원 위의 세 점')}
 /* 이름 맞히기 그림 (대청 수학 idFig) */
 const ID_KIND=['반지름','지름','현','호','부채꼴','활꼴','중심각','none-sector','none-chord','none-arc'];
 function idFig(kind,r){const C=[150,140],R=100,fA=ri(r,0,359),al=ri(r,75,130),P=a=>pol(C,R,a),A=P(fA),B=P(fA+al);
@@ -183,7 +193,7 @@ GEN.centRatio=seed=>{const r=mulberry(seed),area=r()<0.35;let p,q,a,b;
     {tag:`${kn}${kn} 비교`,q:`${eq}에서 ${kn}끼리 비교해요. ${xF?P2:P1} × □ = ${L}일 때 □는?`,type:'num',ans:m,suffix:'배',hint:`${L} ÷ ${xF?P2:P1}`,ok:`${xF?P2:P1} × ${m} = ${L}`},
     {tag:`${xn}${xn}도 같은 배`,q:`${xn}끼리도 ${m}배예요. ${xF?P1:P2} × ${m} = ${X}. ${X}는?`,type:'num',ans:x,suffix:u,hint:`${xF?P1:P2} × ${m}`,ok:`${xF?P1:P2} × ${m} = ${x}`}]}};
 GEN.centThree=seed=>{const r=mulberry(seed);let a,b,c,t;for(;;){t=pick(r,[6,8,9,10,12,15,18,20]);a=ri(r,1,t-2);b=ri(r,1,t-a-1);c=t-a-b;if(c>=1&&new Set([a,b,c]).size>=2&&Math.min(a,b,c)*6>=t&&Math.max(a,b,c)*2<=t)break}
-  const one=360/t,want=pick(r,[['AB',a],['BC',b],['CA',c]]),fig=three(a,b,c),arc=s=>`<span class="arcs">${s}</span>`;
+  const one=360/t,want=pick(r,[['AB',a],['BC',b],['CA',c]]),fig=three(a,b,c,want[0]),arc=s=>`<span class="arcs">${s}</span>`;
   return{ptype:'cent:three',title:`그림의 원 O에서 ${arc('AB')} : ${arc('BC')} : ${arc('CA')} = ${a} : ${b} : ${c}일 때, ${arc(want[0])}에 대한 중심각의 크기를 구하시오.`,fig:{svg:()=>`<div class="figbox">${fig}</div>`},finalQ:`${arc(want[0])}에 대한 중심각은 몇 도인가요?`,steps:[
     {tag:'전체 칸 수',q:'호의 비를 모두 더하면 몇 칸인가요?',type:'num',ans:t,suffix:'칸',hint:`${a} + ${b} + ${c}`,ok:`원 한 바퀴(360°)가 ${t}칸이에요.`},
     {tag:'1칸의 중심각',q:'1칸에 대한 중심각은 몇 도인가요?',type:'num',ans:one,suffix:'°',hint:`360 ÷ ${t}`},
