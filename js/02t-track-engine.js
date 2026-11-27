@@ -889,7 +889,9 @@ function renderT3Concept(body,lid,spec){
 function renderT3Steps(body,lid,spec,initialCid){
   const list=spec.compoundList||[],TL=(typeof PTYPES==='object'&&PTYPES[lid])||[];
   const tyLabels=TL.map(t=>`유형 ${t.no} · ${t.nm}`);
-  let cid=initialCid||(list[0]&&list[0].id),seed=typeof newSeed==='function'?newSeed():11,picked=new Set(),unlocked=false,shownAt=Date.now();
+  /* [T21] spec.comboPick===false인 차시(지금은 arc만)는 '어느 두 유형?' 고르기 없이 바로 풀어요. 다른 차시는 그대로예요 */
+  const noPick=spec.comboPick===false;
+  let cid=initialCid||(list[0]&&list[0].id),seed=typeof newSeed==='function'?newSeed():11,picked=new Set(),unlocked=noPick,shownAt=Date.now();
 
   const draw=()=>{
     const gen=spec.genCompound&&spec.genCompound[cid];
@@ -899,15 +901,15 @@ function renderT3Steps(body,lid,spec,initialCid){
       <div class="ct-card-h"><h2>복합 문제 쪼개서 풀기</h2>
         <div class="ct-hit-row" style="margin:0">${list.map(x=>`<button type="button" class="chip${x.id===cid?' on':''}" data-cid="${x.id}">${x.nm}</button>`).join('')}</div>
       </div>
-      <div class="ct-combo">
+      ${noPick?'':`<div class="ct-combo">
         <b>1단계 · 이 문제는 기본 유형 중 <u>어느 두 가지</u>를 합쳐 놓았나요? (2개 고르기)</b>
         <div class="ct-combo-chips">${tyLabels.map((lb,i)=>`<button type="button" class="ct-hit${picked.has(i+1)?' sel':''}" data-ty="${i+1}" ${unlocked?'disabled':''}>${lb}</button>`).join('')}</div>
         <div id="cStep1Msg">${unlocked?`<div class="feedback ok">✓ 딱 맞혔어요! ${prob.comboWhy}</div>`:''}</div>
-      </div>
+      </div>`}
       <div id="cProbHost"></div>
     </div>`;
 
-    $$('[data-cid]',body).forEach(b=>b.onclick=()=>{cid=b.dataset.cid;seed=(seed+9)%99999+1;picked=new Set();unlocked=false;draw()});
+    $$('[data-cid]',body).forEach(b=>b.onclick=()=>{cid=b.dataset.cid;seed=(seed+9)%99999+1;picked=new Set();unlocked=noPick;draw()});
     $$('[data-ty]',body).forEach(b=>b.onclick=()=>{
       const k=+b.dataset.ty;
       if(picked.has(k))picked.delete(k);else{if(picked.size>=2){const first=[...picked][0];picked.delete(first)}picked.add(k)}
@@ -931,7 +933,7 @@ function renderT3Steps(body,lid,spec,initialCid){
         const row=document.createElement('div');row.className='next-row';row.style.justifyContent='flex-start';
         row.innerHTML=`<button type="button" class="btn primary" id="cMore">새 숫자로 한 번 더</button><a class="btn ghost" href="#${lid}-practice">실전 차시 마무리 →</a>`;
         box.appendChild(row);
-        const cm=$('#cMore',row);if(cm)cm.onclick=()=>{seed=(seed+23)%99999+1;picked=new Set();unlocked=false;draw()};
+        const cm=$('#cMore',row);if(cm)cm.onclick=()=>{seed=(seed+23)%99999+1;picked=new Set();unlocked=noPick;draw()};
       }});
     }
   };
@@ -1218,6 +1220,17 @@ if(typeof viewLesson==='function'){
     if(SPECS[id])return viewTrackLesson(id,tab);
     return prevVL.apply(this,arguments);
   };
+}
+
+/* [T21] 지금 주소와 같은 탭 링크(예: 차시 마무리에서 '쪼개서 연습하기'로 왔다가 '실전 차시 마무리 →')를 누르면
+   주소가 안 바뀌어 아무 일도 안 일어났어요. 같은 주소면 그 탭을 다시 그려요 */
+if(typeof document==='object'&&document&&typeof document.addEventListener==='function'){
+  document.addEventListener('click',e=>{
+    const a=e.target&&e.target.closest?e.target.closest('a[href^="#"]'):null;if(!a)return;
+    const h=a.getAttribute('href'),m=/^#([a-z]+)-(concept|steps|practice)$/.exec(h||'');
+    if(!m||h!==location.hash||!SPECS[m[1]])return;
+    e.preventDefault();viewTrackLesson(m[1],m[2]);if(typeof scrollTo==='function')scrollTo(0,0);
+  });
 }
 
 window.HG_TRACKS={
