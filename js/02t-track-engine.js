@@ -248,8 +248,10 @@ function mountOwlShow(host,lid,spec,opt={}){
         <span class="owl-title">🦉 부엉 쌤의 개념 그림극</span>
         <div class="owl-dots">${scenes.map((_,i)=>`<button type="button" class="owl-dot" data-oi="${i}" aria-label="${i+1}장면"></button>`).join('')}</div>
       </div>
-      <div class="owl-stage owl-new">${sc.svg?sc.svg():''}${sc.cap?`<div class="owl-cap">${sc.cap}</div>`:''}</div>
-      <div class="owl-row"><div class="owl-av"></div><div class="owl-bub" id="owlBub" aria-live="polite"></div></div>
+      <div class="owl-panel">
+        <div class="owl-stage owl-new">${sc.svg?sc.svg():''}${sc.cap?`<div class="owl-cap">${sc.cap}</div>`:''}</div>
+        <div class="owl-row"><div class="owl-av"></div><div class="owl-bub" id="owlBub" aria-live="polite"></div></div>
+      </div>
       <div id="owlAskHost"></div><div id="owlSumHost"></div>
       <div class="owl-ctrl">
         <div><button type="button" class="btn ghost mini" id="owlPrev">◀ 이전</button> <button type="button" class="btn ghost mini" id="owlReplay">↺ 처음부터</button>${typeof canSpeak!=='undefined'&&canSpeak&&typeof speak==='function'?' <button type="button" class="btn ghost mini say" id="owlSay" aria-label="자막 읽어 주기">🔊 듣기</button>':''}</div>

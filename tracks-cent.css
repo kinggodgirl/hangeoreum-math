@@ -208,3 +208,12 @@
 .calc-nudge{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin:0 0 12px;padding:14px 16px;border-radius:14px;background:#fff8e1;border:1.5px solid #f0c476;animation:owlFade .4s ease}
 .calc-nudge>b{font-size:18px}
 .calc-nudge .cn-go{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:4px}
+/* [T23] 부엉 쌤 그림극: 그림 바로 밑에 부엉 쌤 + 말풍선을 붙여 한 판으로 보여요(휴대폰에서도 나란히) */
+.owl-panel{background:#fff;border:1px solid #dce5f4;border-radius:12px;overflow:hidden}
+.owl-panel .owl-stage{border:0;border-radius:0;padding-bottom:6px;min-height:170px}
+.owl-panel .owl-row{flex-direction:row;align-items:flex-start;gap:10px;margin:0;padding:10px 12px 12px;background:#f9fbff;border-top:1px solid #e6edf8}
+.owl-panel .owl-av{width:48px;height:48px;margin-top:2px}
+.owl-panel .owl-av svg{width:40px;height:40px}
+.owl-panel .owl-bub{position:relative;border-color:#cfdcf3}
+.owl-panel .owl-bub::before{content:"";position:absolute;left:-7px;top:16px;width:12px;height:12px;background:#fff;border-left:1.5px solid #cfdcf3;border-bottom:1.5px solid #cfdcf3;transform:rotate(45deg)}
+@media (max-width:760px){.owl-panel .owl-row{flex-direction:row;padding:8px 8px 10px;gap:8px}.owl-panel .owl-av{width:40px;height:40px}.owl-panel .owl-av svg{width:34px;height:34px}.owl-panel .owl-bub{font-size:15.5px;padding:10px 12px}}
