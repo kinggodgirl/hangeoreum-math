@@ -362,6 +362,8 @@ if(typeof HG_TRACKS==='object'){
   /* ── 3차시 sector 등록 ── */
   HG_TRACKS.register('sector',{
     kind:'proc',
+    /* [T23] 복합 문제는 푸는 길이 여러 가지(예: C1은 유형 4→5도, 유형 3→2도 돼요)라 '어느 두 유형?' 고르기를 빼요 */
+    comboPick:false,
     schemaRapid:{n:8,kinds:10,title:'무엇을 구할까요?',q:'이 문제에서 <b>구해야 하는 것</b>과 <b>답의 단위</b>를 고르세요.',
       choices:S1_CH,check:[2,3,4,5,8],make:(k,seed)=>sectorRapid(k,Math.floor(seed/10))},
     t1Check:[t1Circ(5),t1Arc(8),t1Half(3)],
