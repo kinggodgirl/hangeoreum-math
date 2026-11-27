@@ -190,7 +190,7 @@ function mountOwlShow(host,lid,spec,opt={}){
   const scenes=typeof spec.owlScenes==='function'?spec.owlScenes():(spec.owlScenes||[]);
   if(!scenes.length){host.innerHTML='';return}
   const B=scenes.map(owlBeats);
-  let idx=0,beat=0,seen=0,finished=false;const askedDone=new Set();
+  let idx=0,beat=0,seen=0,finished=false,doneOnce=false;const askedDone=new Set();
   const plain=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
 
   const paint=anim=>{
@@ -260,9 +260,9 @@ function mountOwlShow(host,lid,spec,opt={}){
     const wrap=$('.owl-wrap',host);
     wrap.onclick=e=>{if(e.target.closest&&e.target.closest('button,a,input,select,label,.owl-ask,.owl-sum'))return;next()};
     wrap.onkeydown=e=>{if(e.target!==wrap)return;if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}};
-    $$('[data-oi]',host).forEach(b=>b.onclick=()=>{const t=+b.dataset.oi;if(t<=seen){idx=t;beat=0;enter()}});
+    $$('[data-oi]',host).forEach(b=>b.onclick=()=>{const t=+b.dataset.oi;if(t<=seen){idx=t;beat=0;finished=false;enter()}});
     $('#owlPrev',host).onclick=prev;
-    $('#owlReplay',host).onclick=()=>{idx=0;beat=0;enter()};
+    $('#owlReplay',host).onclick=()=>{idx=0;beat=0;finished=false;enter()};
     const sy=$('#owlSay',host);if(sy)sy.onclick=()=>{const bt=B[idx][beat];speak(plain(bt&&bt.say),sy)};
     if(hadFocus&&wrap.focus)try{wrap.focus({preventScroll:true})}catch(e){}
     paint(true);
@@ -274,6 +274,9 @@ function mountOwlShow(host,lid,spec,opt={}){
     if(sc.ask&&!askedDone.has(idx)){const a=$('.owl-ask',host);if(a){a.classList.remove('owl-shake');void a.offsetWidth;a.classList.add('owl-shake')}return}
     if(idx<scenes.length-1){idx++;beat=0;enter();return}
     finished=true;
+    /* 처음부터·장면 점으로 다시 볼 때는 finished를 풀어요. 기록·포인트·onFinish는 처음 한 번만 */
+    if(doneOnce){paint(false);return}
+    doneOnce=true;
     const p=lesProg(lid);p.concept=true;p.tday=today();
     if(typeof save==='function')save();
     if(typeof award==='function')award(5,lid+':owl','부엉 쌤 개념 그림극을 끝까지 봤어요');
@@ -282,6 +285,7 @@ function mountOwlShow(host,lid,spec,opt={}){
     const s=$('#owlSumHost',host);if(s&&s.scrollIntoView)try{s.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}
   };
   const prev=()=>{
+    if(finished){finished=false;paint(false);return}
     if(beat>0){beat--;paint(false);return}
     if(idx>0){idx--;beat=B[idx].length-1;enter()}
   };
