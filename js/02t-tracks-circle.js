@@ -384,9 +384,9 @@ if(typeof HG_TRACKS==='object'){
         problem:'반지름이 <b>6 cm</b>, 중심각이 <b>60°</b>인 부채꼴의 <b>호의 길이</b>를 구하시오.',
         fig:()=>secFigS(6,null,60,{arcLab:'? cm',rLab:'6 cm'}),wantChips:['부채꼴의 호의 길이','부채꼴의 넓이','지름'],wantAns:'부채꼴의 호의 길이',wantHl:[],
         givenChips:[{k:'r',t:'반지름 6 cm (지름 12)',ok:true},{k:'a',t:'중심각 60° (1/6 조각)',ok:true},{k:'t',t:'높이 8 cm',ok:false}],
-        teacherEq:'원 둘레 12π × (60/360) = 12π ÷ 6 = 2π',pairQ:'왜 원 둘레 12π를 <b>6</b>으로 나누었나요?',
-        pairChoices:['360° ÷ 60° = 6조각 중 1개라서','반지름이 6 cm라서'],pairAns:'360° ÷ 60° = 6조각 중 1개라서',
-        calcPrompt:'호의 길이는 몇 cm인가요? (π를 붙여 써요. 예: 8π)',calcAns:2,calcTopic:'frac',calcExplain:'12π ÷ 6 = <b>2π cm</b>예요.'},
+        teacherEq:'원 둘레 12π × 60/360 = 12π × 1/6 = 2π',pairQ:'왜 원 둘레 12π에 <b>60/360</b>을 곱했나요?',
+        pairChoices:['부채꼴은 원 전체 360° 중 60°만큼이라서','반지름이 6 cm라서'],pairAns:'부채꼴은 원 전체 360° 중 60°만큼이라서',
+        calcPrompt:'호의 길이는 몇 cm인가요? (π를 붙여 써요. 예: 8π)',calcAns:2,calcTopic:'frac',calcExplain:'12π × 60/360 = 12π × 1/6 = <b>2π cm</b>예요.'},
       {id:'sfg3',tyNo:4,title:'유형 4 · 호의 길이로 부채꼴 넓이 구하기',
         problem:'반지름이 <b>5 cm</b>, 호의 길이가 <b>6π cm</b>인 부채꼴의 <b>넓이</b>를 구하시오.',
         fig:()=>secFigS(5,null,120,{arcLab:'6π cm',rLab:'5 cm'}),wantChips:['부채꼴의 넓이','중심각의 크기','원의 둘레'],wantAns:'부채꼴의 넓이',wantHl:[],
@@ -418,7 +418,7 @@ if(typeof HG_TRACKS==='object'){
         steps:[{t:'① 원 둘레 구하기',hl:[],body:'지름 12 × π = <b>12π cm</b>'},{t:'② 호 ÷ 원 둘레 약분',hl:[],body:'4π / 12π = <b>1/3</b>'},{t:'③ 360° × 분수',hl:[],body:'360° × 1/3 = <b>120°</b>'}],
         pitfall:'⚠️ 자주 하는 실수: 호의 반으로 나누지 말고 원래 호의 길이(4π)를 그대로 써요.'},
       6:{no:6,nm:'색칠한 부분의 넓이 (큰 것 − 작은 것)',prob:'반지름 8 cm, 4 cm, 중심각 90°인 두 부채꼴 사이 넓이',fig:()=>secFigS(8,4,90,{rLab:'8 cm'}),
-        steps:[{t:'① 큰 부채꼴 넓이',hl:[],body:'64π ÷ 4 = <b>16π cm²</b>'},{t:'② 작은 부채꼴 넓이',hl:[],body:'16π ÷ 4 = <b>4π cm²</b>'},{t:'③ 빼기 (둘레는 직선도!)',hl:[],body:'16π − 4π = <b>12π cm²</b>'}],
+        steps:[{t:'① 큰 부채꼴 넓이',hl:[],body:'64π × 90/360 = 64π × 1/4 = <b>16π cm²</b>'},{t:'② 작은 부채꼴 넓이',hl:[],body:'16π × 90/360 = 16π × 1/4 = <b>4π cm²</b>'},{t:'③ 빼기 (둘레는 직선도!)',hl:[],body:'16π − 4π = <b>12π cm²</b>'}],
         pitfall:'⚠️ 자주 하는 실수: 넓이는 빼고, 둘레를 물을 때는 작은 호도 <b>더하기</b> + 직선 2개도 더해요!'}
     },
     compoundList:[
