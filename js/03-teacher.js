@@ -11,22 +11,28 @@ function relTime(iso){if(!iso)return'아직 없음';const d=(Date.now()-Date.par
 function stripTags(h){const t=document.createElement('div');t.innerHTML=h;return t.textContent.replace(/\s+/g,' ').trim()}
 const NUM=v=>{v=Number(v);return Number.isFinite(v)&&v>0?Math.floor(v):0};
 const OBJ=v=>(v&&typeof v==='object'&&!Array.isArray(v))?v:{};
+const T_TAB_NM=['개념 보기','유형 익히기','차시 마무리'];
+const T_TR_IC=['','🌱','🌿','🌳'];
+const T_TR_NM=['','첫걸음','한걸음','두걸음'];
 function dataSummary(d){d=OBJ(d);const me=OBJ(d._me),t=today(),streak=(me.last===t||me.last===addDays(t,-1))?NUM(me.streak):0;
-  const les=LESSONS.filter(l=>l.ready).map(l=>{const p=OBJ(d[l.id]),pr=OBJ(p.prac);return[!!p.concept,!!p.explore,NUM(p.steps)>0,NUM(pr.solved)>=5]});
+  const readyL=LESSONS.filter(l=>l.ready);
+  const les=readyL.map(l=>{if(typeof lessonProgressInfo==='function'){const info=lessonProgressInfo(l.id,d);return[info.tabs.concept,info.tabs.steps,info.tabs.practice]}const p=OBJ(d[l.id]),pr=OBJ(p.prac);return[!!p.concept,NUM(p.steps)>0,NUM(pr.solved)>=5]});
+  const lesTr=readyL.map(l=>typeof lessonProgressInfo==='function'?lessonProgressInfo(l.id,d).trackDone:0);
   const solved=LESSONS.reduce((a,l)=>a+NUM(OBJ(OBJ(d[l.id]).prac).solved),0),rev=Array.isArray(d._rev)?d._rev:[];
-  const calc=Object.entries(OBJ(d._calc)).reduce((a,[k,v])=>a+Math.min(calcLvN(k),NUM(OBJ(v).stars)),0),facts=Object.values(OBJ(d._facts)).filter(v=>NUM(OBJ(v).lv)>=3).length,dg=OBJ(d._calcDiag),plan=Array.isArray(dg.plan)?dg.plan:[];
+  const calc=Object.entries(OBJ(d._calc)).reduce((a,[k,v])=>a+Math.min(calcLvN(k),NUM(OBJ(v).stars)),0),facts=Object.values(OBJ(d._facts)).filter(v=>NUM(v.lv)>=3).length,dg=OBJ(d._calcDiag),plan=Array.isArray(dg.plan)?dg.plan:[];
   const calcErrs=Object.values(OBJ(d._calcErrs)).filter(x=>x&&x.m).sort((a,b)=>NUM(b.n)-NUM(a.n)||String(b.d||'').localeCompare(String(a.d||'')));
   const weakFacts=Object.entries(OBJ(d._facts)).filter(([,v])=>v&&(NUM(v.w)>0||NUM(v.lv)<=1)).sort((a,b)=>NUM(b[1].w)-NUM(a[1].w)||NUM(a[1].lv)-NUM(b[1].lv)).slice(0,6).map(([k,v])=>({k:k.replace('x','×'),w:NUM(v.w),lv:NUM(v.lv)}));
   const goal=typeof goalOf==='function'?goalOf(d):null;
-  return{goal,calc,facts,diag:!!dg.d,plan,calcErrs,weakFacts,pts:NUM(me.pts),streak,les,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
+  return{goal,calc,facts,diag:!!dg.d,plan,calcErrs,weakFacts,pts:NUM(me.pts),streak,les,lesTr,solved,rev:rev.length,due:rev.filter(x=>x&&typeof x.due==='string'&&x.due<=t).length,badges:Object.keys(OBJ(me.badges)).length}}
 /* ───────── 수업 중 실시간: 지금 위치 알리기 · 손들기 (학생) ─────────
    서버 함수: supabase/live.sql (hg_ping · hg_help · hg_t_live · hg_t_ack) */
 const LIVEX={sub:'',help:false,missing:false,last:0,lastProg:0,sent:''};
+const LIVE_TAB_NM={concept:'개념 보기',steps:'유형 익히기',practice:'차시 마무리',explore:'더 알아보기'};
 const LOC_NM={home:'처음 화면',review:'복습 노트',drill:'기초 연산',calc:'오늘의 계산',boss:'보스전',baseball:'숫자야구',me:'내 기록',shop:'상점',login:'로그인'};
 function liveLoc(){const h=(location.hash||'#home').slice(1)||'home';
   if(LOC_NM[h])return LOC_NM[h];if(/^bb-/.test(h))return'숫자야구';if(/^calc-/.test(h))return'오늘의 계산';
   let[id,tab]=h.split('-');if(id==='types')id='poly';const L=LESSONS.find(l=>l.id===id);
-  if(L)return`${L.no}차시 ${L.title} · ${TAB_NM[TABS.some(t=>t.id===tab)?tab:'concept']}${LIVEX.sub?' · '+LIVEX.sub:''}`;
+  if(L)return`${L.no}차시 ${L.title} · ${LIVE_TAB_NM[LIVE_TAB_NM[tab]?tab:'concept']}${LIVEX.sub?' · '+LIVEX.sub:''}`;
   return h}
 function livePing(prog,force){if(!isStudent()||LIVEX.missing)return;const now=Date.now(),loc=liveLoc();
   if(prog){if(now-LIVEX.lastProg<15000&&loc===LIVEX.sent)return;LIVEX.lastProg=now}
@@ -53,7 +59,7 @@ function liveFlags(s,now){const ack=s.ack_at?Date.parse(s.ack_at):0,A=(s.att||[]
   let run=0,runN='';for(const a of A){const n=attName(a);if(!a.good&&n===runN)run++;else if(!a.good){run=1;runN=n}else{run=0;runN=''}}
   if(run>=3)f.push({c:'p',w:3,t:`${esc(runN)} · ${run}번 연속 틀림`});
   A.filter(a=>a.good&&a.wrongs>=3).slice(-1).forEach(a=>f.push({c:'y',w:2,t:`${esc(attName(a))} · ${a.wrongs}번 틀린 끝에 맞힘`}));
-  const online=s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000,inProb=/같이 풀기|혼자 풀기|복습/.test(s.loc||'');
+  const online=s.loc_at&&now-Date.parse(s.loc_at)<ONLINE_SEC*1000,inProb=/같이 풀기|혼자 풀기|유형 익히기|차시 마무리|복습/.test(s.loc||'');
   const lastP=Math.max(s.prog_at?Date.parse(s.prog_at):0,ack);
   if(online&&inProb&&lastP&&now-lastP>STALL_MIN*60000)f.push({c:'g',w:1,t:`${Math.floor((now-lastP)/60000)}분째 답을 내지 않았어요`});
   return f}
@@ -121,10 +127,10 @@ function viewTeacher(){
        <div class="tablewrap"><table class="t t-week"><thead><tr><th>학생</th><th>지난 7일 공부한 날</th><th>최근 접속</th><th>7일<br><small>풀이</small></th><th>이번 주<br><small>포인트</small></th><th>보스 도전<br><small>승 / 판</small></th><th>🎫 쿠폰<br><small>남은 장수</small></th><th class="l">챙길 점</th></tr></thead><tbody class="tWkRows"></tbody></table></div>
        <p class="muted t-lead" style="margin:10px 0 0">공부한 날은 포인트를 받은 날이에요. 이번 주 포인트는 월요일부터 센 값이에요. 쿠폰 사용 기록은 학생 이름표처럼 이 기기에만 저장돼서, 학생 화면의 쿠폰 수는 그대로 보여요.</p></div></div>
      <div class="t-pane" data-p="stat">
-      <div class="card panel"><div class="t-head"><h2>학습 현황 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tCsv">엑셀로 받기</button></div><div class="t-tiles tStTiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div><p class="t-pipkey muted">차시 칸 점 4개: <span class="pips"><span class="pip on"></span></span> 개념 · <span class="pips"><span class="pip on"></span></span> 탐구 · <span class="pips"><span class="pip on"></span></span> 단계 문제 · <span class="pips"><span class="pip on"></span></span> 연습 5문제 · <span class="pips"><span class="pip"></span></span> 아직</p>
+      <div class="card panel"><div class="t-head"><h2>학습 현황 <span class="muted tScopeNm" style="font-size:17px"></span></h2><button type="button" class="btn ghost tCsv">엑셀로 받기</button></div><div class="t-tiles tStTiles"></div><div class="t-watch" aria-label="챙겨 볼 학생"></div><p class="t-pipkey muted">차시 칸 점 3개: <span class="pips"><span class="pip on"></span></span> 개념 보기 · <span class="pips"><span class="pip on"></span></span> 유형 익히기 · <span class="pips"><span class="pip on"></span></span> 차시 마무리 · 🌱🌿🌳 완료 걸음 · <span class="pips"><span class="pip"></span></span> 아직</p>
        <div class="tablewrap"><table class="t t-roster"><thead><tr class="t-unitrow"><th rowspan="2">학생</th><th rowspan="2">최근 접속</th><th rowspan="2">포인트</th><th rowspan="2">연속</th>${unitGroups().map(([u,n],i)=>`<th colspan="${n}" class="t-unit u${i%3}">${esc(unitNm(u))}</th>`).join('')}<th rowspan="2">연습<br><small>푼 문제</small></th><th rowspan="2">기초 연산<br><small>별 · 구구단 익힘</small></th><th rowspan="2">복습<br><small>대기</small></th><th rowspan="2">7일<br><small>풀이</small></th><th rowspan="2">이번 주<br><small>데미지</small></th></tr>
         <tr>${ready.map(l=>`<th class="t-lesh u${unitIdx(l)%3}" title="${esc(lesTip(l))}">${l.no}차시<br><small>${esc(shortT(l.title))}</small></th>`).join('')}</tr></thead><tbody class="tRows"></tbody></table></div><div class="tOmr"></div>
-       <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 4개는 차례로 <b>개념 · 탐구 · 단계 문제 · 연습(5문제 이상)</b>이에요. 점이나 차시 이름에 마우스를 올리면 자세히 나와요.</p></div></div>
+       <p class="muted tEmpty" hidden>이 반에는 아직 학생이 없어요. ‘👥 학생 관리’에서 학생을 넣어 주세요.</p><p class="muted t-lead" style="margin:10px 0 0">이름을 누르면 그 학생의 최근 풀이를 볼 수 있어요. 차시 칸의 점 3개는 차례로 <b>개념 보기 · 유형 익히기 · 차시 마무리</b>이고, 옆 아이콘(🌱·🌿·🌳)은 완료한 걸음이에요.</p></div></div>
      <div class="t-pane" data-p="steps">
       <div class="card panel tRep"></div>
       <div class="card panel"><div class="t-head"><h2>많이 막히는 단계 <span class="muted tScopeNm" style="font-size:17px"></span></h2><div class="seg tDays">${[7,30,90].map(d=>`<button type="button" data-d="${d}" class="${d===30?'on':''}">${d}일</button>`).join('')}</div></div>
@@ -132,7 +138,7 @@ function viewTeacher(){
      <div class="t-pane" data-p="people"><div class="tPeople"></div></div>
      <div class="t-pane" data-p="game">
       <div class="card panel tRaid"><div class="t-head"><h2>⚔️ 오늘의 보스 도전 <span class="muted tScopeNm" style="font-size:17px"></span></h2><span class="muted tRaidBoss"></span></div>
-       <p class="muted t-lead">학생 혼자 하는 보스 도전 기록이에요. 주요 학습에서 해결한 차시(같이 풀기 끝까지 1번 또는 혼자 풀기 3문제)가 <b class="tRaidNeed">3</b>개가 되면 문이 열려요. 🎫 쿠폰은 학생이 보여 주면 [사용함]을 눌러 주세요.</p>
+       <p class="muted t-lead">학생 혼자 하는 보스 도전 기록이에요. 교과서 한 걸음에서 해결한 차시가 <b class="tRaidNeed">3</b>개가 되면 문이 열려요. 🎫 쿠폰은 학생이 보여 주면 [사용함]을 눌러 주세요.</p>
        <div class="t-tiles tRaidTiles"></div>
        <div class="tablewrap"><table class="t t-week t-raid"><thead><tr><th>학생</th><th>문 열림<br><small>해결한 차시</small></th><th>오늘<br><small>도전</small></th><th>승 / 판<br><small>지금까지</small></th><th>물리친<br><small>보스</small></th><th>🎫 쿠폰<br><small>남은 장수</small></th></tr></thead><tbody class="tRaidRows"></tbody></table></div></div>
       <div class="card panel t-gsel"><label class="t-sel">${CBOSS()?'숫자야구와 우리 반 보스전은':'숫자야구는'} 정규 반 단위예요. 반 <select class="inp sel tGClass" aria-label="게임을 볼 반"></select></label></div>
@@ -239,9 +245,9 @@ function viewTeacher(){
       const away=S.filter(x=>!x.s.last_seen||Date.parse(x.s.last_seen)<wk).map(x=>nm(x.s)),back=S.filter(x=>x.due>=5).map(x=>`${nm(x.s)}(${x.due})`),noc=S.filter(x=>x.s.last_seen&&Date.parse(x.s.last_seen)>=wk&&!x.calc&&!x.diag).map(x=>nm(x.s)),base0=S.filter(x=>x.plan.includes('facts')||x.plan.includes('add')).map(x=>`${nm(x.s)}(${x.plan.slice(0,2).map(id=>({add:'덧뺄',facts:'구구단',div:'나눗',order:'순서',fracbase:'분수'})[id]||id).join('·')})`),gdiff=S.filter(x=>x.goal&&x.goal.diff).map(x=>`${nm(x.s)}(${goalBy(x.goal.k).ic}→추천 ${goalBy(x.goal.rec).ic})`),gold=S.filter(x=>x.goal&&x.goal.old).map(x=>nm(x.s)),cerrs=S.filter(x=>x.calcErrs&&x.calcErrs.length&&NUM(x.calcErrs[0].n)>=2).map(x=>{const e=x.calcErrs[0],tp=CALC.find(c=>c.id===e.tid);return`${nm(x.s)}(${tp?tp.nm:e.tid}·${e.n}회)`});
       $('.t-watch',app).innerHTML=(away.length?`<div><b>7일 넘게 들어오지 않았어요</b> (${away.length}명) · ${esc(lst(away))}</div>`:'')+(back.length?`<div class="mid"><b>복습이 5문제 넘게 밀렸어요</b> · ${esc(lst(back))}</div>`:'')+(noc.length?`<div class="mid"><b>기초 연산을 아직 시작하지 않았어요</b> · ${esc(lst(noc))}</div>`:'')+(base0.length?`<div class="mid"><b>시작점 찾기에서 덧셈·뺄셈이나 곱셈구구부터 다지기로 나왔어요</b> · ${esc(lst(base0))}</div>`:'')+(gdiff.length?`<div class="mid"><b>고른 길과 기록 추천이 달라요</b> · ${esc(lst(gdiff))} <small>(왜 이 길을 골랐는지 1분만 이야기 나눠 보세요)</small></div>`:'')+(gold.length?`<div class="mid"><b>길을 고른 지 2주가 지났어요</b> · ${esc(lst(gold))} <small>(학생 화면에도 다시 고르자고 나와요)</small></div>`:'')+(cerrs.length?`<div class="mid"><b>기초 연산에서 같은 실수가 반복됐어요</b> · ${esc(lst(cerrs))} <small>(이름을 눌러 자세히 보기)</small></div>`:'')}
     $('.tStTiles',app).innerHTML=`<div class="t-tile"><small>학생</small><b>${L.length}</b></div><div class="t-tile"><small>최근 7일에 공부한 학생</small><b>${act}</b></div><div class="t-tile"><small>평균 포인트</small><b>${avg}</b></div><div class="t-tile"><small>최근 7일 풀이 수</small><b>${tries}</b></div>${typeof GOALS==='undefined'?'':`<div class="t-tile t-goals"><small>나의 길</small><b>${GOALS.map(g=>`<span title="${g.nm}">${g.ic} ${S.filter(x=>x.goal&&x.goal.k===g.k).length}</span>`).join(' ')} <span class="muted" title="아직 길을 고르지 않았어요">· 미정 ${S.filter(x=>!x.goal||!x.goal.k).length}</span></b></div>`}`;
-    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td class="l"><button type="button" class="t-num">${nameH(s)}</button>${goalBadge(s.data)}${s.locked?' <span class="t-lock">잠김</span>':''}</td>
+    $('.tRows',app).innerHTML=S.map(({s,pts,streak,les,lesTr,solved,rev,due,calc,facts})=>`<tr data-sid="${esc(s.sid)}"><td class="l"><button type="button" class="t-num">${nameH(s)}</button>${goalBadge(s.data)}${s.locked?' <span class="t-lock">잠김</span>':''}</td>
       <td class="${!s.last_seen||Date.parse(s.last_seen)<wk?'t-old':''}">${relTime(s.last_seen)}</td><td class="rm">${pts}</td><td class="rm">${streak}</td>
-      ${les.map((a,li)=>`<td title="${esc(lesTip(ready[li]))}"><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${esc(ready[li].no+'차시 '+shortT(ready[li].title))} · ${TAB_NM[DATA_TABS[i]]} ${x?'했어요':'아직'}"></span>`).join('')}</span></td>`).join('')}
+      ${les.map((a,li)=>{const td=lesTr&&lesTr[li]||0;return`<td title="${esc(lesTip(ready[li]))}"><span class="pips">${a.map((x,i)=>`<span class="pip ${x?'on':''}" title="${esc(ready[li].no+'차시 '+shortT(ready[li].title))} · ${T_TAB_NM[i]} ${x?'했어요':'아직'}"></span>`).join('')}${td?`<span class="t-tr" title="${T_TR_NM[td]} 완료">${T_TR_IC[td]}</span>`:''}</span></td>`}).join('')}
       <td class="rm">${solved}</td><td class="rm">${calc}<small class="t-sub"> · 구구 ${facts}</small></td><td class="rm">${rev?`${rev}${due?` <small class="t-due">오늘 ${due}</small>`:''}`:'–'}</td><td class="rm">${s.attempts_7d||0}</td><td class="rm">${s.week_pts==null?'–':NUM(s.week_pts)}</td></tr>`).join('');
     $$('.tRows .t-num',app).forEach(b=>b.onclick=()=>openStu(b.closest('tr').dataset.sid));renderOmr(L)}
   /* ── 📅 이번 주 한눈에 (주 1회 대면 수업 준비) ── */
@@ -272,7 +278,7 @@ function viewTeacher(){
     try{await navigator.clipboard.writeText(txt);toast('수업 메모를 복사했어요. 메모장이나 카톡에 붙여 넣으세요.')}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('수업 메모를 복사했어요.')}catch(_){toast('복사하지 못했어요.')}ta.remove()}};
   /* ── ⚔️ 오늘의 보스 도전: 학생별 기록 (방과후 반에서도 보여요) ── */
   function renderRaid(){const body=$('.tRaidRows',app);if(!body)return;const t=today(),need=typeof RAID!=='undefined'?RAID.NEED_LES:3;
-    const lesOK=d=>ready.filter(l=>{const p=OBJ(OBJ(d)[l.id]);return NUM(p.steps)>0||NUM(OBJ(p.prac).solved)>=3}).length;
+    const lesOK=d=>ready.filter(l=>{const p=OBJ(OBJ(d)[l.id]);return NUM(p.trackDone)>=1||NUM(p.steps)>0||NUM(OBJ(p.prac).solved)>=3}).length;
     const R=curList().map(s=>{const r=OBJ(OBJ(s.data)._raid),td=OBJ(OBJ(r.days)[t]);return{s,les:lesOK(s.data),today:NUM(td.f)+NUM(td.p),w:NUM(r.w),g:NUM(r.g),beat:Object.keys(OBJ(r.beat)).length,cp:cpInfo(s)}});
     $('.tRaidNeed',app).textContent=need;
     {const b=typeof raidBoss==='function'?raidBoss():null;$('.tRaidBoss',app).textContent=b?`이번 주 보스 · ${b.nm}`:''}
@@ -310,8 +316,8 @@ function viewTeacher(){
     box.innerHTML=`<h3 style="margin:16px 0 6px">📷 점검 학습지 · 학생이 직접 채점한 점수</h3><p class="muted t-lead" style="margin:0 0 6px">학생이 처음 찍은 점수가 남아요. 틀린 문제를 고쳐 다시 찍으면 그 점수도 함께 보여요.</p>${ks.slice(0,6).map(one).join('')}`}
 
   $('.tCsv',app).onclick=()=>{const L=curList();if(!L.length){toast('내려받을 학생이 없어요.');return}
-    const head=['이름(이 기기)','학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>DATA_TABS.map(k=>`${l.no}차시 ${TAB_NM[k]}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','취약 구구단','자주 나온 연산 실수','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
-    const rows=L.map(s=>{const x=dataSummary(s.data);const wf=(x.weakFacts||[]).slice(0,4).map(f=>f.k+(f.w?`(${f.w})`:'')).join(' ');const ce=(x.calcErrs||[]).slice(0,2).map(e=>{const tp=CALC.find(c=>c.id===e.tid);return`[${tp?tp.nm:e.tid}] ${stripTags(e.m)}(${e.n})`}).join(' / ');return[NAMES[s.sid]||'',s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap(a=>a.map(v=>v?'O':'')),x.solved,x.calc,x.facts,wf,ce,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
+    const head=['이름(이 기기)','학년','반','번호','최근 접속','포인트','연속 일수',...ready.flatMap(l=>[...T_TAB_NM,'완료 걸음'].map(k=>`${l.no}차시 ${k}`)),'연습 푼 문제','기초 연산 별','구구단 익힘(36칸)','취약 구구단','자주 나온 연산 실수','기초 연산 시작점','복습 대기','오늘 복습','최근 7일 풀이','이번 주 데미지','잠김'];
+    const rows=L.map(s=>{const x=dataSummary(s.data);const wf=(x.weakFacts||[]).slice(0,4).map(f=>f.k+(f.w?`(${f.w})`:'')).join(' ');const ce=(x.calcErrs||[]).slice(0,2).map(e=>{const tp=CALC.find(c=>c.id===e.tid);return`[${tp?tp.nm:e.tid}] ${stripTags(e.m)}(${e.n})`}).join(' / ');return[NAMES[s.sid]||'',s.grade,s.klass,s.num,s.last_seen?new Date(s.last_seen).toLocaleString('ko-KR'):'',x.pts,x.streak,...x.les.flatMap((a,i)=>[...a.map(v=>v?'O':''),T_TR_NM[(x.lesTr&&x.lesTr[i])||0]]),x.solved,x.calc,x.facts,wf,ce,x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?t.nm:id}).join(' → '):'기초 튼튼'):'아직',x.rev,x.due,NUM(s.attempts_7d),s.week_pts==null?'':NUM(s.week_pts),s.locked?'잠김':'']});
     const cell=v=>{v=String(v);return/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
     const csv='﻿'+[head,...rows].map(r=>r.map(cell).join(',')).join('\r\n');
     const nm=scopeNm().replace(/\s+/g,'_').replace(/[\\/:*?"<>|]/g,'');
@@ -432,7 +438,7 @@ function viewTeacher(){
       ${goalStuHTML(x.goal)}
       ${(()=>{const c=cpInfo(s),r=raidInfo(s);return c.got||c.pcs||r.g?`<p class="t-dcp">⚔️ 보스 도전 <b class="rm">${r.w}승 / ${r.g}판</b> · 🎫 쿠폰 남은 <b class="rm">${c.left}장</b> <small class="muted">(모은 ${c.got} · 쓴 ${c.used}${c.pcs?` · 조각 ${c.pcs}/3`:''})</small>${c.left?` <button type="button" class="t-mini t-dcpu">쿠폰 사용함</button>`:''}</p>`:''})()}
       ${lv.loc?`<p class="t-dloc">지금: ${esc(lv.loc)}${lv.help_at?' · <b class="t-due">✋ 손들었어요</b>':''}</p>`:''}
-      <div class="t-dles">${ready.map((l,i)=>`<div title="${esc(lesTip(l))}"><span>${l.no}차시 <small class="muted">${esc(shortT(l.title))}</small></span><span class="pips">${x.les[i].map((v,j)=>`<span class="pip ${v?'on':''}" title="${TAB_NM[DATA_TABS[j]]}"></span>`).join('')}</span></div>`).join('')}</div>
+      <div class="t-dles">${ready.map((l,i)=>{const td=(x.lesTr&&x.lesTr[i])||0;return`<div title="${esc(lesTip(l))}"><span>${l.no}차시 <small class="muted">${esc(shortT(l.title))}</small></span><span class="pips">${x.les[i].map((v,j)=>`<span class="pip ${v?'on':''}" title="${T_TAB_NM[j]}"></span>`).join('')}${td?`<span class="t-tr" title="${T_TR_NM[td]} 완료">${T_TR_IC[td]}</span>`:''}</span></div>`}).join('')}</div>
       ${groupsOff?'':`<h3>방과후 반</h3><div class="chips t-dg">${GROUPS.map(g=>`<button type="button" class="chip ${g.sids.includes(sid)?'on':''}" data-g="${g.id}">${g.sids.includes(sid)?CHECK+' ':''}${esc(g.name)}</button>`).join('')||'<span class="muted">아직 방과후 반이 없어요.</span>'}</div>`}
       <h3>기초 연산 취약점 · 오개념</h3><div class="t-calc-box"><div><b>시작점 찾기</b> ${x.diag?(x.plan.length?x.plan.map(id=>{const t=CALC.find(c=>c.id===id);return t?esc(t.nm):id}).join(' → '):'기초 튼튼'):'<span class="muted">아직 안 함</span>'} · 별 <b class="rm">${x.calc}</b> · 구구단 <b class="rm">${x.facts}/36</b></div>${x.weakFacts.length?`<div style="margin-top:6px"><b>취약 구구단</b> ${x.weakFacts.map(f=>`<span class="t-wchip">${esc(f.k)}${f.w?` · 틀림 ${f.w}`:''}</span>`).join('')}</div>`:''}${x.calcErrs.length?`<div style="margin-top:8px"><b>자주 나온 오개념 TOP 5</b><ul>${x.calcErrs.slice(0,5).map(e=>{const tp=CALC.find(c=>c.id===e.tid);return`<li><b>${esc(tp?tp.nm:e.tid)}</b> (${e.n}회): ${esc(stripTags(e.m))}</li>`}).join('')}</ul></div>`:'<div class="muted" style="margin-top:6px">아직 기록된 기초 연산 오개념이 없어요.</div>'}${(()=>{const cs=OBJ(OBJ(s.data)._calc),done=CALC.filter(t=>NUM(OBJ(cs[t.id]).stars)>0);return done.length?`<div style="margin-top:8px"><b>별 받은 주제</b> ${done.map(t=>`<span class="t-schip">${esc(t.nm)} ★${Math.min(3,NUM(cs[t.id].stars))}</span>`).join('')}</div>`:''})()}</div>
       <h3>최근 풀이</h3><div class="t-datt"><span class="muted">불러오는 중…</span></div>
@@ -492,5 +498,3 @@ function viewTeacher(){
   setTab(TAB);loadAll();
 }
 window.addEventListener('hashchange',()=>{if(location.hash!=='#teacher'){document.body.classList.remove('t-wide','t-dopen')}});
-
-
