@@ -53,7 +53,7 @@ function faceSVG(kind,x,y,u,boss){const k='#1d2640',e=10*u,f=v=>v.toFixed(1);
   const dot=cx=>`<ellipse cx="${f(cx)}" cy="${f(y-2*u)}" rx="${f(3.4*u)}" ry="${f(4.4*u)}" fill="${k}"/><circle cx="${f(cx+1.2*u)}" cy="${f(y-3.6*u)}" r="${f(1.2*u)}" fill="#fff"/>`;
   if(boss){const eye=d=>`<circle cx="${f(x+d*10*u)}" cy="${f(y-u)}" r="${f(4.6*u)}" fill="#fff" stroke="${k}" stroke-width="${f(1.6*u)}"/><circle cx="${f(x+d*9*u)}" cy="${f(y-0.4*u)}" r="${f(2.1*u)}" fill="${k}"/>`;
     return[-1,1].map(d=>`<path d="M${f(x+d*18*u)} ${f(y-12*u)} L${f(x+d*5*u)} ${f(y-6.5*u)}" stroke="${k}" stroke-width="${f(3.2*u)}" stroke-linecap="round"/>`).join('')+eye(-1)+eye(1)+
-      `<path d="M${f(x-10*u)} ${f(y+13*u)} Q${f(x)} ${f(y+6*u)} ${f(x+10*u)} ${f(y+13*u)}" fill="none" stroke="${k}" stroke-width="${f(2.8*u)}" stroke-linecap="round"/><path d="M${f(x-4*u)} ${f(y+9.6*u)} l${f(1.6*u)} ${f(3*u)} l${f(1.6*u)} ${f(-3.4*u)} M${f(x+1*u)} ${f(y+9.4*u)} l${f(1.6*u)} ${f(3*u)} l${f(1.6*u)} ${f(-3*u)}" fill="#fff" stroke="${k}" stroke-width="${f(1.1*u)}" stroke-linejoin="round"/>`}
+      `<path d="M${f(x-10*u)} ${f(y+13*u)} Q${f(x)} ${f(y+6*u)} ${f(x+10*u)} ${f(y+13*u)}" fill="none" stroke="${k}" stroke-width="${f(2.8*u)}" stroke-linecap="round"/><path d="M${f(x-4*u)} ${f(y+9.6*u)} l${f(1.6*u)} ${f(3*u)} l${f(1.6*u)} ${f(-3.4*u)} M${f(x+1*u)} ${f(y+9.4*u)} l${f(1.6*u)} ${f(3*u)} l${f(1.6*u)} ${f(-3.4*u)}" fill="#fff" stroke="${k}" stroke-width="${f(1.1*u)}" stroke-linejoin="round"/>`}
   let s;
   if(kind==='sparkle')s=[-1,1].map(d=>`<circle cx="${f(x+d*e)}" cy="${f(y-2*u)}" r="${f(5.2*u)}" fill="${k}"/><circle cx="${f(x+d*e+1.8*u)}" cy="${f(y-4*u)}" r="${f(1.9*u)}" fill="#fff"/><circle cx="${f(x+d*e-1.6*u)}" cy="${f(y)}" r="${f(0.9*u)}" fill="#fff"/>`).join('');
   else if(kind==='sleepy')s=[-1,1].map(d=>`<path d="M${f(x+d*e-4*u)} ${f(y-2*u)} Q${f(x+d*e)} ${f(y+1.6*u)} ${f(x+d*e+4*u)} ${f(y-2*u)}" fill="none" stroke="${k}" stroke-width="${f(2.2*u)}" stroke-linecap="round"/>`).join('');
@@ -555,8 +555,8 @@ const DICE_FACE=['','⚀','⚁','⚂','⚃','⚄','⚅'];
 function raidBoss(d=today()){const w=Math.floor((Date.parse(d+'T00:00:00Z')/864e5+3)/7);return BOSSES[((w%BOSSES.length)+BOSSES.length)%BOSSES.length]}
 function raidDay(){const R=DB._raid=OBJ(DB._raid),t=today();R.days=OBJ(R.days);Object.keys(R.days).forEach(k=>{if(k<addDays(t,-3))delete R.days[k]});
   const D=R.days[t]=OBJ(R.days[t]);D.f=NUM(D.f);D.p=NUM(D.p);R.w=NUM(R.w);R.g=NUM(R.g);return{R,D}}
-/* 보스전 문은 '주요 학습'에서 해결한 차시가 RAID.NEED_LES개 이상일 때 열려요. 해결 = 같이 풀기 끝까지 1번 또는 혼자 풀기 3문제 */
-const lesSolved=id=>{const p=DB[id];return!!p&&(NUM(p.steps)>0||(!!p.prac&&NUM(p.prac.solved)>=3))};
+/* 보스전 문은 '교과서 한 걸음'에서 해결한 차시가 RAID.NEED_LES개 이상일 때 열려요. 해결 = 걸음 마무리 또는 같이 풀기/혼자 풀기 3문제 */
+const lesSolved=id=>{if(typeof lessonTrackDone==='function'&&lessonTrackDone(id)>=1)return true;const p=DB[id];return!!p&&(NUM(p.steps)>0||(!!p.prac&&NUM(p.prac.solved)>=3))};
 const raidLessons=()=>LESSONS.filter(l=>l.ready&&!l.hidden&&(typeof OPEN_UNITS==='undefined'||!l.unit||OPEN_UNITS.includes(l.unit)));
 const raidSolved=()=>raidLessons().filter(l=>lesSolved(l.id));
 function raidPool(tier){const ok=new Set(raidSolved().map(l=>l.id));return((window.BOSS_BANK||{})[tier]||[]).filter(it=>!it.les||ok.has(it.les))}

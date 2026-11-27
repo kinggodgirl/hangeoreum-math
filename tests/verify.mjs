@@ -96,11 +96,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,CALC_FOR,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc,CENT_T08:window.CENT_T08,HG_TRACKS:window.HG_TRACKS,HG_LOC:window.HG_LOC,lessonTrackDone:window.lessonTrackDone,viewLesson,viewDailyRev:window.viewDailyRev,omrBits,omrUnbits,today,addDays};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,CALC_FOR,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc,CENT_T08:window.CENT_T08,HG_TRACKS:window.HG_TRACKS,HG_LOC:window.HG_LOC,lessonTrackDone:window.lessonTrackDone,lessonProgressInfo:window.lessonProgressInfo,unitCardHTML,pipsOf,viewLesson,viewDailyRev:window.viewDailyRev,omrBits,omrUnbits,today,addDays};',
   sandbox
 );
 
-const { GEN, PTYPES, LESSONS, tyKey, CALC, CALC_FOR, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc, CENT_T08, HG_TRACKS, HG_LOC, lessonTrackDone, viewLesson, viewDailyRev, omrBits, omrUnbits, today, addDays } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, CALC_FOR, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc, CENT_T08, HG_TRACKS, HG_LOC, lessonTrackDone, lessonProgressInfo, unitCardHTML, pipsOf, viewLesson, viewDailyRev, omrBits, omrUnbits, today, addDays } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -437,6 +437,48 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       errors.push('HG_LOC renderProblem wrapper failed: ' + JSON.stringify(pr));
     }
     vm.runInContext('AUTH=null;', sandbox);
+  }
+}
+
+// [T24] 통일 진도 모델(lessonProgressInfo) & 홈/단원/교사 진도표(3단계 × 3걸음) 검증
+{
+  if (typeof lessonProgressInfo !== 'function') {
+    errors.push('Missing lessonProgressInfo');
+  } else {
+    const centGuide = HG_TRACKS.specs.cent.firstGuide || [];
+    const allSolo = Object.fromEntries(centGuide.map(g => [g.tyNo, true]));
+    const i0 = lessonProgressInfo('cent', {});
+    if (i0.trackDone !== 0 || i0.doneSteps !== 0 || i0.isDone || i0.started) {
+      errors.push('T24 empty cent progress mismatch: ' + JSON.stringify(i0));
+    }
+    const i1Schema = lessonProgressInfo('cent', { cent: { track: 1, t1SchemaDone: true, t1Solo: { 1: true } } });
+    if (i1Schema.tabs.steps || !i1Schema.started || i1Schema.trackDone !== 0) {
+      errors.push('T24 partial t1 should be started but steps/trackDone incomplete: ' + JSON.stringify(i1Schema));
+    }
+    const i1B = lessonProgressInfo('cent', { cent: { track: 1, t1SchemaDone: true, t1Solo: allSolo } });
+    if (!i1B.tabs.steps || i1B.tabs.practice || i1B.trackDone !== 0) {
+      errors.push('T24 full t1 guide should complete steps without finishing practice: ' + JSON.stringify(i1B));
+    }
+    const i1Done = lessonProgressInfo('cent', { cent: { track: 1, trackDone: 1, concept: true } });
+    if (!i1Done.isDone || i1Done.doneSteps !== 3 || !i1Done.tabs.steps || !i1Done.tabs.practice) {
+      errors.push('T24 trackDone=1 failed: ' + JSON.stringify(i1Done));
+    }
+    const i3Step = lessonProgressInfo('cent', { cent: { track: 3, t3Steps: 1 } });
+    if (!i3Step.tabs.steps || i3Step.tabs.practice || !i3Step.started) {
+      errors.push('T24 track=3 t3Steps=1 failed: ' + JSON.stringify(i3Step));
+    }
+    const ucHtml = unitCardHTML('circle');
+    for (const tok of ['개념', '유형', '마무리', '🌱', '🌿', '🌳', '완료 ']) {
+      if (!ucHtml.includes(tok)) { errors.push(`T24 unitCardHTML missing "${tok}"`); break; }
+    }
+    if (ucHtml.includes('미리 보기')) errors.push('T24 unitCardHTML still has legacy label');
+    const pipHtml = pipsOf('cent');
+    if ((pipHtml.match(/class="pip/g) || []).length !== 3) errors.push('T24 pipsOf should have 3 pips');
+    const ds24 = dataSummary({ cent: { track: 1, trackDone: 1, concept: true } });
+    const centIdx = LESSONS.filter(l => l.ready).findIndex(l => l.id === 'cent');
+    if (centIdx < 0 || !Array.isArray(ds24.les[centIdx]) || ds24.les[centIdx].length !== 3 || ds24.lesTr[centIdx] !== 1) {
+      errors.push('T24 dataSummary unified 3-pip/trackDone mismatch');
+    }
   }
 }
 
