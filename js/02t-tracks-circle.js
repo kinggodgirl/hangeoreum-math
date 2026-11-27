@@ -157,6 +157,14 @@ function arcFig(kind,o){
 /* ── 3차시 sector 그림 도우미 ── */
 function secFigS(R,rIn,th,opt={}){
   const C=[155,140],radR=86,a0=90-th/2,a1=90+th/2;
+  /* [T23] 원 전체(360°): 부채꼴 경로는 시작점=끝점이라 그려지지 않아요 → 원으로 그리고 반지름(또는 지름)을 표시해요 */
+  if(th>=360){
+    let c=`<circle cx="${C[0]}" cy="${C[1]}" r="${radR}" fill="${opt.askPerim?'#fff7ec':HLs}" stroke="${opt.askPerim?HL:INK}" stroke-width="${opt.askPerim?5.5:2.4}"/>`;
+    if(opt.dLab)c+=ln(pol(C,radR,180),pol(C,radR,0),BL,2.6)+dot(pol(C,radR,180),3.5)+dot(pol(C,radR,0),3.5)+tx([C[0],C[1]-16],opt.dLab,{sans:true,col:BL,size:15});
+    else if(opt.rLab)c+=ln(C,pol(C,radR,0),BL,2.6)+dot(pol(C,radR,0),3.5)+tx([C[0]+radR/2,C[1]-16],opt.rLab,{sans:true,col:BL,size:15});
+    c+=dot(C,4)+tx([C[0]-14,C[1]+16],'O',{size:16});
+    return svgB(310,235,c,'원 그림');
+  }
   /* [T20] askPerim: 둘레를 묻는 문제(테두리 전체 주황) · noAng: 중심각을 묻는 문제라 각도 숫자 숨김 */
   let s=`<path d="${secD(C,radR,a0,a1)}" fill="${opt.askPerim?'#fff7ec':HLs}" stroke="${INK}" stroke-width="2.4"/>`;
   if(rIn){const rr=radR*(rIn/R);s+=`<path d="${secD(C,rr,a0,a1)}" fill="#fff" stroke="${INK}" stroke-width="2"/>`;
@@ -196,8 +204,8 @@ function sectorRapid(k,seed){
     case 3:return P(`반지름의 길이가 ${r3} cm이고 호의 길이가 ${2*r3/3}π cm인 부채꼴의 넓이를 구하시오.`,secFigS(r3,null,120,{rLab:`${r3} cm`,arcLab:`${2*r3/3}π cm`,noAng:true}),S1_CH[1],'문제에 cm가 나오지만 구하는 건 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
     case 4:return P(`반지름의 길이가 ${r} cm이고 넓이가 ${r}π cm²인 부채꼴의 호의 길이를 구하시오.`,secFigS(r,null,360/r,{rLab:`${r} cm`,noAng:true}),S1_CH[0],'문제에 cm²가 나오지만 구하는 건 <b>호의 길이</b>라서 단위는 <b>cm</b>예요.');
     case 5:return P(`반지름의 길이가 ${r3} cm이고 호의 길이가 ${2*r3/3}π cm인 부채꼴의 중심각의 크기를 구하시오.`,secFigS(r3,null,120,{rLab:`${r3} cm`,arcLab:`${2*r3/3}π cm`,noAng:true}),S1_CH[3],'<b>중심각의 크기</b>는 각도라서 단위는 <b>°(도)</b>예요.');
-    case 6:return P(`지름의 길이가 ${d} cm인 원의 넓이를 구하시오.`,secFigS(r,null,360,{noAng:true}),S1_CH[1],'원 안쪽 전체의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
-    case 7:return P(`반지름의 길이가 ${r} cm인 원의 둘레의 길이를 구하시오.`,secFigS(r,null,360,{noAng:true,rLab:`${r} cm`}),S1_CH[2],'원 테두리 한 바퀴의 <b>길이</b>라서 단위는 <b>cm</b>예요.');
+    case 6:return P(`지름의 길이가 ${d} cm인 원의 넓이를 구하시오.`,secFigS(r,null,360,{noAng:true,dLab:`${d} cm`}),S1_CH[1],'원 안쪽 전체의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
+    case 7:return P(`반지름의 길이가 ${r} cm인 원의 둘레의 길이를 구하시오.`,secFigS(r,null,360,{noAng:true,rLab:`${r} cm`,askPerim:true}),S1_CH[2],'원 테두리 한 바퀴의 <b>길이</b>라서 단위는 <b>cm</b>예요.');
     case 8:return P(`그림과 같이 중심이 같은 두 부채꼴로 만든 색칠한 부분의 둘레의 길이를 구하시오.`,secFigS(2*r,r,90,{}),S1_CH[2],'색칠한 부분의 테두리 <b>둘레의 길이</b>라서 단위는 <b>cm</b>예요.');
     default:return P(`한 변의 길이가 ${d} cm인 정사각형에서 사분원을 뺀 색칠한 부분의 넓이를 구하시오.`,squareCornerSVG(d),S1_CH[1],'색칠한 부분의 <b>넓이</b>라서 단위는 <b>cm²</b>예요.');
   }
@@ -367,7 +375,7 @@ if(typeof HG_TRACKS==='object'){
     firstGuide:[
       {id:'sfg1',tyNo:1,title:'유형 1 · 원의 둘레와 넓이',
         problem:'반지름의 길이가 <b>5 cm</b>인 원의 둘레(kπ cm)에서 k를 구하시오.',
-        fig:()=>secFigS(5,null,360,{rLab:'5 cm'}),wantChips:['원 둘레의 π 앞 숫자 (k)','원의 넓이','중심각'],wantAns:'원 둘레의 π 앞 숫자 (k)',wantHl:[],
+        fig:()=>secFigS(5,null,360,{rLab:'5 cm',askPerim:true}),wantChips:['원 둘레의 π 앞 숫자 (k)','원의 넓이','중심각'],wantAns:'원 둘레의 π 앞 숫자 (k)',wantHl:[],
         givenChips:[{k:'r',t:'반지름 5 cm',ok:true},{k:'f',t:'둘레 = 지름 × π',ok:true},{k:'t',t:'중심각 60°',ok:false}],
         teacherEq:'지름 = 5 × 2 = 10 → 둘레 = 10π cm',pairQ:'둘레를 구할 때 반지름 5를 왜 먼저 2배 했나요?',
         pairChoices:['π는 지름을 둘레로 바꾸니까','넓이 공식을 쓰려고'],pairAns:'π는 지름을 둘레로 바꾸니까',
