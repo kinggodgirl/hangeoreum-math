@@ -24,6 +24,7 @@ const jsFiles = [
   'js/02t-tracks-circle.js',
   'js/02t-tracks-solid.js',
   'js/02t-tracks-graph.js',
+  'js/09-debug-loc.js',
   'js/07-print-omr-boot.js',
 ];
 
@@ -95,11 +96,11 @@ for (const rel of jsFiles) {
   vm.runInContext(code, sandbox, { filename: rel });
 }
 vm.runInContext(
-  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,CALC_FOR,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc,CENT_T08:window.CENT_T08,HG_TRACKS:window.HG_TRACKS,lessonTrackDone:window.lessonTrackDone,viewLesson,viewDailyRev:window.viewDailyRev,omrBits,omrUnbits,today,addDays};',
+  'window.__T={GEN,PTYPES,LESSONS,tyKey,CALC,CALC_FOR,DIAG,KEYS,LINKS,EXAM_FOCUS,CALC_PRE,mulberry,check,diagnose,sgnTxt,drillPlan,recordCalcErr,dataSummary,DB,repMount,viewTeacher,PV_CARDS,PREVIEW,TERMS,CONCEPT,CONCEPT_QUIZ:window.CONCEPT_QUIZ,CONCEPT_PILOT:window.CONCEPT_PILOT,_cpSectorCalc:window._cpSectorCalc,CENT_T08:window.CENT_T08,HG_TRACKS:window.HG_TRACKS,HG_LOC:window.HG_LOC,lessonTrackDone:window.lessonTrackDone,viewLesson,viewDailyRev:window.viewDailyRev,omrBits,omrUnbits,today,addDays};',
   sandbox
 );
 
-const { GEN, PTYPES, LESSONS, tyKey, CALC, CALC_FOR, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc, CENT_T08, HG_TRACKS, lessonTrackDone, viewLesson, viewDailyRev, omrBits, omrUnbits, today, addDays } = sandbox.__T;
+const { GEN, PTYPES, LESSONS, tyKey, CALC, CALC_FOR, DIAG, KEYS, LINKS, EXAM_FOCUS, CALC_PRE, mulberry, check, diagnose, sgnTxt, drillPlan, recordCalcErr, dataSummary, DB, repMount, viewTeacher, PV_CARDS, PREVIEW, TERMS, CONCEPT, CONCEPT_QUIZ, CONCEPT_PILOT, _cpSectorCalc, CENT_T08, HG_TRACKS, HG_LOC, lessonTrackDone, viewLesson, viewDailyRev, omrBits, omrUnbits, today, addDays } = sandbox.__T;
 const errors = [];
 const r = mulberry(12345);
 
@@ -402,6 +403,40 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     if (!DB.sector.rev.ty1.ok || DB.sector.rev.ty1.box !== 2) errors.push('[복습 추천] pass did not promote/stamp ok');
     viewDailyRev();
     if (prevCent) DB.cent = prevCent; else delete DB.cent;
+  }
+}
+
+// cent 유형 3 혼자 풀기 그림(세 반지름·주황 호/부채꼴·?°) & 1-20-50 위치 복사(HG_LOC) 검증
+{
+  for (let sd = 1; sd <= 30; sd++) {
+    const svg = GEN.centThree(sd).fig.svg(true, 0);
+    const dashes = (svg.match(/stroke-dasharray="5 4"/g) || []).length;
+    if (dashes !== 3 || !svg.includes('#e08a1e') || !svg.includes('?°')) {
+      errors.push(`centThree seed ${sd} missing 3 radii or orange target arc/?° (dashes=${dashes})`);
+      break;
+    }
+  }
+  if (!HG_LOC || typeof HG_LOC.isTestAccount !== 'function' || typeof HG_LOC.format !== 'function') {
+    errors.push('Missing HG_LOC helper');
+  } else {
+    if (HG_LOC.isTestAccount()) errors.push('HG_LOC.isTestAccount should be false when logged out');
+    vm.runInContext('AUTH={role:"student",token:"t1",sid:"1-1-1",grade:1,klass:1,num:1};', sandbox);
+    if (HG_LOC.isTestAccount()) errors.push('HG_LOC.isTestAccount should be false for 1-1-1');
+    vm.runInContext('AUTH={role:"student",token:"t2",sid:"1-20-50",grade:1,klass:20,num:50};', sandbox);
+    if (!HG_LOC.isTestAccount()) errors.push('HG_LOC.isTestAccount should be true for 1-20-50');
+    HG_LOC.onRoute('cent-steps');
+    HG_LOC.set({ lesson: 'cent', track: 1, tab: 'steps', fn: 'renderT1Guide → mountSoloTwin', guideId: 'fg3', tyNo: 3, inSolo: true });
+    HG_LOC.setProb({ lesson: 'cent', gen: 'ty_cent_3', seed: 42, ptype: 'cent:three', mode: 'final', step: 0, totalSteps: 1, title: 'test' });
+    const txt = HG_LOC.format();
+    if (!txt.includes('1-20-50') || !txt.includes('GEN.centThree') || !txt.includes('mountSoloTwin')) {
+      errors.push('HG_LOC.format missing expected details: ' + txt);
+    }
+    vm.runInContext('HG_LOC.setProb(null);renderProblem(document.createElement("div"),GEN.centThree(7),{mode:"final",rep:{lesson:"cent",gen:"ty_cent_3",seed:7}});', sandbox);
+    const pr = HG_LOC.get().prob;
+    if (!pr || pr.gen !== 'ty_cent_3' || pr.seed !== 7 || pr.ptype !== 'cent:three') {
+      errors.push('HG_LOC renderProblem wrapper failed: ' + JSON.stringify(pr));
+    }
+    vm.runInContext('AUTH=null;', sandbox);
   }
 }
 
