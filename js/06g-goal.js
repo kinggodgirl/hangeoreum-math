@@ -4,11 +4,11 @@
    저장: DB._goal = {k:'calc'|'base'|'up', d:'YYYY-MM-DD', rec:추천 k 또는 null, h:[[k,d],…최근 6번]} */
 const GOALS=[
  {k:'calc',ic:'🌱',nm:'계산부터 탄탄히',aim:'계산 힘을 되찾고, 시험의 쉬운 계산 문제를 맞혀요.',
-  how:['수 감각 사다리와 구구단부터 해요','오늘의 계산은 5문제씩 짧게 해요','차시는 미리 보기와 같이 풀기까지 하면 충분해요']},
+  how:['수 감각 사다리와 구구단부터 해요','오늘의 계산은 5문제씩 짧게 해요','차시는 🌱 첫걸음으로 개념 구별과 따라 풀기부터 해요']},
  {k:'base',ic:'🌿',nm:'시험 기본 문제 잡기',aim:'교과서 기본 문제를 확실히 맞혀요.',
-  how:['시작점 찾기에서 흔들린 계산부터, 그다음 시험 범위 계산을 해요','차시는 같이 풀기와 혼자 풀기 5문제까지 해요','틀린 문제는 복습 노트로 다시 풀어요']},
+  how:['시작점 찾기에서 흔들린 계산부터, 그다음 시험 범위 계산을 해요','차시는 🌿 한걸음으로 기본 유형과 차시 마무리를 익혀요','틀린 문제는 복습 노트로 다시 풀어요']},
  {k:'up',ic:'🌳',nm:'시험 점수 더 올리기',aim:'교과서 유형까지 풀고 실수를 줄여요.',
-  how:['시험 범위 계산을 별 3개까지 채워요','오늘의 계산은 10문제로 해요','차시는 더 알아보기까지 도전해요']}];
+  how:['시험 범위 계산을 별 3개까지 채워요','오늘의 계산은 10문제로 해요','차시는 🌳 두걸음 복합 문제와 실전 마무리까지 도전해요']}];
 /* 받침에 맞는 조사: 마지막 한글 글자를 보고 골라요. jo('잡기','을','를') → '잡기를', jo('길','으로','로') → '길로' */
 const jo=(w,a,b)=>{const m=String(w).match(/[가-힣](?=[^가-힣]*$)/),c=m?m[0].charCodeAt(0)-0xAC00:-1,f=c>=0?c%28:0;return w+(f&&!(a==='으로'&&f===8)?a:b)};
 const GOAL_RANK={calc:0,base:1,up:2};
@@ -72,13 +72,13 @@ function goalMount(){const box=$('#goalCard');if(!box)return;box.innerHTML=goalC
 {const _gs=guideSteps;guideSteps=function(){const S=_gs.apply(this,arguments),G=myGoal();if(!G)return S;
   const li=S.findIndex(x=>/^\d+차시 /.test(x.t)),ci=S.findIndex(x=>/^기초 연산 · /.test(x.t)&&x.href!=='#calc-start');
   if(G.k==='calc'){
-    if(li>=0&&/-(practice|explore)$/.test(S[li].href))S[li]=Object.assign({},S[li],{who:'S',s:'미리 보기와 같이 풀기를 했어요 · 혼자 풀기는 도전이에요'});
+    if(li>=0&&!S[li].les&&/-(practice|explore)$/.test(S[li].href))S[li]=Object.assign({},S[li],{who:'S',s:'개념 보기와 유형 익히기를 했어요 · 차시 마무리는 도전이에요'});
     if(ci>=0){const P=CALC_PATHS.find(p=>p.k==='num'),ids=P?P.ids.filter(id=>{const t=CALC.find(c=>c.id===id);return t&&calcVisible(t)}):[],due=dueList().map(t=>t.id).find(id=>ids.includes(id)),pl=calcPlan().find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1),id=due||pl||pathNow(ids);
       if(id){const t=CALC.find(c=>c.id===id),st=calcPeek(id),cd=S[ci].done;S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${t.nm}`,s:cd?'오늘 한 세트 했어요':due?'복습할 때예요':`수 감각 사다리 · ${Math.min(calcLvN(id),NUM(st.stars)+1)}단계`,href:'#calc-'+id})}}}
   else if(G.k==='base'){
     const T=goalCalcFirst();if(T&&ci>=0){const cd=S[ci].done,lv=Math.min(calcLvN(T.id),NUM(calcPeek(T.id).stars)+1);S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${T.nm}`,s:cd?'오늘 한 세트 했어요':`시작점 찾기에서 흔들린 계산이에요 · ${lv}단계`,href:'#calc-'+T.id})}
   }
-  else if(G.k==='up'&&li>=0&&/-explore$/.test(S[li].href))S[li]=Object.assign({},S[li],{s:'더 알아보기 · 탐구 활동까지 도전해요'});
+  else if(G.k==='up'&&li>=0&&!S[li].les&&/-explore$/.test(S[li].href))S[li]=Object.assign({},S[li],{s:'더 알아보기 · 탐구 활동까지 도전해요'});
   /* [T21] 순서: 🌱·🌿 길은 기초 연산 → 교과서 한 걸음, 🌳 길은 교과서 한 걸음 → 기초 연산 (복습 노트는 맨 위, 오늘의 계산은 맨 아래 그대로) */
   const L=S.findIndex(x=>/^\d+차시 |^열린 차시를/.test(x.t)),C=S.findIndex(x=>/^기초 연산 · /.test(x.t));
   if(G.k!=='up'&&L>=0&&C>L){const[x]=S.splice(C,1);S.splice(L,0,x)}

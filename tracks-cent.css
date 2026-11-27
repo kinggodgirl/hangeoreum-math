@@ -230,3 +230,49 @@
 .ct-keyty-fig svg{width:100%;height:auto;max-height:140px}
 .ct-keyty-card p{margin:4px 0 0;color:#4a5570}
 .ct-keyty-how{margin-top:6px;padding:5px 8px;border-radius:8px;background:#fff7e6;color:#7a4b00;font-size:13px;line-height:1.4}
+/* [T24] 홈·단원·내 기록 통일 진도표 (3단계: 개념·유형·마무리 × 3걸음: 🌱·🌿·🌳) */
+.ct-prog-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:9px 14px;margin:0 0 12px;border-radius:12px;background:#f4f7fd;border:1px solid #d5e0f4;font-size:13px;color:var(--ink-soft,#5a6377)}
+.ct-prog-legend b{color:var(--ink,#1d2640)}
+.ct-leg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid #94a3b8;margin-right:4px;vertical-align:0}
+.ct-leg-dot.on{background:#2b7a4b;border-color:#2b7a4b}
+.ct-leg-sep{opacity:.45}
+.uc-stat-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:-2px}
+.uc-stat-row .uc-n{margin-top:0}
+.uc-stat{flex:none;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:#eef3fb;border:1px solid #c9d8f4;color:var(--accent,#2a4d9e);white-space:nowrap}
+.uc-stat.all{background:#e5f4ea;border-color:#84c79d;color:#1a5c35}
+.ct-prog-ls li a.ct-pl-row{display:flex;flex-direction:column;align-items:stretch;gap:3px;padding:8px 9px;border-radius:10px;color:inherit;text-decoration:none}
+.ct-prog-ls li.is-done a.ct-pl-row{background:#f4fbf7}
+.ct-prog-ls li.is-done a.ct-pl-row:hover{background:#e5f4ea}
+.ct-prog-ls li.is-prog a.ct-pl-row{background:#f6f9ff}
+.ct-pl-top{display:flex;align-items:center;gap:8px;min-width:0}
+.ct-pl-top .n{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--ink,#1d2640);display:grid;place-items:center;font-size:12px;font-family:var(--math);font-weight:700}
+.ct-prog-ls li.is-done .ct-pl-top .n,.lesson.is-done .n{background:#2b7a4b;border-color:#2b7a4b;color:#fff}
+.ct-prog-ls li.is-prog .ct-pl-top .n,.lesson.is-prog .n{border-color:#2a4d9e;color:#2a4d9e;background:#eef3fb}
+.ct-pl-top .t{flex:1;min-width:0;font-size:15px;font-weight:600;line-height:1.35}
+.ct-pl-tracks{flex:none;display:inline-flex;align-items:center;gap:3px}
+.ct-tb-mini{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:13px;line-height:1;border:1.5px solid transparent;opacity:.25;filter:grayscale(.7)}
+.ct-tb-mini.cur{opacity:.88;filter:none;border-style:dashed}
+.ct-tb-mini.cur.t1{border-color:#2b7a4b;background:#f7fcf9}
+.ct-tb-mini.cur.t2{border-color:#2a4d9e;background:#f7faff}
+.ct-tb-mini.cur.t3{border-color:#6d47b8;background:#faf7ff}
+.ct-tb-mini.on{opacity:1;filter:none}
+.ct-tb-mini.on.t1{background:#eaf7ef;border-color:#2b7a4b}
+.ct-tb-mini.on.t2{background:#eaf0fc;border-color:#2a4d9e}
+.ct-tb-mini.on.t3{background:#f2ecfc;border-color:#6d47b8}
+.ct-pl-steps{display:flex;flex-wrap:wrap;align-items:center;gap:4px 9px;padding-left:30px;font-size:12px;color:var(--ink-soft,#5a6377)}
+.lesson .ct-pl-steps,.me-prog-row .ct-pl-steps{padding-left:0;margin-top:4px}
+.ct-ps{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.ct-ps i{width:7px;height:7px;border-radius:50%;border:1.5px solid #94a3b8;display:inline-block}
+.ct-ps.on{color:var(--ink,#1d2640);font-weight:700}
+.ct-ps.on i{background:#2b7a4b;border-color:#2b7a4b}
+.ct-ps-stamp{padding:1px 6px;border-radius:999px;background:#e5f4ea;border:1px solid #84c79d;color:#1a5c35;font-size:11px;font-weight:700;white-space:nowrap}
+.ct-unit-prog{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.ct-me-unit{display:block;font-size:12px;color:var(--ink-soft,#5a6377);font-weight:600}
+.ct-pip-tr{margin-left:3px;font-size:13px;line-height:1}
+.t-tr{margin-left:3px;font-size:12.5px;line-height:1;vertical-align:0}
+@media (max-width:760px){
+  .ct-unit-prog{grid-column:2;align-items:flex-start}
+}
+@media (max-width:520px){
+  .ct-pl-steps{padding-left:0;gap:3px 7px}
+}
