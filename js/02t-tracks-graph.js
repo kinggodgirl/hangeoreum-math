@@ -35,7 +35,7 @@ if(typeof HG_TRACKS!=='object')return;
 
 /* ── 1차시 coord ── */
 HG_TRACKS.register('coord',{
-  kind:'concept',
+  kind:'proc',
   owlScenes:[
     {cap:'장면 ① 영화관 자리처럼 (가로 x, 세로 y)',say:'순서쌍 <span class="kw">(x, y)</span>는 <b>가로 x축을 먼저</b> 찾고, <b>세로 y축을 나중에</b> 찾아요. (2, 3)과 (3, 2)는 완전히 다른 점이에요!',svg:()=>owlPlane({pts:[{x:2,y:3,lab:'(2,3)'},{x:3,y:2,lab:'(3,2)'}]})},
     {cap:'장면 ② 네 개의 방 = 사분면',say:'원점 O를 중심으로 반시계 방향으로 <span class="num">제1(+,+) → 제2(−,+) → 제3(−,−) → 제4(+,−)</span> 사분면! 부호만 봐도 몇 사분면인지 알아요.',svg:()=>owlPlane({qHL:2,pts:[{x:-2,y:2,lab:'제2 (−,+)'}]})},
@@ -111,7 +111,7 @@ HG_TRACKS.register('coord',{
 
 /* ── 2차시 graph ── */
 HG_TRACKS.register('graph',{
-  kind:'concept',
+  kind:'proc',
   owlScenes:[
     {cap:'장면 ① 그래프의 방향이 말해 주는 것',say:'오른쪽 위로 올라가면 <span class="kw">증가</span>, <span class="kw">가로로 평평(수평)</span>하면 <b>멈춤(변화 없음)</b>, 오른쪽 아래로 내려가면 <span class="warn">감소</span>예요!',svg:owlWalkGraph},
     {cap:'장면 ② 용기 모양과 물 높이',say:'물을 일정하게 넣을 때, 병 폭이 <span class="kw">좁은 곳</span>은 높이가 쑥쑥 빠르게 올라가고, <span class="kw">넓은 곳</span>은 천천히 올라가요!',svg:owlWalkGraph,
@@ -182,19 +182,19 @@ HG_TRACKS.register('graph',{
   t3PracticeCids:['C1','C2']
 });
 
-/* ── 3차시 prop ── */
+/* ── 3차시 prop · 정비례의 뜻과 식 (개념형, T35) ── */
 HG_TRACKS.register('prop',{
-  kind:'proc',
+  kind:'concept',
   owlScenes:[
-    {cap:'장면 ① x가 2배, 3배 → y도 2배, 3배 (y = ax)',say:'사과 1개 200원, 2개 400원, 3개 600원처럼 <span class="kw">x가 k배 될 때 y도 k배</span> 되는 관계가 <b>정비례 y = ax</b>예요!',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]})},
-    {cap:'장면 ② 원점 (0, 0) 지나는 직선 & a의 부호',say:'y = ax 그래프는 항상 <span class="kw">원점 (0, 0)</span>을 지나는 직선! a > 0이면 ↗(1·3사분면), a < 0이면 ↘(2·4사분면)이에요.',svg:()=>owlPlane({a:-2,pts:[{x:-1,y:2,lab:'(-1,2)'}]}),
-      ask:{q:'다음 중 y가 x에 정비례하지 <b>않는</b> 식은?',choices:['y = x + 3','y = 3x','y = −2x'],ans:'y = x + 3',hint:'x=0일 때 y=0(원점)이 안 되면 정비례가 아니에요!',ok:'정확해요! y = x + 3은 원점을 지나지 않아 정비례가 아니에요.'}}
+    {cap:'장면 ① x가 2배, 3배 → y도 2배, 3배 (y = ax)',say:'사과 1개 200원, 2개 400원, 3개 600원처럼 <span class="kw">x가 k배 될 때 y도 k배</span> 되는 관계가 <b>정비례 y = ax</b>예요!',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]}),
+      ask:{q:'다음 중 y가 x에 정비례하지 <b>않는</b> 식은?',choices:['y = x + 3','y = 3x','y = −2x','y = 5x'],ans:'y = x + 3',hint:'x가 2배가 될 때 y도 2배가 되는지 x = 1, 2를 넣어 확인해 봐요.',ok:'정확해요! y = x + 3은 x가 2배가 되어도 y가 2배가 되지 않아 정비례가 아니에요.'}},
+    {cap:'장면 ② a는 x가 1일 때의 y',say:'y = ax에서 <span class="kw">a</span>는 x가 1일 때 y의 값이에요. 사과 1개에 200원이면 a = 200, 그래서 <b>y = 200x</b>예요.',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1, a)'}]})}
   ],
-  owlSummary:['정비례 식: y = ax (a ≠ 0) · x가 2배면 y도 2배','그래프: 원점 (0, 0)을 지나는 직선 (a>0 제1·3, a<0 제2·4)','지나는 점 (p, q) 대입 → a = q ÷ p'],
+  owlSummary:['정비례 식: y = ax (a ≠ 0) · x가 2배면 y도 2배','x = 1일 때의 y 값이 바로 a (1당 변화량)'],
   schemaQs:[
     {id:'prq1',q:'관계식 <b>y = x + 5</b>에서 y는 x에 정비례할까요?',fig:()=>owlPlane({a:1}),choices:['아니요, +5 때문에 비례가 아니에요','네, 정비례예요'],ans:'아니요, +5 때문에 비례가 아니에요',hint:'x=1이면 y=6, x=2이면 y=7로 2배가 안 돼요.',why:'아니에요! y = ax처럼 상수항 없이 x에 수를 곱한 꼴이어야 해요.'},
-    {id:'prq2',q:'정비례 그래프 <b>y = −3x</b>는 몇 사분면을 지나나요?',fig:()=>owlPlane({a:-1.5}),choices:['제2사분면, 제4사분면','제1사분면, 제3사분면'],ans:'제2사분면, 제4사분면',hint:'a = −3 < 0이므로 오른쪽 아래로 내려가요.',why:'맞아요! 음수 기울기는 제2·4사분면을 지나요.'},
-    {id:'prq3',q:'정비례 그래프가 원점 (0, 0)을 지나지 않을 수도 있을까요?',fig:()=>owlPlane({a:2}),choices:['항상 원점을 지나요','안 지날 수도 있어요'],ans:'항상 원점을 지나요',hint:'y = ax에 x=0을 대입하면 항상 y=0이에요.',why:'아니에요! 모든 정비례 그래프는 반드시 원점 (0, 0)을 지나요.'}
+    {id:'prq4',q:'관계식 <b>y = 4x</b>에서 y는 x에 정비례할까요?',fig:()=>owlPlane({a:2}),choices:['네, 정비례예요','아니요, 정비례가 아니에요'],ans:'네, 정비례예요',hint:'x = 1, 2, 3을 넣으면 y = 4, 8, 12예요.',why:'맞아요! y = ax 꼴(a = 4)이라 x가 2배면 y도 2배예요.'},
+    {id:'prq5',q:'관계식 <b>y = 3/x</b>에서 y는 x에 정비례할까요?',fig:()=>owlPlane({inv:3}),choices:['아니요, 정비례가 아니에요','네, 정비례예요'],ans:'아니요, 정비례가 아니에요',hint:'x가 1에서 3으로 3배가 되면 y는 3에서 1로 줄어들어요.',why:'아니에요! x로 나눈 꼴은 x가 커질수록 y가 작아져요. 정비례는 y = ax 꼴이에요.'}
   ],
   firstGuide:[
     {id:'prfg1',tyNo:1,title:'유형 1 · 정비례 표 채우기',problem:'y가 x에 정비례하고, x = 2일 때 y = 10이에요. x = 6일 때 y의 값은?',fig:()=>owlPlane({a:2}),
@@ -207,29 +207,30 @@ HG_TRACKS.register('prop',{
       givenChips:[{k:'a',t:'식 y = 8x (1시간당 8 km)',ok:true},{k:'b',t:'x = 7',ok:true},{k:'t',t:'반비례 y=8/x',ok:false}],
       teacherEq:'y = 8 × 7',pairQ:'관계식 y = 8x에서 숫자 <b>8</b>의 뜻은 무엇인가요?',pairChoices:['1시간당 이동하는 거리','전체 시간'],pairAns:'1시간당 이동하는 거리',
       calcPrompt:'8 × 7 = ? (km)',calcAns:56,calcTopic:'sub',calcExplain:'y = 8 × 7 = <b>56 km</b>예요.'},
-    {id:'prfg3',tyNo:4,title:'유형 4 · 지나는 점으로 a 구하기',problem:'y = ax의 그래프가 점 <b>(3, −12)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({a:-2,pts:[{x:2,y:-4,lab:'점 대입'}]}),
-      wantChips:['상수 a의 값','x좌표','넓이'],wantAns:'상수 a의 값',wantHl:[],
-      givenChips:[{k:'a',t:'x = 3, y = −12 대입',ok:true},{k:'b',t:'a = y ÷ x',ok:true},{k:'t',t:'a = x × y',ok:false}],
-      teacherEq:'−12 = a × 3 → a = −12 ÷ 3',pairQ:'a를 구하려면 y를 x로 나누는 이유는?',pairChoices:['y = ax에서 양변을 x로 나누면 a = y/x니까','반비례라서'],pairAns:'y = ax에서 양변을 x로 나누면 a = y/x니까',
-      calcPrompt:'−12 ÷ 3 = ?',calcAns:-4,calcTopic:'eq',calcExplain:'a = (−12) ÷ 3 = <b>−4</b>예요.'}
   ],
   stratRows:[
     ['정비례 식 판별','y = ax (상수항 0)','y=x+2(✕), y=3/x(✕), y=ax(○)'],
-    ['실생활 식 세우기','1당 변화량 = a','단위(km→m, 시간→분) 먼저 통일하기!'],
-    ['지나는 점 (p, q)','대입 → a = q ÷ p','다른 점 구할 땐 구한 식 y=ax에 다시 대입']
+    ['실생활 식 세우기','1당 변화량 = a','단위(km→m, 시간→분) 먼저 통일하기!']
   ],
   worked:{
     1:{no:1,nm:'정비례 표 빈칸',prob:'정비례 표의 빈칸 구하기',fig:()=>owlPlane({a:2}),steps:[{t:'① 몇 배인지 보기',hl:[],body:'x가 k배면 y도 k배!'},{t:'② 또는 a = y÷x 찾기',hl:[],body:'x=1일 때 y의 값이 바로 a예요.'},{t:'③ 빈칸 채우기',hl:[],body:'음수면 부호 규칙 확인'}],pitfall:'⚠️ 표에서 x=1일 때 y 값이 안 보이면 아무 짝이나 y÷x로 a를 찾아요!'},
-    2:{no:2,nm:'정비례 식 활용',prob:'y = ax 식 세우고 값 구하기',fig:()=>owlPlane({a:1.5}),steps:[{t:'① y = ax 틀 잡기',hl:[],body:'1개·1분·1시간당 늘어나는 양이 a예요.'},{t:'② 단위 확인',hl:[],body:'km를 m로 바꾸라는 조건 체크!'},{t:'③ 대입해 답 찾기',hl:[],body:'x를 넣으면 y, y를 넣으면 방정식으로 x'}],pitfall:'⚠️ 문제의 단위(km vs m)가 다르면 반드시 맞춘 뒤 대입해요!'},
-    3:{no:3,nm:'정비례 그래프 성질',prob:'y = ax 그래프 사분면과 기울기',fig:()=>owlPlane({a:-1.5}),steps:[{t:'① 원점 지나는 직선',hl:[],body:'항상 (0, 0)을 지나요.'},{t:'② a 부호 확인',hl:[],body:'a>0 제1·3사분면 / a<0 제2·4사분면'},{t:'③ |a| 크기 비교',hl:[],body:'|a|가 클수록 y축에 가까워요.'}],pitfall:'⚠️ a가 음수일 때 |a|가 크면 -3x처럼 y축에 더 가파르게 붙어요!'},
-    4:{no:4,nm:'지나는 점으로 a 구하기',prob:'점 (p, q)로 a 구하기',fig:()=>owlPlane({a:-2,pts:[{x:-1,y:2,lab:'(-1,2)'}]}),steps:[{t:'① 대입하기',hl:[],body:'q = a × p'},{t:'② a = q ÷ p 계산',hl:[],body:'부호 규칙 적용'},{t:'③ 검산',hl:[],body:'원래 점을 다시 넣어 맞는지 확인'}],pitfall:'⚠️ 반비례(a = xy)와 헷갈려 x랑 y를 곱하지 마세요!'}
+    2:{no:2,nm:'정비례 식 활용',prob:'y = ax 식 세우고 값 구하기',fig:()=>owlPlane({a:1.5}),steps:[{t:'① y = ax 틀 잡기',hl:[],body:'1개·1분·1시간당 늘어나는 양이 a예요.'},{t:'② 단위 확인',hl:[],body:'km를 m로 바꾸라는 조건 체크!'},{t:'③ 대입해 답 찾기',hl:[],body:'x를 넣으면 y, y를 넣으면 방정식으로 x'}],pitfall:'⚠️ 문제의 단위(km vs m)가 다르면 반드시 맞춘 뒤 대입해요!'}
   },
   compoundList:[
-    {id:'C1',nm:'복합 ① · 단위 변환 포함 정비례 식·값 구하기',sub:'분속 m와 총 거리 km의 단위를 맞춘 뒤 시간 계산'},
-    {id:'C2',nm:'복합 ② · 한 점으로 식 구해 다른 두 점 미지수 구하기',sub:'(p,q)→a 구한 뒤 (m, b), (c, n) 대입해 b+c·bc 계산'},
-    {id:'C3',nm:'복합 ③ · 삼각형 OAB 넓이 이등분하는 y=ax 구하기',sub:'삼각형 넓이의 1/2 교점을 구해 y=ax의 a 찾기'}
+    {id:'C4',nm:'복합 ② · 표의 한 쌍으로 식 세우고 다른 값 구하기',sub:'x, y 한 쌍으로 a를 구한 뒤 y = ax에 새 x 넣기'},
+    {id:'C1',nm:'복합 ① · 단위 변환 포함 정비례 식·값 구하기',sub:'분속 m와 총 거리 km의 단위를 맞춘 뒤 시간 계산'}
   ],
   genCompound:{
+    C4:seed=>{
+      const r=(seed*2654435761+7)>>>0,a=pick_(r,[2,3,4,5,6]),x1=pick_(r>>>4,[2,3,4]),x2=pick_(r>>>8,[5,6,7]),y1=a*x1,y2=a*x2;
+      return{id:'C4',combo:[1,2],comboWhy:'① 표의 한 쌍으로 a를 구하고(유형 1) → ② 식 y = ax에 새 x를 넣어 값 구하기(유형 2)',ptype:'prop:c4',
+        title:`y가 x에 정비례하고 x = <b>${x1}</b>일 때 y = <b>${y1}</b>이에요. x = <b>${x2}</b>일 때 y의 값을 구하시오.`,
+        fig:{svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:`(${x1}, ${y1})`}]})},finalQ:`x = ${x2}일 때 y의 값은?`,
+        steps:[
+          {tag:'1단계 · y = ax에 넣어 a 구하기',q:`${y1} = a × ${x1} → a = ?`,type:'num',ans:a,hint:`${y1} ÷ ${x1}`},
+          {tag:'2단계 · 새 x 넣기',q:`y = ${a} × ${x2} = ?`,type:'num',ans:y2,hint:`${a} × ${x2}`,ok:`y = ${y2}`}
+        ]};
+    },
     C1:seed=>{
       const r=(seed*1664525+1013904223)>>>0,v=pick_(r,[200,300,400,500]),mins=pick_(r,[10,12,15,20]),distM=v*mins,distKm=distM/1000;
       return{id:'C1',combo:[2,1],comboWhy:'① km를 m로 바꾸어 비례 식 y=vx를 세우고(유형 2) → ② 정비례 표·값 계산(유형 1)',ptype:'prop:c1',
@@ -239,10 +240,49 @@ HG_TRACKS.register('prop',{
           {tag:'1단계 · 단위 변환 (km → m)',q:`${distKm} km는 몇 m인가요? (× 1000)`,type:'num',ans:distM,suffix:'m',hint:`1 km = 1000 m → ${distKm} × 1000`},
           {tag:'2단계 · 식 y='+v+'x에 넣어 시간 구하기',q:`${v}x = ${distM} → x는 몇 분인가요?`,type:'num',ans:mins,suffix:'분',hint:`${distM} ÷ ${v}`,ok:`${mins}분 걸려요!`}
         ]};
-    },
+    }
+  },
+  t3PracticeCids:['C1','C4']
+});
+
+/* ── 4차시 propg · 정비례의 그래프 (개념형, T35) ── */
+HG_TRACKS.register('propg',{
+  kind:'concept',
+  owlScenes:[
+    {cap:'장면 ① 표의 점을 찍으면 한 직선',say:'y = 2x의 표 (1, 2), (2, 4), (3, 6)을 좌표평면에 찍어 이으면 <span class="kw">원점을 지나는 한 직선</span>이 돼요.',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]})},
+    {cap:'장면 ② 원점 (0, 0) 지나는 직선 & a의 부호',say:'y = ax 그래프는 항상 <span class="kw">원점 (0, 0)</span>을 지나는 직선! a > 0이면 ↗(1·3사분면), a < 0이면 ↘(2·4사분면)이에요.',svg:()=>owlPlane({a:-2,pts:[{x:-1,y:2,lab:'(-1,2)'}]}),
+      ask:{q:'정비례 관계 <b>y = −2x</b>의 그래프는 어느 사분면을 지나나요?',choices:['제2사분면, 제4사분면','제1사분면, 제3사분면','제1사분면, 제2사분면','제3사분면, 제4사분면'],ans:'제2사분면, 제4사분면',hint:'a = −2 < 0이면 원점을 지나 오른쪽 아래로 내려가요.',ok:'정확해요! a가 음수이면 오른쪽 아래로 내려가는 직선이라 제2·4사분면을 지나요.'}},
+    {cap:'장면 ③ 지나는 점으로 a 구하기',say:'그래프가 점 (2, 6)을 지나면 <span class="kw">y = ax에 x, y를 넣어요</span>. 6 = a × 2, 그래서 <b>a = 3</b>이에요.',svg:()=>owlPlane({a:3,pts:[{x:1,y:3,lab:'(2, 6)'}]})}
+  ],
+  owlSummary:['그래프: 원점 (0, 0)을 지나는 직선 (a>0 제1·3, a<0 제2·4)','지나는 점 (p, q)를 y = ax에 넣기 → q = a × p → a 구하기'],
+  schemaQs:[
+    {id:'prq2',q:'정비례 그래프 <b>y = −3x</b>는 몇 사분면을 지나나요?',fig:()=>owlPlane({a:-1.5}),choices:['제2사분면, 제4사분면','제1사분면, 제3사분면'],ans:'제2사분면, 제4사분면',hint:'a = −3 < 0이므로 오른쪽 아래로 내려가요.',why:'맞아요! 음수 기울기는 제2·4사분면을 지나요.'},
+    {id:'prq3',q:'정비례 그래프가 원점 (0, 0)을 지나지 않을 수도 있을까요?',fig:()=>owlPlane({a:2}),choices:['항상 원점을 지나요','안 지날 수도 있어요'],ans:'항상 원점을 지나요',hint:'y = ax에 x=0을 대입하면 항상 y=0이에요.',why:'아니에요! 모든 정비례 그래프는 반드시 원점 (0, 0)을 지나요.'},
+    {id:'prq6',q:'정비례 그래프 <b>y = 2x</b>는 x가 커질 때 어느 쪽으로 가나요?',fig:()=>owlPlane({a:2}),choices:['오른쪽 위로 올라가요','오른쪽 아래로 내려가요'],ans:'오른쪽 위로 올라가요',hint:'a = 2 > 0이에요.',why:'맞아요! a가 양수이면 오른쪽 위로 올라가는 직선이에요.'}
+  ],
+  firstGuide:[
+    {id:'prfg3',tyNo:2,title:'유형 2 · 지나는 점으로 a 구하기',problem:'y = ax의 그래프가 점 <b>(3, −12)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({a:-2,pts:[{x:2,y:-4,lab:'점 대입'}]}),
+      wantChips:['상수 a의 값','x좌표','넓이'],wantAns:'상수 a의 값',wantHl:[],
+      givenChips:[{k:'a',t:'x = 3, y = −12 대입',ok:true},{k:'b',t:'a = y ÷ x',ok:true},{k:'t',t:'a = x × y',ok:false}],
+      teacherEq:'−12 = a × 3 → a = −12 ÷ 3',pairQ:'a를 구하려면 y를 x로 나누는 이유는?',pairChoices:['y = ax에서 양변을 x로 나누면 a = y/x니까','반비례라서'],pairAns:'y = ax에서 양변을 x로 나누면 a = y/x니까',
+      calcPrompt:'−12 ÷ 3 = ?',calcAns:-4,calcTopic:'eq',calcExplain:'a = (−12) ÷ 3 = <b>−4</b>예요.'}
+  ],
+  stratRows:[
+    ['그래프 모양','원점 지나는 직선','a > 0 ↗ 제1·3사분면 / a < 0 ↘ 제2·4사분면'],
+    ['지나는 점 (p, q)','대입 → a = q ÷ p','다른 점 구할 땐 구한 식 y=ax에 다시 대입']
+  ],
+  worked:{
+    1:{no:1,nm:'정비례 그래프 성질',prob:'y = ax 그래프 사분면과 기울기',fig:()=>owlPlane({a:-1.5}),steps:[{t:'① 원점 지나는 직선',hl:[],body:'항상 (0, 0)을 지나요.'},{t:'② a 부호 확인',hl:[],body:'a>0 제1·3사분면 / a<0 제2·4사분면'},{t:'③ |a| 크기 비교',hl:[],body:'|a|가 클수록 y축에 가까워요.'}],pitfall:'⚠️ a가 음수일 때 |a|가 크면 -3x처럼 y축에 더 가파르게 붙어요!'},
+    2:{no:2,nm:'지나는 점으로 a 구하기',prob:'점 (p, q)로 a 구하기',fig:()=>owlPlane({a:-2,pts:[{x:-1,y:2,lab:'(-1,2)'}]}),steps:[{t:'① 대입하기',hl:[],body:'q = a × p'},{t:'② a = q ÷ p 계산',hl:[],body:'부호 규칙 적용'},{t:'③ 검산',hl:[],body:'원래 점을 다시 넣어 맞는지 확인'}],pitfall:'⚠️ 반비례(a = xy)와 헷갈려 x랑 y를 곱하지 마세요!'}
+  },
+  compoundList:[
+    {id:'C2',nm:'복합 ② · 한 점으로 식 구해 다른 두 점 미지수 구하기',sub:'(p,q)→a 구한 뒤 (m, b), (c, n) 대입해 b+c·bc 계산'},
+    {id:'C3',nm:'복합 ③ · 삼각형 OAB 넓이 이등분하는 y=ax 구하기',sub:'삼각형 넓이의 1/2 교점을 구해 y=ax의 a 찾기'}
+  ],
+  genCompound:{
     C2:seed=>{
       const r=(seed*22695477+1)>>>0,a=pick_(r,[-3,-2,2,3]),px=pick_(r,[-2,2]),py=a*px,qx=pick_(r,[3,-3,4]),b=a*qx,ans=a+b;
-      return{id:'C2',combo:[4,2],comboWhy:'① 지나는 점으로 먼저 a를 구하고(유형 4) → ② 완성된 식에 새 점을 넣어 b 구하기(유형 2)',ptype:'prop:c2',
+      return{id:'C2',combo:[2,1],comboWhy:'① 지나는 점으로 먼저 a를 구하고(유형 2) → ② 완성된 식에 새 점을 넣어 b 구하기(유형 2)',ptype:'propg:c2',
         title:`정비례 관계 <b>y = ax</b>의 그래프가 두 점 <b>(${neg(px)}, ${neg(py)})</b>와 <b>(${neg(qx)}, b)</b>를 지날 때, <b>a + b</b>의 값을 구하시오.`,
         fig:{svg:()=>owlPlane({a:a>0?1.5:-1.5,pts:[{x:px,y:py>4?3:py<-4?-3:py,lab:'주어진 점'}]})},finalQ:'a + b의 값은?',
         steps:[
@@ -252,8 +292,8 @@ HG_TRACKS.register('prop',{
     },
     C3:seed=>{
       const r=(seed*1103515245+12345)>>>0,A=pick_(r,[4,6,8]),B=pick_(r,[4,6,8]),midX=A/2,midY=B/2,a=midY/midX;
-      if(!Number.isInteger(a))return HG_TRACKS.specs.prop.genCompound.C3(seed+1);
-      return{id:'C3',combo:[3,4],comboWhy:'① 직선 y=ax와 삼각형 교점(중점)을 파악하고(유형 3) → ② 교점 좌표로 a 구하기(유형 4)',ptype:'prop:c3',
+      if(!Number.isInteger(a))return HG_TRACKS.specs.propg.genCompound.C3(seed+1);
+      return{id:'C3',combo:[1,2],comboWhy:'① 직선 y=ax와 삼각형 교점(중점)을 파악하고(유형 1) → ② 교점 좌표로 a 구하기(유형 2)',ptype:'propg:c3',
         title:`세 점 O(0,0), A(${A},0), B(0,${B})를 꼭짓점으로 하는 삼각형 OAB의 넓이를 직선 <b>y = ax</b>가 선분 AB의 중점을 지나며 <b>이등분</b>할 때, 상수 <b>a</b>의 값을 구하시오.`,
         fig:{svg:()=>owlPlane({a:1,pts:[{x:3,y:0,lab:`A(${A},0)`},{x:0,y:3,lab:`B(0,${B})`}]})},finalQ:'a의 값은?',
         steps:[
@@ -262,22 +302,22 @@ HG_TRACKS.register('prop',{
         ]};
     }
   },
-  t3PracticeCids:['C1','C2']
+  t3PracticeCids:['C2','C3']
 });
 
-/* ── 4차시 inv ── */
+/* ── 5차시 inv · 반비례의 뜻과 식 (개념형, T35) ── */
 HG_TRACKS.register('inv',{
-  kind:'proc',
+  kind:'concept',
   owlScenes:[
-    {cap:'장면 ① x × y = a (곱이 항상 같아요!)',say:'사탕 24개를 x명에게 똑같이 나누어 주면 한 사람 몫 y = 24/x! <b>x가 2배, 3배 되면 y는 ½배, ⅓배</b>가 되는 것이 <span class="kw">반비례 y = a/x</span>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4=4'},{x:2,y:2,lab:'2×2=4'}]})},
-    {cap:'장면 ② 원점 안 지나는 한 쌍의 쌍곡선!',say:'x가 0이 될 수 없기 때문에 반비례 그래프는 <span class="warn">원점 (0, 0)과 x축·y축을 절대 만나지 않고</span> 매끄러운 곡선 한 쌍이 그려져요.',svg:()=>owlPlane({inv:-4}),
-      ask:{q:'다음 중 y가 x에 <b>반비례</b>하는 관계는?',choices:['x × y = 20','x + y = 20','y = 20x'],ans:'x × y = 20',hint:'두 수의 곱(xy)이 일정한 것을 찾아요!',ok:'정확해요! x × y = 20이면 y = 20/x가 되어 반비례예요.'}}
+    {cap:'장면 ① x × y = a (곱이 항상 같아요!)',say:'사탕 24개를 x명에게 똑같이 나누어 주면 한 사람 몫 y = 24/x! <b>x가 2배, 3배 되면 y는 ½배, ⅓배</b>가 되는 것이 <span class="kw">반비례 y = a/x</span>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4=4'},{x:2,y:2,lab:'2×2=4'}]}),
+      ask:{q:'다음 중 y가 x에 <b>반비례</b>하는 관계는?',choices:['x × y = 20','x + y = 20','y = 20x','y = x − 20'],ans:'x × y = 20',hint:'두 수의 곱(xy)이 일정한 것을 찾아요!',ok:'정확해요! x × y = 20이면 y = 20/x가 되어 반비례예요.'}},
+    {cap:'장면 ② a는 x × y',say:'표에서 짝지은 x와 y를 곱해 보면 늘 같아요. <span class="kw">그 곱이 바로 a</span>! 2 × 12 = 3 × 8 = 24이면 <b>y = 24/x</b>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4'},{x:2,y:2,lab:'2×2'}]})}
   ],
-  owlSummary:['반비례 식: y = a/x (x × y = a 곱이 일정!)','그래프: 원점 안 지나고 축에 닿지 않는 한 쌍의 매끄러운 곡선','점 (p, q) 지남 → a = p × q (곱하면 끝!)'],
+  owlSummary:['반비례 식: y = a/x (x × y = a 곱이 일정!)','x가 2배, 3배 → y는 ½배, ⅓배'],
   schemaQs:[
     {id:'iq1',q:'x + y = 12처럼 두 수의 <b>합</b>이 일정하면 반비례일까요?',fig:()=>owlPlane({inv:4}),choices:['아니요, 곱(xy)이 일정해야 반비례예요','네, x가 커지면 y가 작아지니 반비례예요'],ans:'아니요, 곱(xy)이 일정해야 반비례예요',hint:'x가 2배 될 때 y가 ½배가 되는지 확인해 봐요.',why:'아니에요! 반비례는 합이 아니라 x × y = a(곱)이 일정해야 해요.'},
-    {id:'iq2',q:'반비례 그래프 y = 6/x는 원점 (0, 0)을 지나갈까요?',fig:()=>owlPlane({inv:4}),choices:['아니요, 원점을 지나지 않아요','네, 원점을 지나요'],ans:'아니요, 원점을 지나지 않아요',hint:'분모 x에 0을 넣을 수 없기 때문에 x축, y축과 만나지 않아요.',why:'아니에요! 정비례만 원점을 지나고 반비례는 지나지 않아요.'},
-    {id:'iq3',q:'반비례 그래프 <b>y = −8/x</b>는 몇 사분면에 그려질까요?',fig:()=>owlPlane({inv:-4}),choices:['제2사분면, 제4사분면','제1사분면, 제3사분면'],ans:'제2사분면, 제4사분면',hint:'a = −8 < 0이에요. 둘을 곱해 음수가 되려면 부호가 반대여야 해요.',why:'맞아요! 곱이 음수인 곳은 제2(−,+)와 제4(+,−)사분면이에요.'}
+    {id:'iq4',q:'<b>x × y = 18</b>이면 y는 x에 반비례할까요?',fig:()=>owlPlane({inv:4}),choices:['네, 반비례예요','아니요, 반비례가 아니에요'],ans:'네, 반비례예요',hint:'두 수의 곱이 늘 18로 같아요.',why:'맞아요! 곱이 일정하면 y = 18/x로 반비례예요.'},
+    {id:'iq5',q:'관계식 <b>y = 5x</b>에서 y는 x에 반비례할까요?',fig:()=>owlPlane({a:2}),choices:['아니요, 정비례예요','네, 반비례예요'],ans:'아니요, 정비례예요',hint:'x가 2배가 되면 y는 어떻게 되나요?',why:'아니에요! x가 2배면 y도 2배라 정비례예요.'}
   ],
   firstGuide:[
     {id:'ifg1',tyNo:1,title:'유형 1 · 반비례 표 빈칸 구하기',problem:'y가 x에 <b>반비례</b>하고 x = 3일 때 y = 8이에요. x = 6일 때 y는?',fig:()=>owlPlane({inv:4}),
@@ -290,42 +330,81 @@ HG_TRACKS.register('inv',{
       givenChips:[{k:'a',t:'총 사탕 x × y = 36',ok:true},{k:'b',t:'사람 수 x = 9',ok:true},{k:'t',t:'y = 36x',ok:false}],
       teacherEq:'y = 36 / x → y = 36 ÷ 9',pairQ:'사람 수(x)가 늘어나면 한 사람 몫(y)은 어떻게 되나요?',pairChoices:['나눠 받는 만큼 줄어든다 (반비례)','똑같이 늘어난다'],pairAns:'나눠 받는 만큼 줄어든다 (반비례)',
       calcPrompt:'36 ÷ 9 = ? (개)',calcAns:4,calcTopic:'div',calcExplain:'36 ÷ 9 = <b>4개</b>씩 받아요.'},
-    {id:'ifg3',tyNo:4,title:'유형 4 · 지나는 점으로 a 구하기',problem:'y = a/x 그래프가 점 <b>(−3, 5)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({inv:-4,pts:[{x:-2,y:2,lab:'(-3,5)'}]}),
-      wantChips:['상수 a의 값','원의 반지름','y절편'],wantAns:'상수 a의 값',wantHl:[],
-      givenChips:[{k:'a',t:'x = −3, y = 5',ok:true},{k:'b',t:'a = x × y',ok:true},{k:'t',t:'a = y ÷ x',ok:false}],
-      teacherEq:'a = (−3) × 5',pairQ:'왜 반비례에서는 두 좌표를 <b>곱하면</b> 바로 a가 나올까요?',pairChoices:['y = a/x 양변에 x를 곱하면 xy = a니까','정비례라서'],pairAns:'y = a/x 양변에 x를 곱하면 xy = a니까',
-      calcPrompt:'(−3) × 5 = ?',calcAns:-15,calcTopic:'signmul',calcExplain:'a = (−3) × 5 = <b>−15</b>예요.'}
   ],
   stratRows:[
     ['반비례 판별','x × y = a 일정!','x+y=a (✕) · y=a/x (○) · x=0 축 안 만남'],
-    ['그래프 사분면','a의 부호 확인','a>0 제1·3사분면 / a<0 제2·4사분면'],
-    ['지나는 점 (p, q)','a = p × q','xy = a에 다른 점의 좌표 대입해 찾기']
   ],
   worked:{
     1:{no:1,nm:'반비례 표 빈칸',prob:'반비례 표 완성하기',fig:()=>owlPlane({inv:4}),steps:[{t:'① 곱 xy 구하기',hl:[],body:'짝지어진 x와 y를 곱해 항상 같은 a 찾기'},{t:'② 나눗셈으로 빈칸',hl:[],body:'a ÷ (알고 있는 수) = 나머지 수'},{t:'③ 검산',hl:[],body:'모든 칸의 x×y가 a로 같은지 확인'}],pitfall:'⚠️ x×y가 아니라 y÷x를 하면 정비례와 섞여 틀려요!'},
-    2:{no:2,nm:'반비례 식 활용',prob:'넓이·거리·톱니바퀴 반비례 문제',fig:()=>owlPlane({inv:4}),steps:[{t:'① 곱이 일정한 양 찾기',hl:[],body:'가로×세로=넓이, 속력×시간=거리, 톱니수×회전수'},{t:'② y = a/x 식 세우기',hl:[],body:'곱 = a'},{t:'③ 나눗셈 계산',hl:[],body:'a ÷ 주어진 값'}],pitfall:'⚠️ "x가 늘어나면 y가 줄어듦"이어도 덧셈/뺄셈 관계(합 일정)는 반비례가 아니에요!'},
-    3:{no:3,nm:'반비례 그래프 성질',prob:'y = a/x 그래프 사분면과 축 관계',fig:()=>owlPlane({inv:-4}),steps:[{t:'① 쌍곡선 모양',hl:[],body:'원점 안 지나고 축에 점점 가까워지지만 만나지 않음'},{t:'② 사분면 확인',hl:[],body:'a>0 (1·3사분면) / a<0 (2·4사분면)'},{t:'③ |a| 크기 비교',hl:[],body:'|a|가 클수록 원점에서 멀어져요!'}],pitfall:'⚠️ 정비례(|a| 클수록 y축 가까움)와 반대로, 반비례는 |a|가 클수록 원점에서 멀어져요!'},
-    4:{no:4,nm:'지나는 점으로 a 구하기',prob:'점 (p, q)로 a 구하기',fig:()=>owlPlane({inv:-4,pts:[{x:2,y:-2,lab:'(p,q)'}]}),steps:[{t:'① a = p × q',hl:[],body:'반비례는 두 좌표의 곱이 바로 a!'},{t:'② 다른 점 확인',hl:[],body:'xy = a가 되는 점인지 곱해서 체크'},{t:'③ 부호 확인',hl:[],body:'(−)×(+) = (−), (−)×(−) = (+)'}],pitfall:'⚠️ 음수 좌표 두 개를 곱하면 양수(+)가 돼요!'}
+    2:{no:2,nm:'반비례 식 활용',prob:'넓이·거리·톱니바퀴 반비례 문제',fig:()=>owlPlane({inv:4}),steps:[{t:'① 곱이 일정한 양 찾기',hl:[],body:'가로×세로=넓이, 속력×시간=거리, 톱니수×회전수'},{t:'② y = a/x 식 세우기',hl:[],body:'곱 = a'},{t:'③ 나눗셈 계산',hl:[],body:'a ÷ 주어진 값'}],pitfall:'⚠️ "x가 늘어나면 y가 줄어듦"이어도 덧셈/뺄셈 관계(합 일정)는 반비례가 아니에요!'}
   },
   compoundList:[
-    {id:'C1',nm:'복합 ① · 압력-부피(톱니바퀴) 반비례 그래프 활용',sub:'한 점으로 a=xy 찾고 다른 조건의 값 구하기'},
-    {id:'C2',nm:'복합 ② · 정비례 y=mx와 반비례 y=a/x 교점 연결',sub:'정비례 직선 위 점으로 교점 찾고 반비례 a 구하기'},
-    {id:'C3',nm:'복합 ③ · y=a/x 위 직사각형 넓이=|a| 활용',sub:'축에 내린 수선 직사각형 넓이로 a 거꾸로 구하기'}
+    {id:'C4',nm:'복합 ② · 한 쌍으로 a 구하고 거꾸로 x 구하기',sub:'x × y = a로 a를 구한 뒤 y가 주어졌을 때 x 찾기'},
+    {id:'C1',nm:'복합 ① · 압력-부피(톱니바퀴) 반비례 그래프 활용',sub:'한 점으로 a=xy 찾고 다른 조건의 값 구하기'}
   ],
   genCompound:{
+    C4:seed=>{
+      const r=(seed*2654435761+11)>>>0,a=pick_(r,[12,18,24,36]),x1=pick_(r>>>4,[2,3].filter(v=>a%v===0)),y1=a/x1,ys=[2,3,4,6].filter(v=>a%v===0&&v!==y1),y2=ys[(r>>>8)%ys.length],x2=a/y2;
+      return{id:'C4',combo:[1,2],comboWhy:'① 한 쌍의 곱으로 a를 구하고(유형 1) → ② 식에 y를 넣어 x 구하기(유형 2)',ptype:'inv:c4',
+        title:`y가 x에 반비례하고 x = <b>${x1}</b>일 때 y = <b>${y1}</b>이에요. y = <b>${y2}</b>일 때 x의 값을 구하시오.`,
+        fig:{svg:()=>owlPlane({inv:4,pts:[{x:2,y:2,lab:`(${x1}, ${y1})`}]})},finalQ:`y = ${y2}일 때 x의 값은?`,
+        steps:[
+          {tag:'1단계 · a = x × y',q:`a = ${x1} × ${y1} = ?`,type:'num',ans:a,hint:`${x1} × ${y1}`},
+          {tag:'2단계 · x 구하기',q:`x × ${y2} = ${a} → x = ?`,type:'num',ans:x2,hint:`${a} ÷ ${y2}`,ok:`x = ${x2}`}
+        ]};
+    },
     C1:seed=>{
       const r=(seed*1664525+1013904223)>>>0,a=pick_(r,[60,80,120]),p1=pick_(r,[2,4,5]),v1=a/p1,p2=pick_(r,[3,6,10].filter(x=>a%x===0&&x!==p1)),v2=a/p2;
-      return{id:'C1',combo:[4,2],comboWhy:'① 그래프 위의 점으로 일정한 곱 a=xy 구하고(유형 4) → ② 새 조건 대입해 값 계산(유형 2)',ptype:'inv:c1',
+      return{id:'C1',combo:[1,2],comboWhy:'① 그래프 위의 점으로 일정한 곱 a=xy 구하고(유형 1) → ② 새 조건 대입해 값 계산(유형 2)',ptype:'inv:c1',
         title:`기체 압력 x 기압과 부피 y cm³가 반비례하고, x = ${p1}일 때 y = ${v1}이에요. 압력이 <b>${p2} 기압</b>일 때 부피는 몇 cm³인가요?`,
         fig:{svg:()=>owlPlane({inv:4,pts:[{x:2,y:2,lab:`(${p1},${v1})`}]})},finalQ:`${p2} 기압일 때 부피는 몇 cm³인가요?`,
         steps:[
           {tag:'1단계 · a = x × y 구하기',q:`압력 × 부피 = ${p1} × ${v1} = ?`,type:'num',ans:a,hint:`${p1} × ${v1}`},
           {tag:'2단계 · 새 부피 구하기',q:`y = ${a} ÷ ${p2} = ?`,type:'num',ans:v2,suffix:'cm³',hint:`${a} ÷ ${p2}`,ok:`부피는 ${v2} cm³예요.`}
         ]};
-    },
+    }
+  },
+  t3PracticeCids:['C1','C4']
+});
+
+/* ── 6차시 invg · 반비례의 그래프 (개념형, T35) ── */
+HG_TRACKS.register('invg',{
+  kind:'concept',
+  owlScenes:[
+    {cap:'장면 ① 표의 점을 찍으면 매끄러운 곡선',say:'y = 4/x의 표 (1, 4), (2, 2), (4, 1)을 찍어 이으면 직선이 아니라 <span class="kw">매끄러운 곡선</span>이 돼요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'(1,4)'},{x:2,y:2,lab:'(2,2)'}]})},
+    {cap:'장면 ② 원점 안 지나는 한 쌍의 쌍곡선!',say:'x가 0이 될 수 없기 때문에 반비례 그래프는 <span class="warn">원점 (0, 0)과 x축·y축을 절대 만나지 않고</span> 매끄러운 곡선 한 쌍이 그려져요.',svg:()=>owlPlane({inv:-4}),
+      ask:{q:'반비례 관계 <b>y = 6/x</b>의 그래프에 대해 바른 것은?',choices:['원점을 지나지 않아요','원점을 지나는 직선이에요','x축과 만나요','제2·4사분면에 있어요'],ans:'원점을 지나지 않아요',hint:'x에 0을 넣을 수 있는지 생각해 봐요.',ok:'정확해요! x = 0을 넣을 수 없어서 원점과 두 축을 만나지 않는 곡선이에요.'}},
+    {cap:'장면 ③ 지나는 점으로 a 구하기',say:'그래프가 점 (2, 6)을 지나면 <span class="kw">y = a/x에 x, y를 넣어요</span>. 6 = a ÷ 2, 그래서 <b>a = 12</b>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'(2, 6)'}]})}
+  ],
+  owlSummary:['그래프: 원점 안 지나고 축에 닿지 않는 한 쌍의 매끄러운 곡선 (a>0 제1·3, a<0 제2·4)','지나는 점 (p, q)를 y = a/x에 넣기 → q = a ÷ p → a 구하기'],
+  schemaQs:[
+    {id:'iq2',q:'반비례 그래프 y = 6/x는 원점 (0, 0)을 지나갈까요?',fig:()=>owlPlane({inv:4}),choices:['아니요, 원점을 지나지 않아요','네, 원점을 지나요'],ans:'아니요, 원점을 지나지 않아요',hint:'분모 x에 0을 넣을 수 없기 때문에 x축, y축과 만나지 않아요.',why:'아니에요! 정비례만 원점을 지나고 반비례는 지나지 않아요.'},
+    {id:'iq3',q:'반비례 그래프 <b>y = −8/x</b>는 몇 사분면에 그려질까요?',fig:()=>owlPlane({inv:-4}),choices:['제2사분면, 제4사분면','제1사분면, 제3사분면'],ans:'제2사분면, 제4사분면',hint:'a = −8 < 0이에요. 둘을 곱해 음수가 되려면 부호가 반대여야 해요.',why:'맞아요! 곱이 음수인 곳은 제2(−,+)와 제4(+,−)사분면이에요.'},
+    {id:'iq6',q:'반비례 그래프 <b>y = 4/x</b>는 몇 사분면에 그려질까요?',fig:()=>owlPlane({inv:4}),choices:['제1사분면, 제3사분면','제2사분면, 제4사분면'],ans:'제1사분면, 제3사분면',hint:'a = 4 > 0이에요.',why:'맞아요! a가 양수이면 제1·3사분면에 곡선이 그려져요.'}
+  ],
+  firstGuide:[
+    {id:'ifg3',tyNo:2,title:'유형 2 · 지나는 점으로 a 구하기',problem:'y = a/x 그래프가 점 <b>(−3, 5)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({inv:-4,pts:[{x:-2,y:2,lab:'(-3,5)'}]}),
+      wantChips:['상수 a의 값','원의 반지름','y절편'],wantAns:'상수 a의 값',wantHl:[],
+      givenChips:[{k:'a',t:'x = −3, y = 5',ok:true},{k:'b',t:'a = x × y',ok:true},{k:'t',t:'a = y ÷ x',ok:false}],
+      teacherEq:'a = (−3) × 5',pairQ:'왜 반비례에서는 두 좌표를 <b>곱하면</b> 바로 a가 나올까요?',pairChoices:['y = a/x 양변에 x를 곱하면 xy = a니까','정비례라서'],pairAns:'y = a/x 양변에 x를 곱하면 xy = a니까',
+      calcPrompt:'(−3) × 5 = ?',calcAns:-15,calcTopic:'signmul',calcExplain:'a = (−3) × 5 = <b>−15</b>예요.'}
+  ],
+  stratRows:[
+    ['그래프 사분면','a의 부호 확인','a>0 제1·3사분면 / a<0 제2·4사분면'],
+    ['지나는 점 (p, q)','a = p × q','xy = a에 다른 점의 좌표 대입해 찾기']
+  ],
+  worked:{
+    1:{no:1,nm:'반비례 그래프 성질',prob:'y = a/x 그래프 사분면과 축 관계',fig:()=>owlPlane({inv:-4}),steps:[{t:'① 쌍곡선 모양',hl:[],body:'원점 안 지나고 축에 점점 가까워지지만 만나지 않음'},{t:'② 사분면 확인',hl:[],body:'a>0 (1·3사분면) / a<0 (2·4사분면)'},{t:'③ |a| 크기 비교',hl:[],body:'|a|가 클수록 원점에서 멀어져요!'}],pitfall:'⚠️ 정비례(|a| 클수록 y축 가까움)와 반대로, 반비례는 |a|가 클수록 원점에서 멀어져요!'},
+    2:{no:2,nm:'지나는 점으로 a 구하기',prob:'점 (p, q)로 a 구하기',fig:()=>owlPlane({inv:-4,pts:[{x:2,y:-2,lab:'(p,q)'}]}),steps:[{t:'① a = p × q',hl:[],body:'반비례는 두 좌표의 곱이 바로 a!'},{t:'② 다른 점 확인',hl:[],body:'xy = a가 되는 점인지 곱해서 체크'},{t:'③ 부호 확인',hl:[],body:'(−)×(+) = (−), (−)×(−) = (+)'}],pitfall:'⚠️ 음수 좌표 두 개를 곱하면 양수(+)가 돼요!'}
+  },
+  compoundList:[
+    {id:'C2',nm:'복합 ② · 정비례 y=mx와 반비례 y=a/x 교점 연결',sub:'정비례 직선 위 점으로 교점 찾고 반비례 a 구하기'},
+    {id:'C3',nm:'복합 ③ · y=a/x 위 직사각형 넓이=|a| 활용',sub:'축에 내린 수선 직사각형 넓이로 a 거꾸로 구하기'}
+  ],
+  genCompound:{
     C2:seed=>{
       const r=(seed*22695477+1)>>>0,m=pick_(r,[2,3,-2,-3]),px=pick_(r,[2,3,-2]),py=m*px,a=px*py;
-      return{id:'C2',combo:[4,3],comboWhy:'① 정비례 직선 위의 교점 y좌표를 찾고(유형 3) → ② 교점을 반비례 y=a/x에 대입해 a 계산(유형 4)',ptype:'inv:c2',
+      return{id:'C2',combo:[2,1],comboWhy:'① 정비례 직선 위의 교점 y좌표를 찾고(유형 1) → ② 교점을 반비례 y=a/x에 대입해 a 계산(유형 2)',ptype:'invg:c2',
         title:`정비례 그래프 <b>y = ${neg(m)}x</b>와 반비례 그래프 <b>y = a/x</b>가 x좌표가 <b>${neg(px)}</b>인 점 P에서 만날 때, 상수 <b>a</b>의 값을 구하시오.`,
         fig:{svg:()=>owlPlane({a:m>0?1.5:-1.5,inv:a>0?4:-4,pts:[{x:px,y:py>4?3:py<-4?-3:py,lab:'교점 P'}]})},finalQ:'상수 a의 값은?',
         steps:[
@@ -335,7 +414,7 @@ HG_TRACKS.register('inv',{
     },
     C3:seed=>{
       const r=(seed*1103515245+12345)>>>0,a=pick_(r,[12,18,24,36]),half=a/2,mult=[1,2,4][r%3];
-      return{id:'C3',combo:[3,4],comboWhy:'① 그래프 위 점이 만드는 축 직사각형 성질 파악(유형 3) → ② 넓이=|a|로 a 구하기(유형 4)',ptype:'inv:c3',
+      return{id:'C3',combo:[1,2],comboWhy:'① 그래프 위 점이 만드는 축 직사각형 성질 파악(유형 1) → ② 넓이=|a|로 a 구하기(유형 2)',ptype:'invg:c3',
         title:`제1사분면의 반비례 그래프 <b>y = a/x (a > 0)</b> 위의 한 점 P에서 x축, y축에 각각 수선을 그어 만든 직사각형의 넓이가 <b>${a}</b>일 때, <b>a</b>의 값(p × q = 넓이)을 구하시오.`,
         fig:{svg:()=>owlPlane({inv:4,pts:[{x:2,y:2,lab:'P(p,q)'}]})},finalQ:'양수 a의 값은?',
         steps:[
@@ -344,7 +423,7 @@ HG_TRACKS.register('inv',{
         ]};
     }
   },
-  t3PracticeCids:['C1','C2']
+  t3PracticeCids:['C2','C3']
 });
 function pick_(r,arr){return arr[r%arr.length]}
 })();

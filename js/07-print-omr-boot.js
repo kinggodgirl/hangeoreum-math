@@ -12,14 +12,20 @@ const PW_LESSONS=()=>LESSONS.filter(l=>l.ready&&(PTYPES[l.id]||GEN[l.id]));
 function pwFinal(P){if(P.final)return P.final;const L=P.steps[P.steps.length-1],F=Object.assign({},L,{q:P.finalQ||L.q});
   /* 보기에 이미 ①②가 붙어 있으면 떼어 내요 (인쇄할 때 번호가 두 번 붙지 않게) */
   const cut=c=>String(c).replace(/^[①②③④⑤]\s*/,'');if(F.type==='choice'&&F.choices.every(c=>/^[①②③④⑤]\s/.test(c))){F.choices=F.choices.map(cut);F.ans=cut(F.ans)}return F}
-function pwMake(lids,n,seed){const r=mulberry(seed),slots=[];
-  lids.forEach(lid=>{const T=PTYPES[lid];if(T)T.forEach(t=>slots.push({lid,key:tyKey(lid,t.no),nm:`${t.nm}`,no:t.no}));else slots.push({lid,key:lid,nm:'',no:null})});
+/* [T35] 19차시로 나누기 전(15차시) 답안지: 옛 차시의 유형 순서를 새 차시 유형으로 풀어서 같은 문제를 다시 만들어요. */
+const PW_OLD_TYPES={prop:[['prop',1],['prop',2],['propg',1],['propg',2]],inv:[['inv',1],['inv',2],['invg',1],['invg',2]],
+  area:[['area',1],['area2',1],['area',2]],conearea:[['conearea',1],['conearea2',1],['conearea2',2],['conearea2',3]]};
+function pwMake(lids,n,seed,legacy){const r=mulberry(seed),slots=[];
+  lids.forEach(lid=>{const O=legacy&&PW_OLD_TYPES[lid];
+    if(O){O.forEach(([l,no])=>{const t=(PTYPES[l]||[]).find(x=>x.no===no);if(t)slots.push({lid,real:l,key:tyKey(l,no),nm:`${t.nm}`,no})});return}
+    const T=PTYPES[lid];if(T)T.forEach(t=>slots.push({lid,key:tyKey(lid,t.no),nm:`${t.nm}`,no:t.no}));else slots.push({lid,key:lid,nm:'',no:null})});
   const order=[];while(order.length<n){shuffle(r,slots.slice()).forEach(s=>{if(order.length<n)order.push(s)})}
   const seen=new Set(),out=[];
   order.forEach((s,i)=>{let P=null;for(let t=0;t<30;t++){const q=GEN[s.key](ri(r,1,1e6));const sig=q.title+JSON.stringify(q.steps.map(x=>x.ans));if(!seen.has(sig)){seen.add(sig);P=q;break}}
-    if(P)out.push({P,lid:s.lid,nm:s.nm,no:s.no})});
-  /* 쉬운 것부터: 차시 순서 → 같은 차시는 섞인 그대로 */
-  const no=lid=>LESSONS.findIndex(l=>l.id===lid);return out.sort((a,b)=>no(a.lid)-no(b.lid))}
+    if(P)out.push({P,lid:s.lid,real:s.real,nm:s.nm,no:s.no})});
+  /* 쉬운 것부터: 차시 순서 → 같은 차시는 섞인 그대로 (옛 답안지는 옛 차시 순서 그대로) */
+  const no=lid=>LESSONS.findIndex(l=>l.id===lid);out.sort((a,b)=>no(a.lid)-no(b.lid));
+  out.forEach(it=>{if(it.real){it.lid=it.real;delete it.real}});return out}
 const pwAll3=P=>{const f=re=>P.steps.find(s=>re.test(s.tag||''));return[['몇 면체',f(/면체/)],['모서리',f(/모서리/)],['꼭짓점',f(/꼭짓점/)]].filter(x=>x[1])};
 function pwQHTML(it,i){const P=it.P,F=pwFinal(P),circOnly=F.type==='choice'&&F.choices.every(c=>PW_CIRC.includes(c));
   let ans;if(P.ptype==='poly:name2'){const a=P.steps.find(s=>/\(1\)/.test(s.tag||''));ans=`<div class="pw-ans">(1) <span class="pw-line"></span>${a&&a.suffix||''}&emsp;(2) <span class="pw-line"></span></div>`}
@@ -36,7 +42,7 @@ function pwKeyHTML(it,i){const P=it.P,F=pwFinal(P);let a;
   const flow=P.steps.filter(s=>s!==F).map(s=>`${s.tag?s.tag+' ':''}<b>${pwFmt(s)}</b>`).join(' → ');
   return`<div class="pw-k"><b class="pw-n">${i+1}</b><div><b>${a}</b>${it.nm?` <span class="pw-ty">${it.nm}</span>`:''}${flow&&P.steps.length>1?`<div class="pw-flow">${flow}</div>`:''}</div></div>`}
 function viewPrint(pre){
-  const RL=PW_LESSONS();let lids=pre&&RL.some(l=>l.id===pre)?[pre]:RL.map(l=>l.id),n=10,seed=Math.floor(Math.random()*9000)+1000,key=true,omr=true;
+  const RL=PW_LESSONS();let lids=pre&&RL.some(l=>l.id===pre)?[pre]:RL.map(l=>l.id),n=10,seed=pwNewSeed(),key=true,omr=true;
   crumbs.innerHTML=`<span class="sep">›</span><span>점검 학습지</span>`;document.body.classList.add('pw-mode');
   app.innerHTML=`<div class="card panel pw-ctrl"><h1 style="margin:0 0 6px">🖨 점검 학습지 만들기</h1>
     <p class="muted" style="margin:0 0 12px">배운 유형을 섞어 시험지처럼 만들어요. 단계 안내 없이 교과서 · 시험 문제처럼 풀어 보는 마지막 점검이에요. 인쇄하거나 PDF로 저장하세요.</p>
@@ -59,7 +65,7 @@ function viewPrint(pre){
   $$('.pwL',app).forEach(c=>c.onchange=()=>{lids=$$('.pwL',app).filter(x=>x.checked).map(x=>x.value);draw()});
   $$('.pwN button',app).forEach(b=>b.onclick=()=>{n=+b.dataset.n;$$('.pwN button',app).forEach(x=>x.classList.toggle('on',x===b));draw()});
   $('.pwK',app).onchange=e=>{key=e.target.checked;draw()};$('.pwO',app).onchange=e=>{omr=e.target.checked;draw()};
-  $('.pwNew',app).onclick=()=>{seed=Math.floor(Math.random()*9000)+1000;draw()};
+  $('.pwNew',app).onclick=()=>{seed=pwNewSeed();draw()};
   $('.pwPrint',app).onclick=()=>window.print();
   draw()}
 /* ───────── OMR 답안지 · 사진 채점 ─────────
@@ -67,7 +73,7 @@ function viewPrint(pre){
    아래 줄무늬(데이터 줄)에 문제지 번호 · 차시 · 문제 수가 들어 있어서 사진만 찍으면 정답을 다시 만들어 채점해요.
    좌표는 모두 mm(답안지 180×250). */
 const OMR={W:180,H:250,MS:8,M:[[5,5],[175,5],[175,245],[5,245]],SX:24,SY:245,SW:3.3,SH:4,VER:2,SP:5.8};
-const OMR_D=P=>/^(area|volume|conearea|cone):/.test(P.ptype)?3:2;   /* 자리 수: 겉넓이·부피는 세 자리 */
+const OMR_D=P=>/^(area2?|volume|conearea2?|cone):/.test(P.ptype)?3:2;   /* 자리 수: 겉넓이·부피는 세 자리 */
 function omrParts(P){const F=pwFinal(P),num=(s,lab)=>({k:'num',s,lab,d:Math.max(OMR_D(P),String(Math.abs(s.ans)).length),sg:s.type==='sn',pi:s.type==='pi'});
   if(P.ptype==='poly:name2'){const a=P.steps.find(s=>/\(1\)/.test(s.tag||''));return[num(a,'(1)'),{k:'ch',s:F,lab:'(2)'}]}
   if(P.ptype==='poly:all3')return pwAll3(P).map(([l,s])=>num(s,l==='몇 면체'?'면체':l==='모서리'?'모서리':'꼭짓점'));
@@ -86,22 +92,38 @@ function omrLayout(items){
     if(ok)return{blocks,pitch,r:Math.min(2.1,pitch*.38)}}
   return null}
 const OMR_NO={rows:[{lab:'십',y:41},{lab:'일',y:48}],x:52};   /* 번호 두 자리 */
+/* [T35] 4판(데이터 줄 ver 칸 = 0): 19차시 칸(19비트) · 문제 수 칸(6·8·10·12·16 중 몇 번째, 3비트) · 문제지 번호 1000~3047(11비트) · 확인 2비트.
+   1~3판은 15차시 때 답안지라 그때 차시 순서(OMR_OLD_SLOTS)로 읽고 옛 유형 순서로 문제를 다시 만들어요. */
+const OMR_NS=[6,8,10,12,16],OMR_OLD_SLOTS=['poly','regular','rotation','rotprop','area','volume','conearea','cone','arc','cent','sector','coord','graph','prop','inv'];
+const pwNewSeed=()=>Math.floor(Math.random()*2048)+1000;
 function omrBits(lids,n,seed){const b=[1,0],put=(v,k)=>{for(let i=k-1;i>=0;i--)b.push(v>>i&1)};
-  const SL3=omrSlots(3),useV3=lids.some(l=>SL3.findIndex(x=>x.id===l)>=12);
+  const SL=omrSlots(4);let m=0;lids.forEach(l=>{const i=SL.findIndex(x=>x.id===l);if(i>=0&&i<19)m|=1<<i});
+  put(0,2);put(m,19);put(Math.max(0,OMR_NS.indexOf(n)),3);put((seed-1000)&2047,11);
+  let cs=0;for(let i=2;i<b.length;i++)cs=(cs*3+b[i]+i)%4;put(cs,2);b.push(1);return b}
+/* 15차시 때 답안지 만들기(검증용으로만 남겨 둠) */
+function omrBitsOld(lids,n,seed){const b=[1,0],put=(v,k)=>{for(let i=k-1;i>=0;i--)b.push(v>>i&1)};
+  const SL3=omrSlots(3).map(id=>({id})),useV3=lids.some(l=>SL3.findIndex(x=>x.id===l)>=12);
   if(useV3){put(3,2);let m=0;lids.forEach(l=>{const i=SL3.findIndex(x=>x.id===l);if(i>=0&&i<15)m|=1<<i});put(m,15);put(n-1,4);put(seed-1000,14);
     let cs=0;for(let i=2;i<b.length;i++)cs=(cs*3+b[i]+i)%4;put(cs,2);b.push(1);return b}
-  put(OMR.VER,2);let m=0;const SL=omrSlots(OMR.VER);lids.forEach(l=>{const i=SL.findIndex(x=>x.id===l);if(i>=0&&i<12)m|=1<<i});put(m,12);put(n,5);put(seed,14);
+  put(OMR.VER,2);let m=0;const SL=omrSlots(OMR.VER).map(id=>({id}));lids.forEach(l=>{const i=SL.findIndex(x=>x.id===l);if(i>=0&&i<12)m|=1<<i});put(m,12);put(n,5);put(seed,14);
   let cs=0;for(let i=2;i<b.length;i++)cs=(cs*3+b[i]+i)%16;put(cs,4);b.push(1);return b}
 function omrUnbits(b){if(b.length!==40||b[0]!==1||b[1]!==0||b[39]!==1)return null;const get=(i,k)=>{let v=0;for(let j=0;j<k;j++)v=v*2+b[i+j];return v};
   const ver=get(2,2);
+  if(ver===0){let cs=0;for(let i=2;i<37;i++)cs=(cs*3+b[i]+i)%4;if(cs!==get(37,2))return null;
+    const m=get(4,19),ni=get(23,3),seed=get(26,11)+1000;if(!m||ni>=OMR_NS.length)return null;
+    const lids=omrSlots(4).filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n:OMR_NS[ni],seed}}
   if(ver===3){let cs=0;for(let i=2;i<37;i++)cs=(cs*3+b[i]+i)%4;if(cs!==get(37,2))return null;
     const m=get(4,15),n=get(19,4)+1,seed=get(23,14)+1000;if(!m||n<1||n>16||seed<1000||seed>9999)return null;
-    const lids=omrSlots(3).filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n,seed}}
+    const lids=omrSlots(3).filter((l,i)=>m>>i&1);return{lids,n,seed,legacy:true}}
   let cs=0;for(let i=2;i<35;i++)cs=(cs*3+b[i]+i)%16;if(cs!==get(35,4))return null;
   const m=get(4,12),n=get(16,5),seed=get(21,14);if((ver!==1&&ver!==2)||!m||n<1||n>16||seed<1000||seed>9999)return null;
-  const lids=omrSlots(ver).filter((l,i)=>m>>i&1).map(l=>l.id);return{lids,n,seed}}
-/* 답안지의 차시 칸: 1판은 대표 단원 차시 순서(예전 답안지), 2·3판은 학습지에 쓸 수 있는 차시 순서(최대 12/15개) */
-function omrSlots(ver){return ver===1?LESSONS.filter(l=>(l.unit||'solid')===UNIT_ID):PW_LESSONS()}
+  const lids=omrSlots(ver).filter((l,i)=>m>>i&1);return{lids,n,seed,legacy:true}}
+/* 답안지의 차시 칸: 4판은 학습지에 쓸 수 있는 차시 순서(19차시). 옛 판은 차시 id 목록을 돌려줘요 —
+   1판은 대표 단원 차시 순서(새로 나눈 차시 빼고), 2·3판은 15차시 때 학습지 차시 순서(최대 12/15개) */
+const OMR_NEW_IDS=['propg','invg','area2','conearea2'];
+function omrSlots(ver){if(ver===4)return PW_LESSONS();
+  if(ver===1)return LESSONS.filter(l=>(l.unit||'solid')===UNIT_ID&&!OMR_NEW_IDS.includes(l.id)).map(l=>l.id);
+  const ok=new Set(LESSONS.map(l=>l.id));return OMR_OLD_SLOTS.filter(id=>ok.has(id))}
 function omrCardSVG(items,lids,n,seed){const L=omrLayout(items);
   if(!L)return`<p class="muted">문제가 많아 OMR 답안지에 다 들어가지 않아요. 문제 수를 줄여 주세요.</p>`;
   const r=L.r,o=[],T=(x,y,s,t,a='start',w=400,c='#111')=>o.push(`<text x="${x}" y="${y}" font-size="${s}" text-anchor="${a}" font-weight="${w}" fill="${c}">${t}</text>`),
@@ -166,7 +188,7 @@ function omrScan(cv){const im=omrPrep(cv),cs=omrMarkers(im),quads=omrQuads(cs);
       if(cells[1]-cells[0]<.15)continue;const meta=omrUnbits(cells.map(v=>v<thr?1:0));if(!meta)continue;
       return omrGrade(im,H,S,meta,four)}}
   return{err:'strip',cs}}
-function omrGrade(im,H,S,meta,four){const items=pwMake(meta.lids,meta.n,meta.seed),L=omrLayout(items);if(!L)return{err:'layout'};
+function omrGrade(im,H,S,meta,four){const items=pwMake(meta.lids,meta.n,meta.seed,meta.legacy),L=omrLayout(items);if(!L)return{err:'layout'};
   const r=L.r,res=[];
   const no=OMR_NO.rows.map(rw=>omrRow(S,[...Array(10)].map((_,d)=>OMR_NO.x+d*OMR.SP),rw.y,2.1).marked);
   const stuNo=no.some(m=>m.length>1)||no.every(m=>!m.length)?null:no.reduce((a,m)=>a*10+(m.length?m[0]:0),0);

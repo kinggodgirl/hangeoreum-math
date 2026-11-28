@@ -192,10 +192,17 @@ let solidProbs = 0;
       }
     }
   }
-  const u4 = omrUnbits(omrBits(['coord', 'graph', 'prop', 'inv'], 8, 2468));
-  if (!u4 || u4.n !== 8 || u4.seed !== 2468 || u4.lids.join(',') !== 'coord,graph,prop,inv') errors.push(`OMR v3 round-trip failed: ${JSON.stringify(u4)}`);
-  const u6 = omrUnbits(omrBits(['arc', 'cent', 'sector'], 6, 1234));
-  if (!u6 || u6.n !== 6 || u6.seed !== 1234 || u6.lids.join(',') !== 'arc,cent,sector') errors.push(`OMR v2 round-trip failed: ${JSON.stringify(u6)}`);
+  // [T35] 4판(19차시) 왕복 + 15차시 때 2·3판 답안지는 옛 차시 순서로 읽고 legacy 표시
+  const u4 = omrUnbits(omrBits(['coord', 'graph', 'prop', 'propg', 'inv', 'invg'], 8, 2468));
+  if (!u4 || u4.n !== 8 || u4.seed !== 2468 || u4.legacy || u4.lids.join(',') !== 'coord,graph,prop,propg,inv,invg') errors.push(`OMR v4 round-trip failed: ${JSON.stringify(u4)}`);
+  const u5 = omrUnbits(omrBits(['area', 'area2', 'conearea', 'conearea2'], 16, 3047));
+  if (!u5 || u5.n !== 16 || u5.seed !== 3047 || u5.lids.join(',') !== 'area,area2,conearea,conearea2') errors.push(`OMR v4 round-trip 2 failed: ${JSON.stringify(u5)}`);
+  const o3 = omrUnbits(vm.runInContext("omrBitsOld(['coord','graph','prop','inv'],8,2468)", sandbox));
+  if (!o3 || !o3.legacy || o3.n !== 8 || o3.seed !== 2468 || o3.lids.join(',') !== 'coord,graph,prop,inv') errors.push(`OMR old v3 decode failed: ${JSON.stringify(o3)}`);
+  const o2 = omrUnbits(vm.runInContext("omrBitsOld(['arc','cent','sector','area'],6,9876)", sandbox));
+  if (!o2 || !o2.legacy || o2.n !== 6 || o2.seed !== 9876 || o2.lids.join(',') !== 'area,arc,cent,sector') errors.push(`OMR old v2 decode failed: ${JSON.stringify(o2)}`);
+  const lp = vm.runInContext("pwMake(['prop','area'],8,2468,true)", sandbox);
+  if (!Array.isArray(lp) || lp.length !== 8 || lp.some(it => !['prop', 'propg', 'area', 'area2'].includes(it.lid))) errors.push('OMR legacy pwMake failed');
 }
 for (const genName of ['area', 'areaStep']) {
   for (let sd = 1; sd <= 40; sd++) {
@@ -377,7 +384,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       }
       const R = sp.schemaRapid; if (R) for (let k = 0; k < R.kinds; k++) for (let s = 1; s <= 30; s++) { const it = R.make(k, k + R.kinds * s); if (!(it.choices || R.choices).includes(it.ans) || !isValidFig(it.fig) || !it.why) { errors.push(`[T19] Invalid schemaRapid for ${lid} kind ${k}`); break; } }
       if (['arc', 'cent', 'sector'].includes(lid)) { if (R && (R.check || []).some(k => k >= R.kinds)) errors.push(`[T20] bad schemaRapid.check ${lid}`); for (const q of (sp.t1Check || [])) if (q.choices.length < 4 || !q.choices.includes(q.ans)) errors.push(`[T20] t1Check needs 4+ choices ${lid}.${q.id}`); for (const cid of Object.keys(sp.genCompound || {})) for (let sd = 1; sd <= 20; sd++) for (const st of sp.genCompound[cid](sd).steps) if (st.type === 'choice' && st.choices.length < 4) { errors.push(`[T20] compound choice needs 4+ ${lid}.${cid}: ${st.q}`); sd = 99; break; } }
-      if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < 3 || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !isValidFig(g.fig([]))))) {
+      if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < Math.min(3, (PTYPES[lid] || []).length) || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !isValidFig(g.fig([]))))) {
         errors.push(`Invalid firstGuide for ${lid}`);
       }
       for (const T of PTYPES[lid] || []) {
