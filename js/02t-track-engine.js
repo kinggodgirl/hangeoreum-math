@@ -6,35 +6,47 @@ const SPECS={};
 const BOX_DAYS=[0,1,3,7,14];
 
 /* ── 1. 공통 진행률 · 트랙 완료 · 지표 · 타이머 ── */
-function trackGoalDefault(){
-  const g=typeof myGoal==='function'?myGoal():null;
+function studentDefaultTrack(dbObj){
+  const g=dbObj?(dbObj._goal&&typeof dbObj._goal==='object'?dbObj._goal:null):(typeof myGoal==='function'?myGoal():null);
   if(!g)return 2;
   return g.k==='calc'?1:g.k==='up'?3:2;
 }
+function trackGoalDefault(){
+  return studentDefaultTrack();
+}
+function unitActiveTrack(unitId,dbObj){
+  const d=dbObj||(typeof DB==='object'&&DB?DB:{});
+  const ut=d._unitTrack&&typeof d._unitTrack==='object'?d._unitTrack[unitId||'solid']:0;
+  return(ut===1||ut===2||ut===3)?ut:studentDefaultTrack(d);
+}
+window.unitActiveTrack=unitActiveTrack;
 
-window.lessonProgressInfo=function(id,dbObj){
+window.lessonProgressInfo=function(id,dbObj,refTrack){
   const d=dbObj||(typeof DB==='object'&&DB?DB:{});
   const p=(d&&d[id]&&typeof d[id]==='object')?d[id]:{};
-  const gObj=dbObj?(d._goal&&typeof d._goal==='object'?d._goal:null):(typeof myGoal==='function'?myGoal():null);
-  const defTrack=gObj&&gObj.k==='calc'?1:gObj&&gObj.k==='up'?3:2;
-  const track=(p.track===1||p.track===2||p.track===3)?p.track:defTrack;
+  const L=(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS))?LESSONS.find(x=>x.id===id):null;
+  const unitId=(L&&L.unit)||'solid';
+  const defTrack=unitActiveTrack(unitId,d);
+  const track=(refTrack===1||refTrack===2||refTrack===3)?refTrack:((p.track===1||p.track===2||p.track===3)?p.track:defTrack);
   const tdNum=Number(p.trackDone)||0;
   const trackDone=(tdNum>=1&&tdNum<=3)?tdNum:(((p.prac&&Number(p.prac.solved)>=5)||(Number(p.steps)>0&&p.concept))?2:0);
   const spec=SPECS[id];
   const guideList=(spec&&Array.isArray(spec.firstGuide))?spec.firstGuide:[];
   const t1SoloCount=guideList.filter(g=>p.t1Solo&&p.t1Solo[g.tyNo]).length;
   const t1GuideAll=!guideList.length||t1SoloCount>=guideList.length;
-  const isDone=trackDone>=track;
-  const tabs={
-    concept:isDone||!!p.concept,
-    steps:isDone||(track===1?(!!p.t1SchemaDone&&t1GuideAll):track===2?Number(p.steps)>0:Number(p.t3Steps)>0),
-    practice:isDone
-  };
+  const practiceDone=trackDone>=track;
+  const rawSteps=track===1?(!!p.t1SchemaDone&&t1GuideAll):track===2?Number(p.steps)>0:Number(p.t3Steps)>0;
+  const stepsDone=practiceDone||rawSteps;
+  const conceptDone=track>=2?(stepsDone||!!p.concept):(practiceDone||!!p.concept);
+  const tabs={concept:conceptDone,steps:stepsDone,practice:practiceDone};
+  const isDone=practiceDone;
   const doneSteps=tabs.practice?3:[tabs.concept,tabs.steps,tabs.practice].filter(Boolean).length;
-  const started=doneSteps>0||trackDone>0||!!p.t1SchemaDone||t1SoloCount>0||Number(p.steps)>0||Number(p.t3Steps)>0;
+  const t1StepsPartial=track===1&&!tabs.steps&&(!!p.t1SchemaDone||t1SoloCount>0);
+  const started=track===1?(doneSteps>0||trackDone>=1||!!p.t1SchemaDone||t1SoloCount>0):(doneSteps>0||trackDone>=track);
+  const bonusTrack=trackDone>track?trackDone:0;
   const TL=(typeof PTYPES==='object'&&PTYPES[id])||[];
   const mastered=TL.filter(t=>p.rev&&p.rev['ty'+t.no]&&p.rev['ty'+t.no].ok).length;
-  return{id,track,trackDone,tabs,doneSteps,started,isDone,t1SchemaDone:!!p.t1SchemaDone,t1SoloCount,t1GuideTotal:guideList.length,mastered,totalTypes:TL.length};
+  return{id,track,trackDone,tabs,doneSteps,started,isDone,bonusTrack,t1StepsPartial,t1SchemaDone:!!p.t1SchemaDone,t1SoloCount,t1GuideTotal:guideList.length,mastered,totalTypes:TL.length};
 };
 
 window.lessonTrackDone=function(id,dbObj){
@@ -46,12 +58,28 @@ function lesProg(lid){
 }
 function curTrack(lid){
   const p=lesProg(lid);
-  return(p.track===1||p.track===2||p.track===3)?p.track:trackGoalDefault();
+  if(p.track===1||p.track===2||p.track===3)return p.track;
+  const L=(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS))?LESSONS.find(x=>x.id===lid):null;
+  return unitActiveTrack((L&&L.unit)||'solid');
 }
 function setTrack(lid,tr){
   const p=lesProg(lid);
   p.track=tr;
   if(typeof save==='function')save();
+}
+if(typeof goalChoose==='function'){
+  const prevGC=goalChoose;
+  goalChoose=function(k){
+    prevGC.apply(this,arguments);
+    if(typeof DB==='object'&&DB){
+      const tr=k==='calc'?1:k==='up'?3:2;
+      DB._unitTrack={};
+      if(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS)){
+        LESSONS.forEach(l=>{if(DB[l.id]&&typeof DB[l.id]==='object')DB[l.id].track=tr});
+      }
+      if(typeof save==='function')save();
+    }
+  };
 }
 function recordMetric(elapsedMs,errTag){
   if(typeof DB!=='object'||!DB)return;
@@ -684,11 +712,8 @@ function renderT1Practice(body,lid,spec){
       const TL=(typeof PTYPES==='object'&&PTYPES[lid])||[];
       TL.forEach(t=>scheduleTypeRev(lid,t.no,false));
       body.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌱 첫걸음 차시 마무리 통과!</b><br>핵심 구별과 풀이 따라 하기 ${pool.length}가지를 모두 해냈어요.</div>
-        <div class="next-row" style="justify-content:flex-start">
-          <button type="button" class="btn primary" id="upToT2">🌿 한걸음 도전하기 →</button>
-          <a class="btn ghost" href="#home">처음 화면으로</a>
-        </div></div>${bonusExploreHTML(lid)}`;
-      const u2=$('#upToT2',body);if(u2)u2.onclick=()=>{setTrack(lid,2);viewTrackLesson(lid,'steps')};
+        ${lessonCompleteCrossroadsHTML(lid,1)}</div>${bonusExploreHTML(lid)}`;
+      bindLessonCrossroads(body,lid,1);
       return;
     }
     const item=qQueue[idx],shownAt=Date.now();
@@ -942,11 +967,8 @@ function renderT2Practice(body,lid,spec){
       const rows=results.map(x=>`<li>${x.status==='first'?'⭐ <b>한 번에 통과</b>':'✓ <b>실수 확인 후 통과</b>'} · ${x.label}</li>`).join('');
       host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌿 한걸음 차시 마무리 통과!</b><br>『${L.title}』을 마쳤어요! 내일 <b>[복습 추천]</b>으로 이틀 연속 숙달 ✓ 도장을 받아 보세요.</div>
         <ul style="margin:12px 0;padding-left:20px;line-height:1.8">${rows}</ul>
-        <div class="next-row" style="justify-content:flex-start">
-          <button type="button" class="btn primary" id="upToT3">🌳 두걸음(복합 유형) 도전하기 →</button>
-          <a class="btn ghost" href="#home">처음 화면으로</a>
-        </div></div>${bonusExploreHTML(lid)}`;
-      const u3=$('#upToT3',host);if(u3)u3.onclick=()=>{setTrack(lid,3);viewTrackLesson(lid,'steps')};
+        ${lessonCompleteCrossroadsHTML(lid,2)}</div>${bonusExploreHTML(lid)}`;
+      bindLessonCrossroads(host,lid,2);
     }
   });
 }
@@ -1081,8 +1103,9 @@ function renderT3Practice(body,lid,spec){
           <div class="ct-meta-row" id="t3Meta">${metaOpts.map(m=>`<button type="button" class="chip" data-m="${m}">${m}</button>`).join('')}</div>
           <small class="muted" id="t3MetaDone">기록해 두면 다음에 꼭 맞는 연습을 고르는 데 도움이 돼요.</small>
         </div>
-        <div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#home">처음 화면으로</a></div>
+        ${lessonCompleteCrossroadsHTML(lid,3)}
       </div>${bonusExploreHTML(lid)}`;
+      bindLessonCrossroads(host,lid,3);
       $$('#t3Meta .chip',host).forEach(b=>b.onclick=()=>{
         p.metaLog=Array.isArray(p.metaLog)?p.metaLog:[];
         p.metaLog.push({tag:b.dataset.m,d:typeof today==='function'?today():''});
@@ -1247,12 +1270,143 @@ window.viewDailyRev=function(){
   draw();
 };
 
-/* ── 9. 통일 진도표 · 홈 배너 · 오늘의 길잡이 · viewLesson 후킹 ── */
+/* ── 9. 나선형 단일 걸음 진도표 · 갈림길 · 홈 배너 · 오늘의 길잡이 · viewLesson 후킹 ── */
 const TRACK_IC=['','🌱','🌿','🌳'];
 const TRACK_NM={1:'🌱 첫걸음',2:'🌿 한걸음',3:'🌳 두걸음'};
 const PROG_STEP_DEFS=[['concept','개념'],['steps','유형'],['practice','마무리']];
 const PROG_STEP_FULL=['개념 보기','유형 익히기','차시 마무리'];
 const PROG_LEGEND_HTML='<div class="ct-prog-legend" id="ctProgLegend"><span><b>진도표 보는 법</b></span><span><i class="ct-leg-dot on"></i>완료 <i class="ct-leg-dot"></i>아직 (개념 → 유형 → 마무리)</span><span class="ct-leg-sep">·</span><span>걸음 완료: <b>🌱</b> 첫걸음 · <b>🌿</b> 한걸음 · <b>🌳</b> 두걸음</span></div>';
+
+function unitLessons(u){
+  if(typeof LESSONS==='undefined'||!Array.isArray(LESSONS))return[];
+  return LESSONS.filter(l=>l.ready&&!l.hidden&&(l.unit||'solid')===u).slice().sort((a,b)=>a.no-b.no);
+}
+function isUnitCompleteAt(u,tr,dbObj){
+  const list=unitLessons(u);
+  return list.length>0&&list.every(l=>window.lessonProgressInfo(l.id,dbObj,tr).isDone);
+}
+function nextLessonInUnit(lid,tr){
+  const L=(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS))?LESSONS.find(x=>x.id===lid):null;
+  const u=(L&&L.unit)||'solid',list=unitLessons(u),i=list.findIndex(x=>x.id===lid);
+  return list.slice(i+1).find(x=>!window.lessonProgressInfo(x.id,DB,tr).isDone)
+    ||list.find(x=>x.id!==lid&&!window.lessonProgressInfo(x.id,DB,tr).isDone)
+    ||(i>=0&&list[i+1]?list[i+1]:null);
+}
+function nextOpenUnit(u){
+  const us=typeof HOME_UNITS==='function'?HOME_UNITS():[];
+  const i=us.indexOf(u);
+  return us.slice(i+1).find(x=>!isUnitCompleteAt(x,unitActiveTrack(x)))
+    ||us.find(x=>x!==u&&!isUnitCompleteAt(x,unitActiveTrack(x)))
+    ||(i>=0&&us[i+1]?us[i+1]:null);
+}
+function promoteUnitTrack(u,nextTr){
+  if(!(nextTr>=1&&nextTr<=3))return;
+  if(typeof DB==='object'&&DB){DB._unitTrack=DB._unitTrack||{};DB._unitTrack[u]=nextTr}
+  const list=unitLessons(u);
+  list.forEach(l=>{const lp=lesProg(l.id);lp.track=nextTr});
+  if(typeof save==='function')save();
+  const I=typeof unitOf==='function'?unitOf(u):{name:u};
+  if(typeof toast==='function')toast(`${TRACK_NM[nextTr]}으로 올렸어요! 『${I.name}』 1차시부터 도전해 봐요.`);
+  const nx=list.find(l=>!window.lessonProgressInfo(l.id,DB,nextTr).isDone)||list[0];
+  if(!nx)return;
+  const tgtTab=nextTr>=2?'steps':'concept';
+  if(typeof location==='object'){
+    const h='#'+nx.id+'-'+tgtTab;
+    if(location.hash===h)viewTrackLesson(nx.id,tgtTab);
+    else location.hash=h;
+  }else{
+    viewTrackLesson(nx.id,tgtTab);
+  }
+}
+function lessonCompleteCrossroadsHTML(lid,finishedTrack){
+  const L=(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS)&&LESSONS.find(x=>x.id===lid))||{id:lid,no:1,title:lid,unit:'solid'};
+  const u=L.unit||'solid',I=typeof unitOf==='function'?unitOf(u):{name:u},uList=unitLessons(u);
+  const unitDone=isUnitCompleteAt(u,finishedTrack);
+  const nextTr=finishedTrack<3?finishedTrack+1:0;
+  const nxtU=nextOpenUnit(u);
+  if(unitDone){
+    return`<div class="ct-crossroads unit-done">
+      <div class="ct-cr-txt">
+        <b>🏆 『${I.name}』 ${TRACK_NM[finishedTrack]} 완주! (${uList.length}/${uList.length}차시 완료)</b>
+        <span>${nextTr?'이번 단원 학습 내용이 쉬웠나요? 쉬웠다면 다음 단계에 도전해 봐요!':'가장 높은 단계인 🌳 두걸음까지 모두 마쳤어요! 정말 대단해요.'}</span>
+      </div>
+      <div class="next-row" style="justify-content:flex-start;margin-top:10px">
+        ${nextTr?`<button type="button" class="btn primary" id="crUpUnit">쉬웠어요 · ${TRACK_NM[nextTr]}으로 올라가기 →</button>`:''}
+        ${nxtU?`<a class="btn ${nextTr?'ghost':'primary'}" href="#unit-${nxtU}">다음 단원 · ${unitOf(nxtU).name} 가기 →</a>`:''}
+        <a class="btn ghost" href="#home">처음 화면으로</a>
+      </div>
+    </div>`;
+  }
+  const nxtL=nextLessonInUnit(lid,finishedTrack);
+  return`<div class="next-row" style="justify-content:flex-start">
+      ${nxtL?`<button type="button" class="btn primary" id="crNextLesson">다음 차시 · ${nxtL.no}차시 ${nxtL.title} (${TRACK_NM[finishedTrack]}) →</button>`:''}
+      <a class="btn ghost" href="#home">처음 화면으로</a>
+    </div>
+    ${nextTr?`<div class="ct-crossroads">
+      <div class="ct-cr-txt">
+        <b>이번 학습 내용이 쉬웠나요?</b>
+        <span>쉬웠다면 다음 단계에 도전해 봐요! (안 해도 ${L.no}차시는 이미 완료예요)</span>
+      </div>
+      <button type="button" class="btn ct-cr-up t${nextTr}" id="crUpLesson">${TRACK_NM[nextTr]} 도전해 보기 →</button>
+    </div>`:''}`;
+}
+function bindLessonCrossroads(host,lid,finishedTrack){
+  if(!host)return;
+  const L=(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS)&&LESSONS.find(x=>x.id===lid))||{id:lid,no:1,title:lid,unit:'solid'};
+  const u=L.unit||'solid',nextTr=finishedTrack<3?finishedTrack+1:0;
+  const uBtn=$('#crUpUnit',host);
+  if(uBtn&&nextTr)uBtn.onclick=()=>promoteUnitTrack(u,nextTr);
+  const nBtn=$('#crNextLesson',host);
+  if(nBtn){
+    const nxtL=nextLessonInUnit(lid,finishedTrack);
+    if(nxtL)nBtn.onclick=()=>{
+      setTrack(nxtL.id,finishedTrack);
+      const h='#'+nxtL.id;
+      if(typeof location==='object'){if(location.hash===h)viewTrackLesson(nxtL.id);else location.hash=h}
+      else viewTrackLesson(nxtL.id);
+    };
+  }
+  const lBtn=$('#crUpLesson',host);
+  if(lBtn&&nextTr){
+    lBtn.onclick=()=>{
+      setTrack(lid,nextTr);
+      const h='#'+lid+'-steps';
+      if(typeof location==='object'){if(location.hash===h)viewTrackLesson(lid,'steps');else location.hash=h}
+      else viewTrackLesson(lid,'steps');
+    };
+  }
+}
+
+function homeStepRowHTML(info){
+  return`<span class="ct-pl-steps">${PROG_STEP_DEFS.map(([k,lb],i)=>{
+    const on=info.tabs[k];
+    const part=!on&&k==='steps'&&info.t1StepsPartial;
+    return`<span class="ct-ps${on?' on':part?' part':''}" title="${PROG_STEP_FULL[i]} ${on?'체크 완료':part?'진행 중':'아직'}"><b>${on?'✓':part?'·':'○'}</b>${lb}${part?' 진행':''}</span>`;
+  }).join('')}${info.mastered>0?`<span class="ct-ps-stamp" title="이틀 연속 복습 통과 숙달 도장">숙달 ${info.mastered}/${info.totalTypes}</span>`:''}</span>`;
+}
+function homeLessonStateBadgeHTML(info){
+  if(info.isDone){
+    return`<span class="ct-pl-right"><span class="ct-pl-badge done">✓ 완료</span>${info.bonusTrack?`<span class="ct-pl-bonus t${info.bonusTrack}" title="${TRACK_NM[info.bonusTrack]} 보너스 완료">${TRACK_IC[info.bonusTrack]}+</span>`:''}</span>`;
+  }
+  if(info.started){
+    return`<span class="ct-pl-right"><span class="ct-pl-badge prog">진행 중</span></span>`;
+  }
+  return`<span class="ct-pl-right"><span class="ct-pl-badge todo">시작 전</span></span>`;
+}
+function unitCrossroadsHTML(u,uTr,d,len,isBanner){
+  if(!(len>0&&d===len))return'';
+  const nextTr=uTr<3?uTr+1:0;
+  const nxtU=nextOpenUnit(u);
+  const nxtUInfo=nxtU&&typeof unitOf==='function'?unitOf(nxtU):null;
+  return`<div class="uc-crossroads${isBanner?' unit-banner':''}">
+    <div class="uc-cr-h">${nextTr?`🏆 ${TRACK_NM[uTr]} 완주! 이번 단원이 쉬웠나요?`:'🏆 🌳 두걸음까지 모두 완주했어요!'}</div>
+    ${nextTr?`<p class="uc-cr-sub">쉬웠다면 다음 단계에 도전해 봐요!</p>`:`<p class="uc-cr-sub">단원의 모든 단계를 끝냈어요. 복습이나 다른 단원으로 이어가도 좋아요.</p>`}
+    <div class="uc-cr-acts">
+      ${nextTr?`<button type="button" class="btn primary uc-cr-up" data-u="${u}" data-next="${nextTr}">쉬웠어요 · ${TRACK_NM[nextTr]} 도전 →</button>`:''}
+      ${nxtUInfo?`<a class="btn ${nextTr?'ghost':'primary'}" href="#unit-${nxtU}">다음 단원 · ${nxtUInfo.name} →</a>`:(!isBanner?`<a class="btn ${nextTr?'ghost':'primary'}" href="#unit-${u}">단원 다시 보기 →</a>`:'')}
+    </div>
+  </div>`;
+}
 
 function lessonProgBadgesHTML(id){
   const info=window.lessonProgressInfo(id);
@@ -1276,48 +1430,56 @@ if(typeof pipsOf==='function'){
 
 if(typeof unitCardHTML==='function'){
   unitCardHTML=function(u){
-    const I=unitOf(u),L=LESSONS.filter(l=>l.ready&&!l.hidden&&(l.unit||'solid')===u);
-    const infos=L.map(l=>({l,b:lessonProgBadgesHTML(l.id)}));
-    const d=infos.filter(x=>x.b.info.isDone).length;
-    const inProg=infos.filter(x=>!x.b.info.isDone&&x.b.info.started).length;
-    const stepSum=infos.reduce((a,x)=>a+x.b.info.doneSteps,0),totSteps=L.length*3;
+    const I=unitOf(u),L=unitLessons(u),uTr=unitActiveTrack(u),defTr=studentDefaultTrack();
+    const infos=L.map(l=>({l,info:window.lessonProgressInfo(l.id,DB,uTr)}));
+    const d=infos.filter(x=>x.info.isDone).length;
+    const inProg=infos.filter(x=>!x.info.isDone&&x.info.started).length;
+    const stepSum=infos.reduce((a,x)=>a+x.info.doneSteps,0),totSteps=L.length*3;
     const pct=totSteps?Math.round(stepSum/totSteps*100):0;
-    const nx=(DB._last&&L.find(l=>l.id===DB._last.id&&!window.lessonProgressInfo(l.id).isDone))||L.find(l=>!window.lessonProgressInfo(l.id).isDone);
-    const anyStart=infos.some(x=>x.b.info.started);
+    const nx=(DB._last&&L.find(l=>l.id===DB._last.id&&!window.lessonProgressInfo(l.id,DB,uTr).isDone))||L.find(l=>!window.lessonProgressInfo(l.id,DB,uTr).isDone);
+    const anyStart=infos.some(x=>x.info.started);
     const goHref=nx?`#${nx.id}`:`#unit-${u}`;
-    const goTxt=!anyStart?'시작하기':nx?`이어서 · ${nx.no}차시 ${nx.title}`:'모두 마쳤어요 · 다시 보기';
+    const goTxt=!anyStart?`${TRACK_NM[uTr]} 시작하기`:nx?`이어서 · ${nx.no}차시 ${nx.title}`:'모두 마쳤어요 · 다시 보기';
+    const unitDone=L.length>0&&d===L.length;
     return`<div class="card unit ready ucard" data-u="${u}">
       <a class="uc-h" href="#unit-${u}"><span class="uc-ch">${ROMAN_OF[I.ch]||''} ${I.ch}</span><b>${I.name}</b></a>
       <div class="uc-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
-      <div class="uc-stat-row"><small class="uc-n">${d===L.length&&L.length?'모든 차시를 마쳤어요!':inProg?`진행 중 ${inProg}차시 · 전체 ${pct}%`:`목표 걸음 진행 ${pct}%`}</small><span class="uc-stat${d===L.length&&L.length?' all':''}">완료 ${d}/${L.length}차시</span></div>
-      <ul class="uc-ls ct-prog-ls">${infos.map(({l,b})=>{
-        const cls=b.info.isDone?'is-done':b.info.started?'is-prog':'';
+      <div class="uc-stat-row"><small class="uc-n">${unitDone?`${TRACK_NM[uTr]} 모든 차시를 마쳤어요!`:`${uTr!==defTr?TRACK_NM[uTr]+' · ':''}${inProg?`진행 중 ${inProg}차시 · `:''}전체 ${pct}%`}</small><span class="uc-stat${unitDone?' all':''}">완료 ${d}/${L.length}차시</span></div>
+      <ul class="uc-ls ct-prog-ls">${infos.map(({l,info})=>{
+        const cls=info.isDone?'is-done':info.started?'is-prog':'';
+        const showSteps=!info.isDone&&info.started;
+        const doneStamp=info.isDone&&info.mastered>0?`<span class="ct-pl-steps"><span class="ct-ps-stamp">숙달 ${info.mastered}/${info.totalTypes}</span></span>`:'';
         return`<li class="${cls}"><a href="#${l.id}" class="ct-pl-row">
-          <div class="ct-pl-top"><span class="n">${b.info.isDone?'✓':l.no}</span><span class="t">${l.title}</span>${b.trHtml}</div>
-          ${b.stHtml}
+          <div class="ct-pl-top"><span class="n">${info.isDone?'✓':l.no}</span><span class="t">${l.title}</span>${homeLessonStateBadgeHTML(info)}</div>
+          ${showSteps?homeStepRowHTML(info):doneStamp}
         </a></li>`;
       }).join('')}</ul>
-      <a class="btn ${nx?'primary':''} uc-go" href="${goHref}">${goTxt} →</a>
+      ${unitDone?unitCrossroadsHTML(u,uTr,d,L.length,false):`<a class="btn ${nx?'primary':''} uc-go" href="${goHref}">${goTxt} →</a>`}
     </div>`;
   };
 }
 
 if(typeof viewUnit==='function'){
   viewUnit=function(u=UNIT_ID){
-    const I=unitOf(u);
+    const I=unitOf(u),uTr=unitActiveTrack(u);
+    const L=LESSONS.filter(l=>!l.hidden&&(l.unit||'solid')===u).slice().sort((a,b)=>a.no-b.no);
+    const readyL=L.filter(l=>l.ready);
+    const doneCnt=readyL.filter(l=>window.lessonProgressInfo(l.id,DB,uTr).isDone).length;
     crumbs.innerHTML=`<span class="sep">›</span><span>${I.name}</span>`;
-    app.innerHTML=`<div class="unit-head"><div><h1>${I.name}</h1><p>${I.sub}</p></div>
-      <div class="legend"><span>각 차시는 <b>개념 보기 → 유형 익히기 → 차시 마무리</b> 3단계예요. 완료한 걸음(🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음)에 색이 들어와요.</span></div></div>
-    ${PROG_LEGEND_HTML}
-    <div class="lessons">${LESSONS.filter(l=>!l.hidden&&(l.unit||'solid')===u).map(l=>{
+    app.innerHTML=`<div class="unit-head ct-unit-head"><div><h1>${I.name}</h1><p>${I.sub}</p></div>
+      <div class="ct-unit-right"><span class="ct-my-track t${uTr}">진행 걸음 · <b>${TRACK_NM[uTr]}</b></span>
+      <div class="legend"><span>${TRACK_NM[uTr]} 기준으로 <b>개념 · 유형 · 마무리</b> 3단계를 체크해요. (유형·마무리를 풀면 앞 단계도 자동 체크!)</span></div></div></div>
+    ${unitCrossroadsHTML(u,uTr,doneCnt,readyL.length,true)}
+    <div class="lessons">${L.map(l=>{
       if(!l.ready)return`<div class="card lesson soon"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span><span class="soon-tag">준비 중</span></div>`;
-      const b=lessonProgBadgesHTML(l.id);
-      return`<a class="card lesson ready${b.info.isDone?' is-done':b.info.started?' is-prog':''}" href="#${l.id}">
-        <span class="n">${b.info.isDone?'✓':l.no}</span>
+      const info=window.lessonProgressInfo(l.id,DB,uTr);
+      return`<a class="card lesson ready${info.isDone?' is-done':info.started?' is-prog':''}" href="#${l.id}">
+        <span class="n">${info.isDone?'✓':l.no}</span>
         <span><b>${l.title}</b><small>${l.sub}</small><small class="tbref">교과서 ${l.tb}</small></span>
-        <span class="ct-unit-prog">${b.trHtml}${b.stHtml}</span>
+        <span class="ct-unit-prog">${homeLessonStateBadgeHTML(info)}${info.isDone?(info.mastered>0?`<span class="ct-pl-steps"><span class="ct-ps-stamp">숙달 ${info.mastered}/${info.totalTypes}</span></span>`:''):info.started?homeStepRowHTML(info):''}</span>
       </a>`;
     }).join('')}</div>`;
+    $$('.uc-cr-up',app).forEach(b=>b.onclick=()=>promoteUnitTrack(b.dataset.u,+b.dataset.next));
   };
 }
 
@@ -1331,7 +1493,7 @@ if(typeof viewMe==='function'){
     const listBox=panel&&panel.querySelector('.lessons');
     if(!panel||!listBox)return;
     const ordered=guideLessonOrder();
-    const doneCnt=ordered.filter(l=>window.lessonProgressInfo(l.id).isDone).length;
+    const doneCnt=ordered.filter(l=>window.lessonProgressInfo(l.id,DB,unitActiveTrack(l.unit||'solid')).isDone).length;
     h2.innerHTML=`교과서 한 걸음 진도표 <small class="muted" style="font-size:15px;font-weight:500">(완료 ${doneCnt}/${ordered.length}차시)</small>`;
     if(!$('#ctProgLegend',panel))listBox.insertAdjacentHTML('beforebegin',PROG_LEGEND_HTML);
     listBox.innerHTML=ordered.map(l=>{
@@ -1352,28 +1514,24 @@ if(typeof viewHome==='function'){
     prevHome.apply(this,arguments);
     if(typeof app!=='undefined'&&app){
       const RL=typeof LESSONS!=='undefined'?LESSONS.filter(l=>l.ready&&!l.hidden):[];
-      const infos=RL.map(l=>window.lessonProgressInfo(l.id));
-      const doneCnt=infos.filter(x=>x.isDone).length;
-      const t1Cnt=infos.filter(x=>x.trackDone===1).length;
-      const t2Cnt=infos.filter(x=>x.trackDone===2).length;
-      const t3Cnt=infos.filter(x=>x.trackDone===3).length;
+      const doneCnt=RL.filter(l=>window.lessonProgressInfo(l.id,DB,unitActiveTrack(l.unit||'solid')).isDone).length;
+      const defTr=studentDefaultTrack();
+      const hasGoal=typeof myGoal==='function'&&!!myGoal();
       if(typeof app.querySelectorAll==='function'){
         const hp=app.querySelector('.hero p:not(.hero-go)');
         if(hp)hp.innerHTML='<b>개념 보기 → 유형 익히기 → 차시 마무리</b> 3단계로, 내 수준에 맞는 걸음(<b>🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음</b>)을 골라 한 걸음씩 익혀요.';
         app.querySelectorAll('.sec-title').forEach(st=>{
           const h=st.querySelector('h2');
           if(h&&(h.textContent==='열린 단원'||h.textContent==='교과서 한 걸음')){
-            h.textContent='교과서 한 걸음';
-            const sp=st.querySelector('span');
-            if(sp){
-              const trTxt=(t1Cnt||t2Cnt||t3Cnt)?` · 🌱${t1Cnt} 🌿${t2Cnt} 🌳${t3Cnt}`:'';
-              sp.innerHTML=`${HOME_UNITS().length}개 단원 · 완료 <b>${doneCnt}</b>/${RL.length}차시${trTxt}`;
-            }
+            st.classList.add('ct-sec-head');
+            const uCnt=typeof HOME_UNITS==='function'?HOME_UNITS().length:0;
+            st.innerHTML=`<h2>교과서 한 걸음</h2><span class="ct-sec-sub">${uCnt}개 단원 · 완료 <b>${doneCnt}</b>/${RL.length}차시</span><a class="ct-my-track t${defTr}" href="${hasGoal?'#me':'#goalCard'}" title="${hasGoal?'내 기록에서 걸음을 바꿀 수 있어요':'나의 길을 골라 보세요'}">${hasGoal?'내 걸음':'기본 걸음'} · <b>${TRACK_NM[defTr]}</b></a>`;
           }
         });
+        $$('.uc-cr-up',app).forEach(b=>b.onclick=()=>promoteUnitTrack(b.dataset.u,+b.dataset.next));
+        const mt=$('.ct-my-track[href="#goalCard"]',app);
+        if(mt)mt.onclick=e=>{const g=$('#goalCard',app);if(g){e.preventDefault();g.scrollIntoView({behavior:'smooth',block:'center'})}};
       }
-      const ubox=$('.units-big',app);
-      if(ubox&&!$('#ctProgLegend',app))ubox.insertAdjacentHTML('beforebegin',PROG_LEGEND_HTML);
       const guide=$('#guide',app);
       const t=typeof today==='function'?today():'';
       const due=dueTypeList(t);
@@ -1394,12 +1552,12 @@ if(typeof viewHome==='function'){
 
 /* [T21] 오늘의 길잡이의 『교과서 한 걸음』 칸: 순서를 정해 두었어요.
    ① 마지막으로 공부한 차시가 아직 안 끝났으면 그 차시를 이어서 ② 아니면 교과서 순서(단원 → 차시 번호)로 안 끝난 첫 차시.
-   끝남 = 고른 걸음(🌱·🌿·🌳)의 차시 마무리 통과. 다음에 할 탭도 걸음에 맞춰 알려 줘요. */
+   끝남 = 해당 단원의 활성 걸음(🌱·🌿·🌳) 차시 마무리 통과. 다음에 할 탭도 걸음에 맞춰 알려 줘요. */
 function guideLessonOrder(){
   const chi=l=>{const I=typeof unitOf==='function'?unitOf(l.unit||'solid'):null;return typeof UNITS!=='undefined'&&I?UNITS.findIndex(z=>z[0]===I.ch):0};
   return LESSONS.filter(l=>l.ready&&!l.hidden).slice().sort((a,b)=>chi(a)-chi(b)||(a.no-b.no));
 }
-function guideLessonDone(l){return SPECS[l.id]?window.lessonProgressInfo(l.id).isDone:(typeof lessonDone==='function'&&lessonDone(l.id)>=(typeof LESSON_REQ==='number'?LESSON_REQ:3))}
+function guideLessonDone(l){return SPECS[l.id]?window.lessonProgressInfo(l.id,DB,unitActiveTrack(l.unit||'solid')).isDone:(typeof lessonDone==='function'&&lessonDone(l.id)>=(typeof LESSON_REQ==='number'?LESSON_REQ:3))}
 function guideLessonStep(){
   const L=guideLessonOrder();if(!L.length)return null;
   const last=DB._last&&L.find(l=>l.id===DB._last.id);
@@ -1408,7 +1566,8 @@ function guideLessonStep(){
   if(!cur)return{les:true,done:L.some(l=>OBJ(DB[l.id]).tday===t),more:true,t:'열린 차시를 모두 마쳤어요',s:'두걸음이나 복습 추천으로 실력을 다져요',href:'#'+L[L.length-1].id};
   const unitNm=typeof unitOf==='function'?unitOf(cur.unit||'solid').name:'';
   if(!SPECS[cur.id])return null;
-  const p=lesProg(cur.id),info=window.lessonProgressInfo(cur.id),tr=info.track,spec=SPECS[cur.id];
+  const uTr=unitActiveTrack(cur.unit||'solid');
+  const p=lesProg(cur.id),info=window.lessonProgressInfo(cur.id,DB,uTr),tr=info.track,spec=SPECS[cur.id];
   const order=tr===1?(spec.kind==='concept'?['steps','concept','practice']:['concept','steps','practice']):['steps','practice'];
   const tab=order.find(k=>!info.tabs[k])||'practice';
   const stepLabel=tr===1?(info.t1SchemaDone&&info.t1GuideTotal>0?'유형 익히기 · 따라 풀기':'유형 익히기 · 구별하기'):tr===2?'유형 익히기 · 대표 예제':'유형 익히기 · 복합 문제';
@@ -1462,6 +1621,9 @@ window.HG_TRACKS={
   buildDailyRevQueue,
   submitDailyRevType,
   typeStampState,
-  lessonProgressInfo:window.lessonProgressInfo
+  lessonProgressInfo:window.lessonProgressInfo,
+  unitActiveTrack,
+  promoteUnitTrack,
+  lessonCompleteCrossroadsHTML
 };
 })();

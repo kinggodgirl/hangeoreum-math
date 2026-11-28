@@ -474,7 +474,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   }
 }
 
-// [T24] 통일 진도 모델(lessonProgressInfo) & 홈/단원/교사 진도표(3단계 × 3걸음) 검증
+// [T24/T26] 통일 진도 모델(lessonProgressInfo) · 나선형 단일 걸음 홈 진도표 · 상위 단계 자동 체크 · 갈림길 검증
 {
   if (typeof lessonProgressInfo !== 'function') {
     errors.push('Missing lessonProgressInfo');
@@ -486,26 +486,77 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       errors.push('T24 empty cent progress mismatch: ' + JSON.stringify(i0));
     }
     const i1Schema = lessonProgressInfo('cent', { cent: { track: 1, t1SchemaDone: true, t1Solo: { 1: true } } });
-    if (i1Schema.tabs.steps || !i1Schema.started || i1Schema.trackDone !== 0) {
-      errors.push('T24 partial t1 should be started but steps/trackDone incomplete: ' + JSON.stringify(i1Schema));
+    if (i1Schema.tabs.steps || !i1Schema.started || !i1Schema.t1StepsPartial || i1Schema.trackDone !== 0) {
+      errors.push('T26 partial t1 should be started/partial without steps completion: ' + JSON.stringify(i1Schema));
     }
+    // 🌱 첫걸음: 유형(구별+따라 풀기) 완료 시 steps=true, concept는 자동 체크 안 됨
     const i1B = lessonProgressInfo('cent', { cent: { track: 1, t1SchemaDone: true, t1Solo: allSolo } });
-    if (!i1B.tabs.steps || i1B.tabs.practice || i1B.trackDone !== 0) {
-      errors.push('T24 full t1 guide should complete steps without finishing practice: ' + JSON.stringify(i1B));
+    if (!i1B.tabs.steps || i1B.tabs.concept || i1B.tabs.practice || i1B.trackDone !== 0) {
+      errors.push('T26 t1 guide should complete steps without auto-checking concept: ' + JSON.stringify(i1B));
     }
-    const i1Done = lessonProgressInfo('cent', { cent: { track: 1, trackDone: 1, concept: true } });
-    if (!i1Done.isDone || i1Done.doneSteps !== 3 || !i1Done.tabs.steps || !i1Done.tabs.practice) {
-      errors.push('T24 trackDone=1 failed: ' + JSON.stringify(i1Done));
+    // 🌱 첫걸음: 마무리 통과 시 3단계 전체 완료
+    const i1Done = lessonProgressInfo('cent', { cent: { track: 1, trackDone: 1, concept: false } });
+    if (!i1Done.isDone || i1Done.doneSteps !== 3 || !i1Done.tabs.concept || !i1Done.tabs.steps || !i1Done.tabs.practice) {
+      errors.push('T26 trackDone=1 failed: ' + JSON.stringify(i1Done));
     }
+    // 🌿 한걸음: 유형(steps=1)만 끝내도 개념 자동 체크, 마무리(trackDone=2)만 끝내도 3단계 전부 체크
+    const i2Step = lessonProgressInfo('cent', { cent: { track: 2, steps: 1 } });
+    if (!i2Step.tabs.concept || !i2Step.tabs.steps || i2Step.tabs.practice || i2Step.doneSteps !== 2) {
+      errors.push('T26 track=2 steps=1 should auto-check concept: ' + JSON.stringify(i2Step));
+    }
+    const i2Done = lessonProgressInfo('cent', { cent: { track: 2, trackDone: 2 } });
+    if (!i2Done.isDone || !i2Done.tabs.concept || !i2Done.tabs.steps || !i2Done.tabs.practice || i2Done.doneSteps !== 3) {
+      errors.push('T26 track=2 trackDone=2 should auto-check concept & steps: ' + JSON.stringify(i2Done));
+    }
+    // 🌳 두걸음: 유형(t3Steps=1)만 끝내도 개념 자동 체크
     const i3Step = lessonProgressInfo('cent', { cent: { track: 3, t3Steps: 1 } });
-    if (!i3Step.tabs.steps || i3Step.tabs.practice || !i3Step.started) {
-      errors.push('T24 track=3 t3Steps=1 failed: ' + JSON.stringify(i3Step));
+    if (!i3Step.tabs.concept || !i3Step.tabs.steps || !i3Step.tabs.practice || !i3Step.started) {
+      errors.push('T26 track=3 t3Steps=1 should auto-check concept & steps: ' + JSON.stringify(i3Step));
     }
-    const ucHtml = unitCardHTML('circle');
-    for (const tok of ['개념', '유형', '마무리', '🌱', '🌿', '🌳', '완료 ']) {
-      if (!ucHtml.includes(tok)) { errors.push(`T24 unitCardHTML missing "${tok}"`); break; }
+    // 홈 진도표 1층 표시 + 보너스 + 갈림길 + 승급 검증
+    const prevGoal = DB._goal, prevUnitTrack = DB._unitTrack;
+    const prevCircle = { arc: DB.arc, cent: DB.cent, sector: DB.sector };
+    DB._goal = { k: 'calc', d: new Date().toISOString().slice(0, 10), h: [] };
+    DB._unitTrack = {};
+    DB.arc = { track: 1, trackDone: 2, concept: true };
+    DB.cent = { track: 1, t1SchemaDone: true };
+    delete DB.sector;
+    const ucPart = unitCardHTML('circle');
+    if (!ucPart.includes('✓ 완료') || !ucPart.includes('🌿+') || !ucPart.includes('진행 중') || !ucPart.includes('시작 전') || ucPart.includes('ct-tb-mini')) {
+      errors.push('T26 unitCardHTML single-layer layout mismatch');
     }
-    if (ucHtml.includes('미리 보기')) errors.push('T24 unitCardHTML still has legacy label');
+    const crLesson = HG_TRACKS.lessonCompleteCrossroadsHTML('arc', 1);
+    if (!crLesson.includes('2차시') || !crLesson.includes('쉬웠나요') || !crLesson.includes('🌿 한걸음')) {
+      errors.push('T26 lesson crossroads mismatch: ' + crLesson);
+    }
+    DB.cent = { track: 1, trackDone: 1, concept: true };
+    DB.sector = { track: 1, trackDone: 1, concept: true };
+    const ucFull = unitCardHTML('circle');
+    if (!ucFull.includes('uc-crossroads') || !ucFull.includes('쉬웠나요') || !ucFull.includes('🌿 한걸음')) {
+      errors.push('T26 unit completion crossroads missing in unitCardHTML');
+    }
+    const crUnit = HG_TRACKS.lessonCompleteCrossroadsHTML('sector', 1);
+    if (!crUnit.includes('crUpUnit') || !crUnit.includes('완주!')) {
+      errors.push('T26 lessonCompleteCrossroadsHTML unit-done mismatch: ' + crUnit);
+    }
+    HG_TRACKS.promoteUnitTrack('circle', 2);
+    if (DB._unitTrack.circle !== 2 || HG_TRACKS.unitActiveTrack('circle') !== 2) {
+      errors.push('T26 promoteUnitTrack failed');
+    }
+    vm.runInContext('viewUnit("circle")', sandbox);
+    const unitHtml = vm.runInContext('app.innerHTML', sandbox);
+    if (!unitHtml.includes('ct-my-track') || !unitHtml.includes('진행 걸음')) {
+      errors.push('T26 viewUnit header track badge missing');
+    }
+    vm.runInContext('viewHome()', sandbox);
+    const homeHtml = vm.runInContext('app.innerHTML', sandbox);
+    if (!homeHtml.includes('완료 1/3차시') || !homeHtml.includes('🌿 한걸음') || homeHtml.includes('ctProgLegend') || homeHtml.includes('ct-tr-tab')) {
+      errors.push('T26 viewHome post-promotion check failed');
+    }
+    DB._goal = prevGoal; DB._unitTrack = prevUnitTrack;
+    for (const k of ['arc', 'cent', 'sector']) {
+      if (prevCircle[k] !== undefined) DB[k] = prevCircle[k]; else delete DB[k];
+    }
     const pipHtml = pipsOf('cent');
     if ((pipHtml.match(/class="pip/g) || []).length !== 3) errors.push('T24 pipsOf should have 3 pips');
     const ds24 = dataSummary({ cent: { track: 1, trackDone: 1, concept: true } });

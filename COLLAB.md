@@ -35,6 +35,7 @@
 | **T23** | 원과 부채꼴 3차시(`sector`) 첫걸음 다듬기(선생님 점검): 부엉 쌤 그림극 `처음부터`·장면 점으로 다시 볼 때 화면 누르기가 멈추던 버그 · 장면 ① '둘레 하면 π, π는 지름을 둘레로 바꾸는 마법의 수' | Claude Code | `js/02t-track-engine.js`(`mountOwlShow` 몇 줄), `js/02t-tracks-circle.js`, `tracks-cent.css`(끝에 몇 줄), `COLLAB.md` | **완료** |
 | **T24** | 『교과서 한 걸음』 진도 과정 통일 + 홈·단원·내 기록·교사 진도표 개편: 단일 진도 모델(`lessonProgressInfo`) 도입, 첫걸음 따라 풀기 B 완료 기준·두걸음 `t3Steps` 저장 보완, 홈·단원·내 기록·교사 현황을 3단계(개념·유형·마무리) × 3걸음(🌱·🌿·🌳) 진도표와 범례로 통일, `오늘의 길잡이`와 단원 카드 `이어서` 차시 기준 일치 | Antigravity | `js/02t-track-engine.js`, `tracks-cent.css`, `js/06g-goal.js`, `js/04-games.js`, `js/03-teacher.js`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 | **T25** | Ⅶ단원 입체도형 8차시(`poly`~`cone`) 그림 전면 교체: 개념·유형 익히기는 끌어서 돌려 보는 3D(`Viewer`, `shade`), 차시 마무리는 교과서 겨냥도(정지 `textbook` 모드, 실선/숨은 점선), 평면·전개도는 스포일러 없는 교과서식 SVG | Antigravity | `js/02t-track-engine.js`, `js/02t-tracks-solid.js`, `tracks-cent.css`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
+| **T26** | 『교과서 한 걸음』 나선형 단일 걸음 홈 진도표 + 상위 단계 자동 체크 + 차시/단원 완료 갈림길 | Antigravity | `js/02t-track-engine.js`, `tracks-cent.css`, `tests/verify.mjs`, `COLLAB.md` | **완료** (`main` 반영) |
 
 ---
 
@@ -72,6 +73,10 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-28 (`T26`, Antigravity)**: 선생님과 확정한 나선형 진도 설계대로 홈·단원 진도표와 완료 갈림길을 개편했어요.
+  * **단일 걸음 진도표 (`viewHome` · `unitCardHTML` · `viewUnit`)**: 홈에서는 전환탭·3×3 행렬·범례를 빼고 우측 상단에 `내 걸음 · 🌱/🌿/🌳` 배지만 표시해요. 차시 행은 기준 걸음(`unitActiveTrack(u)`) 1층만 띄워 완료 시 `✓ 완료`(상위 걸음 완료 시 `🌿+`/`🌳+` 보너스), 진행 중일 때는 `✓ 개념 · ✓ 유형 · ○ 마무리` 체크 상태를 자세히 보여 줘요(`viewMe`와 `03-teacher.js`는 3걸음 전체 현황 유지).
+  * **상위 단계 자동 체크 (`lessonProgressInfo`)**: `🌿 한걸음`·`🌳 두걸음`에서는 `유형 익히기`를 끝내면 `개념`이, `차시 마무리`를 끝내면 `개념·유형`이 자동으로 체크돼요(`🌱 첫걸음`은 마무리 통과 시 전체 체크, 유형만 끝냈을 땐 개념 미체크 유지).
+  * **차시·단원 완료 갈림길 (`lessonCompleteCrossroadsHTML` · `unitCrossroadsHTML` · `promoteUnitTrack`)**: 단원 미완주 차시 완료 시에는 같은 걸음의 다음 차시를 기본 버튼으로 두고 아래에 *"이번 학습 내용이 쉬웠나요? 쉬웠다면 다음 단계에 도전해 봐요!"* 보너스 갈림길을, 단원 전체 완주 시에는 `DB._unitTrack[u]` 승급(다음 걸음 1차시부터) vs 다음 단원 이동 갈림길을 제공해요. 검증: `node tests/verify.mjs` 통과 (20개 JS 문법·전 차시 런타임·T26 단일 걸음/자동 체크/갈림길 검증 통과).
 * **2026-11-28 (`T25`, Antigravity)**: Ⅶ단원 입체도형 8차시(`poly`~`cone`)의 임시 2D 그림(`figFrust` 등)과 문제 스포일러 문구를 전면 교체했어요.
   * **엔진(`js/02t-track-engine.js`) · 스타일(`tracks-cent.css`)**: `mountTrackFig(host, figRes, opt)`를 추가해 SVG와 3D `Viewer`(`{mesh}` / `{items:[...]}`)를 함께 지원해요. 개념 보기(`mountOwlShow`, 3D 캔버스 터치 시 자막이 넘어가지 않게 처리) · 유형 익히기(`renderT1Schema` · `renderT1Guide` · `renderT2Steps` 대표 예제 · `renderT3Steps` 복합)는 **끌어서 돌려 보는 3D(`visual:true`)**, 차시 마무리(`renderT1Practice` 및 `solid` 단원 `renderT2Practice`/`renderT3Practice`) · 핵심 유형 접기 카드(`.ct-keyty`)는 **교과서 겨냥도 정지 모드(`visual:false`, `style:'textbook'`)**로 동작해요.
   * **콘텐츠(`js/02t-tracks-solid.js`) · 검증(`tests/verify.mjs`)**: 3D 메시(`smoothFrustum`, `cutCubeMesh`, `sectorPrismMesh`, `rectPyrMesh`, `triPrismMesh`, `boxMesh`) + 3D 투영 단면·치수 오버레이(`afterAxis`, `drawCutPoly`, `drawCutEllipse`, `afterConeDims`, `afterFrustCone`, `afterPyrDims`) 및 스포일러 없는 교과서식 2D/전개도 SVG(`figRegFan`, `figOctNet`, `planeRotSVG`, `coneNetSVG`, `lPrismSVG`, `hollowCylTexSVG`, `cylConeAxisSVG`, `twoCansSVG`, `cubeGridSVG`, `rectTwoAxesSVG`, `twoGlassesSVG`)로 교체. `node tests/verify.mjs` 통과 및 헤드리스 브라우저에서 8차시 3D 회전·교과서 정지·0콘솔오류 확인 완료.

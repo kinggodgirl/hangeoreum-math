@@ -291,3 +291,43 @@
 .ct-3d-cap{margin-top:4px;font-size:13.5px;font-weight:700;color:var(--ink,#1d2640)}
 .ct-3d-hint{margin-top:4px;font-size:12.5px;color:var(--ink-soft,#5a6377)}
 @media (max-width:520px){.ct-3d-grid.duo .ct-3d-stage{height:150px}}
+/* [T26] 나선형 단일 걸음 홈 진도표 · 우측 상단 걸음 배지 · 차시/단원 완료 갈림길 */
+.sec-title.ct-sec-head{align-items:center}
+.ct-my-track{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;font-size:13.5px;text-decoration:none;border:1.5px solid #c9d8f4;background:#eef3fb;color:#1f3b7c;white-space:nowrap;transition:transform .12s ease}
+a.ct-my-track:hover{transform:translateY(-1px)}
+.ct-my-track.t1{background:#eaf7ef;border-color:#84c79d;color:#1a5c35}
+.ct-my-track.t2{background:#eef3fb;border-color:#a5bce8;color:#1f3b7c}
+.ct-my-track.t3{background:#f3edfc;border-color:#c2ade8;color:#4f2e8c}
+.ct-unit-head .ct-unit-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ct-pl-right{flex:none;display:inline-flex;align-items:center;gap:5px}
+.ct-pl-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.ct-pl-badge.done{background:#e5f4ea;border:1px solid #84c79d;color:#1a5c35}
+.ct-pl-badge.prog{background:#eef3fb;border:1px solid #a5bce8;color:#2a4d9e}
+.ct-pl-badge.todo{background:#f3f5f8;border:1px solid #d9dfe8;color:#667085;font-weight:600}
+.ct-pl-bonus{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.ct-pl-bonus.t2{background:#eaf0fc;border:1px solid #a5bce8;color:#2a4d9e}
+.ct-pl-bonus.t3{background:#f2ecfc;border:1px solid #c2ade8;color:#5a389e}
+.ct-ps b{font-style:normal;font-weight:800;margin-right:1px}
+.ct-ps.on{color:#1a5c35}
+.ct-ps.part{color:#2a4d9e;font-weight:700}
+.ct-crossroads{margin-top:14px;padding:14px 16px;border-radius:14px;border:1.5px dashed #b9c9e8;background:#f7faff;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ct-crossroads.unit-done{border-style:solid;border-color:#84c79d;background:linear-gradient(135deg,#f1fbf5,#fffbeb);flex-direction:column;align-items:stretch}
+.ct-cr-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ct-cr-txt b{font-size:15.5px;color:var(--ink,#1d2640)}
+.ct-cr-txt span{font-size:13.5px;color:var(--ink-soft,#5a6377);line-height:1.45}
+.ct-cr-up.t2{background:#eef3fb;border:1.5px solid #2a4d9e;color:#1f3b7c;font-weight:700}
+.ct-cr-up.t3{background:#f3edfc;border:1.5px solid #6d47b8;color:#4f2e8c;font-weight:700}
+.uc-crossroads{margin-top:auto;padding:12px 13px;border-radius:12px;border:1.5px solid #84c79d;background:linear-gradient(135deg,#f1fbf5,#fffbeb)}
+.uc-crossroads.unit-banner{margin:0 0 14px;padding:14px 16px}
+.uc-cr-h{font-size:14.5px;font-weight:800;color:#1a5c35;line-height:1.4}
+.uc-cr-sub{margin:3px 0 10px;font-size:13px;color:var(--ink-soft,#5a6377);line-height:1.45}
+.uc-cr-acts{display:flex;flex-wrap:wrap;gap:8px}
+.uc-cr-acts .btn{flex:1 1 auto;text-align:center;font-size:13.5px;padding:8px 11px}
+@media (max-width:760px){
+  .ct-unit-head .ct-unit-right{align-items:flex-start}
+}
+@media (max-width:520px){
+  .sec-title.ct-sec-head{gap:6px 10px}
+  .ct-my-track{font-size:12.5px;padding:4px 10px}
+  .ct-crossroads{flex-direction:column;align-items:stretch}
+}
