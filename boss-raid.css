@@ -184,3 +184,33 @@ body.raid-lock{overflow:hidden}
 .bb-oxa .t b{font-size:20px}.bb-oxa .t i{font-style:normal;font-size:14px;font-weight:700}
 .bb-oxa .t.O{background:#d9f2df;border-color:#1f8a43;color:#145c2d}.bb-oxa .t.A{background:#fff1c9;border-color:#c78a00;color:#7a5400}.bb-oxa .t.X{background:#eef0f4;border-color:#9aa1ad;color:#59606c}
 .bbLv button{min-width:56px}
+
+/* ───────── [T30] 보스전 차시 그림 문제 · 내 캐릭터 · 복습한 차시 · 위치 보고 ───────── */
+.rb-q .bx-fig{display:flex;justify-content:center;margin:0 0 8px}
+.rb-q .bx-fig svg,.rb-q .bx-fig canvas{max-width:min(100%,320px);max-height:200px;width:auto;height:auto}
+.rb-q .bx-fig canvas{width:260px;height:200px}
+.rb-q .bx-title{font-size:17px}.rb-q .bx-ask{margin-top:4px;font-weight:700}
+.rb-me{position:absolute;right:12px;bottom:22px;z-index:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.rb-me .av-fr{transform:scale(1.15);transform-origin:bottom right}
+.rb-arena.shake .rb-me{animation:rbMeHurt .4s}
+@keyframes rbMeHurt{30%{transform:translateX(-4px) rotate(-6deg)}70%{transform:translateX(4px) rotate(6deg)}}
+.rb-card .rep-row{margin-top:10px;text-align:right}
+.bx-rev{background:rgba(255,210,63,.14);border:1.5px solid rgba(255,210,63,.6);border-radius:14px;padding:12px 14px;margin:12px 0}
+.bx-rev b{font-size:17px}.bx-rev .muted{display:block;margin-top:6px;color:inherit;opacity:.8}
+.bx-rev-l{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bx-chip{display:inline-block;padding:4px 10px;border-radius:999px;background:#fff;color:#1d2640;font-size:14px;font-weight:700;text-decoration:none}
+.rs-miss .bx-fig.sm{display:flex;justify-content:center;margin-bottom:6px}
+.rs-miss .bx-fig.sm svg,.rs-miss .bx-fig.sm canvas{max-width:260px;max-height:180px;width:auto;height:auto}
+.rs-miss .bx-fig.sm canvas{width:240px;height:170px}
+.bx-act{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rs-box .prob{color:var(--ink,#1d2640);background:var(--paper,#fffdf6);border-radius:12px;padding:8px}
+/* 보스전 창(z 900) 위에 📍 위치 복사 · ⚑ 신고 팝업이 보이게 */
+body.raid-lock .dbgloc-btn{z-index:960}
+body.raid-lock .hgrep-back{z-index:980}
+@media (max-width:560px){.rb-q .bx-fig svg,.rb-q .bx-fig canvas{max-height:180px}.rb-me{right:6px}.rb-me img,.rb-me canvas{max-width:46px;max-height:46px}}
+/* [T30] 보스 세 가지(약화·일반·광폭) */
+.rp-note{margin:-4px 0 8px;font-size:14px;opacity:.85}
+.rp-modes.three{grid-template-columns:repeat(3,1fr)}
+.rp-mode .rp-rare{display:block;margin-top:4px;color:#ffd23f;font-weight:700;letter-spacing:1px}
+@media (max-width:560px){.rp-modes.three{grid-template-columns:1fr}}
+.rb-meta .bx-up{margin:0 auto 0 6px;padding:2px 8px;border-radius:999px;background:#2f7bff;color:#fff;font-size:12px;font-weight:800}

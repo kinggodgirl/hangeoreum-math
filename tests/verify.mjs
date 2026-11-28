@@ -26,6 +26,7 @@ const jsFiles = [
   'js/02t-tracks-graph.js',
   'js/09-debug-loc.js',
   'js/09r-report.js',
+  'js/04b-boss-mix.js',
   'js/07-print-omr-boot.js',
 ];
 
@@ -568,6 +569,10 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     }
   }
 }
+
+// [T30] 보스전 차시 그림 문제: 해결한 차시에서 나오고, 정답을 넣으면 맞다고 채점돼요
+{ const bm = vm.runInContext('(()=>{const keep=JSON.stringify(DB);["cent","sector","cone","coord","poly"].forEach(id=>{DB[id]={trackDone:2,track:(id.length%3)+1}});let n=0,ok=0,bad=[];for(let i=0;i<120;i++){const q=BOSS_MIX.pick(i%2?"hard":"normal",{units:[""],qi:0,used:new Set()});if(!q)continue;n++;const v=q.type==="choice"?q.ans:q.type==="pi"?(q.ans===1?"":q.ans)+"π":(q.type==="sn"&&q.ans>0?"+":"")+q.ans;if(check(q,String(v))===true&&q.mix&&q.mix.lid&&LESSONS.find(l=>l.id===q.mix.lid))ok++;else bad.push(q.mix&&q.mix.gen)}Object.keys(DB).forEach(k=>delete DB[k]);Object.assign(DB,JSON.parse(keep));return[n,ok,bad.slice(0,3).join()]})()', sandbox);
+  if (!(bm[0] > 20 && bm[0] === bm[1])) errors.push('T30 BOSS_MIX pick/check mismatch ' + bm.join('/')); }
 
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
