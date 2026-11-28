@@ -290,6 +290,12 @@ function viewTeacher(){
     wireRows(body)}
   /* ── 문제 신고 ── */
   let repAll=false,repMissing=false;
+  /* [T29] 학생 신고의 ctx가 위치·코드 보고(• 주소: …)면 선생님 보고 양식으로 다시 묶어요 */
+  const isLocCtx=c=>/^• (주소|화면 경로|실행 코드):/.test(String(c||''));
+  function repLocText(r){const acct=r.sid?`${r.grade}-${r.klass}-${r.num}`:'로그인 안 함';
+    const lines=String(r.ctx).split('\n').map(x=>x.replace(/^• 주소: (.*)$/,`• 계정/주소: ${acct} · $1`));if(!/^• 계정\/주소:/.test(lines[0]))lines.unshift(`• 계정/주소: ${acct}`);
+    const d=new Date(r.created_at),p2=n=>String(n).padStart(2,'0');
+    return['[한 걸음 수학 위치·코드 보고]',...lines,`• 학생 신고: ${r.reason}${r.note?` — "${r.note}"`:''}`,`• 신고 시각: ${isNaN(d)?'-':`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`}`,'• 바꿀 점: '].join('\n')}
   async function loadReports(){const box=$('.tRep',app),nb=$('.tRepN',app);if(!box)return;
     if(repMissing){box.innerHTML=`<h2>⚑ 학생 문제 신고</h2><p class="muted t-lead">서버에 <b>supabase/report.sql</b>을 실행하면 학생이 보낸 신고가 여기에 모여요.</p>`;return}
     let R;try{R=await API.call('hg_t_reports',{p_token:tTok(),p_all:repAll})||[]}catch(e){if(isMissingFn(e)){repMissing=true;loadReports()}else fail(e);return}
@@ -297,12 +303,13 @@ function viewTeacher(){
     const who=r=>r.sid?(NAMES[r.sid]?esc(NAMES[r.sid]):`${r.grade}-${r.klass}-${r.num}`):'로그인 안 함',ln=l=>{const L=LESSONS.find(x=>x.id===l);return L?`${L.no}차시`:esc(l)};
     box.innerHTML=`<div class="t-head"><h2>⚑ 학생 문제 신고 <span class="muted" style="font-size:15px">${open?`확인 안 한 것 ${open}개`:''}</span></h2><label class="t-sel"><input type="checkbox" class="tRepAll" ${repAll?'checked':''}> 확인한 것도 보기</label></div>
       ${R.length?R.map(r=>`<div class="t-rep ${r.done?'done':''}" data-id="${r.id}"><div><b>${esc(r.reason)}</b> · ${r.ptype&&PTYPE_NM[r.ptype]?esc(PTYPE_NM[r.ptype]):ln(r.lesson)}${r.step!=null?` · ${NUM(r.step)+1}단계`:''} <span class="muted">· ${who(r)} · ${relTime(r.created_at)}</span></div>
-        ${r.note?`<div class="t-rnote">“${esc(r.note)}”</div>`:''}${r.ctx?`<div class="muted t-rctx">${esc(r.ctx)}</div>`:''}
-        <div class="t-ract">${r.gen&&GEN[r.gen]&&r.seed!=null?`<button type="button" class="btn ghost t-mini tRepOpen">문제 열어 보기</button>`:''}<button type="button" class="btn ghost t-mini tRepDone">${r.done?'다시 열기':'✓ 확인했어요'}</button></div><div class="t-rprob"></div></div>`).join('')
+        ${r.note?`<div class="t-rnote">“${esc(r.note)}”</div>`:''}${r.ctx?(isLocCtx(r.ctx)?`<pre class="t-rloc" style="white-space:pre-wrap;word-break:break-all;font:inherit;font-size:13px;background:var(--soft,#f4f6fb);border-radius:8px;padding:8px 10px;margin:6px 0">${esc(r.ctx)}</pre>`:`<div class="muted t-rctx">${esc(r.ctx)}</div>`):''}
+        <div class="t-ract">${r.gen&&GEN[r.gen]&&r.seed!=null?`<button type="button" class="btn ghost t-mini tRepOpen">문제 열어 보기</button>`:''}${r.ctx&&isLocCtx(r.ctx)?`<button type="button" class="btn ghost t-mini tRepCopy">📋 보고 양식 복사</button>`:''}<button type="button" class="btn ghost t-mini tRepDone">${r.done?'다시 열기':'✓ 확인했어요'}</button></div><div class="t-rprob"></div></div>`).join('')
         :'<p class="muted t-empty" style="margin:0">신고된 문제가 없어요 🙂</p>'}`;
     $('.tRepAll',box).onchange=e=>{repAll=e.target.checked;loadReports()};
     $$('.t-rep',box).forEach(d=>{const r=R.find(x=>String(x.id)===d.dataset.id);
       const o=$('.tRepOpen',d);if(o)o.onclick=()=>{const h=$('.t-rprob',d);if(h.innerHTML){h.innerHTML='';return}try{renderProblem(h,GEN[r.gen](+r.seed),{mode:'steps',visual:true})}catch(e){h.textContent='문제를 다시 만들지 못했어요.'}};
+      const cp=$('.tRepCopy',d);if(cp)cp.onclick=async()=>{const t=repLocText(r);let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){}if(!ok){try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch(e){}}toast(ok?'보고 양식을 복사했어요. 그대로 붙여 넣어 주세요.':'복사하지 못했어요.')};
       $('.tRepDone',d).onclick=async()=>{try{await API.call('hg_t_report_done',{p_token:tTok(),p_id:r.id,p_done:!r.done});loadReports()}catch(e){fail(e)}}})}
   /* ── 점검 학습지: 학생이 직접 찍어 채점한 점수 ── */
   function renderOmr(L){const box=$('.tOmr',app);if(!box)return;const by={};

@@ -11,7 +11,7 @@
 | `styles.css` | 전체 스타일시트 | 기존 CSS 변수(`--paper`, `--ink`, `--accent`, `--hi`) 유지 |
 | `deco.css` | Fluent Emoji 3D 아이콘·축하 연출 보조 스타일 | `styles.css`와 충돌 없도록 분리 유지 |
 | `shop-3d.css` | 꾸미기 상점 3D 아바타·캡슐 뽑기 스타일 | `styles.css`, `deco.css`와 분리 유지 |
-| `js/01-core.js` | 공통 유틸, `DB` 저장/정리(`save`, `tidyDB`), 3D 뷰어, 용어 사전, 키패드(`answerUI`, `check`), 문제 신고(`repMount`), 단계 문제 렌더러 | `localStorage` 키 이름(`STORE_KEY`)과 `DB` 기존 필드 호환성 유지 |
+| `js/01-core.js` | 공통 유틸, `DB` 저장/정리(`save`, `tidyDB`), 3D 뷰어, 용어 사전, 키패드(`answerUI`, `check`), 문제 신고(`repMount`)(팝업은 `js/09r-report.js`가 바꿔 끼움), 단계 문제 렌더러 | `localStorage` 키 이름(`STORE_KEY`)과 `DB` 기존 필드 호환성 유지 |
 | `js/02-unit-solid.js` | 입체도형 차시·홈·개념·탐구, 로그인 및 Supabase API 호출(`API.call`), 교과서 유형 | 서버 RPC 이름(`hg_*`) 임의 변경 금지. **새 차시 개발은 아래 분리 파일(`02r`, `02v` 등)에 작성하고 이 파일은 최소 훅만 연결하세요.** |
 | `js/03-teacher.js` | 교사 대시보드(`viewTeacher`, `openStu`, `dataSummary`, `loadReports`, `renderOmr`) | 기초 연산 오개념(`_calcErrs`), 취약 구구단(`_facts`), 문제 신고, OMR 집계 유지 |
 | `teacher-plus.css` | 교사 화면 편의 기능(📅 이번 주 · 쿠폰 · 표 머리줄 단원 묶음) 보조 스타일 | `styles.css`와 분리 유지 · 교사 화면 로직은 `js/03-teacher.js` |

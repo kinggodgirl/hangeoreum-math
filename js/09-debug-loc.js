@@ -43,19 +43,29 @@ const onRoute=h=>{
 const set=p=>{if(p&&typeof p==='object')Object.assign(S,p)};
 const setProb=p=>{S.prob=p||null};
 
-const format=()=>{
-  const lines=['[한 걸음 수학 위치·코드 보고]'];
+/* [T29] 화면에 보이는 문제 글 · 학생이 고른 답 (빠른 구별·구별 체크처럼 renderProblem을 쓰지 않는 화면용) */
+const domTxt=sel=>{try{const r=typeof document==='object'&&document.querySelector?document.querySelector('#app')||document:null;const n=r&&r.querySelector?r.querySelector(sel):null;const t=n&&(n.innerText||n.textContent);return typeof t==='string'?strip(t):''}catch(e){return''}};
+const domPick=()=>{try{const r=typeof document==='object'&&document.querySelector?document.querySelector('#app'):null;if(!r||!r.querySelectorAll)return'';const nm=sel=>Array.from(r.querySelectorAll(sel)||[]).map(b=>strip(b.dataset&&b.dataset.v||b.textContent)).filter(Boolean);const bad=nm('.ct-hit.bad'),ok=nm('.ct-hit.ok');if(!bad.length&&!ok.length)return'';return bad.length?`${bad.join(', ')} (틀림)${ok.length?` · 정답 표시: ${ok.join(', ')}`:''}`:`${ok.join(', ')} (맞힘)`}catch(e){return''}};
+const pad2=n=>String(n).padStart(2,'0');
+const nowTxt=()=>{const d=new Date();return`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`};
+
+/* opt.compact: 학생 신고용(머리줄·계정 줄 없이 400자 안쪽) · opt.blank: 선생님이 채울 '본 것/바꿀 점' 빈 줄 */
+const format=(opt)=>{
+  opt=opt||{};
+  const lines=opt.compact?[]:['[한 걸음 수학 위치·코드 보고]'];
   const h=(typeof location==='object'&&location.hash)?location.hash:'#'+(S.hash||'home');
-  const cr=(typeof crumbs!=='undefined'&&crumbs)?strip(crumbs.textContent).replace(/\s*›\s*/g,' › ').replace(/^\s*›\s*/,''):'';
-  lines.push(`• 계정/주소: ${typeof isStudent==='function'&&isStudent()?`${AUTH.grade}-${AUTH.klass}-${AUTH.num}`:'비로그인'} · ${h}`);
+  const crRaw=(typeof crumbs!=='undefined'&&crumbs)?strip(crumbs.textContent):'';
+  const acct=typeof isStudent==='function'&&isStudent()?`${AUTH.grade}-${AUTH.klass}-${AUTH.num}`:'비로그인';
+  lines.push(opt.compact?`• 주소: ${h}`:`• 계정/주소: ${acct} · ${h}`);
   const L=S.lesson&&typeof LESSONS!=='undefined'?LESSONS.find(x=>x.id===S.lesson):null;
-  const pathParts=[];
-  if(cr)pathParts.push(cr);
-  else if(L)pathParts.push(`${L.no}차시 ${L.title}`);
+  /* [T29] 화면 경로: 차시 제목 앞에 'N차시'를 붙이고, 같은 이름이 연달아 나오면 한 번만 */
+  let pathParts=crRaw.split('›').map(x=>x.trim()).filter(Boolean);
+  if(L){const i=pathParts.lastIndexOf(L.title);if(i>=0)pathParts[i]=`${L.no}차시 ${L.title}`;else if(!pathParts.length)pathParts.push(`${L.no}차시 ${L.title}`)}
   if(S.track)pathParts.push(TR_NM[S.track]||`트랙 ${S.track}`);
   if(S.tab)pathParts.push(TAB_NM[S.tab]||S.tab);
   if(S.section)pathParts.push(S.section);
   if(S.subtab)pathParts.push(S.subtab);
+  pathParts=pathParts.filter((x,i,a)=>i===0||x!==a[i-1]);
   if(pathParts.length)lines.push(`• 화면 경로: ${pathParts.join(' › ')}`);
   const specFile=S.lesson&&SPEC_FILE[S.lesson];
   const codeRefs=[`${S.file||'js/02t-track-engine.js'} → ${S.fn||'-'}()`];
@@ -64,19 +74,29 @@ const format=()=>{
   const det=[];
   if(S.owlScene)det.push(`부엉 쌤 극장 장면 ${S.owlScene}/${S.owlTotal||'?'} (박자 ${S.owlBeat||1}/${S.owlBeatTotal||1})${S.owlCap?` · "${S.owlCap}"`:''}`);
   if(S.rapidIdx)det.push(`빠른 구별 ${S.rapidIdx}/${S.rapidTotal||'?'} (kind=${S.rapidKind}, seed=${S.rapidSeed})`);
-  if(S.schemaId&&!S.owlScene&&!S.rapidIdx)det.push(`구별/체크 ${S.schemaIdx||1}/${S.schemaTotal||'?'} (id=${S.schemaId}${S.rapidSeed?', seed='+S.rapidSeed:''})`);
+  if(S.schemaId&&!S.owlScene&&!S.rapidIdx){const rm=/^r(\d+)_(\d+)$/.exec(S.schemaId);det.push(`구별/체크 ${S.schemaIdx||1}/${S.schemaTotal||'?'} (id=${S.schemaId}${rm?` → 빠른 구별 kind=${rm[1]}`:''}${S.rapidSeed?', seed='+S.rapidSeed:''})`)}
   if(S.guideId)det.push(`따라 풀기 id=${S.guideId} (유형 ${S.tyNo}) · ${S.inSolo?'혼자 확인 문제':`단계 ${Number(S.guideStep)+1}/4`}`);
   else if(S.tyNo&&S.tab==='steps'&&S.track===2)det.push(`한걸음 유형 ${S.tyNo}${S.workedOpen?` (대표 예제 펼침 · 단계 ${Number(S.workedStep)+1})`:' (대표 예제 접힘)'}`);
   if(S.cid)det.push(`두걸음 복합 ${S.cid} (${S.unlocked?'단계 풀이 열림':'유형 2개 고르기 전'}, seed=${S.rapidSeed||'-'})`);
   if(S.calcTopic)det.push(`기초 연산 주제: ${S.calcTopic}`);
   if(det.length)lines.push(`• 세부 위치: ${det.join(' · ')}`);
+  let qTxt='';
   if(S.prob){
     const pr=S.prob,uf=UNIT_FILE[pr.lesson||S.lesson]||'';
     const gTxt=resolveGen(pr.gen,pr.lesson||S.lesson);
     const stepTxt=pr.totalSteps?`${pr.step+1}/${pr.totalSteps}${pr.stepTag?` (${pr.stepTag})`:''}`:`${pr.step+1}`;
     lines.push(`• 문제 코드: ${uf?uf+' → ':''}${gTxt||'-'} | ptype=${pr.ptype||'-'} | seed=${pr.seed??'-'} | mode=${pr.mode||'-'} | 단계=${stepTxt}`);
-    if(pr.title)lines.push(`• 문제 글: ${strip(pr.title).slice(0,85)}`);
+    if(pr.title)qTxt=strip(pr.title);
   }
+  if(!qTxt&&(S.schemaId||S.rapidIdx))qTxt=domTxt('.ct-schema-q');
+  if(qTxt)lines.push(`• 문제 글: ${qTxt.slice(0,85)}`);
+  const pick=(S.schemaId||S.rapidIdx)?domPick():'';
+  if(pick)lines.push(`• 고른 답: ${pick}`);
+  if(!opt.compact){
+    const w=typeof innerWidth==='number'?innerWidth:0;
+    lines.push(`• 화면·시각: ${w?`폭 ${w}px${w<=760?'(휴대폰)':''} · `:''}${nowTxt()}`);
+  }
+  if(opt.blank)lines.push('• 본 것: ','• 바꿀 점: ');
   return lines.join('\n');
 };
 
@@ -102,7 +122,7 @@ function dbgLocBtn(){
     b=el('<button type="button" id="dbgLocBtn" class="dbgloc-btn" aria-label="현재 화면 코드 위치 복사"><span class="di">📍</span><span class="dt">위치 복사</span></button>');
     document.body.appendChild(b);
     b.onclick=async()=>{
-      const txt=HG_LOC.format();
+      const txt=HG_LOC.format({blank:true});
       let ok=false;
       try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(txt);ok=true}}catch(e){}
       if(!ok){
