@@ -27,6 +27,7 @@ const jsFiles = [
   'js/09-debug-loc.js',
   'js/09r-report.js',
   'js/04b-boss-mix.js',
+  'js/02s-split19.js',
   'js/07-print-omr-boot.js',
 ];
 
@@ -172,8 +173,8 @@ for (const lid of ['arc', 'cent', 'sector']) {
   }
 }
 
-// 입체도형 · 좌표평면과 그래프: 시험 범위 15차시 전체 문제 생성과 단계 정답 검증
-const ALL_EXAM_LESSONS = ['arc', 'cent', 'sector', 'poly', 'regular', 'rotation', 'rotprop', 'area', 'volume', 'conearea', 'cone', 'coord', 'graph', 'prop', 'inv'];
+// 입체도형 · 좌표평면과 그래프: 시험 범위 19차시 전체 문제 생성과 단계 정답 검증
+const ALL_EXAM_LESSONS = ['arc', 'cent', 'sector', 'poly', 'regular', 'rotation', 'rotprop', 'area', 'area2', 'volume', 'conearea', 'conearea2', 'cone', 'coord', 'graph', 'prop', 'propg', 'inv', 'invg'];
 let solidProbs = 0;
 {
   const calcIdSet = new Set(CALC.map(c => c.id));
@@ -384,7 +385,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       }
       const R = sp.schemaRapid; if (R) for (let k = 0; k < R.kinds; k++) for (let s = 1; s <= 30; s++) { const it = R.make(k, k + R.kinds * s); if (!(it.choices || R.choices).includes(it.ans) || !isValidFig(it.fig) || !it.why) { errors.push(`[T19] Invalid schemaRapid for ${lid} kind ${k}`); break; } }
       if (['arc', 'cent', 'sector'].includes(lid)) { if (R && (R.check || []).some(k => k >= R.kinds)) errors.push(`[T20] bad schemaRapid.check ${lid}`); for (const q of (sp.t1Check || [])) if (q.choices.length < 4 || !q.choices.includes(q.ans)) errors.push(`[T20] t1Check needs 4+ choices ${lid}.${q.id}`); for (const cid of Object.keys(sp.genCompound || {})) for (let sd = 1; sd <= 20; sd++) for (const st of sp.genCompound[cid](sd).steps) if (st.type === 'choice' && st.choices.length < 4) { errors.push(`[T20] compound choice needs 4+ ${lid}.${cid}: ${st.q}`); sd = 99; break; } }
-      if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < Math.min(3, (PTYPES[lid] || []).length) || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !isValidFig(g.fig([]))))) {
+      if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < (sp.kind === 'concept' ? 1 : Math.min(3, (PTYPES[lid] || []).filter(T => !/복합/.test(T.tb || '')).length)) || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !isValidFig(g.fig([]))))) {
         errors.push(`Invalid firstGuide for ${lid}`);
       }
       for (const T of PTYPES[lid] || []) {
@@ -413,7 +414,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     // [T25] 입체도형 8차시 3D/교과서 SVG 전환 및 문제 스포일러 제거 검증
     if (typeof HG_TRACKS.mountTrackFig !== 'function') errors.push('[T25] Missing HG_TRACKS.mountTrackFig');
     const SPOILERS = ['옆면=사다리꼴', '다면체 (', '회전체 (', '입체 ✕', '항상 원'];
-    for (const lid of ['poly', 'regular', 'rotation', 'rotprop', 'area', 'volume', 'conearea', 'cone']) {
+    for (const lid of ['poly', 'regular', 'rotation', 'rotprop', 'area', 'area2', 'volume', 'conearea', 'conearea2', 'cone']) {
       const sp = HG_TRACKS.specs[lid];
       (sp.owlScenes || []).forEach((sc, idx) => {
         if (!sc.svg || !isValidFig(sc.svg(true))) errors.push(`[T25] Bad owlScene fig ${lid}[${idx}]`);
@@ -648,6 +649,33 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   if (!t36.preId || !t36.preAgain || !t36.skip || t36.preToday) errors.push(`[T36] 미리 도전 이틀 연속 → 건너뛰기 규칙 (${JSON.stringify(t36)})`);
 }
 
+// [T35] 15차시 → 19차시: 차시 등록 · 차시 성격 · 옛 기록 옮기기(한 번만)
+{
+  const ids = LESSONS.filter(l => l.ready).map(l => l.id);
+  for (const id of ['propg', 'invg', 'area2', 'conearea2']) if (!ids.includes(id)) errors.push(`[T35] missing lesson ${id}`);
+  const no = id => (LESSONS.find(l => l.id === id) || {}).no;
+  if ([no('prop'), no('propg'), no('inv'), no('invg')].join(',') !== '3,4,5,6') errors.push('[T35] graph lesson numbers');
+  if ([no('area'), no('area2'), no('volume'), no('conearea'), no('conearea2'), no('cone')].join(',') !== '5,6,7,8,9,10') errors.push('[T35] solid lesson numbers');
+  const kinds = vm.runInContext("JSON.stringify(['coord','graph','rotprop','prop','propg','inv','invg'].map(l=>HG_TRACKS.specs[l].kind))", sandbox);
+  if (kinds !== JSON.stringify(['proc', 'proc', 'proc', 'concept', 'concept', 'concept', 'concept'])) errors.push(`[T35] kinds ${kinds}`);
+  const out = JSON.parse(vm.runInContext(`(()=>{const d={prop:{concept:true,steps:2,track:2,trackDone:2,rev:{ty1:{ok:'2026-11-01'},ty3:{ok:'2026-11-02'},ty4:{due:'2026-11-29',err:1}},tyS:{1:3,4:1},t1Solo:{2:true,4:true},metaLog:[1,2]},
+    area:{rev:{ty2:{ok:'x'},ty3:{due:'y'}},tyS:{1:1,2:2,3:3}},conearea:{rev:{ty1:{ok:'a'},ty4:{ok:'b'}}},
+    _rev:[{g:'ty_prop_4',seed:5,lid:'prop'},{g:'ty_prop_1',seed:6,lid:'prop'},{g:'propGraph',seed:7,lid:'prop'}],_raid:{miss:{'prop:ty3':2,'prop:C2':1,'inv:ty1':1}}};
+    const a=HG_SPLIT19.migrate(d),b=HG_SPLIT19.migrate(d);return JSON.stringify({a,b,d})})()`, sandbox));
+  const d = out.d;
+  if (!out.a || out.b) errors.push('[T35] migrate should run once');
+  if (JSON.stringify(d.prop.rev) !== JSON.stringify({ ty1: { ok: '2026-11-01' } })) errors.push(`[T35] prop rev ${JSON.stringify(d.prop.rev)}`);
+  if (JSON.stringify(d.propg.rev) !== JSON.stringify({ ty1: { ok: '2026-11-02' }, ty2: { due: '2026-11-29', err: 1 } })) errors.push(`[T35] propg rev ${JSON.stringify(d.propg.rev)}`);
+  if (JSON.stringify(d.propg.tyS) !== '{"2":1}' || JSON.stringify(d.prop.tyS) !== '{"1":3}' || JSON.stringify(d.propg.t1Solo) !== '{"2":true}') errors.push('[T35] type maps');
+  if (!d.propg.concept || d.propg.trackDone !== 2 || d.propg.metaLog) errors.push('[T35] lesson progress copy');
+  if (JSON.stringify(d.area.rev) !== '{"ty2":{"due":"y"}}' || JSON.stringify(d.area2.rev) !== '{"ty1":{"ok":"x"}}' || JSON.stringify(d.area.tyS) !== '{"1":1,"2":3}') errors.push(`[T35] area split ${JSON.stringify([d.area, d.area2])}`);
+  if (JSON.stringify(d.conearea2.rev) !== '{"ty3":{"ok":"b"}}') errors.push('[T35] conearea split');
+  if (d._rev[0].lid !== 'propg' || d._rev[0].g !== 'ty_propg_2' || d._rev[1].g !== 'ty_prop_1' || d._rev[2].lid !== 'propg') errors.push(`[T35] _rev remap ${JSON.stringify(d._rev)}`);
+  if (d._raid.miss['propg:ty1'] !== 2 || d._raid.miss['propg:C2'] !== 1 || d._raid.miss['inv:ty1'] !== 1 || d._raid.miss['prop:ty3']) errors.push(`[T35] miss remap ${JSON.stringify(d._raid.miss)}`);
+  if (!d._split19 || !d._split19.bak.prop || d._split19.bak.prop.rev.ty3.ok !== '2026-11-02') errors.push('[T35] backup');
+  const empty = JSON.parse(vm.runInContext("(()=>{const d={};HG_SPLIT19.migrate(d);d.prop={rev:{ty2:{ok:1}}};const again=HG_SPLIT19.migrate(d);return JSON.stringify({again,d})})()", sandbox));
+  if (empty.again || !empty.d.prop.rev.ty2 || empty.d.propg) errors.push('[T35] new empty record should not be split later');
+}
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);

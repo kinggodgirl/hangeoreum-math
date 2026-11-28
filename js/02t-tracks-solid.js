@@ -703,7 +703,7 @@ HG_TRACKS.register('rotation',{
 
 /* ── 4차시 rotprop ── */
 HG_TRACKS.register('rotprop',{
-  kind:'concept',
+  kind:'proc',
   owlScenes:[
     {cap:'장면 ① 회전축에 수직 = 언제나 원!',say:'원기둥·원뿔·원뿔대·구 모두 회전축에 <span class="kw">수직으로 자르면</span> 단면의 경계는 언제나 <span class="num">원</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'perp'})},
     {cap:'장면 ② 회전축을 품고 자르면 선대칭 · 합동!',say:'회전축을 품고 자른 단면은 어느 방향에서 잘라도 모두 <span class="kw">합동</span>! 단, 가로 길이는 반지름이 아니라 <span class="warn">지름(2r)</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'axis',rLab:'4 cm',hLab:'6 cm'}),
@@ -863,7 +863,8 @@ HG_TRACKS.register('area2',{
   owlSummary:['원기둥 겉넓이 = (밑넓이) × 2 + (옆넓이)','밑넓이 = 반둘레 × 반지름(r²π), 옆면 직사각형의 가로 = 밑면의 둘레(지름 × π)'],
   schemaQs:[
     {id:'arq2',q:'원기둥 전개도에서 옆면 직사각형의 가로는 무엇과 같나요?',fig:()=>figCyl3D(3,5,{hl:'baseEdge',noDims:true}),choices:['밑면의 둘레 (지름 × π)','밑면의 반지름','밑면의 넓이'],ans:'밑면의 둘레 (지름 × π)',hint:'밑면 원을 한 바퀴 감싸던 종이를 쫙 펼쳤어요.',why:'맞아요! 원기둥 옆넓이의 가로는 지름 × π예요.'},
-    {id:'arq4',q:'원기둥의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더해야 하나요?',fig:()=>figCyl3D(3,5,{hl:'baseAsk',noDims:true}),choices:['2번 (위아래)','1번만'],ans:'2번 (위아래)',hint:'원기둥은 위와 아래에 똑같은 원이 있어요.',why:'맞아요! 기둥은 밑면이 2개라 밑넓이를 2번 더해요.'}
+    {id:'arq4',q:'원기둥의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더해야 하나요?',fig:()=>figCyl3D(3,5,{hl:'baseAsk',noDims:true}),choices:['2번 (위아래)','1번만'],ans:'2번 (위아래)',hint:'원기둥은 위와 아래에 똑같은 원이 있어요.',why:'맞아요! 기둥은 밑면이 2개라 밑넓이를 2번 더해요.'},
+    {id:'arq6',q:'원기둥의 옆넓이를 구할 때 직사각형의 <b>세로</b>는 무엇인가요?',fig:()=>figCyl3D(3,5,{hl:'all',noDims:true}),choices:['원기둥의 높이','밑면의 반지름','밑면의 둘레'],ans:'원기둥의 높이',hint:'옆면을 펴면 위아래 길이는 그대로예요.',why:'맞아요! 옆넓이 = (밑면의 둘레) × (높이)예요.'}
   ],
   firstGuide:[
     {id:'afg2',tyNo:1,title:'유형 1 · 원기둥 겉넓이',problem:'반지름 <b>3 cm</b>, 높이 <b>5 cm</b>인 원기둥의 겉넓이(kπ cm²)에서 k를 구하시오.',fig:hl=>figCyl3D(3,5,{hl:(hl&&hl.length)?hl:'all'}),
@@ -1048,6 +1049,7 @@ HG_TRACKS.register('conearea2',{
   kind:'proc',
   compoundBridgeNo:3,
   owlScenes:[
+    {cap:'장면 ① 원뿔을 펼치면 원 + 부채꼴',say:'원뿔을 펼치면 밑면 <span class="kw">원 1개</span>와 옆면 <span class="kw">부채꼴 1개</span>예요. 먼저 기억해요: <b>부채꼴의 호 = 밑면의 둘레</b>!',svg:()=>figCone3D(4,null,6,{hl:'all'})},
     {cap:'장면 ② 원뿔 옆넓이 = (호의 반) × 모선!',say:'원뿔을 펼치면 옆면이 부채꼴! 부채꼴의 호 = 밑면 둘레(<span class="num">지름 × π</span>).<br>따라서 옆넓이 = <span class="num">(호의 반) × (모선)</span> = <span class="num">r × l × π</span>!',svg:()=>coneNetSVG(3,5),
       ask:{q:'밑면 반지름 4 cm, 높이 3 cm, 모선 5 cm인 원뿔의 겉넓이를 구할 때 <b>옆넓이</b>에 쓸 길이는?',choices:['모선 5 cm','높이 3 cm','지름 8 cm'],ans:'모선 5 cm',hint:'전개도를 펼쳤을 때 부채꼴의 반지름이 되는 기울어진 선분이에요!',ok:'정확해요! 겉넓이는 모선 5 cm를 써서 4π × 5 = 20π cm²예요.'}}
   ],

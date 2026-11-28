@@ -214,10 +214,11 @@
   ];
 
   /* les: 이 문제가 어느 차시 개념인지(LESSONS의 id). 학생이 그 차시를 해결했을 때만 보스전에 나와요.
-     앱에 아직 차시가 없는 개념(좌표 coord · 정비례 prop · 반비례 inv)은 그 차시가 생기면 열려요. les가 없는 문제는 늘 나와요. */
-  const NL = ['sector', 'sector', 'sector', 'cent', 'cent', 'sector', 'arc', 'cent', 'poly', 'regular', 'volume', 'area', 'area', 'rotation', 'cone', 'volume', 'area', 'volume', 'cone',
-    'coord', 'coord', 'coord', 'prop', 'prop', 'inv', 'inv', 'prop', 'prop', 'inv'];
-  const HL = ['sector', 'sector', 'sector', 'sector', 'sector', 'cent', 'poly', 'regular', 'area', 'volume', 'volume', 'volume', 'conearea', 'cone', 'cone', 'coord', 'coord', 'prop', 'inv', 'inv', 'prop', 'inv', 'inv'];
+     앱에 아직 차시가 없는 개념은 그 차시가 생기면 열려요. les가 없는 문제는 늘 나와요.
+     [T35] 19차시: 그래프 문제는 propg·invg, 원기둥 겉넓이는 area2, 원뿔 겉넓이는 conearea2. */
+  const NL = ['sector', 'sector', 'sector', 'cent', 'cent', 'sector', 'arc', 'cent', 'poly', 'regular', 'volume', 'area2', 'area', 'rotation', 'cone', 'volume', 'area', 'volume', 'cone',
+    'coord', 'coord', 'coord', 'prop', 'prop', 'inv', 'inv', 'propg', 'prop', 'inv'];
+  const HL = ['sector', 'sector', 'sector', 'sector', 'sector', 'cent', 'poly', 'regular', 'area2', 'volume', 'volume', 'volume', 'conearea2', 'cone', 'cone', 'coord', 'coord', 'prop', 'inv', 'invg', 'propg', 'inv', 'invg'];
   if (NL.length !== normal.length || HL.length !== hard.length) console.warn('BOSS_BANK: les 개수가 문제 수와 달라요');
   normal.forEach((it, i) => { it.les = NL[i]; });
   hard.forEach((it, i) => { it.les = HL[i]; });
