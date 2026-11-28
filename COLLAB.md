@@ -44,6 +44,7 @@
 | **T31** | 다면체(`poly`) 첫걸음 정비(선생님 결정): A를 한걸음 유형 1 빠른 구별로(다면체 O/X → 어느 가족 → pq1 정리), pq2·pq3는 첫걸음 마무리로 · 부엉 쌤 장면 ③ 세는 부분 주황 깜빡(박자별 3D 표시) · A·개념 보기 뒤 B 따라 풀기 추천 | Claude Code | `js/02t-tracks-solid.js`, `js/02t-track-engine.js`(`renderT1Rapid` 순서·보기, `mountOwlShow` 박자 `hl`, A 끝·개념 끝 안내), `tests/verify.mjs`(1줄), `COLLAB.md` | **완료** |
 | **T32** | 🦉 부엉 쌤 기본 원리(선생님 결정): 말이 가리키는 대상을 움직임으로 강조. 엔진이 박자마다(박자 `hl` 없으면 장면 첫 박자) 3D 칠한 부분을 3번 깜빡임 + 다면체(`poly`) 장면 ①·② 박자별 강조 + 안내서 4-3절 원리 | Claude Code | `js/02t-track-engine.js`(`owlPulse`·`mountOwlShow` 몇 줄), `js/02t-tracks-solid.js`(poly 장면), `docs/AGENT-ONBOARDING.md`(4-3절), `AGENTS.md`(6절 1줄), `COLLAB.md` | **완료** |
 | **T33** | 오늘의 계산에서 `친구의 틀린 풀이 찾기` 빼기(선생님 결정: 과함). 5·10문제 모두 보통 계산 문제로 | Claude Code | `js/05-calc.js`(1줄), `tests/verify.mjs`(1줄), `COLLAB.md` | **완료** |
+| **T34** | 새 에이전트 안내서를 2026-11-28 설계 규칙 새판(19차시 결정·차시 성격 새 기준·보기 규칙·🌳 핵심 유형 카드·'친구의 틀린 풀이' 없음·캡슐 뽑기 유지·대면 수업 미정·원본 경로)에 맞추기. 문서만, 코드 변경 없음 | Claude Code | `docs/AGENT-ONBOARDING.md`, `COLLAB.md` | **완료** |
 
 ---
 
@@ -81,6 +82,7 @@ AGENTS.md, COLLAB.md와 docs/specs/T04-solid-vol.md를 읽고 T04 작업을 진�
 
 ## 4. 인계 로그 (Handoff Log)
 
+* **2026-11-28 (`T34`, Claude Code)**: 선생님과 설계 규칙 총정리 새판(선생님 컴퓨터, 1부 공통·2부 활동별 12절·3부 만드는 법, 능력 코드 19차시 95개)을 마친 뒤 `docs/AGENT-ONBOARDING.md` 1·4절을 맞췄어요. 2부 각 절의 '앱에서 고칠 일'(19차시 나누기, 차시 `kind` 바꾸기, 복습 추천·복습 노트·포인트·미션 등)은 아직 앱에 없어요 — 다음 작업 후보.
 * **2026-11-28 (`T33`, Claude Code)**: 선생님 결정(설계 규칙 총정리 토의 중)으로 오늘의 계산의 `친구의 틀린 풀이 찾기`(T27)를 뺐어요. `drillPlan` 끝 `errFindAdd` 호출만 지웠고 `errFindAdd`·`errStage` 함수는 남겨 뒀어요(다시 켜려면 그 한 줄). 5·10문제가 모두 보통 계산 문제예요. 검증 `node tests/verify.mjs`가 이제 틀린 풀이·낱말 퀴즈 문제가 없는지 확인해요.
 * **2026-11-28 (`T32`, Claude Code)**: 선생님 결정 '부엉 쌤 장면은 말이 가리키는 대상을 애니메이션으로 강조하는 것이 기본 원리'. 엔진 `owlPulse`: 3D 장면에서 박자가 바뀌면(박자 `hl`이 없는 예전 장면은 장면 첫 박자에) 칠한 부분(`fcol`·`ecol`·`vcol`)을 3번 깜빡이고 원래대로 둬요(움직임 줄이기 설정이면 생략, hl 함수가 스스로 깜빡이면 `v._selfPulse`로 건너뜀). 다면체 장면 ① 상자 면 → 다면체 전체 → 원기둥 굽은 옆면, 장면 ② 잘린 위 밑면(`one`) → 각뿔대 전체 → 두 밑면 모서리(`baseEdgesHL`) → 옆면, 장면 ③은 T31 층 세기 그대로. 원리는 `docs/AGENT-ONBOARDING.md` 4-3절과 `AGENTS.md` 6절(선생님 요청: 프로젝트 지침이 아니라 저장소 MD에). **다른 차시 3D 장면도 `beats:[{say,hl}]`로 바꿔 주세요.** 검증 `node tests/verify.mjs` 통과 + 브라우저에서 장면 ①·② 박자별 표시·깜빡임 확인.
 * **2026-11-28 (`T31`, Claude Code)**: 선생님 결정으로 다면체(`poly`) 첫걸음 A를 **한걸음 유형 1 '무엇인지 가려내기'**로 바꿨어요(`schemaRapid` + `polyRapid`): ① 다면체 O/X 6장(각기둥↔원기둥, 각뿔↔원뿔 짝 + 구·각뿔대) → ② 어느 가족 4장(각기둥·각뿔·각뿔대·셋 다 아님(정팔·정이십·정십이면체)) → ③ pq1 정리. 엔진 `schemaRapid.order(rnd)`(종류 순서를 차시가 정함)와 문제마다 보기 `it.choices`를 받게 했어요(없으면 예전대로). pq2·pq3는 `t1Check`로 첫걸음 마무리에(+ `check:[3,8]` 원뿔 O/X·각뿔대 가족). `schemaQs`는 검증용으로 그대로. **부엉 쌤 장면 ③**: 박자에 `hl`을 주면 그림을 다시 만들지 않고 표시만 바꿔요(`mountTrackFig`가 `host._f3`에 뷰어 저장). `floorHL(kind,on,done)`이 층(1층·2층·층 사이)별 꼭짓점·모서리·면을 주황으로 3번 깜빡이고 센 곳은 파랑으로 남겨요. **B 추천**: 개념형 차시 A 끝에 '② 개념 보기 → B 따라 풀기' 순서 안내(`t1AfterSchemaHTML`), 개념 보기 끝 버튼이 B가 남았으면 B로(전에는 바로 마무리로 가서 B를 건너뜀). 검증 `node tests/verify.mjs` 통과 + 브라우저(PC·휴대폰) A 11문제·장면 ③ 5박자·안내 버튼·마무리 4문제 확인.
