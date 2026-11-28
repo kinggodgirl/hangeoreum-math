@@ -510,7 +510,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     }
     // 🌳 두걸음: 유형(t3Steps=1)만 끝내도 개념 자동 체크
     const i3Step = lessonProgressInfo('cent', { cent: { track: 3, t3Steps: 1 } });
-    if (!i3Step.tabs.concept || !i3Step.tabs.steps || !i3Step.tabs.practice || !i3Step.started) {
+    if (!i3Step.tabs.concept || !i3Step.tabs.steps || i3Step.tabs.practice || !i3Step.started) {
       errors.push('T26 track=3 t3Steps=1 should auto-check concept & steps: ' + JSON.stringify(i3Step));
     }
     // 홈 진도표 1층 표시 + 보너스 + 갈림길 + 승급 검증
