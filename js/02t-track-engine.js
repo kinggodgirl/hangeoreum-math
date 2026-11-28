@@ -213,6 +213,7 @@ function mountTrackFig(host,figRes,opt={}){
     const items=Array.isArray(figRes.items)?figRes.items:(figRes.mesh?[figRes]:[]);
     if(!items.length&&typeof figRes.svg==='function'){mountTrackFig(host,figRes.svg(!!opt.interactive,0),opt);return}
     if(!items.length){host.innerHTML='';return}
+    host._f3=[];
     const inter=opt.interactive!==false;
     host.innerHTML=`<div class="ct-3d-grid${items.length>1?' duo':''}${opt.compact?' sm':''}${inter?'':' static'}">
       ${items.map((it,i)=>`<figure class="ct-3d-item">
@@ -226,6 +227,7 @@ function mountTrackFig(host,figRes,opt={}){
       const v=figure(cv,Object.assign({},it,{visual:inter,yaw:it.yaw??-0.5,pitch:it.pitch??0.36,pad:it.pad??0.38}));
       applyTrackHl(v,it.mesh,it.hl,inter);
       v.dirty=true;
+      (host._f3=host._f3||[])[+cv.dataset.f3]={v,mesh:it.mesh}; /* [T31] 부엉 쌤 박자마다 표시만 바꿀 때 씀 */
     });
   }
 }
@@ -294,6 +296,8 @@ function mountOwlShow(host,lid,spec,opt={}){
         }
       }
     }
+    /* [T31] 3D 장면: 박자에 hl이 있으면 돌려 놓은 그대로 표시만 바꿔요(그림이 하나면 값 하나, 여럿이면 [그림별 값]). */
+    if(bt.hl!==undefined){const slot=$('.owl-fig-slot',host);((slot&&slot._f3)||[]).forEach((o,i)=>{if(!o)return;const h=Array.isArray(bt.hl)?bt.hl[i]:bt.hl;const v=o.v;v.fcol=v.ecol=v.vcol=null;v.mode=null;applyTrackHl(v,o.mesh,h,true);v.dirty=true})}
     const av=$('.owl-av',host);if(av)av.innerHTML=owlAvatarSVG(bt.exp||sc.exp||'normal');
     const bub=$('#owlBub',host);
     if(bub)bub.innerHTML=bs.slice(0,beat+1).map((x,i)=>`<p class="owl-line${i===beat?' now':''}">${arcSymHTML(x.say)}</p>`).join('');
@@ -409,14 +413,32 @@ function renderT1Steps(body,lid,spec){
   drawSub();
 }
 
+/* [T31] 첫걸음 A를 마친 뒤 다음 할 일(선생님 의견: B 따라 풀기도 분명히 추천).
+   개념형 차시: 개념을 아직 안 봤으면 ② 개념 보기 → B 따라 풀기 순서를 보여 주고, 이미 봤으면 B가 먼저예요.
+   (feedback 상자를 닫고 버튼 줄을 붙여요. 버튼 id toGuideBtn은 그대로) */
+function t1AfterSchemaHTML(lid,spec,p){
+  const hasG=(spec.firstGuide||[]).length>0,isC=spec.kind==='concept',seen=!!(p&&p.concept);
+  const gBtn=cls=>`<button type="button" class="btn ${cls}" id="toGuideBtn">B. 선생님과 같이 따라 풀기 →</button>`;
+  const cBtn=cls=>`<a class="btn ${cls}" href="#${lid}-concept">② 부엉 쌤 개념 보기 →</a>`;
+  const pBtn=`<a class="btn primary" href="#${lid}-practice">첫걸음 차시 마무리 →</a>`;
+  let msg,btns;
+  if(isC&&hasG&&!seen){msg='다음 순서: <b>② 개념 보기</b>에서 이름을 확인한 뒤 → <b>B. 선생님과 같이 따라 풀기</b>로 넘어가요.';btns=cBtn('primary')+gBtn('ghost')}
+  else if(hasG){msg='이제 <b>B. 선생님과 같이 따라 풀기</b>로 넘어가요.';btns=gBtn('primary')+(isC?cBtn('ghost'):'')}
+  else if(isC&&!seen){msg='방금 본 모양의 이름을 <b>② 개념 보기</b>에서 확인해 봐요.';btns=cBtn('primary')}
+  else{msg='이제 <b>차시 마무리</b>로 넘어가요.';btns=pBtn+(isC?cBtn('ghost'):'')}
+  return `${msg}</div>
+    <div class="next-row" style="justify-content:flex-start">${btns}`;
+}
+
 /* [T19] 첫걸음 A단계 · 주황 표시 연속 구별하기
    spec.schemaRapid = { n: 문제 수, kinds: 종류 수, q: 묻는 말, choices: [보기], make(kindIdx, seed) → {fig, ans, why, also?} }
    그림이 연달아 뜨고, 맞히면 잠깐 뒤 저절로 다음 그림. 틀리면 이유를 보여 주고 같은 종류를 한 번 더 내요. */
 function renderT1Rapid(host,lid,spec,onNextPart){
   const R=spec.schemaRapid,p=lesProg(lid);
   const rnd=typeof mulberry==='function'?mulberry(typeof newSeed==='function'?newSeed():Date.now()%99991):Math.random;
-  const kinds=[...Array(R.kinds).keys()];
-  for(let i=kinds.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[kinds[i],kinds[j]]=[kinds[j],kinds[i]]}
+  /* [T31] R.order(rnd) → 종류 순서를 차시가 정해요(예: poly 다면체 O/X → 가족 → 정리). 없으면 무작위. */
+  const kinds=typeof R.order==='function'?R.order(rnd):[...Array(R.kinds).keys()];
+  if(typeof R.order!=='function')for(let i=kinds.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[kinds[i],kinds[j]]=[kinds[j],kinds[i]]}
   const total=Math.min(R.n||8,kinds.length);
   const newSeedFor=k=>k+R.kinds*(1+Math.floor(rnd()*900));
   const queue=kinds.slice(0,total).map(k=>({k,seed:newSeedFor(k)}));
@@ -424,8 +446,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
   const finish=()=>{
     p.t1SchemaDone=true;p.tday=today();if(typeof save==='function')save();
     if(typeof award==='function')award(5,lid+':t1schema','주황색 표시를 모두 구별했어요');
-    host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별하기 ${queue.length}문제 완료!</b> 한 번에 맞힌 문제 ${good}개예요. ${spec.kind==='concept'?'방금 본 모양의 이름을 <b>개념 보기</b>에서 다시 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
-      <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}${(spec.firstGuide||[]).length?`<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button>`:spec.kind==='concept'?'':`<a class="btn primary" href="#${lid}-practice">첫걸음 차시 마무리 →</a>`}</div></div>`;
+    host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별하기 ${queue.length}문제 완료!</b> 한 번에 맞힌 문제 ${good}개예요. ${t1AfterSchemaHTML(lid,spec,p)}</div>`;
     const gb=$('#toGuideBtn',host);if(gb)gb.onclick=onNextPart;
   };
   const draw=()=>{
@@ -441,7 +462,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
         <div class="ct-fig ct-rapid-fig"></div>
         <div>
           <p class="ct-schema-q">${it.q||R.q||'주황색으로 표시한 것은?'}</p>
-          <div class="ct-hit-row" id="rqOpts">${R.choices.map((c,i)=>`<button type="button" class="ct-hit" style="--i:${i}" data-v="${c}">${c}</button>`).join('')}</div>
+          <div class="ct-hit-row" id="rqOpts">${(it.choices||R.choices).map((c,i)=>`<button type="button" class="ct-hit" style="--i:${i}" data-v="${c}">${c}</button>`).join('')}</div>
           <div id="rqMsg" aria-live="polite"></div>
         </div>
       </div></div>`;
@@ -484,8 +505,7 @@ function renderT1Schema(host,lid,spec,onNextPart){
     if(idx>=QS.length){
       p.t1SchemaDone=true;p.tday=today();if(typeof save==='function')save();
       if(typeof award==='function')award(5,lid+':t1schema','맞는지 아닌지 모두 구별했어요');
-      host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별 연습 ${QS.length}문항 완료!</b> ${spec.kind==='concept'?'방금 본 모양에 어떤 이름이 붙는지 <b>개념 보기</b>에서 확인해 봐요.':'이제 <b>선생님과 같이 따라 풀기</b>로 넘어가요.'}</div>
-        <div class="next-row" style="justify-content:flex-start">${spec.kind==='concept'?`<a class="btn primary" href="#${lid}-concept">부엉 쌤 개념 보러 가기 →</a>`:''}<button type="button" class="btn ${spec.kind==='concept'?'ghost':'primary'}" id="toGuideBtn">선생님과 따라 풀기 →</button></div></div>`;
+      host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>구별 연습 ${QS.length}문항 완료!</b> ${t1AfterSchemaHTML(lid,spec,p)}</div>`;
       const gb=$('#toGuideBtn',host);if(gb)gb.onclick=onNextPart;
       return;
     }
@@ -679,9 +699,10 @@ function renderT1Guide(host,lid,spec){
   draw();
 }
 
+const t1GuideAllDone=(lid,spec)=>{const p=lesProg(lid);return(spec.firstGuide||[]).every(g=>p.t1Solo&&p.t1Solo[g.tyNo])};
 function renderT1Concept(body,lid,spec){
   body.innerHTML=`<div id="owlConceptHost"></div>
-    ${spec.kind==='concept'?`<div class="next-row"><a class="btn primary" href="#${lid}-practice">3단계 차시 마무리 하러 가기 →</a></div>`
+    ${spec.kind==='concept'?((spec.firstGuide||[]).length&&!t1GuideAllDone(lid,spec)?`<div class="next-row"><a class="btn primary" href="#${lid}-steps">B. 선생님과 같이 따라 풀기 →</a><a class="btn ghost" href="#${lid}-practice">3단계 차시 마무리 →</a></div>`:`<div class="next-row"><a class="btn primary" href="#${lid}-practice">3단계 차시 마무리 하러 가기 →</a></div>`)
       :`<div class="next-row"><a class="btn primary" href="#${lid}-steps">2단계 유형 익히기(선생님과 따라 풀기) →</a></div>`}
     ${bonusExploreHTML(lid)}`;
   const host=$('#owlConceptHost',body);
@@ -691,7 +712,7 @@ function renderT1Concept(body,lid,spec){
 function renderT1Practice(body,lid,spec){
   const p=lesProg(lid);
   /* [T20] schemaRapid.check = 마무리에 섞을 빠른 구별 종류 번호들. 틀리면 같은 종류의 다른 그림(make)으로 다시 확인해요. */
-  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:it.q||R.q,fig:()=>it.fig,choices:R.choices,ans:it.ans,also:it.also,both:it.both,why:it.why,hint:`정답은 <b>${(it.both||[it.ans]).join(', ')}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
+  const R=spec.schemaRapid,rapidItem=k=>{const mk=sd=>{const it=R.make(k,k+R.kinds*(1+sd%900));return{id:'r'+k+'_'+sd,kind:'r'+k,q:it.q||R.q,fig:()=>it.fig,choices:it.choices||R.choices,ans:it.ans,also:it.also,both:it.both,why:it.why,hint:`정답은 <b>${(it.both||[it.ans]).join(', ')}</b>예요. ${it.why}`}};const first=mk(Math.floor(Math.random()*900)+1);first.make=mk;return first};
   const rapidPool=R&&Array.isArray(R.check)?R.check.map(rapidItem):[];
   const basePool=spec.t1Check&&spec.t1Check.length?spec.t1Check:(rapidPool.length?[]:(spec.schemaQs||[]).map((q,i)=>({id:'t1q'+i,kind:'k'+i,q:q.q,fig:q.fig,choices:q.choices,ans:q.ans,hint:q.hint})));
   const pool=rapidPool.concat(basePool);
