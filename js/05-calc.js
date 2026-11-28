@@ -812,21 +812,30 @@ function drillRun(Q,{onFinish,onAnswer,host=app}={}){Q.forEach(q=>{q.state=null;
   const flash=(h,c)=>{const f=$('.dflash',host);f.innerHTML=h;f.className='dflash'+(c?' '+c:'')};
   const again=q=>q.regen?Object.assign(q.regen(),{retry:true,state:null}):Object.assign({},q,{retry:true,state:null,tried:false});
   function ask(){busy=false;bar();const q=queue[0];window.__cq=q;window.__cs=null;if(!q){finish();return}
-    $('.dNo',host).textContent=q.kw?'낱말 떠올리기':q.extra?'한 번 더':q.retry?'다시 한 번':`${counted.indexOf(q)+1} / ${counted.length}`;
+    $('.dNo',host).textContent=q.kw?'낱말 떠올리기':q.extra?'한 번 더':q.retry?'다시 한 번':`${counted.indexOf(q)+1} / ${counted.length}${q.ea&&!q.eaDone?' · 틀린 풀이 찾기':''}`;
     $('.dq',host).innerHTML=q.q;flash('');keyCue(q);const io=$('.dIn',host);io.innerHTML='';stopSpeak();const sb=$('.dSay',host);if(sb)sb.onclick=()=>speak(sayText(q.q+(q.suffix?` (단위 ${q.suffix})`:'')),sb);
+    if(q.ea&&!q.eaDone&&!q.retry){errStage(q,io);return}
     if(missRun>=2&&q.steps&&q.steps.length&&!q.extra&&!q.retry){missRun=0;
       io.innerHTML=`<div class="offer"><p>두 문제 연속으로 어려웠어요. 괜찮아요! 이번 문제는 <b>쪼개서</b> 같이 풀까요?</p><div class="next-row" style="justify-content:center;margin:8px 0 0"><button type="button" class="btn primary oYes">쪼개서 풀기</button><button type="button" class="btn oNo">혼자 해 볼게요</button></div></div>`;
       $('.oYes',io).onclick=()=>{busy=true;q.state='hint';onAnswer&&onAnswer(q,{ok:false,ms:null,counted:true,help:true});help(q,io,true)};$('.oNo',io).onclick=()=>stage(q,io);return}
     stage(q,io)}
-  function keyCue(q){let c=$('.dcue',host);if(!c){c=el('<div class="dcue"></div>');$('.dq',host).after(c)}const K=keyFor(q);c.innerHTML='';if(!K)return;
+  function keyCue(q){let c=$('.dcue',host);if(!c){c=el('<div class="dcue"></div>');$('.dq',host).after(c)}const K=keyFor(q);c.innerHTML='';if(!K||(q.ea&&!q.eaDone))return;
     const chip=()=>{c.innerHTML=`<button type="button" class="kchip" aria-expanded="false">💡 떠올릴 낱말: <b>${K.w}</b></button><div class="kpop" hidden>${K.fig?`<div class="kfigw">${K.fig()}</div>`:''}${K.say}<br>${M_(K.eq)}</div>`;const b=$('.kchip',c);b.onclick=()=>{const p=$('.kpop',c);p.hidden=!p.hidden;b.setAttribute('aria-expanded',String(!p.hidden))}};
     if(q.lv===1&&!q.retry&&!q.extra)chip();else{c.innerHTML='<button type="button" class="kchip ask">💡 무엇을 떠올릴까? (눌러서 보기)</button>';$('.kchip',c).onclick=chip}}
+  function errStage(q,io){const E=q.ea,t0=performance.now();
+    $('.dq',host).innerHTML=`${q.q}<div class="ea-friend">친구는 이렇게 답했어요: <b>${M_(E.w)}</b> <span class="ea-x" aria-label="틀림">✗</span></div><div class="kq">친구는 어디서 잘못했을까요?</div>`;
+    const box=el('<div class="answer"><div class="choices ea-ch"></div></div>'),ch=box.firstChild;io.appendChild(box);
+    E.choices.forEach(c=>{const b=el('<button type="button"></button>');b.textContent=c;b.onclick=()=>{if(busy)return;if(performance.now()-t0<1200){flash('먼저 친구의 답을 천천히 살펴봐요.');return}
+      busy=true;const ok=c===E.ans;q.eaMiss=!ok;$$('button',ch).forEach(x=>{x.disabled=true;if(x===b)x.classList.add('picked')});
+      flash(ok?`맞아요! <span class="kline">${E.m}</span>`:`친구의 실수는 이거예요. <span class="kline">${E.m}</span><br><small>끝에 비슷한 문제가 한 번 더 나와요.</small>`,ok?'ok':'bad');
+      const go=()=>{q.eaDone=true;busy=false;$('.dNo',host).textContent=`${counted.indexOf(q)+1} / ${counted.length}`;$('.dq',host).innerHTML=`${q.q}<div class="kq">이제 바른 답을 구해 보세요.</div>`;keyCue(q);stage(q,io)};
+      const nb=el('<div class="next-row" style="justify-content:center"><button type="button" class="btn primary">바른 답 구하기 →</button></div>');nb.firstChild.onclick=go;io.appendChild(nb)};ch.appendChild(b)})}
   function stage(q,io){io.innerHTML='';const t0=performance.now();
     io.appendChild(answerUI({type:q.type,suffix:q.suffix,choices:q.choices,mathChoices:q.mathChoices},v=>{if(busy)return true;const ms=performance.now()-t0,res=check({type:q.type,ans:q.ans},v);
       if(res==='nopi'){flash('π를 붙여서 답해요. 예) 12π','bad');return false}
       if(res==='nosign'){flash('+ 또는 − 부호를 붙여 답해요.','bad');return false}
       busy=true;const counts=!q.retry&&!q.extra;onAnswer&&onAnswer(q,{ok:res===true,ms,counted:counts});
-      if(res===true){if(counts){q.state='ok';first++}missRun=0;streak++;queue.shift();const fix=q.retry&&!q.extra;if(fix){fixed++;if(fixed<=FIX_MAX)award(FIX_PTS,null,'다시 해서 맞혔어요')}flash(fix?'다시 해서 맞혔어요! 틀린 걸 스스로 고쳤어요.':streak>=3&&streak%3===0?`${streak}문제 연속! 집중력이 좋아요.`:pick(Math.random,PRAISE),'ok');setTimeout(ask,reduced?0:450);return true}
+      if(res===true){if(counts){q.state='ok';first++}missRun=0;streak++;queue.shift();if(q.eaMiss&&counts)queue.push(again(q));const fix=q.retry&&!q.extra;if(fix){fixed++;if(fixed<=FIX_MAX)award(FIX_PTS,null,'다시 해서 맞혔어요')}flash(fix?'다시 해서 맞혔어요! 틀린 걸 스스로 고쳤어요.':streak>=3&&streak%3===0?`${streak}문제 연속! 집중력이 좋아요.`:pick(Math.random,PRAISE),'ok');setTimeout(ask,reduced?0:450);return true}
       streak=0;if(counts){q.state='hint';missRun++}const why0=diagnose(q,v);if(why0){log.push(why0);if(counts)recordCalcErr(q.tid,why0)}const K=keyFor(q),why=(why0?`<span class="diag">${why0}</span><br>`:'')+(K?`<span class="kline">💡 ${K.w} · ${K.say}</span><br>`:'');
       if(q.steps&&q.steps.length){flash(`${why||'아쉬워요. '}<b>쪼개서</b> 같이 풀어 봐요.`,'bad');help(q,io,false)}
       else{flash(`${why}정답은 ${M_(fmtAns(q))}.${counts?' 끝에 한 번 더 나와요.':''}`,'bad');queue.shift();if(counts)queue.push(again(q));setTimeout(ask,reduced?0:2600)}
@@ -1037,6 +1046,28 @@ function viewCalcStart(){stopSpeak();crumbs.innerHTML=`<span class="sep">›</sp
           :'<p>이번 시험 핵심 연산(원과 부채꼴, 입체도형)으로 바로 넘어가요.</p><p style="margin:0"><a class="btn primary" href="#calc-pi">π가 있는 계산 시작하기</a></p>'}</div>
        <div class="next-row" style="justify-content:flex-start"><a class="btn ghost" href="#calc">기초 연산 목록</a></div>`}
     ask()}}
+/* ── [T27] 틀린 풀이 찾기: 오늘의 계산 중 1~2문제는 '친구의 틀린 답'을 먼저 보여 줘요.
+   어디서 잘못했는지 고르고(같은 주제의 다른 실수들이 보기) → 바른 답을 구해요. 이유를 잘못 고르면 끝에 비슷한 문제가 한 번 더.
+   친구의 틀린 답은 생성기의 errs(흔한 실수)에서, 학생이 최근 자주 틀린 주제(DB._calcErrs)부터 골라요 ── */
+const eaTxt=m=>String(m).replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),eaHead=m=>eaTxt(m).split(/(?<=\.)\s/)[0];
+/* 보기에는 '무엇을 했는지'만 짧게(첫 문장, ~었어요/~했어요 꼴). 고른 뒤 전체 설명(바르게 하는 법)을 보여 줘요 */
+const eaDx=h=>/[었았렸했썼뺐셌꿨눴봤웠겼졌]어요\.$/.test(h),EA_OPS=['더했어요.','뺐어요.','곱했어요.','나눴어요.'],EA_FAM=[/더했|더하|\+/,/뺐|빼|−/,/곱|×|²/,/나눴|나누|÷/],EA_SIM=[/지름을 그대로|대신 지름/,/먼저|차례로|괄호/,/빠뜨|나누지 않/],EA_MORE={pi:['반지름에 바로 π를 붙였어요.','반지름 대신 지름을 넣었어요.']},eaPool={};
+function eaPoolOf(T,L){const k=T.id+':'+L;if(eaPool[k])return eaPool[k];const S=new Set(),r=mulberry(97);
+  for(let m=0;m<40;m++){const g=T.gen(L,r);(g.errs||[]).forEach(x=>{const h=x&&x.m&&eaHead(x.m);if(h&&eaDx(h)&&!/\d/.test(h))S.add(h)})}
+  return eaPool[k]=[...S]}
+function errFind(q,r){if(!q||q.type==='choice'||(q.type==='sn'&&q.ansText)||!q.errs)return null;
+  if(q.tid==='pi'&&NUM(q.lv)>1&&!/반지름/.test(eaTxt(q.q)))return null;/* 지름이 그림에 있는 원 문제는 '지름을 반지름처럼'과 '넓이·둘레 바꿈'이 겹쳐서 빼요 */const T=CALC.find(t=>t.id===q.tid);if(!T)return null;
+  const es=q.errs.filter(e=>e&&e.m&&isFinite(e.a)&&Math.abs(e.a-q.ans)>1e-9&&eaDx(eaHead(e.m)));if(!es.length)return null;
+  const mine=new Set(Object.values(OBJ(DB._calcErrs)).filter(x=>x&&x.tid===q.tid).map(x=>eaHead(x.m)));
+  const e=es.find(x=>mine.has(eaHead(x.m)))||es[Math.floor(r()*es.length)],h0=eaHead(e.m),H=new Set([h0]),ds=[];
+  const qt=eaTxt(q.q),eaAsked=h=>{const m=h.match(/^(.+?)(의 개수)?[을를] 구했어요\.$/);return!!m&&qt.includes(m[1])},fam=h=>EA_FAM.filter(f=>f.test(h)),sim=h=>EA_SIM.filter(f=>f.test(h)),f0=fam(h0),isOp=f0.length>0,s0=sim(h0),put=h=>{if(ds.length>=3||H.has(h)||fam(h).some(f=>f0.includes(f))||sim(h).some(f=>s0.includes(f))||(!isOp&&EA_OPS.includes(h))||eaAsked(h))return;H.add(h);s0.push(...sim(h));f0.push(...fam(h));ds.push(h)};
+  es.filter(x=>Math.abs(x.a-e.a)>1e-9).forEach(x=>put(eaHead(x.m)));shuffle(r,eaPoolOf(T,q.lv||1)).forEach(put);shuffle(r,EA_MORE[T.id]||[]).forEach(put);if(isOp)shuffle(r,EA_OPS).forEach(put);
+  for(let L=1;L<=calcLvN(T.id)&&ds.length<3;L++)if(L!==q.lv)shuffle(r,eaPoolOf(T,L)).forEach(put);if(ds.length<2)return null;
+  const w=q.type==='pi'&&e.pi===false?String(e.a)+(q.suffix?' '+q.suffix:''):fmtAns({type:q.type,ans:e.a,suffix:q.suffix});
+  return{w,m:e.m,ans:h0,choices:shuffle(r,[h0,...ds])}}
+function errFindAdd(Q,r,n){const hot=Object.values(OBJ(DB._calcErrs)),score=q=>hot.filter(x=>x&&x.tid===q.tid).reduce((s,x)=>s+NUM(x.n),0),used=new Set();
+  const cand=shuffle(r,Q.filter(q=>!q.extra&&q.errs)).sort((a,b)=>score(b)-score(a));
+  for(const q of cand){if(n<=0)break;if(used.has(q.tid))continue;const E=errFind(q,r);if(!E)continue;q.ea=E;used.add(q.tid);n--}}
 /* ── 오늘의 계산: 복습할 주제(간격 반복) + 곱셈구구 + 지난 주제를 섞어서 10문제 ── */
 function drillPlan(r,count=10){const out=[],allDue=dueList().filter(inExam).sort((a,b)=>examRank(a.id)-examRank(b.id)),maxDue=count<=5?2:3,due=allDue.slice(0,maxDue),started=(B=>CALC.filter(t=>t.id!=='facts'&&(calcStarted(t.id)||B.has(t.id))&&inExam(t)))(examBase()).sort((a,b)=>examRank(a.id)-examRank(b.id)),lvOf=t=>Math.max(1,Math.min(calcLvN(t.id),NUM(calcPeek(t.id).stars)||1));
   const add=(t,L)=>{let q;for(let k=0;k<6;k++){q=Object.assign({type:'num'},t.gen(L,r));if(!out.some(x=>x.q===q.q))break}q.tid=t.id;q.lv=L;if(t.id!=='facts')q.regen=()=>Object.assign({type:'num'},t.gen(L,r),{tid:t.id,lv:L});out.push(q)};
@@ -1045,8 +1076,7 @@ function drillPlan(r,count=10){const out=[],allDue=dueList().filter(inExam).sort
   for(const t of started.filter(t=>!due.includes(t))){if(out.length>=count)break;add(t,lvOf(t))}
   const basics=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));let i=0;while(out.length<count){const t=basics[i%basics.length];add(t,lvOf(t));i++}
   const Q=shuffle(r,out);for(let pass=0;pass<4;pass++)for(let j=1;j<Q.length;j++)if(Q[j].tid===Q[j-1].tid){const k=Q.findIndex((x,m)=>m>j&&x.tid!==Q[j].tid&&Q[m-1].tid!==Q[j].tid&&(m+1>=Q.length||Q[m+1].tid!==Q[j].tid));if(k>0)[Q[j],Q[k]]=[Q[k],Q[j]]}
-  const kt=shuffle(r,[...new Set(Q.map(q=>q.tid))].filter(id=>KEYS[id]&&(calcStarted(id)||id==='facts'))).slice(0,count<=5?1:2).map(id=>CALC.find(t=>t.id===id));
-  kt.forEach((t,i)=>Q.splice(Math.min(Q.length,i?6:1),0,keyQuiz(t,r)));
+  errFindAdd(Q,r,count<=5?1:2);
   return{Q,due,totalDue:allDue.length}}
 function viewDrill(){crumbs.innerHTML=`<span class="sep">›</span><span>오늘의 계산</span>`;stopSpeak();
   const D=DB._drill=DB._drill||{},CNT=calcLenPref(),tm=!!lsGet('hangeoreum-drill-timer',false),{Q,due,totalDue}=drillPlan(mulberry(newSeed()),CNT);
