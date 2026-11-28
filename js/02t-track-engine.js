@@ -3,7 +3,6 @@
 'use strict';
 
 const SPECS={};
-const BOX_DAYS=[0,1,3,7,14];
 
 /* ── 1. 공통 진행률 · 트랙 완료 · 지표 · 타이머 ── */
 function studentDefaultTrack(dbObj){
@@ -45,8 +44,10 @@ window.lessonProgressInfo=function(id,dbObj,refTrack){
   const started=track===1?(doneSteps>0||trackDone>=1||!!p.t1SchemaDone||t1SoloCount>0):(doneSteps>0||trackDone>=track);
   const bonusTrack=trackDone>track?trackDone:0;
   const TL=(typeof PTYPES==='object'&&PTYPES[id])||[];
-  const mastered=TL.filter(t=>p.rev&&p.rev['ty'+t.no]&&p.rev['ty'+t.no].ok).length;
-  return{id,track,trackDone,tabs,doneSteps,started,isDone,bonusTrack,t1StepsPartial,t1SchemaDone:!!p.t1SchemaDone,t1SoloCount,t1GuideTotal:guideList.length,mastered,totalTypes:TL.length};
+  const revOf=t=>{const r=p.rev&&p.rev['ty'+t.no];return r&&typeof r==='object'?r:null};
+  const mastered=TL.filter(t=>{const r=revOf(t);return r&&r.ok&&!r.re}).length;
+  const recheck=TL.filter(t=>{const r=revOf(t);return r&&r.ok&&r.re}).length;
+  return{id,track,trackDone,tabs,doneSteps,started,isDone,bonusTrack,t1StepsPartial,t1SchemaDone:!!p.t1SchemaDone,t1SoloCount,t1GuideTotal:guideList.length,mastered,recheck,totalTypes:TL.length};
 };
 
 window.lessonTrackDone=function(id,dbObj){
@@ -97,46 +98,75 @@ function clearAutoNav(){
 }
 if(typeof addEventListener==='function')addEventListener('hashchange',clearAutoNav);
 
-/* ── 2. [복습 추천] — 이틀 연속 숙달 & 유형 도장판 (T13 Sec 5) ── */
+/* ── 2. [복습 추천] — 다음 날 한 번 · 유형 도장판 (T37: 설계 총정리 2-2) ──
+   - 유형을 익히면 다음 날 [복습 추천]에 한 번 나와요(예전 3·7·14일 간격은 뺐어요).
+   - 하루 최대 5문제, 유형마다 1문제. 어제 익힌 유형 먼저.
+   - 다음 날 한 번에 맞히면 숙달 ✓(rec.ok=날짜). 틀리면 다음 날 다시.
+   - 숙달한 유형을 [복습 추천]·보스전에서 놓치면 '다시 확인'(rec.re=1)을 붙이고, 다시 맞히면 떼요.
+   기록 모양: DB[lid].rev['ty'+n] = {due:'YYYY-MM-DD'|'', ok:'YYYY-MM-DD'|'', err:0|1, d:'익힌 날', re?:1} (옛 box 칸은 읽지 않아요) */
+const REV_MAX=5;
 function revRec(lid,tyNo){
   const p=lesProg(lid);
   p.rev=p.rev||{};
   return p.rev['ty'+tyNo]||null;
 }
+/* 학생 DB 한 차시(p)의 유형 도장 판정 — 교사 화면도 이 함수를 같이 써요(HG_TRACKS.stampOf) */
+function stampOf(p,tyNo){
+  const rv=p&&p.rev&&typeof p.rev==='object'?p.rev['ty'+tyNo]:null;
+  if(rv&&rv.ok&&rv.re)return{cls:'re',tag:'다시 확인',title:'숙달했던 유형인데 최근에 놓쳤어요. 다시 맞히면 떼어져요'};
+  if(rv&&rv.ok)return{cls:'ok',tag:'숙달 ✓',title:'익힌 다음 날 한 번에 맞혀 숙달했어요'};
+  if(rv&&rv.due)return{cls:'due',tag:'복습 대기',title:'다음 날 [복습 추천]에서 한 번 더 확인해요'};
+  if(p&&((p.t1Solo&&p.t1Solo[tyNo])||(p.tyS&&p.tyS[tyNo])))return{cls:'t1',tag:'익힘',title:'유형 연습을 해 보았어요'};
+  return{cls:'',tag:'',title:'아직 풀지 않았어요'};
+}
+function typeStampState(lid,tyNo){return stampOf(lesProg(lid),tyNo)}
+/* 차시 하나의 숙달·다시 확인 유형 수 */
+function stampCount(p,lid){
+  const TL=(typeof PTYPES==='object'&&PTYPES[lid])||[];let ok=0,re=0;
+  TL.forEach(t=>{const c=stampOf(p,t.no).cls;if(c==='ok')ok++;else if(c==='re'){re++}});
+  return{ok,re,total:TL.length};
+}
 
-function scheduleTypeRev(lid,tyNo,hadWrongs){
+/* fromFinal: 차시 마무리에서 부를 때 true — 숙달 ✓ 유형을 마무리에서 틀리면 '다시 확인'(2-2 다) */
+function scheduleTypeRev(lid,tyNo,hadWrongs,fromFinal){
   const p=lesProg(lid);
   p.rev=p.rev||{};
   const key='ty'+tyNo;
-  const cur=p.rev[key];
-  const d=typeof addDays==='function'&&typeof today==='function'?addDays(today(),1):'';
-  if(!cur||!cur.box){
-    p.rev[key]={box:1,due:d,ok:cur&&cur.ok?cur.ok:'',err:hadWrongs?1:0};
-  }else if(hadWrongs){
-    cur.err=1;
-    cur.due=d||cur.due;
-    cur.box=1;
+  const cur=p.rev[key]&&typeof p.rev[key]==='object'?p.rev[key]:null;
+  if(cur&&cur.ok&&!cur.re){                  /* 이미 숙달한 유형은 다시 올리지 않아요 */
+    if(hadWrongs&&fromFinal)markRecheck(lid,tyNo);
+    return;
   }
+  const t=typeof today==='function'?today():'';
+  const d=typeof addDays==='function'&&t?addDays(t,1):'';
+  const r=cur||{due:'',ok:'',err:0};
+  delete r.box;
+  r.due=(r.due&&r.due<d)?r.due:d;            /* 이미 밀린 복습이 있으면 그날 그대로 */
+  r.d=t;
+  if(hadWrongs)r.err=1;else if(!r.err)r.err=0;
+  p.rev[key]=r;
   if(typeof save==='function')save();
 }
 
 function dueTypeList(targetDate){
   const t=targetDate||(typeof today==='function'?today():'');
+  const yd=t&&typeof addDays==='function'?addDays(t,-1):'';
   const list=[];
   const RL=(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS))?LESSONS.filter(l=>l.ready&&SPECS[l.id]):[];
-  RL.forEach(L=>{
+  RL.forEach((L,li)=>{
     const p=typeof DB==='object'&&DB&&DB[L.id];
     const rv=p&&p.rev;
     if(!rv||typeof rv!=='object')return;
     const TL=(typeof PTYPES==='object'&&PTYPES[L.id])||[];
     TL.forEach(T=>{
       const rec=rv['ty'+T.no];
-      if(rec&&rec.due&&(!t||rec.due<=t)){
-        list.push({lid:L.id,tyNo:T.no,L,T,rec});
-      }
+      if(!rec||typeof rec!=='object'||!rec.due||(t&&rec.due>t))return;
+      if(rec.ok&&!rec.re)return;                /* 숙달 ✓ 유형은 '다시 확인'이 붙었을 때만 */
+      list.push({lid:L.id,tyNo:T.no,L,T,rec,li});
     });
   });
-  list.sort((a,b)=>((b.rec.err?1:0)-(a.rec.err?1:0))||String(a.rec.due).localeCompare(String(b.rec.due))||(a.L.no-b.L.no)||(a.tyNo-b.tyNo));
+  const rank=x=>(x.rec.d===yd?0:1);
+  list.sort((a,b)=>rank(a)-rank(b)||((b.rec.re?1:0)-(a.rec.re?1:0))||((b.rec.err?1:0)-(a.rec.err?1:0))||String(a.rec.due).localeCompare(String(b.rec.due))||(a.li-b.li)||(a.tyNo-b.tyNo));
   return list;
 }
 
@@ -144,51 +174,45 @@ function buildDailyRevQueue(targetDate){
   const due=dueTypeList(targetDate);
   if(!due.length)return[];
   const base=typeof newSeed==='function'?newSeed():301;
-  const mkItem=(d,k)=>({
+  return due.slice(0,REV_MAX).map((d,k)=>({
     lid:d.lid,tyNo:d.tyNo,L:d.L,T:d.T,rec:d.rec,
     genKey:typeof tyKey==='function'?tyKey(d.lid,d.tyNo):d.lid,
     seed:(base+k*37+d.tyNo*13)%99999+1
-  });
-  if(due.length>=3)return due.slice(0,3).map((d,k)=>mkItem(d,k));
-  if(due.length===2){
-    const q=[mkItem(due[0],0),mkItem(due[1],1)];
-    if((due[0].rec.box||1)<=1)q.push(mkItem(due[0],2));
-    return q;
-  }
-  const d0=due[0];
-  if((d0.rec.box||1)<=1)return[0,1,2].map(k=>mkItem(d0,k));
-  return[mkItem(d0,0)];
+  }));
 }
 
 function submitDailyRevType(lid,tyNo,passedFirstTry,reviewDate){
   const p=lesProg(lid);
   p.rev=p.rev||{};
   const key='ty'+tyNo;
-  const r=p.rev[key]||{box:1,due:'',ok:'',err:0};
+  const r=p.rev[key]&&typeof p.rev[key]==='object'?p.rev[key]:{due:'',ok:'',err:0};
   const d=reviewDate||(typeof today==='function'?today():'');
+  delete r.box;
   if(passedFirstTry){
-    const nb=Math.min(4,(Number(r.box)||1)+1);
-    const days=BOX_DAYS[nb]||3;
-    r.box=nb;
-    r.due=typeof addDays==='function'?addDays(d,days):d;
-    r.err=0;
+    r.due='';r.err=0;
     if(!r.ok)r.ok=d;
+    delete r.re;
   }else{
-    r.box=1;
     r.due=typeof addDays==='function'?addDays(d,1):d;
     r.err=1;
+    if(r.ok)r.re=1;
   }
   p.rev[key]=r;
   if(typeof save==='function')save();
   return r;
 }
 
-function typeStampState(lid,tyNo){
-  const p=lesProg(lid),rv=p.rev&&p.rev['ty'+tyNo];
-  if(rv&&rv.ok)return{cls:'ok',tag:'숙달 ✓',title:'이틀 연속 통과로 숙달했어요'};
-  if(rv&&rv.due)return{cls:'due',tag:'복습 대기',title:'내일 [복습 추천]에서 한 번 더 확인해요'};
-  if((p.t1Solo&&p.t1Solo[tyNo])||(p.tyS&&p.tyS[tyNo]))return{cls:'t1',tag:'익힘',title:'유형 연습을 해 보았어요'};
-  return{cls:'',tag:'',title:'아직 풀지 않았어요'};
+/* 보스전 등에서 숙달 유형을 놓쳤을 때 '다시 확인' 붙이기(다음 날 [복습 추천]에 나와요) */
+function markRecheck(lid,tyNo){
+  if(typeof DB!=='object'||!DB||!DB[lid]||typeof DB[lid]!=='object')return false;
+  const r=DB[lid].rev&&DB[lid].rev['ty'+tyNo];
+  if(!r||!r.ok)return false;
+  r.re=1;
+  const t=typeof today==='function'?today():'';
+  const d=t&&typeof addDays==='function'?addDays(t,1):'';
+  if(!r.due||r.due>d)r.due=d;
+  if(typeof save==='function')save();
+  return true;
 }
 
 /* ── 2.5 공용 그림(SVG + 3D Viewer) 마운트 ── */
@@ -744,8 +768,8 @@ function renderT1Practice(body,lid,spec){
       p.concept=true;
       if(typeof save==='function')save();
       if(typeof award==='function')award(10,lid+':t1','첫걸음 차시 마무리를 통과했어요');
-      const TL=(typeof PTYPES==='object'&&PTYPES[lid])||[];
-      TL.forEach(t=>scheduleTypeRev(lid,t.no,false));
+      /* [T37] 🌱 마무리는 🌱 따라 풀기(firstGuide)에 나온 유형만 [복습 추천]에 올려요 */
+      [...new Set((spec.firstGuide||[]).map(g=>g.tyNo).filter(Boolean))].forEach(no=>scheduleTypeRev(lid,no,false));
       body.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌱 첫걸음 차시 마무리 통과!</b><br>핵심 구별과 풀이 따라 하기 ${pool.length}가지를 모두 해냈어요.</div>
         ${lessonCompleteCrossroadsHTML(lid,1)}</div>${bonusExploreHTML(lid)}`;
       bindLessonCrossroads(body,lid,1);
@@ -950,7 +974,7 @@ function renderAdaptivePractice(body,lid,cfg){
         nb.onclick=()=>{idx++;draw()};
         box.appendChild(nb);
       }else{
-        if(cur.tyNo)scheduleTypeRev(lid,cur.tyNo,true);
+        if(cur.tyNo)scheduleTypeRev(lid,cur.tyNo,true,true);
         if(typeof addReview==='function')addReview(cur.genKey,cur.seed,lid);
         if(consecWrongKey===cur.key){rescuedItem=cur;draw();return}
         consecWrongKey=cur.key;
@@ -996,12 +1020,12 @@ function renderT2Practice(body,lid,spec){
       p.prac.solved=Math.max(Number(p.prac.solved)||0,5);
       TL.forEach(t=>{
         const res=results.find(x=>x.tyNo===t.no);
-        scheduleTypeRev(lid,t.no,res&&res.status!=='first');
+        scheduleTypeRev(lid,t.no,res&&res.status!=='first',true);
       });
       if(typeof save==='function')save();
       if(typeof award==='function')award(15,lid+':t2','한걸음 차시 마무리를 통과했어요');
       const rows=results.map(x=>`<li>${x.status==='first'?'⭐ <b>한 번에 통과</b>':'✓ <b>실수 확인 후 통과</b>'} · ${x.label}</li>`).join('');
-      host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌿 한걸음 차시 마무리 통과!</b><br>『${L.title}』을 마쳤어요! 내일 <b>[복습 추천]</b>으로 이틀 연속 숙달 ✓ 도장을 받아 보세요.</div>
+      host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌿 한걸음 차시 마무리 통과!</b><br>『${L.title}』을 마쳤어요! 내일 <b>[복습 추천]</b>에서 한 번 더 맞히면 숙달 ✓ 도장을 받아요.</div>
         <ul style="margin:12px 0;padding-left:20px;line-height:1.8">${rows}</ul>
         ${lessonCompleteCrossroadsHTML(lid,2)}</div>${bonusExploreHTML(lid)}`;
       bindLessonCrossroads(host,lid,2);
@@ -1127,7 +1151,7 @@ function renderT3Practice(body,lid,spec){
       p.prac.solved=Math.max(Number(p.prac.solved)||0,5);
       TL.forEach(t=>{
         const res=results.find(x=>x.tyNo===t.no);
-        scheduleTypeRev(lid,t.no,res&&res.status!=='first');
+        scheduleTypeRev(lid,t.no,res&&res.status!=='first',true);
       });
       if(typeof save==='function')save();
       if(typeof award==='function')award(20,lid+':t3','두걸음 실전 차시 마무리를 통과했어요');
@@ -1258,7 +1282,7 @@ window.viewDailyRev=function(){
   if(typeof crumbs!=='undefined'&&crumbs)crumbs.innerHTML=`<span class="sep">›</span><span>복습 추천</span>`;
   const queue=buildDailyRevQueue();
   if(!queue.length){
-    app.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>오늘의 [복습 추천]을 모두 마쳤어요!</b><br>유형을 익힌 다음 날 1~3문제로 이틀 연속 숙달 ✓ 도장을 받을 수 있어요.</div><div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#home">처음 화면으로</a></div></div>`;
+    app.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>오늘의 [복습 추천]을 모두 마쳤어요!</b><br>유형을 익힌 다음 날 한 번 더 맞히면 숙달 ✓ 도장을 받아요. 하루에 많아야 5문제예요.</div><div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#home">처음 화면으로</a></div></div>`;
     return;
   }
   let idx=0;
@@ -1268,6 +1292,7 @@ window.viewDailyRev=function(){
     const d=typeof today==='function'?today():'';
     const promoted=[],missed=[];
     Object.values(typeOutcomes).forEach(o=>{
+      const before=revRec(o.lid,o.tyNo);o.wasRe=!!(before&&before.re);o.wasOk=!!(before&&before.ok);
       submitDailyRevType(o.lid,o.tyNo,o.allGood,d);
       if(o.allGood)promoted.push(o);
       else missed.push(o);
@@ -1277,8 +1302,8 @@ window.viewDailyRev=function(){
     app.innerHTML=`<div class="ct-card">
       <div class="feedback ok"><b>📅 오늘의 [복습 추천] 완료!</b> ${promoted.length?`${promoted.length}개 유형에 <b>숙달 ✓</b> 도장이 찍혔어요!`:''}</div>
       <ul style="margin:12px 0;padding-left:20px;line-height:1.8">
-        ${promoted.map(o=>`<li>✅ <b>숙달 ✓</b> · ${o.L.no}차시 ${o.L.title} · 유형 ${o.tyNo} (${o.T.nm})</li>`).join('')}
-        ${missed.map(o=>`<li>🔁 <b>내일 다시 확인</b> · ${o.L.no}차시 ${o.L.title} · 유형 ${o.tyNo} (${o.T.nm})</li>`).join('')}
+        ${promoted.map(o=>`<li>✅ <b>${o.wasRe?'다시 확인 뗐어요':'숙달 ✓'}</b> · ${o.L.no}차시 ${o.L.title} · 유형 ${o.tyNo} (${o.T.nm})</li>`).join('')}
+        ${missed.map(o=>`<li>🔁 <b>${o.wasOk?'다시 확인 · 내일 한 번 더':'내일 한 번 더'}</b> · ${o.L.no}차시 ${o.L.title} · 유형 ${o.tyNo} (${o.T.nm})</li>`).join('')}
       </ul>
       ${missed.length?`<div class="ct-wx open" style="margin-top:10px"><div class="ct-wx-body" style="padding-top:12px"><b>👩‍🏫 헷갈린 유형 핵심 요약:</b> ${missed[0].T.key}</div></div>`:''}
       <div class="next-row" style="justify-content:flex-start"><a class="btn primary" href="#home">처음 화면으로</a></div>
@@ -1290,13 +1315,13 @@ window.viewDailyRev=function(){
     const item=queue[idx],prob=GEN[item.genKey](item.seed);
     if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:item.lid,file:'js/02t-track-engine.js',fn:'viewDailyRev',section:'복습 추천',tyNo:item.tyNo,schemaIdx:idx+1,schemaTotal:queue.length});
     prob.title=`<span class="rv-from">${item.L.no}차시 ${item.L.title} · 유형 ${item.tyNo} (${item.T.nm})</span><br>`+stripTB(prob.title);
-    app.innerHTML=`<div class="ct-chk-bar"><b>📅 [복습 추천] 이틀 연속 숙달 확인</b><span>문제 ${idx+1} / ${queue.length} · 2분</span></div><div class="ct-card" id="drevHost"></div>`;
+    app.innerHTML=`<div class="ct-chk-bar"><b>📅 [복습 추천] 어제 익힌 유형 다시 보기</b><span>문제 ${idx+1} / ${queue.length}</span></div><div class="ct-card" id="drevHost"></div>`;
     renderProblem($('#drevHost',app),prob,{mode:'final',visual:true,rep:{lesson:item.lid,gen:item.genKey,seed:item.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
       const ok=good&&wrongs===0,k=item.lid+'|'+item.tyNo;
       if(!typeOutcomes[k])typeOutcomes[k]={lid:item.lid,tyNo:item.tyNo,L:item.L,T:item.T,allGood:true};
       if(!ok)typeOutcomes[k].allGood=false;
       if(typeof logAttempt==='function')logAttempt({lesson:item.lid,kind:'review',good,wrongs,mode,gen:item.genKey,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
-      box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?'⭐ 한 번에 통과!':'💡 내일 같은 유형을 한 번 더 추천해 드릴게요.'}</span>`);
+      box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?'⭐ 한 번에 통과!':'💡 내일 같은 유형을 한 번 더 보여 드릴게요.'}</span>`);
       const nb=document.createElement('button');nb.type='button';nb.className='btn primary';
       nb.textContent=idx+1<queue.length?'다음 복습 문제 →':'결과 확인하기 →';
       nb.onclick=()=>{idx++;draw()};
@@ -1418,7 +1443,7 @@ function homeStepRowHTML(info){
     const on=info.tabs[k];
     const part=!on&&k==='steps'&&info.t1StepsPartial;
     return`<span class="ct-ps${on?' on':part?' part':''}" title="${PROG_STEP_FULL[i]} ${on?'체크 완료':part?'진행 중':'아직'}"><b>${on?'✓':part?'·':'○'}</b>${lb}${part?' 진행':''}</span>`;
-  }).join('')}${info.mastered>0?`<span class="ct-ps-stamp" title="이틀 연속 복습 통과 숙달 도장">숙달 ${info.mastered}/${info.totalTypes}</span>`:''}</span>`;
+  }).join('')}${info.mastered>0?`<span class="ct-ps-stamp" title="익힌 다음 날 [복습 추천]에서 맞힌 숙달 도장">숙달 ${info.mastered}/${info.totalTypes}</span>`:''}</span>`;
 }
 function homeLessonStateBadgeHTML(info){
   if(info.isDone){
@@ -1453,7 +1478,7 @@ function lessonProgBadgesHTML(id){
   const stHtml=`<span class="ct-pl-steps">${PROG_STEP_DEFS.map(([k,lb],i)=>{
     const on=info.tabs[k];
     return`<span class="ct-ps${on?' on':''}" title="${PROG_STEP_FULL[i]} ${on?'완료':'아직'}"><i></i>${lb}</span>`;
-  }).join('')}${info.mastered>0?`<span class="ct-ps-stamp" title="이틀 연속 복습 통과 숙달 도장">숙달 ${info.mastered}/${info.totalTypes}</span>`:''}</span>`;
+  }).join('')}${info.totalTypes?`<span class="ct-ps-stamp" title="숙달 ✓ 유형 수 / 이 차시 유형 수">숙달 ${info.mastered}/${info.totalTypes}</span>`:''}${info.recheck?`<span class="ct-ps-stamp re" title="숙달했다가 최근에 놓친 유형">다시 확인 ${info.recheck}</span>`:''}</span>`;
   return{info,trHtml,stHtml};
 }
 
@@ -1575,7 +1600,7 @@ if(typeof viewHome==='function'){
         const q=buildDailyRevQueue(t);
         const card=el(`<div class="ct-drev-card" id="dailyRevBanner">
           <div class="ct-drev-txt"><b>📅 [복습 추천] 어제 익힌 유형 ${q.length}문제 · 2분</b>
-            <small>${due.slice(0,2).map(d=>`${d.L.title}(유형 ${d.tyNo})`).join(', ')}${due.length>2?` 외 ${due.length-2}개`:''} · 한 번 더 맞히면 숙달 ✓ 도장!</small></div>
+            <small>${due.slice(0,2).map(d=>`${d.L.title}(유형 ${d.tyNo})`).join(', ')}${due.length>2?` 외 ${due.length-2}개`:''} · 한 번에 맞히면 숙달 ✓ 도장!</small></div>
           <div class="ct-drev-act"><a class="btn primary" href="#dailyrev">복습 시작하기 →</a><button type="button" class="btn ghost mini" id="skipDrev">오늘은 닫기</button></div>
         </div>`);
         guide.prepend(card);
@@ -1657,6 +1682,9 @@ window.HG_TRACKS={
   buildDailyRevQueue,
   submitDailyRevType,
   typeStampState,
+  stampOf,
+  stampCount,
+  markRecheck,
   lessonProgressInfo:window.lessonProgressInfo,
   unitActiveTrack,
   promoteUnitTrack,

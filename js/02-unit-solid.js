@@ -67,7 +67,7 @@ function viewMe(){
   app.innerHTML=`<div class="unit-head"><div><h1>내 기록</h1><p>포인트는 정답보다 <b>끝까지 해 본 것</b>에 더 많이 줘요.</p></div></div>
   <div class="card panel acct">${isStudent()?`<div><b>${whoLabel(AUTH)}</b>으로 로그인했어요. 기록은 서버에 저장돼요.<br><span class="muted syncNow">${syncText()}</span></div><button type="button" class="btn meOut">로그아웃</button>`:`<div><b>로그인하지 않았어요.</b> 지금 기록은 이 기기에만 저장돼요.<br><span class="muted">로그인하면 다른 기기에서도 이어서 하고, 선생님이 진도를 볼 수 있어요.</span></div><a class="btn primary" href="#login">로그인</a>`}</div>
   <div class="card panel me-av"><div class="av-stage" id="avMe"></div><div><h2 style="margin:0 0 4px">내 캐릭터</h2><p class="muted" style="margin:0 0 12px">쓸 수 있는 포인트 <b class="rm meBal">${balance()}</b> · 모은 포인트 <b class="rm">${M.pts}</b></p><a class="btn primary" href="#shop">꾸미기 상점 →</a></div></div>
-  <div class="card panel"><div class="bigstats"><div class="stat"><small>포인트</small><b>${M.pts}</b></div><div class="stat"><small>연속 공부</small><b>${liveStreak()}일</b></div><div class="stat"><small>배지</small><b>${Object.keys(M.badges).length}/${BADGES.length}</b></div><div class="stat"><small>졸업한 복습 문제</small><b>${M.cnt.mastered||0}</b></div></div>
+  <div class="card panel"><div class="bigstats"><div class="stat"><small>포인트</small><b>${M.pts}</b></div><div class="stat"><small>연속 공부</small><b>${liveStreak()}일</b></div><div class="stat"><small>배지</small><b>${Object.keys(M.badges).length}/${BADGES.length}</b></div><div class="stat"><small>숙달 ✓ 유형</small><b>${typeof HG_TRACKS==='object'&&HG_TRACKS&&HG_TRACKS.stampCount?LESSONS.filter(l=>l.ready).reduce((a,l)=>a+HG_TRACKS.stampCount(OBJ(DB[l.id]),l.id).ok,0):0}개</b></div></div>
    <h2>배지</h2><div class="badges">${BADGES.map((b,i)=>{const on=!!M.badges[b.k];return`<div class="badge ${on?'':'off'}">${badgeIcon(i,on)}<span><b>${b.nm}</b><small>${on?M.badges[b.k]+' 받음':b.d}</small></span></div>`}).join('')}</div></div>
   <div class="card panel"><h2>차시별 진행</h2><div class="lessons">${LESSONS.filter(l=>l.ready).map(l=>`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${(DB[l.id]&&DB[l.id].prac?`연습 ${DB[l.id].prac.solved}문제 · `:'')}단계 문제 ${(DB[l.id]&&DB[l.id].steps)||0}번</small></span><span class="pips">${pipsOf(l.id)}</span></a>`).join('')}</div></div>
   <div class="card panel"><h2>포인트 받는 방법</h2><table class="t"><tbody>
@@ -77,21 +77,31 @@ function viewMe(){
    <p class="muted" style="margin-bottom:0">로그인하면 받은 포인트만큼 우리 반 보스에게 데미지가 들어가요.</p></div>`;
   mountSpin($('#avMe',app),y=>avatarSVG(myEq(),150,y));refreshLedger().then(L=>{const b=$('.meBal');if(L&&b)b.textContent=balance()});
 }
+/* [T37] 복습 노트 = 차시별 틀린 문제 모음 + 다시 풀어 보기 (설계 총정리 2-5). 일정·졸업 없음.
+   옛 기록(due·stage가 있는 것)도 모음에 그대로 보여 줘요. */
 function viewReview(){
   crumbs.innerHTML=`<span class="sep">›</span><span>복습 노트</span>`;
-  app.innerHTML=`<div class="unit-head"><div><h1>복습 노트</h1><p>틀렸거나 헤맸던 문제를 1일, 3일, 7일 뒤에 다시 풀어요. 세 번 연속 한 번에 맞히면 졸업이에요. 시험처럼 교과서 형식으로 나와요.</p></div></div>
-   <div class="card panel"><div class="statbar"><div class="stat"><small>오늘 남은 문제</small><b class="rvLeft">0</b></div><div class="stat"><small>졸업한 문제</small><b class="rvDone">${me().cnt.mastered||0}</b></div><div class="stat"><small>나중에 나올 문제</small><b class="rvWait">0</b></div></div><div class="rvHost"></div></div>`;
-  const host=$('.rvHost',app);
-  const stats=()=>{const L=dueReviews();$('.rvLeft',app).textContent=L.length;$('.rvWait',app).textContent=(DB._rev||[]).length-L.length;$('.rvDone',app).textContent=me().cnt.mastered||0;return L};
-  function next(){const L=stats();
-    if(!L.length){host.innerHTML=`<div class="feedback ok">오늘 복습할 문제를 모두 풀었어요! ${(DB._rev||[]).length?`나머지 ${(DB._rev||[]).length}문제는 정해진 날에 다시 나와요.`:''}</div><div class="next-row" style="justify-content:flex-start"><a class="btn" href="#home">처음 화면으로</a></div>`;return}
-    const item=L[0],prob=GEN[item.g](item.seed),L0=LESSONS.find(l=>l.id===item.lid);
-    prob.title=`<span class="rv-from">${L0?L0.no+'차시 '+L0.title+' · ':''}${item.stage+1}번째 복습</span><br>`+prob.title;
-    renderProblem(host,prob,{mode:'final',rep:{lesson:item.lid||LESSON_OF[item.g]||'review',gen:item.g,seed:item.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0;reviewResult(item,ok);dayBump('review');logAttempt({lesson:item.lid||LESSON_OF[item.g]||'review',kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
-      if(ok){bump('review');award(5,null,'복습 문제를 맞혔어요')}else award(1,null,'복습에 다시 왔어요');
-      box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?(item.stage>=3?'졸업! 이 문제는 이제 나오지 않아요.':`한 번에 맞혔어요. ${[1,3,7][item.stage]}일 뒤에 한 번 더 나와요.`):'헷갈렸던 문제예요. 내일 다시 나와요.'}</span>`);
-      const nb=el('<button type="button" class="btn primary">다음 →</button>');nb.onclick=next;box.appendChild(nb);stats()}})}
-  next();
+  const all=(Array.isArray(DB._rev)?DB._rev:[]).filter(x=>x&&x.g&&GEN[x.g]);
+  const lidOf=x=>x.lid||LESSON_OF[x.g]||'';
+  const order=LESSONS.map(l=>l.id),groups={};
+  all.forEach(x=>{const k=lidOf(x);(groups[k]=groups[k]||[]).push(x)});
+  const keys=Object.keys(groups).sort((a,b)=>{const ia=order.indexOf(a),ib=order.indexOf(b);return(ia<0?999:ia)-(ib<0?999:ib)});
+  const redo=all.filter(x=>x.redo).length;
+  const head=k=>{const L=LESSONS.find(l=>l.id===k);return L?`${L.no}차시 ${L.title}`:'다른 문제'};
+  const qTxt=x=>{try{return String(GEN[x.g](x.seed).title||'').replace(/<[^>]+>/g,' ').replace(/&[a-z]+;|&#\d+;/g,' ').replace(/\s+/g,' ').trim().slice(0,60)}catch(e){return''}};
+  app.innerHTML=`<div class="unit-head"><div><h1>복습 노트</h1><p>틀렸거나 헤맸던 문제가 차시별로 모여 있어요. 시험 전에 <b>다시 풀어 보기</b>로 하나씩 확인해요.</p></div></div>
+   <div class="card panel"><div class="statbar"><div class="stat"><small>모인 문제</small><b>${all.length}</b></div><div class="stat"><small>다시 풀어 맞힌 문제</small><b class="rvRedo">${redo}</b></div><div class="stat"><small>차시</small><b>${keys.filter(k=>k).length}</b></div></div>
+   ${all.length?keys.map(k=>`<div class="rv-grp"><h2 class="rv-grp-h">${esc(head(k))} <small class="muted">${groups[k].length}문제</small></h2><ol class="rv-list">${groups[k].map(x=>{const i=all.indexOf(x);return`<li class="rv-item" data-i="${i}"><div class="rv-row"><span class="rv-q">${esc(qTxt(x))||'문제'}</span>${x.redo?'<span class="rv-ok">✓ 다시 풀어 맞혔어요</span>':''}<button type="button" class="btn mini rv-go">다시 풀어 보기</button></div><div class="rv-box"></div></li>`}).join('')}</ol></div>`).join('')
+     :`<div class="feedback ok">아직 모인 문제가 없어요. 문제를 틀리거나 헤매면 여기에 차시별로 모여요.</div>`}
+   <div class="next-row" style="justify-content:flex-start"><a class="btn" href="#home">처음 화면으로</a></div></div>`;
+  $$('.rv-item',app).forEach(li=>{const item=all[+li.dataset.i],go=$('.rv-go',li),host=$('.rv-box',li);
+    go.onclick=()=>{go.hidden=true;const lid=lidOf(item)||'review',prob=GEN[item.g](item.seed);
+      renderProblem(host,prob,{mode:'final',rep:{lesson:lid,gen:item.g,seed:item.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{const ok=good&&wrongs===0,first=!item.redo;
+        reviewResult(item,ok);dayBump('review');logAttempt({lesson:lid,kind:'review',good,wrongs,mode,gen:item.g,seed:item.seed,ptype:prob.ptype,stepWrongs,revealed});
+        if(ok){bump('review');if(first)award(5,null,'복습 노트 문제를 다시 풀어 맞혔어요')}else award(1,null,'복습 노트 문제를 다시 풀었어요');
+        box.insertAdjacentHTML('afterbegin',`<span style="flex-basis:100%">${ok?'한 번에 맞혔어요! 이 문제는 노트에 그대로 남아 있어서 시험 전에 또 볼 수 있어요.':'헷갈렸던 문제예요. 단계 풀이를 보고 다음에 다시 풀어 봐요.'}</span>`);
+        const r=$('.rvRedo',app);if(r)r.textContent=all.filter(x=>x.redo).length;
+        if(ok&&!$('.rv-ok',li))$('.rv-row',li).insertAdjacentHTML('beforeend','<span class="rv-ok">✓ 다시 풀어 맞혔어요</span>')}})}})
 }
 /* 화면: 단원 */
 function pipsOf(id){const p=DB[id];const v=p?{concept:p.concept,explore:p.explore,steps:p.steps>0,practice:p.prac&&p.prac.solved>=5}:{};return TABS.map(t=>`<span class="pip ${v[t.id]?'on':''}" title="${t.t}"></span>`).join('')}
@@ -229,7 +239,7 @@ function viewPractice(body,id){
   const wrap=el(`<div class="card panel"><div class="statbar">
      <div class="stat"><small>푼 문제</small><b id="sSolved">${P.solved}</b></div>
      <div class="stat"><small>연속 정답</small><b id="sStreak">${P.streak}</b></div>
-     <span class="lvl" id="sLvl"></span>${(DB._rev||[]).length?`<a class="lvl" style="margin-left:0;background:#fff" href="#review">복습 노트 ${dueReviews().length?'· 오늘 '+dueReviews().length+'문제':'· '+(DB._rev||[]).length+'문제 대기'}</a>`:''}</div><div id="tyHost"></div><div id="practHost"></div></div>`);
+     <span class="lvl" id="sLvl"></span>${(DB._rev||[]).length?`<a class="lvl" style="margin-left:0;background:#fff" href="#review">복습 노트 · ${(DB._rev||[]).length}문제</a>`:''}</div><div id="tyHost"></div><div id="practHost"></div></div>`);
   body.appendChild(wrap);
   const TL=PTYPES[id];P.ty=P.ty||{};
   /* 유형 별: ★1 한 번에 맞힌 문제 2개 · ★2 연속 3개 · ★3 연속 5개 → 별 3개면 그 유형 완성 */

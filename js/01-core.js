@@ -38,7 +38,7 @@ loadDB();
 const SYNC={timer:null,busy:false,pulling:false,last:null,err:null,contact:0};
 /* 기록이 끝없이 커지지 않게 정리 (서버 저장 한도 300KB) */
 function tidyDB(){const M=DB._me;if(M&&M.once&&typeof M.once==='object'){const d=new Date();d.setDate(d.getDate()-60);const cut=d.toISOString().slice(0,10);for(const k in M.once){const m=/^(?:drill|mis|misall|boss):(\d{4}-\d\d-\d\d)/.exec(k);if(m&&m[1]<cut)delete M.once[k]}}
-  if(Array.isArray(DB._rev)&&DB._rev.length>50)DB._rev=DB._rev.slice(-50);
+  if(Array.isArray(DB._rev)){const seen=new Set();DB._rev=DB._rev.filter(x=>{if(!x||typeof x!=='object'||!x.g)return false;const k=x.g+'|'+x.seed;if(seen.has(k))return false;seen.add(k);return true});if(DB._rev.length>50)DB._rev=DB._rev.slice(-50)}
   if(DB._calcErrs&&typeof DB._calcErrs==='object'){const ks=Object.keys(DB._calcErrs);if(ks.length>25){ks.sort((a,b)=>(NUM(DB._calcErrs[b].n)-NUM(DB._calcErrs[a].n))||String(DB._calcErrs[b].d||'').localeCompare(String(DB._calcErrs[a].d||''))).slice(25).forEach(k=>delete DB._calcErrs[k])}}
   for(const k in DB){const v=DB[k];if(v&&v.prac&&Array.isArray(v.prac.retry)&&v.prac.retry.length>20)v.prac.retry=v.prac.retry.slice(-20)}}
 function markActive(){try{localStorage.setItem('hangeoreum-active',String(Date.now()))}catch(e){}}
@@ -81,10 +81,14 @@ function badgeIcon(i,on){const n=3+(i%4),R=17,c=22;const pts=regPoly(n,R,-Math.P
 function updatePill(){applyTheme();const P=$('#mePts'),S=$('#meStreak');if(P)P.textContent=me().pts;if(S){const k=liveStreak();S.textContent=k>=2?`${k}일 연속`:`이번 주 ${weekDays()}일`}}
 function popPts(n,why){const pill=$('#mePill');if(!pill||n<=0)return;const r=pill.getBoundingClientRect(),k=$$('.ptpop').length;const f=el(`<div class="ptpop${why?' why':''}">+${n}${why?` <small>${why}</small>`:''}</div>`);
   if(why)f.style.right=Math.max(8,innerWidth-r.right)+'px';else f.style.left=(r.left+r.width/2)+'px';f.style.top=(r.bottom+4+k*34)+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),why?2400:1100)}
-/* 복습 노트: 틀리거나 헤맨 문제를 1·3·7일 뒤에 다시 */
-function addReview(g,seed,lid){DB._rev=DB._rev||[];if(DB._rev.some(x=>x.g===g&&x.seed===seed))return;DB._rev.push({g,seed,lid,due:addDays(today(),1),stage:0,added:today()});save()}
-function dueReviews(){return(DB._rev||[]).filter(x=>x.due<=today())}
-function reviewResult(item,ok){if(ok){item.stage++;if(item.stage>=3){DB._rev=DB._rev.filter(x=>x!==item);bump('mastered')}else item.due=addDays(today(),[1,3,7][item.stage])}else{item.stage=0;item.due=addDays(today(),1)}save()}
+/* [T37] 복습 노트 = 차시별 틀린 문제 모음(설계 총정리 2-5). 일정(1·3·7일)·졸업은 없어요.
+   다시 풀 문제를 날짜에 맞춰 내주는 일은 [복습 추천](유형 단위, js/02t-track-engine.js)이 해요.
+   옛 기록({due, stage})은 그대로 두고 모음으로만 보여 줘요. */
+function addReview(g,seed,lid){DB._rev=DB._rev||[];if(DB._rev.some(x=>x&&x.g===g&&x.seed===seed))return;DB._rev.push({g,seed,lid:lid||'',added:today()});save()}
+/* 예전 화면(미션·길잡이)이 부르던 이름이라 남겨 둬요. 이제 '오늘 풀 복습 노트 문제'는 없어요 */
+function dueReviews(){return[]}
+/* 다시 풀어 보기 결과: 모음에서 빼지 않고 마지막으로 맞힌 날·틀린 횟수만 적어요 */
+function reviewResult(item,ok){if(!item)return;if(ok)item.redo=today();else item.miss=(Number(item.miss)||0)+1;save()}
 
 /* ───────── 3D 메시 ───────── */
 function faceNormal(V,f,c){let nx=0,ny=0,nz=0;for(let i=0;i<f.length;i++){const p=V[f[i]],q=V[f[(i+1)%f.length]];nx+=(p[1]-q[1])*(p[2]+q[2]);ny+=(p[2]-q[2])*(p[0]+q[0]);nz+=(p[0]-q[0])*(p[1]+q[1])}

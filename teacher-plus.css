@@ -30,3 +30,15 @@
 .peek-bar{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 16px;background:#1d2a44;color:#fff;font-size:15px}
 .peek-bar small{opacity:.8}
 .peek-bar .btn{background:#fff;color:#1d2a44;border-color:#fff;min-height:36px;padding:4px 14px}
+/* [T37] 유형 도장(학습 현황 · 학생 자세히) */
+.t-re{color:#9b1c1c;font-weight:700}
+.t-stamp{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.t-stre ol{margin:6px 0 8px;padding-left:22px}
+.t-stdet summary{cursor:pointer;font-weight:700;margin:6px 0}
+.t-strow{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.t-stl{min-width:120px;font-size:14px}
+.t-sts{display:flex;flex-wrap:wrap;gap:6px}
+.t-sty{position:relative;overflow:hidden;display:inline-flex;gap:4px;align-items:center;padding:3px 9px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff}
+.t-sty i{position:absolute;left:0;bottom:0;height:3px;background:#2f8f5b}
+.t-dst>div{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:4px 0}
+.t-dst>div>span:first-child{min-width:110px;font-size:14px}
