@@ -86,9 +86,22 @@ const figPolyDuo=()=>({items:[
   {mesh:SOLIDS.cube.mk(),cap:'다면체',yaw:-0.5,pitch:0.36,pad:0.38},
   {mesh:SOLIDS.cyl.mk(),cap:'회전체',yaw:-0.45,pitch:0.34,pad:0.38}
 ]});
-const figPolyTypesDuo=()=>({items:[
-  {mesh:TYPE.prism.mk(5),hl:'Fv',cap:'오각기둥 (2층)',yaw:-0.5,pitch:0.34,pad:0.38},
-  {mesh:TYPE.pyramid.mk(5),hl:'Fv',cap:'오각뿔 (꼭대기 1)',yaw:-0.5,pitch:0.34,pad:0.38}
+/* [T31] 층으로 세기 표시: kind v·e·f, on=지금 세는 곳(주황, 깜빡), done=이미 센 곳(파랑). 곳 이름 lo=1층 · hi=2층 · bt=층 사이 */
+const FLOOR_ON='#e08a1e',FLOOR_DONE={v:'#2a4d9e',e:'rgba(42,77,158,.55)',f:'#dbe5f7'},FLOOR_ONF='#fde3c3';
+const floorHL=(kind,on,done=[])=>(v,m,inter)=>{
+  if(typeof floorInfo!=='function')return;
+  const I=floorInfo(m),top=I.n-1,ids=part=>{const g=I.G[kind].filter(g=>kind==='v'?(part==='lo'?g.key==='v0':g.key==='v'+top&&top>0)
+      :kind==='e'?(part==='lo'?g.key==='in0':part==='hi'?g.key==='in'+top&&top>0:g.key[0]==='b')
+      :(part==='lo'?g.key==='fl0':part==='hi'?g.key==='fl'+top&&top>0:g.key[0]==='w'));return new Set(g.flatMap(x=>x.ids))};
+  const ON=new Set(on.flatMap(p=>[...ids(p)])),DN=new Set(done.flatMap(p=>[...ids(p)]));
+  let lit=true;const col=x=>ON.has(x)?(lit?(kind==='f'?FLOOR_ONF:FLOOR_ON):null):DN.has(x)?FLOOR_DONE[kind]:null;
+  if(kind==='v'){v.mode='v';v.vcol=col}else if(kind==='e')v.ecol=col;else v.fcol=col;
+  (v._pulse||[]).forEach(clearTimeout);v._pulse=[];
+  if(inter&&ON.size)for(let t=1;t<=6;t++)v._pulse.push(setTimeout(()=>{lit=t%2===0;v.dirty=true},230*t));
+};
+const figPolyFloors=()=>({items:[
+  {mesh:TYPE.prism.mk(5),hl:floorHL('v',['lo']),cap:'오각기둥',yaw:-0.5,pitch:0.34,pad:0.38},
+  {mesh:TYPE.pyramid.mk(5),hl:floorHL('v',['lo']),cap:'오각뿔',yaw:-0.5,pitch:0.34,pad:0.38}
 ]});
 const figPolyQuiz1=()=>({items:[
   {mesh:cuboid(),cap:'직육면체',yaw:-0.52,pitch:0.38,pad:0.38},
@@ -408,6 +421,32 @@ function twoGlassesSVG(dCone,dCyl,h){
   return svgB(260,174,g,'원뿔 잔과 원기둥 잔');
 }
 
+/* [T31] poly 첫걸음 A 빠른 구별: 종류 0~5 다면체 O/X · 6~9 어느 가족 · 10 pq1 */
+const POLY_OX=['다면체예요 (O)','다면체가 아니에요 (X)'],POLY_FAM=['각기둥','각뿔','각뿔대','셋 다 아닌 다면체'];
+const POLY_KN=['','','','삼각','사각','오각','육각'];
+const polyQ1='<small class="muted">1단계</small><br>이 입체도형은 <b>다면체</b>일까요?<br><small>다면체: <b>다각형</b>인 면으로만 둘러싸인 입체도형</small>';
+const polyQ2='<small class="muted">2단계</small><br>이 입체도형은 다면체예요. <b>어느 가족</b>일까요?<br><small>밑면이 몇 개인지, 두 밑면의 크기가 같은지, 옆면이 어떤 모양인지 보세요.</small>';
+const polyMesh=(mesh,yaw=-0.5,pitch=0.35)=>({mesh,yaw,pitch,pad:0.38});
+function polyRapid(k,seed){
+  const n=3+(((seed*2654435761)>>>0)%4),kn=POLY_KN[n];
+  const ox=(mesh,isP,why)=>({fig:polyMesh(mesh),q:polyQ1,choices:POLY_OX,ans:POLY_OX[isP?0:1],why});
+  const fam=(mesh,ans,why)=>({fig:polyMesh(mesh),q:polyQ2,choices:POLY_FAM,ans,why});
+  switch(k){
+    case 0:return ox(TYPE.prism.mk(n),true,`${kn}기둥은 밑면도 옆면도 모두 다각형이라서 다면체예요.`);
+    case 1:return ox(SOLIDS.cyl.mk(),false,'원기둥은 옆면이 <b>굽은 면(곡면)</b>이라서 다면체가 아니에요. 각기둥과 모양은 닮았지만 굽은 면 하나 때문에 달라요!');
+    case 2:return ox(TYPE.pyramid.mk(n),true,`${kn}뿔은 밑면은 ${kn}형, 옆면은 삼각형이라서 다면체예요.`);
+    case 3:return ox(SOLIDS.cone.mk(),false,'원뿔은 밑면이 원이고 옆면이 <b>굽은 면(곡면)</b>이라서 다면체가 아니에요. 각뿔과 닮았지만 달라요!');
+    case 4:return ox(SOLIDS.sph.mk(),false,'구는 전체가 <b>굽은 면(곡면)</b>이라서 다면체가 아니에요.');
+    case 5:return ox(TYPE.frustum.mk(n),true,'처음 보는 모양이어도 괜찮아요. 굽은 면 없이 모든 면이 다각형이면 다면체예요.');
+    case 6:return fam(TYPE.prism.mk(n),'각기둥',`밑면 2개가 <b>합동</b>(크기가 같음)이고 옆면이 직사각형이에요 → <b>${kn}기둥</b>`);
+    case 7:return fam(TYPE.pyramid.mk(n),'각뿔',`밑면이 <b>1개</b>이고 옆면이 삼각형이에요 → <b>${kn}뿔</b>`);
+    case 8:return fam(TYPE.frustum.mk(n),'각뿔대',`밑면 2개가 평행하지만 <b>크기가 달라요</b>. 옆면은 사다리꼴! 각뿔을 밑면에 평행하게 잘라 낸 이 모양을 <b>각뿔대</b>라고 해요 → <b>${kn}뿔대</b>`);
+    case 9:{const S=SOLIDS[['oct','ico','dod'][seed%3]];
+      return fam(S.mk(),'셋 다 아닌 다면체',`${S.name}는 모든 면이 다각형이라 다면체이지만, 밑면과 옆면으로 나눌 수 없어서 각기둥 · 각뿔 · 각뿔대가 아니에요.`)}
+    default:return{fig:figPolyQuiz1(),q:'<small class="muted">정리</small><br>원기둥과 직육면체 중 <b>다면체</b>는 어느 것인가요?',choices:['직육면체','원기둥','둘 다 다면체','둘 다 다면체가 아니에요'],ans:'직육면체',why:'맞아요! 직육면체는 모든 면이 직사각형(다각형)이므로 다면체예요. 원기둥은 굽은 면이 있어서 아니에요.'};
+  }
+}
+
 if(typeof HG_TRACKS!=='object')return;
 
 /* ── 1차시 poly ── */
@@ -416,7 +455,14 @@ HG_TRACKS.register('poly',{
   owlScenes:[
     {cap:'장면 ① 다각형 면으로만 = 다면체',say:'상자처럼 <span class="kw">다각형인 면으로만</span> 둘러싸이면 <b>다면체</b>! 캔이나 공처럼 굽은 면이 하나라도 있으면 다면체가 아니에요.',svg:figPolyDuo},
     {cap:'장면 ② 각뿔대 = 밑면에 평행하게 싹둑',say:'각뿔을 <span class="kw">밑면에 평행한 평면</span>으로 자를 때 뾰족하지 않은 쪽이 <b>각뿔대</b>! 옆면은 모두 <span class="num">사다리꼴</span>이에요.',svg:()=>figFrustum3D(4,'all',true)},
-    {cap:'장면 ③ 층 건물로 세기 (1층·2층·층사이)',say:'n각기둥과 n각뿔대는 꼭짓점 <span class="num">2n</span>, 모서리 <span class="num">3n</span>, 면 <span class="num">n+2</span>개! 각뿔은 꼭대기 점 1개라 꼭짓점 <span class="num">n+1</span>, 모서리 <span class="num">2n</span>, 면 <span class="num">n+1</span>개예요.',exp:'happy',svg:figPolyTypesDuo,
+    /* [T31] 선생님 의견: 지금 무엇을 세는지 보이게 박자마다 그 부분만 주황으로 깜빡이고, 센 곳은 파랑으로 남겨요. */
+    {cap:'장면 ③ 층 건물로 세기 (1층·2층·층사이)',exp:'happy',svg:figPolyFloors,beats:[
+      {say:'입체도형을 <span class="kw">층 건물</span>처럼 봐요. 먼저 <b>꼭짓점</b>! 아래 밑면, <span class="kw">1층</span>에 꼭짓점이 <span class="num">5</span>개 있어요.',hl:[floorHL('v',['lo']),floorHL('v',['lo'])]},
+      {say:'이번엔 <span class="kw">2층</span>! 오각기둥은 2층에도 <span class="num">5</span>개라 5 + 5 = <span class="num">2n</span>. 오각뿔은 꼭대기 점 <span class="num">1</span>개뿐이라 5 + 1 = <span class="num">n+1</span>이에요.',hl:[floorHL('v',['hi'],['lo']),floorHL('v',['hi'],['lo'])]},
+      {say:'<b>모서리</b>는 <span class="kw">1층 둘레</span> <span class="num">5</span>개부터 세요.',hl:[floorHL('e',['lo']),floorHL('e',['lo'])]},
+      {say:'<span class="kw">2층 둘레</span>와 <span class="kw">층 사이</span> 기둥도 5개씩! 오각기둥은 5 × 3 = <span class="num">3n</span>. 오각뿔은 2층 둘레가 없어서 5 × 2 = <span class="num">2n</span>이에요.',hl:[floorHL('e',['hi','bt'],['lo']),floorHL('e',['hi','bt'],['lo'])]},
+      {say:'<b>면</b>은 <span class="kw">1층 바닥</span>, <span class="kw">2층 지붕</span>, 둘레의 <span class="kw">벽</span> 5개! 오각기둥은 5 + 2 = <span class="num">n+2</span>, 오각뿔은 지붕이 없어 5 + 1 = <span class="num">n+1</span>이에요. 각뿔대는 각기둥처럼 세면 돼요.',hl:[floorHL('f',['bt'],['lo','hi']),floorHL('f',['bt'],['lo','hi'])]}
+    ],
       ask:{q:'사각뿔대의 옆면 모양은 무엇일까요?',choices:['사다리꼴','직사각형','삼각형'],ans:'사다리꼴',hint:'위아래 변이 평행하지만 길이가 달라요.',ok:'맞아요! 각뿔대의 옆면은 모두 사다리꼴이에요.'}}
   ],
   owlSummary:['다각형 면으로만 둘러싸인 입체 = 다면체 (원기둥·원뿔·구 ✕)','각뿔대: 두 밑면 평행·합동 아님, 옆면=사다리꼴','n각기둥·n각뿔대: V=2n, E=3n, F=n+2 / n각뿔: V=n+1, E=2n, F=n+1'],
@@ -424,6 +470,17 @@ HG_TRACKS.register('poly',{
     {id:'pq1',q:'원기둥과 직육면체 중 <b>다면체</b>는 어느 것인가요?',fig:figPolyQuiz1,choices:['직육면체','원기둥','둘 다 다면체'],ans:'직육면체',hint:'굽은 면(곡면)이 없는 입체를 골라요.',why:'맞아요! 직육면체는 모든 면이 직사각형(다각형)이므로 다면체예요.'},
     {id:'pq2',q:'<b>각뿔대</b>의 옆면 모양은 모두 무엇인가요?',fig:()=>figFrustum3D(4,'side'),choices:['사다리꼴','삼각형','직사각형'],ans:'사다리꼴',hint:'위 밑면과 아래 밑면의 크기가 달라요.',why:'맞아요! 각뿔대는 위아래 크기가 다르므로 옆면이 사다리꼴이에요.'},
     {id:'pq3',q:'"각뿔대의 두 밑면은 서로 합동이다." 맞나요?',fig:()=>figFrustum3D(5,'baseAsk'),choices:['아니요','맞아요'],ans:'아니요',hint:'평행하지만 크기가 달라요!',why:'아니에요! 각기둥만 두 밑면이 합동이고, 각뿔대는 크기가 달라요.'}
+  ],
+  /* [T31] 첫걸음 A(선생님 결정): 한걸음 유형 1 '무엇인지 가려내기'를 먼저 경험해 다면체 스키마를 만들어요.
+     ① 다면체 O/X (각기둥↔원기둥, 각뿔↔원뿔 짝 + 구 · 각뿔대) → ② 다면체라면 어느 가족? → ③ pq1 정리(두 입체 비교).
+     pq2 · pq3(각뿔대 옆면 · 밑면)는 개념을 본 뒤 첫걸음 마무리(t1Check)에서 풀어요. */
+  schemaRapid:{n:11,kinds:11,title:'다면체일까? 어느 가족일까?',choices:POLY_OX,check:[3,8],
+    order:rnd=>{const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+      return[...sh([sh([0,1]),sh([2,3])]).flat(),...sh([4,5]),...sh([6,7]),...sh([8,9]),10]},
+    make:polyRapid},
+  t1Check:[
+    {id:'t1pq2',kind:'pq2',q:'<b>각뿔대</b>의 옆면 모양은 모두 무엇인가요?',fig:()=>figFrustum3D(4,'side'),choices:['사다리꼴','삼각형','직사각형','정사각형'],ans:'사다리꼴',hint:'위 밑면과 아래 밑면의 크기가 달라요. 그래서 옆면의 위 변과 아래 변 길이가 달라요.',why:'맞아요! 각뿔대는 위아래 크기가 다르므로 옆면이 사다리꼴이에요.'},
+    {id:'t1pq3',kind:'pq3',q:'"각뿔대의 두 밑면은 서로 합동이다." 맞나요?',fig:()=>figFrustum3D(5,'baseAsk'),choices:['아니요','맞아요'],ans:'아니요',hint:'두 밑면은 평행하지만 크기가 달라요!',why:'맞아요! 각기둥만 두 밑면이 합동이고, 각뿔대는 크기가 달라요.'}
   ],
   firstGuide:[
     {id:'pfg1',tyNo:2,title:'유형 2 · 몇 면체인지 구하기',problem:'<b>육각뿔</b>은 몇 면체인지 구하시오.',fig:hl=>({mesh:TYPE.pyramid.mk(6),hl:(hl&&hl.length)?hl:'all',yaw:-0.5,pitch:0.35,pad:0.38}),

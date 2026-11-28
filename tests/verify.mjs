@@ -375,7 +375,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       if (!Array.isArray(sp.schemaQs) || sp.schemaQs.length < 3 || sp.schemaQs.some(q => !q.choices.includes(q.ans) || !isValidFig(q.fig()))) {
         errors.push(`Invalid schemaQs for ${lid}`);
       }
-      const R = sp.schemaRapid; if (R) for (let k = 0; k < R.kinds; k++) for (let s = 1; s <= 30; s++) { const it = R.make(k, k + R.kinds * s); if (!R.choices.includes(it.ans) || !/<svg/.test(it.fig) || !it.why) { errors.push(`[T19] Invalid schemaRapid for ${lid} kind ${k}`); break; } }
+      const R = sp.schemaRapid; if (R) for (let k = 0; k < R.kinds; k++) for (let s = 1; s <= 30; s++) { const it = R.make(k, k + R.kinds * s); if (!(it.choices || R.choices).includes(it.ans) || !isValidFig(it.fig) || !it.why) { errors.push(`[T19] Invalid schemaRapid for ${lid} kind ${k}`); break; } }
       if (['arc', 'cent', 'sector'].includes(lid)) { if (R && (R.check || []).some(k => k >= R.kinds)) errors.push(`[T20] bad schemaRapid.check ${lid}`); for (const q of (sp.t1Check || [])) if (q.choices.length < 4 || !q.choices.includes(q.ans)) errors.push(`[T20] t1Check needs 4+ choices ${lid}.${q.id}`); for (const cid of Object.keys(sp.genCompound || {})) for (let sd = 1; sd <= 20; sd++) for (const st of sp.genCompound[cid](sd).steps) if (st.type === 'choice' && st.choices.length < 4) { errors.push(`[T20] compound choice needs 4+ ${lid}.${cid}: ${st.q}`); sd = 99; break; } }
       if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < 3 || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !isValidFig(g.fig([]))))) {
         errors.push(`Invalid firstGuide for ${lid}`);
