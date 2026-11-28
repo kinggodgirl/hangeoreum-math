@@ -25,6 +25,7 @@ const jsFiles = [
   'js/02t-tracks-solid.js',
   'js/02t-tracks-graph.js',
   'js/09-debug-loc.js',
+  'js/09r-report.js',
   'js/07-print-omr-boot.js',
 ];
 

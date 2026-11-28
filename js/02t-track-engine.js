@@ -446,6 +446,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
         </div>
       </div></div>`;
     mountTrackFig($('.ct-rapid-fig',host),it.fig,{interactive:true});
+    if(typeof HG_REPORT!=='undefined')HG_REPORT.mount($('.ct-rapid',host),{lesson:lid}); /* [T29] 신고 버튼 */
     const btns=$$('#rqOpts .ct-hit',host),msg=$('#rqMsg',host);
     btns.forEach(btn=>btn.onclick=()=>{
       const v=btn.dataset.v,ms=Date.now()-shownAt;
@@ -501,6 +502,7 @@ function renderT1Schema(host,lid,spec,onNextPart){
         </div>
       </div></div>`;
     mountTrackFig($('#sqFig',host),q.fig?q.fig(true):null,{interactive:true,cap:'그림의 핵심 표시를 눈으로 먼저 확인해요'});
+    if(typeof HG_REPORT!=='undefined')HG_REPORT.mount($('.ct-schema',host),{lesson:lid}); /* [T29] 신고 버튼 */
     $$('#sqOpts .ct-hit',host).forEach(btn=>{
       btn.onclick=()=>{
         const v=btn.dataset.v,ms=Date.now()-shownAt;
@@ -728,6 +730,7 @@ function renderT1Practice(body,lid,spec){
         </div>
       </div></div>`;
     mountTrackFig($('#t1Fig',body),item.fig?item.fig(false):null,{interactive:false});
+    if(typeof HG_REPORT!=='undefined')HG_REPORT.mount($('.ct-card',body),{lesson:lid}); /* [T29] 신고 버튼 */
     $$('#t1Ch .ct-hit',body).forEach(b=>b.onclick=()=>{
       const ms=Date.now()-shownAt;
       if(item.also&&item.also[b.dataset.v]){b.disabled=true;$('#t1Msg',body).innerHTML=`<div class="ct-cool">💡 ${item.also[b.dataset.v]}</div>`;return}
