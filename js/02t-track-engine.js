@@ -600,10 +600,19 @@ function renderT1Schema(host,lid,spec,onNextPart){
   draw();
 }
 
+/* [T38] 총정리 2-3 마: '계산이 어렵나요?' → 선생님이 대신 계산 + 3초 자동 이동 없이 버튼 두 개.
+   고르지 않아도 길잡이(오늘의 계산 집중할 칸)에 '막혔던 계산'이 올라가요(DB._needCalc). */
+const FG_STAY_MSG='<small>좋아요! 이 차시를 끝낸 뒤 오늘의 길잡이에서 이 계산을 연습할 수 있어요.</small>';
+function fgHelpBoxHTML(g,calcNm,stay){
+  return`<div class="ct-calchelp-box" id="fgHelpBox"><div><b>선생님이 대신 계산했어요:</b> ${g.calcExplain}</div>
+    <div style="margin-top:6px">이 계산은 <b>기초 연산 · ${calcNm}</b>에서 연습할 수 있어요. 어떻게 할까요?</div>
+    <div class="ct-calchelp-act">${stay?FG_STAY_MSG:`<a class="btn primary" href="#calc-${g.calcTopic}">지금 기초 연산 가기 →</a>
+      <button type="button" class="btn ghost" id="fgStayHere">이 차시 먼저 끝내기</button>`}</div></div>`;
+}
 function renderT1Guide(host,lid,spec){
   const p=lesProg(lid),GUIDE=spec.firstGuide||[];
   p.t1Solo=p.t1Solo||{};
-  let gIdx=0,step=0,foundGiven=new Set(),helped=false,twinDone=false,twinSeed=typeof newSeed==='function'?newSeed():41,stepShown=Date.now();
+  let gIdx=0,step=0,foundGiven=new Set(),helped=false,stayPicked=false,twinDone=false,twinSeed=typeof newSeed==='function'?newSeed():41,stepShown=Date.now();
 
   const mountSoloTwin=()=>{
     const g=GUIDE[gIdx],soloHost=$('#fgSoloHost',host);
@@ -676,13 +685,12 @@ function renderT1Guide(host,lid,spec){
           </div>
           <div class="ct-gstep ${s3Done?'done':step===3?'cur':'lock'}">
             <div class="ct-gstep-h"><span class="ct-gnum">${s3Done?'✓':'4'}</span>계산해서 답을 넣어 보세요</div>
-            ${step<3?'<small class="muted">3단계를 마치면 열려요</small>':s3Done?`<div class="feedback ok">${g.calcExplain}</div>`
+            ${step<3?'<small class="muted">3단계를 마치면 열려요</small>':s3Done?(helped?fgHelpBoxHTML(g,calcNm,stayPicked):`<div class="feedback ok">${g.calcExplain}</div>`)
               :`<p style="margin:4px 0">${g.calcPrompt}</p>
                 <div class="ct-input-row"><input type="text" class="ct-inp" id="fgInp" placeholder="?" inputmode="text"><button type="button" class="btn primary" id="fgChk">확인</button></div>
                 <div id="fgM3"></div>
                 <div class="ct-calchelp">
                   <button type="button" class="ct-calchelp-toggle" id="fgHelpBtn">🤔 계산이 어렵나요? (선생님이 대신 계산 + 기초 연산 연결)</button>
-                  <div id="fgHelpBox"${helped?'':' hidden'}></div>
                 </div>`}
           </div>
         </div>
@@ -722,23 +730,14 @@ function renderT1Guide(host,lid,spec){
       }
     };
 
-    const hb=$('#fgHelpBtn',host),hbox=$('#fgHelpBox',host);
-    if(hb&&hbox)hb.onclick=()=>{
-      helped=true;
+    const hb=$('#fgHelpBtn',host);
+    if(hb)hb.onclick=()=>{
+      helped=true;stayPicked=false;
       if(typeof DB==='object'&&DB){DB._needCalc={id:g.calcTopic,from:lid,at:Date.now()};if(typeof save==='function')save()}
       step=4;draw();
-      const boxAfter=$('#fgHelpBox',host)||hbox;
-      /* [T38] 총정리 2-3 마: 3초 자동 이동 없이 버튼 두 개. 고르지 않아도 길잡이에 '막혔던 계산'이 올라가요(DB._needCalc) */
-      boxAfter.hidden=false;boxAfter.className='ct-calchelp-box';
-      boxAfter.innerHTML=`<div><b>선생님이 대신 계산했어요:</b> ${g.calcExplain}</div>
-        <div style="margin-top:6px">이 계산은 <b>기초 연산 · ${calcNm}</b>에서 연습할 수 있어요. 어떻게 할까요?</div>
-        <div class="ct-calchelp-act">
-          <a class="btn primary" href="#calc-${g.calcTopic}">지금 기초 연산 가기 →</a>
-          <button type="button" class="btn ghost" id="fgStayHere">이 차시 먼저 끝내기</button>
-        </div>`;
-      const sBtn=$('#fgStayHere',boxAfter);
-      if(sBtn)sBtn.onclick=()=>{const act=$('.ct-calchelp-act',boxAfter);if(act)act.innerHTML='<small>좋아요! 이 차시를 끝낸 뒤 오늘의 길잡이에서 이 계산을 연습할 수 있어요.</small>'};
     };
+    const sBtn=$('#fgStayHere',host);
+    if(sBtn)sBtn.onclick=()=>{stayPicked=true;const act=$('.ct-calchelp-act',host);if(act)act.innerHTML=FG_STAY_MSG};
 
     if(s3Done&&!twinDone)mountSoloTwin();
     const nb=$('#fgNext',host);
