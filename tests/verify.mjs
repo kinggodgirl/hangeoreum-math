@@ -137,7 +137,7 @@ const d10 = drillPlan(mulberry(42), 10);
 if (d5.Q.filter(q => !q.extra).length !== 5) errors.push('drillPlan(5) count mismatch');
 if (d10.Q.filter(q => !q.extra).length !== 10) errors.push('drillPlan(10) count mismatch');
 if (!d5.Q.some(q => EXAM_FOCUS.includes(q.tid))) errors.push('drillPlan(5) missing EXAM_FOCUS topics');
-for (const d of [d5, d10]) { const ea = d.Q.filter(q => q.ea); if (!ea.length || ea.some(q => !q.ea.choices.includes(q.ea.ans) || q.ea.choices.length < 3 || q.extra) || d.Q.some(q => q.kw)) errors.push('drillPlan 틀린 풀이 찾기(T27) missing/bad'); }
+for (const d of [d5, d10]) { if (d.Q.some(q => q.ea || q.kw)) errors.push('drillPlan: 틀린 풀이 찾기·낱말 퀴즈는 빼기로 함(T33)'); }
 // 연결맵: 모든 칸에 바탕 목록이 있고, 없는 칸을 가리키지 않으며, 순환이 없어야 해요
 { const ids = new Set(CALC.map(t => t.id)), seen = {}, visit = (id, path) => { if (seen[id] === 2) return; if (seen[id] === 1) { errors.push('CALC_PRE cycle: ' + path.join('→')); return; } seen[id] = 1; (CALC_PRE[id] || []).forEach(p => visit(p, [...path, p])); seen[id] = 2; };
   CALC.forEach(t => { if (!CALC_PRE[t.id]) errors.push('CALC_PRE missing ' + t.id); });
