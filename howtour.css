@@ -1,0 +1,44 @@
+/* 화면별 따라 보기 사용법 (T40) · 로직은 js/09h-howtour.js */
+.ht-intro{position:fixed;inset:0;z-index:3000;background:rgba(20,26,44,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+@media (min-width:640px){.ht-intro{align-items:center}}
+.ht-card{background:var(--paper,#fffdf7);color:var(--ink,#1d2640);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.25);width:min(440px,100%);max-height:calc(100vh - 24px);overflow:auto;padding:16px 16px 12px}
+.ht-h{display:flex;align-items:center;gap:8px;font-size:1.08rem}
+.ht-h b{flex:1}
+.ht-x,.ht-stop{border:0;background:transparent;font-size:1.1rem;cursor:pointer;color:inherit;padding:4px 8px;border-radius:8px}
+.ht-lead{margin:6px 0 12px;font-size:.95rem}
+.ht-pick{display:grid;gap:8px}
+.ht-opt{display:flex;align-items:center;gap:12px;text-align:left;border:2px solid #d9dcea;background:#fff;border-radius:14px;padding:12px;cursor:pointer;font:inherit;color:inherit}
+.ht-opt:hover,.ht-opt:focus-visible{border-color:var(--accent,#e08a1e);outline:none}
+.ht-opt b{display:block;font-size:1rem}
+.ht-opt small{display:block;color:#5b6278;font-size:.84rem;margin-top:2px}
+.ht-oi{font-size:1.6rem;width:36px;text-align:center;flex:none}
+.ht-auto .ht-oi{color:var(--accent,#e08a1e)}
+.ht-list{margin:12px 0 6px;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px;counter-reset:ht}
+.ht-list li{counter-increment:ht;font-size:.8rem;background:#f1f2f8;border-radius:999px;padding:4px 10px;cursor:pointer}
+.ht-list li::before{content:counter(ht) '. ';color:#8a90a6}
+.ht-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font-size:.85rem}
+.ht-voice{display:flex;align-items:center;gap:4px;cursor:pointer}
+.ht-more{color:#2a4d9e}
+/* 비추기 */
+.ht-block{position:fixed;inset:0;z-index:3000;background:transparent}
+.ht-spot{position:fixed;z-index:3001;border-radius:12px;box-shadow:0 0 0 9999px rgba(20,26,44,.66);pointer-events:none;transition:top .35s ease,left .35s ease,width .35s ease,height .35s ease}
+.ht-spot::after{content:'';position:absolute;inset:-3px;border:3px solid var(--accent,#e08a1e);border-radius:14px;animation:htRing 1.4s ease-out infinite}
+@keyframes htRing{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+.ht-tip{position:fixed;z-index:3003;background:var(--paper,#fffdf7);color:var(--ink,#1d2640);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:12px 14px 10px;transition:top .3s ease,left .3s ease}
+.ht-tn{font-size:.78rem;color:#8a90a6}
+.ht-tt{display:block;font-size:1.05rem;margin:2px 0 4px}
+.ht-ts{margin:0 0 10px;font-size:.95rem;line-height:1.5}
+.ht-tb{display:flex;gap:6px;align-items:center}
+.ht-tb .ht-next{margin-left:auto}
+.ht-tb .ht-prev[disabled]{opacity:.4}
+.ht-tb .btn{white-space:nowrap;padding:8px 12px;min-height:40px;font-size:.92rem;flex:none}
+/* 시연 손가락 */
+.ht-hand{position:fixed;z-index:3002;pointer-events:none;width:0;height:0;transition:left .8s cubic-bezier(.4,.1,.2,1),top .8s cubic-bezier(.4,.1,.2,1)}
+.ht-hand[hidden]{display:none}
+.ht-hand span{position:absolute;left:-6px;top:-2px;font-size:2.1rem;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transform-origin:30% 10%}
+.ht-hand i{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;background:rgba(224,138,30,.55);opacity:0}
+.ht-hand.tap span{animation:htTap .5s ease 2}
+.ht-hand.tap i{animation:htRip .5s ease-out 2}
+@keyframes htTap{0%,100%{transform:scale(1)}50%{transform:scale(.82) translateY(3px)}}
+@keyframes htRip{0%{opacity:.8;transform:scale(.3)}100%{opacity:0;transform:scale(1.6)}}
+@media (prefers-reduced-motion:reduce){.ht-spot,.ht-tip,.ht-hand{transition:none}.ht-spot::after,.ht-hand.tap span,.ht-hand.tap i{animation:none}}

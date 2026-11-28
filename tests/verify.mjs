@@ -26,6 +26,7 @@ const jsFiles = [
   'js/02t-tracks-graph.js',
   'js/09-debug-loc.js',
   'js/09r-report.js',
+  'js/09h-howtour.js',
   'js/04b-boss-mix.js',
   'js/02s-split19.js',
   'js/07-print-omr-boot.js',
@@ -724,6 +725,18 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   if (r38.ut !== '{"circle":3}' || r38.arcTr !== 3 || r38.polyTr !== 2) errors.push(`[T38] 올린 단원 지키기 ${JSON.stringify(r38)}`);
   if (!r38.cid || r38.lock1 !== true || r38.lock2 !== false || r38.lock3 !== false) errors.push(`[T38] 개념형 🌱 B 잠금 ${JSON.stringify(r38)}`);
   if (JSON.stringify(r38.pts) !== '[3,13,0]' || r38.streak !== 1 || !r38.allDone || !/\+10/.test(r38.note)) errors.push(`[T38] 길잡이 포인트 ${JSON.stringify(r38)}`);
+}
+// [T40] 화면별 따라 보기 사용법: '? 어떻게 하나요?' → 버튼 비추기·시연, 사용법 페이지 새 이름
+{
+  const help = fs.readFileSync(path.join(root, 'js/07-print-omr-boot.js'), 'utf8');
+  const r40 = JSON.parse(vm.runInContext(`JSON.stringify({ok:typeof HG_TOUR==='object'&&typeof HG_TOUR.start==='function',
+    sc:['','home','coord','coord-steps','coord-practice','calc','calc-add','drill','review','me','boss','dailyrev','unit-solid','baseball'].map(h=>HG_TOUR.screenOf(h)),
+    all:Object.keys(HG_TOUR._screens).every(k=>Array.isArray(HG_TOUR._screens[k]())&&HG_TOUR._screens[k]().every(s=>s.t&&s.s&&s.sel))})`, sandbox));
+  if (!r40.ok || !r40.all) errors.push(`[T40] HG_TOUR 준비 ${JSON.stringify(r40)}`);
+  if (r40.sc.join(',') !== 'home,home,concept,steps,practice,calc,calcTopic,drill,review,me,boss,dailyrev,unit,') errors.push(`[T40] 화면 구분 ${r40.sc}`);
+  if (!help.includes('HG_TOUR.start(h)')) errors.push('[T40] 어떻게 하나요? 버튼이 따라 보기 안내를 부르지 않아요');
+  const hw = help.slice(help.indexOf('function viewHowto'), help.indexOf('function route('));
+  if (/미리 보기|같이 풀기|혼자 풀기|5문제/.test(hw)) errors.push('[T40] 사용법 페이지에 옛 탭 이름이 남아 있어요');
 }
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
