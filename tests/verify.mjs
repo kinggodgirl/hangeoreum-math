@@ -350,6 +350,16 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     if (lessonTrackDone('cent') !== 2) errors.push('lessonTrackDone legacy compat should be 2');
     DB.cent = { trackDone: 3, concept: true, steps: 1, prac: { solved: 5 } };
     if (lessonTrackDone('cent') !== 3) errors.push('lessonTrackDone explicit 3 failed');
+    const isValidMesh = m => !!(m && Array.isArray(m.V) && m.V.length >= 4 && Array.isArray(m.F) && m.F.length >= 4);
+    const isValidFig = res => {
+      if (typeof res === 'string') return /<svg/.test(res);
+      if (res && typeof res === 'object') {
+        if (Array.isArray(res.items)) return res.items.length > 0 && res.items.every(it => it && isValidMesh(it.mesh));
+        if (res.mesh) return isValidMesh(res.mesh);
+        if (typeof res.svg === 'function') return isValidFig(res.svg(true, 0));
+      }
+      return false;
+    };
     const calcIdSet = new Set(CALC.map(c => c.id));
     for (const lid of ALL_EXAM_LESSONS) {
       const sp = HG_TRACKS.specs[lid];
@@ -359,17 +369,17 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       if (!Array.isArray(scenes) || scenes.length < 2 || !scenes.some(sc => sc.ask && sc.ask.choices.includes(sc.ask.ans))) {
         errors.push(`Invalid owlScenes for ${lid}`);
       }
-      if (!Array.isArray(sp.schemaQs) || sp.schemaQs.length < 3 || sp.schemaQs.some(q => !q.choices.includes(q.ans) || !/<svg/.test(q.fig()))) {
+      if (!Array.isArray(sp.schemaQs) || sp.schemaQs.length < 3 || sp.schemaQs.some(q => !q.choices.includes(q.ans) || !isValidFig(q.fig()))) {
         errors.push(`Invalid schemaQs for ${lid}`);
       }
       const R = sp.schemaRapid; if (R) for (let k = 0; k < R.kinds; k++) for (let s = 1; s <= 30; s++) { const it = R.make(k, k + R.kinds * s); if (!R.choices.includes(it.ans) || !/<svg/.test(it.fig) || !it.why) { errors.push(`[T19] Invalid schemaRapid for ${lid} kind ${k}`); break; } }
       if (['arc', 'cent', 'sector'].includes(lid)) { if (R && (R.check || []).some(k => k >= R.kinds)) errors.push(`[T20] bad schemaRapid.check ${lid}`); for (const q of (sp.t1Check || [])) if (q.choices.length < 4 || !q.choices.includes(q.ans)) errors.push(`[T20] t1Check needs 4+ choices ${lid}.${q.id}`); for (const cid of Object.keys(sp.genCompound || {})) for (let sd = 1; sd <= 20; sd++) for (const st of sp.genCompound[cid](sd).steps) if (st.type === 'choice' && st.choices.length < 4) { errors.push(`[T20] compound choice needs 4+ ${lid}.${cid}: ${st.q}`); sd = 99; break; } }
-      if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < 3 || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !/<svg/.test(g.fig([]))))) {
+      if (!(sp.kind === 'concept' && Array.isArray(sp.firstGuide) && !sp.firstGuide.length) && (!Array.isArray(sp.firstGuide) || sp.firstGuide.length < 3 || sp.firstGuide.some(g => !calcIdSet.has(g.calcTopic) || !Number.isFinite(g.calcAns) || !isValidFig(g.fig([]))))) {
         errors.push(`Invalid firstGuide for ${lid}`);
       }
       for (const T of PTYPES[lid] || []) {
         const w = sp.worked && sp.worked[T.no];
-        if (!w || !Array.isArray(w.steps) || w.steps.length < 3 || !w.pitfall || !/<svg/.test(w.fig(w.steps[0].hl))) {
+        if (!w || !Array.isArray(w.steps) || w.steps.length < 3 || !w.pitfall || !isValidFig(w.fig(w.steps[0].hl))) {
           errors.push(`Invalid worked[${T.no}] for ${lid}`);
         }
       }
@@ -378,7 +388,7 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
       for (const cid of cids) {
         for (const sd of [...Array.from({ length: 30 }, (_, i) => i + 1), 0x80000001, 0x7fffffff]) {
           const P = sp.genCompound[cid](sd);
-          if (!P || !Array.isArray(P.combo) || P.combo.length !== 2 || !P.fig || !/<svg/.test(P.fig.svg())) {
+          if (!P || !Array.isArray(P.combo) || P.combo.length !== 2 || !P.fig || !isValidFig(P.fig)) {
             errors.push(`Bad compound ${lid}.${cid} seed ${sd}`); break;
           }
           const bad = P.steps.find(st => !checkStep(st));
@@ -389,6 +399,30 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
         DB[lid] = { track: tr, concept: false, steps: 0, prac: { solved: 0 } };
         for (const tb of ['concept', 'steps', 'practice']) viewLesson(lid, tb);
       }
+    }
+    // [T25] 입체도형 8차시 3D/교과서 SVG 전환 및 문제 스포일러 제거 검증
+    if (typeof HG_TRACKS.mountTrackFig !== 'function') errors.push('[T25] Missing HG_TRACKS.mountTrackFig');
+    const SPOILERS = ['옆면=사다리꼴', '다면체 (', '회전체 (', '입체 ✕', '항상 원'];
+    for (const lid of ['poly', 'regular', 'rotation', 'rotprop', 'area', 'volume', 'conearea', 'cone']) {
+      const sp = HG_TRACKS.specs[lid];
+      (sp.owlScenes || []).forEach((sc, idx) => {
+        if (!sc.svg || !isValidFig(sc.svg(true))) errors.push(`[T25] Bad owlScene fig ${lid}[${idx}]`);
+      });
+      (sp.schemaQs || []).forEach(q => {
+        const res = q.fig(true);
+        if (!isValidFig(res)) errors.push(`[T25] Bad schemaQ fig ${lid}.${q.id}`);
+        if (typeof res === 'string' && SPOILERS.some(s => res.includes(s))) errors.push(`[T25] Spoiler text in schemaQ ${lid}.${q.id}`);
+      });
+      (sp.firstGuide || []).forEach(g => {
+        if (!isValidFig(g.fig([], true))) errors.push(`[T25] Bad firstGuide fig ${lid}.${g.id}`);
+      });
+      Object.values(sp.worked || {}).forEach(w => {
+        if (!isValidFig(w.fig((w.steps[0] && w.steps[0].hl) || [], true))) errors.push(`[T25] Bad worked fig ${lid}.${w.no}`);
+      });
+      Object.keys(sp.genCompound || {}).forEach(cid => {
+        const P = sp.genCompound[cid](7);
+        if (!isValidFig(P.fig)) errors.push(`[T25] Bad compound fig ${lid}.${cid}`);
+      });
     }
     // [복습 추천] 이틀 연속 숙달 로직 검증
     const t0 = today(), t1 = addDays(t0, 1);

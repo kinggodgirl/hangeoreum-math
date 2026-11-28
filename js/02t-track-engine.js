@@ -163,6 +163,45 @@ function typeStampState(lid,tyNo){
   return{cls:'',tag:'',title:'아직 풀지 않았어요'};
 }
 
+/* ── 2.5 공용 그림(SVG + 3D Viewer) 마운트 ── */
+function applyTrackHl(v,m,hl,interactive){
+  const h=Array.isArray(hl)?hl[0]:hl;
+  if(!h)return;
+  if(typeof h==='function'){h(v,m,!!interactive);return}
+  if(h==='baseAsk'){const b=m.base||[],c=typeof HL_SIDE!=='undefined'?HL_SIDE:'#f7c97f';v.fcol=i=>b.includes(i)?c:null;return}
+  if(h==='one'){const b=m.base||[0],t=b.length>1?b[1]:b[0],c=typeof HL_SIDE!=='undefined'?HL_SIDE:'#f7c97f';v.fcol=i=>i===t?c:null;return}
+  if(h==='allV'){v.mode='v';v.vcol=()=>'#e08a1e';return}
+  if(h==='cut'&&typeof m.cutFace==='number'){const c=typeof HL_SIDE!=='undefined'?HL_SIDE:'#f7c97f';v.fcol=i=>i===m.cutFace?c:null;return}
+  if(typeof applyHl==='function')applyHl(v,m,h);
+}
+function mountTrackFig(host,figRes,opt={}){
+  if(!host)return;
+  if(!figRes){host.innerHTML='';return}
+  if(typeof figRes==='string'){
+    host.innerHTML=figRes+(opt.cap?`<div class="ct-fig-cap">${opt.cap}</div>`:'');
+    return;
+  }
+  if(typeof figRes==='object'){
+    const items=Array.isArray(figRes.items)?figRes.items:(figRes.mesh?[figRes]:[]);
+    if(!items.length&&typeof figRes.svg==='function'){mountTrackFig(host,figRes.svg(!!opt.interactive,0),opt);return}
+    if(!items.length){host.innerHTML='';return}
+    const inter=opt.interactive!==false;
+    host.innerHTML=`<div class="ct-3d-grid${items.length>1?' duo':''}${opt.compact?' sm':''}${inter?'':' static'}">
+      ${items.map((it,i)=>`<figure class="ct-3d-item">
+        <div class="ct-3d-stage"><canvas data-f3="${i}" aria-label="${it.aria||it.cap||'입체도형 그림'}"></canvas></div>
+        ${it.cap?`<figcaption class="ct-3d-cap">${it.cap}</figcaption>`:''}
+      </figure>`).join('')}
+    </div>${inter?'<div class="ct-3d-hint">끌어서 돌려 볼 수 있어요</div>':''}${opt.cap?`<div class="ct-fig-cap">${opt.cap}</div>`:''}`;
+    $$('canvas[data-f3]',host).forEach(cv=>{
+      const it=items[+cv.dataset.f3];
+      if(!it||!it.mesh||typeof figure!=='function')return;
+      const v=figure(cv,Object.assign({},it,{visual:inter,yaw:it.yaw??-0.5,pitch:it.pitch??0.36,pad:it.pad??0.38}));
+      applyTrackHl(v,it.mesh,it.hl,inter);
+      v.dirty=true;
+    });
+  }
+}
+
 /* ── 3. 🦉 부엉 쌤 개념 영상 플레이어 ── */
 function owlAvatarSVG(exp='normal'){
   const brow=exp==='warn'?`<path d="M 18 22 L 26 25 M 46 22 L 38 25" stroke="#5a3b1e" stroke-width="2.2" stroke-linecap="round"/>`:'';
@@ -269,7 +308,7 @@ function mountOwlShow(host,lid,spec,opt={}){
         <div class="owl-dots">${scenes.map((_,i)=>`<button type="button" class="owl-dot" data-oi="${i}" aria-label="${i+1}장면"></button>`).join('')}</div>
       </div>
       <div class="owl-panel">
-        <div class="owl-stage owl-new">${sc.svg?sc.svg():''}${sc.cap?`<div class="owl-cap">${sc.cap}</div>`:''}</div>
+        <div class="owl-stage owl-new"><div class="owl-fig-slot"></div>${sc.cap?`<div class="owl-cap">${sc.cap}</div>`:''}</div>
         <div class="owl-row"><div class="owl-av"></div><div class="owl-bub" id="owlBub" aria-live="polite"></div></div>
       </div>
       <div id="owlAskHost"></div><div id="owlSumHost"></div>
@@ -279,8 +318,9 @@ function mountOwlShow(host,lid,spec,opt={}){
       </div>
       <div class="owl-hint"></div>
     </div>`;
+    mountTrackFig($('.owl-fig-slot',host),sc.svg?sc.svg(true):null,{interactive:true});
     const wrap=$('.owl-wrap',host);
-    wrap.onclick=e=>{if(e.target.closest&&e.target.closest('button,a,input,select,label,.owl-ask,.owl-sum'))return;next()};
+    wrap.onclick=e=>{if(e.target.closest&&e.target.closest('button,a,input,select,label,.owl-ask,.owl-sum,canvas,.ct-3d-stage'))return;next()};
     wrap.onkeydown=e=>{if(e.target!==wrap)return;if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}};
     $$('[data-oi]',host).forEach(b=>b.onclick=()=>{const t=+b.dataset.oi;if(t<=seen){idx=t;beat=0;finished=false;enter()}});
     $('#owlPrev',host).onclick=prev;
@@ -370,13 +410,14 @@ function renderT1Rapid(host,lid,spec,onNextPart){
     host.innerHTML=`<div class="ct-card ct-schema ct-rapid">
       <div class="ct-card-h"><h2>${R.title||'주황색은 무엇일까요?'}</h2><div class="ct-schema-prog">${queue.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${queue.length}</span></div></div>
       <div class="ct-stage">
-        <div class="ct-fig ct-rapid-fig">${it.fig}</div>
+        <div class="ct-fig ct-rapid-fig"></div>
         <div>
           <p class="ct-schema-q">${it.q||R.q||'주황색으로 표시한 것은?'}</p>
           <div class="ct-hit-row" id="rqOpts">${R.choices.map((c,i)=>`<button type="button" class="ct-hit" style="--i:${i}" data-v="${c}">${c}</button>`).join('')}</div>
           <div id="rqMsg" aria-live="polite"></div>
         </div>
       </div></div>`;
+    mountTrackFig($('.ct-rapid-fig',host),it.fig,{interactive:true});
     const btns=$$('#rqOpts .ct-hit',host),msg=$('#rqMsg',host);
     btns.forEach(btn=>btn.onclick=()=>{
       const v=btn.dataset.v,ms=Date.now()-shownAt;
@@ -424,13 +465,14 @@ function renderT1Schema(host,lid,spec,onNextPart){
     host.innerHTML=`<div class="ct-card ct-schema">
       <div class="ct-card-h"><h2>맞을까? 아닐까? 구별하기</h2><div class="ct-schema-prog">${QS.map((_,i)=>`<span class="ct-dot-step${i<idx?' done':i===idx?' on':''}">${i<idx?'✓':i+1}</span>`).join('')}<span>${idx+1} / ${QS.length}</span></div></div>
       <div class="ct-stage">
-        <div class="ct-fig">${q.fig?q.fig():''}<div class="ct-fig-cap">그림의 핵심 표시를 눈으로 먼저 확인해요</div></div>
+        <div class="ct-fig" id="sqFig"></div>
         <div>
           <p class="ct-schema-q">${q.q}</p>
           <div class="ct-hit-row" id="sqOpts">${q.choices.map(c=>`<button type="button" class="ct-hit" data-v="${c}">${c}</button>`).join('')}</div>
           <div id="sqMsg"></div>
         </div>
       </div></div>`;
+    mountTrackFig($('#sqFig',host),q.fig?q.fig(true):null,{interactive:true,cap:'그림의 핵심 표시를 눈으로 먼저 확인해요'});
     $$('#sqOpts .ct-hit',host).forEach(btn=>{
       btn.onclick=()=>{
         const v=btn.dataset.v,ms=Date.now()-shownAt;
@@ -512,7 +554,7 @@ function renderT1Guide(host,lid,spec){
       </div>
       <div class="box plain" style="margin-top:0">${g.problem}</div>
       <div class="ct-stage">
-        <div class="ct-fig">${g.fig?g.fig(hl):''}<div class="ct-fig-cap">안내에 따라 눌러 보면 그림에서 바로 확인돼요</div></div>
+        <div class="ct-fig" id="fgFig"></div>
         <div class="ct-guide">
           <div class="ct-gstep ${s0Done?'done':'cur'}">
             <div class="ct-gstep-h"><span class="ct-gnum">${s0Done?'✓':'1'}</span>이 문제에서 구하려는 것은 무엇인가요?</div>
@@ -544,6 +586,7 @@ function renderT1Guide(host,lid,spec){
       <div id="fgSoloHost"></div>
       ${s3Done?`<div class="next-row" style="justify-content:flex-start"><button type="button" class="btn ghost" id="fgNext">${gIdx+1<GUIDE.length?'다음 유형 연습하기 →':'차시 마무리 하러 가기 →'}</button></div>`:''}
     </div>`;
+    mountTrackFig($('#fgFig',host),g.fig?g.fig(hl,true):null,{interactive:true,cap:'안내에 따라 눌러 보면 그림에서 바로 확인돼요'});
 
     $$('[data-gi]',host).forEach(b=>b.onclick=()=>{gIdx=+b.dataset.gi;step=0;foundGiven=new Set();helped=false;twinDone=false;draw()});
     $$('[data-w]',host).forEach(b=>b.onclick=()=>{
@@ -653,12 +696,13 @@ function renderT1Practice(body,lid,spec){
     body.innerHTML=`<div class="ct-chk-bar"><b>🌱 첫걸음 차시 마무리</b><span>진행 ${Math.min(doneSet.size,pool.length)} / ${pool.length}</span></div>
       ${recheckKind===item.kind?'<div class="ct-recheck">💡 실수일 수 있어요! 같은 종류 문제를 한 번 더 확인해 볼게요.</div>':''}
       <div class="ct-card"><div class="ct-stage">
-        <div class="ct-fig">${item.fig?item.fig():''}</div>
+        <div class="ct-fig" id="t1Fig"></div>
         <div><p class="ct-schema-q">${item.q}</p>
           <div class="ct-hit-row" id="t1Ch">${item.choices.map(c=>`<button type="button" class="ct-hit" data-v="${c}">${c}</button>`).join('')}</div>
           <div id="t1Msg"></div>
         </div>
       </div></div>`;
+    mountTrackFig($('#t1Fig',body),item.fig?item.fig(false):null,{interactive:false});
     $$('#t1Ch .ct-hit',body).forEach(b=>b.onclick=()=>{
       const ms=Date.now()-shownAt;
       if(item.also&&item.also[b.dataset.v]){b.disabled=true;$('#t1Msg',body).innerHTML=`<div class="ct-cool">💡 ${item.also[b.dataset.v]}</div>`;return}
@@ -764,7 +808,7 @@ function renderT2Steps(body,lid,spec,initialTypeNo,openWorked){
           <div class="ct-wx-body">
             <p style="margin:8px 0 10px">${W.prob}</p>
             <div class="ct-stage">
-              <div class="ct-fig">${W.fig?W.fig(stObj.hl):''}</div>
+              <div class="ct-fig" id="wxFig"></div>
               <div>
                 <div class="ct-wx-steps">
                   ${W.steps.map((s,i)=>`<button type="button" class="ct-wx-step${i===wxStep?' on':''}" data-ws="${i}"><div class="ct-wx-step-top">${s.t}</div>${i<=wxStep?`<div class="ct-wx-step-body">${s.body}</div>`:'<small class="muted">눌러서 설명 보기</small>'}</button>`).join('')}
@@ -774,6 +818,7 @@ function renderT2Steps(body,lid,spec,initialTypeNo,openWorked){
             </div>
           </div>
         </div>`;
+        mountTrackFig($('#wxFig',wxHost),W.fig?W.fig(stObj.hl,true):null,{interactive:true});
       }
       const tg=$('#t2WxToggle',wxHost);if(tg)tg.onclick=()=>{wxOpen=!wxOpen;if(typeof HG_LOC!=='undefined')HG_LOC.set({workedOpen:wxOpen,workedStep:wxStep});drawWx()};
       $$('[data-ws]',wxHost).forEach(b=>b.onclick=()=>{wxStep=+b.dataset.ws;if(typeof HG_LOC!=='undefined')HG_LOC.set({workedOpen:wxOpen,workedStep:wxStep});drawWx()});
@@ -832,7 +877,7 @@ function renderAdaptivePractice(body,lid,cfg){
       <div class="ct-card" id="chkHost"></div>`;
 
     if(typeof renderProblem!=='function')return;
-    renderProblem($('#chkHost',body),prob,{mode:'final',visual:true,rep:{lesson:lid,gen:cur.genKey,seed:cur.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
+    renderProblem($('#chkHost',body),prob,{mode:'final',visual:cfg.visual!==undefined?!!cfg.visual:true,rep:{lesson:lid,gen:cur.genKey,seed:cur.seed},onDone:({good,wrongs,mode,stepWrongs,revealed,box})=>{
       const ok=good&&wrongs===0;
       recordMetric(Date.now()-shownAt,ok?null:'prac_'+cur.key);
       if(typeof logAttempt==='function')logAttempt({lesson:lid,kind:'practice',good,wrongs,mode,gen:cur.genKey,seed:cur.seed,ptype:prob.ptype,stepWrongs,revealed,mixed:true});
@@ -881,6 +926,7 @@ function renderT2Practice(body,lid,spec){
   renderAdaptivePractice(body,lid,{
     title:`🌿 한걸음 차시 마무리 (${TL.length}유형 섞어 풀기)`,
     items,
+    visual:(L.unit||'solid')!=='solid',
     onRescue:it=>{renderT2Steps(body,lid,spec,it.tyNo,true)},
     onPass:(host,results)=>{
       p.tday=today();p.trackDone=Math.max(Number(p.trackDone)||0,2);
@@ -931,9 +977,9 @@ function renderT3Steps(body,lid,spec,initialCid){
   const noPick=spec.comboPick!==true;
   const WK=spec.worked?Object.values(spec.worked).filter(w=>w&&w.nm).sort((a,b)=>a.no-b.no):[];
   const keyTypesHTML=()=>WK.length?`<details class="ct-keyty"><summary>📌 이번 차시의 핵심 유형이에요 <small>(${WK.length}가지 · 눌러서 펼치기)</small></summary>
-      <div class="ct-keyty-grid">${WK.map(w=>{let f='';try{f=w.fig?w.fig((w.steps&&w.steps[0]&&w.steps[0].hl)||[]):''}catch(e){}
+      <div class="ct-keyty-grid">${WK.map(w=>{
         const how=Array.isArray(w.steps)&&w.steps.length?w.steps.map(st=>String(st.t||'').replace(/^[①-⑳]\s*/,'')).filter(Boolean).join(' → '):'';
-        return`<div class="ct-keyty-card"><b>유형 ${w.no} · ${w.nm}</b><div class="ct-keyty-fig">${f}</div><p>${w.prob||''}</p>${how?`<div class="ct-keyty-how">💡 ${how}</div>`:''}</div>`}).join('')}</div></details>`:'';
+        return`<div class="ct-keyty-card"><b>유형 ${w.no} · ${w.nm}</b><div class="ct-keyty-fig" data-kt="${w.no}"></div><p>${w.prob||''}</p>${how?`<div class="ct-keyty-how">💡 ${how}</div>`:''}</div>`}).join('')}</div></details>`:'';
   let cid=initialCid||(list[0]&&list[0].id),seed=typeof newSeed==='function'?newSeed():11,picked=new Set(),unlocked=noPick,shownAt=Date.now();
 
   const draw=()=>{
@@ -953,6 +999,14 @@ function renderT3Steps(body,lid,spec,initialCid){
       </div>`}
       <div id="cProbHost"></div>
     </div>`;
+    WK.forEach(w=>{
+      const elKt=$(`.ct-keyty-fig[data-kt="${w.no}"]`,body);
+      if(!elKt)return;
+      let f=null;try{f=w.fig?w.fig((w.steps&&w.steps[0]&&w.steps[0].hl)||[],false):null}catch(e){}
+      mountTrackFig(elKt,f,{interactive:false,compact:true});
+    });
+    const detKt=$('.ct-keyty',body);
+    if(detKt&&detKt.addEventListener)detKt.addEventListener('toggle',()=>{if(detKt.open&&typeof VIEWERS!=='undefined')VIEWERS.forEach(v=>{if(detKt.contains&&detKt.contains(v.cv)){v._resize();v.dirty=true}})});
 
     $$('[data-cid]',body).forEach(b=>b.onclick=()=>{cid=b.dataset.cid;seed=(seed+9)%99999+1;picked=new Set();unlocked=noPick;draw()});
     $$('[data-ty]',body).forEach(b=>b.onclick=()=>{
@@ -970,8 +1024,9 @@ function renderT3Steps(body,lid,spec,initialCid){
     });
 
     if(!unlocked){
-      const figHtml=prob.fig&&prob.fig.svg?prob.fig.svg():'';
-      $('#cProbHost',body).innerHTML=`<div class="${figHtml?'ct-stage':''}">${figHtml?`<div class="ct-fig">${figHtml}</div>`:''}<div><p style="margin-top:0">${prob.title}</p><p class="muted">먼저 위에서 결합된 2개 유형을 고르면 풀이 입력이 열려요.</p></div></div>`;
+      const figRes=prob.fig&&prob.fig.svg?prob.fig.svg(true,0):prob.fig;
+      $('#cProbHost',body).innerHTML=`<div class="${figRes?'ct-stage':''}">${figRes?'<div class="ct-fig" id="cPreFig"></div>':''}<div><p style="margin-top:0">${prob.title}</p><p class="muted">먼저 위에서 결합된 2개 유형을 고르면 풀이 입력이 열려요.</p></div></div>`;
+      if(figRes)mountTrackFig($('#cPreFig',body),figRes,{interactive:true});
     }else if(typeof renderProblem==='function'){
       renderProblem($('#cProbHost',body),prob,{mode:'steps',visual:true,rep:{lesson:lid,gen:prob.ptype,seed},onDone:({good,box})=>{
         if(good){const lp=lesProg(lid);lp.t3Steps=(Number(lp.t3Steps)||0)+1;lp.tday=typeof today==='function'?today():'';if(typeof save==='function')save()}
@@ -1002,9 +1057,11 @@ function renderT3Practice(body,lid,spec){
       rescueDesc:`<b>${cInfo.nm}</b>을 두 번 연속 틀렸어요. 복합 문제 쪼개서 풀기에서 단계를 먼저 나눠 보아요.`,rescueBtn:`${cInfo.nm} 쪼개서 연습하기 →`};
   }));
 
+  const L=(typeof LESSONS!=='undefined'&&LESSONS.find(x=>x.id===lid))||{title:lid};
   renderAdaptivePractice(body,lid,{
     title:`🌳 두걸음 실전 차시 마무리 (기본 ${baseNos.length} + 복합 ${cids.length})`,
     items,
+    visual:(L.unit||'solid')!=='solid',
     onRescue:it=>{if(it.cid)renderT3Steps(body,lid,spec,it.cid);else renderT2Steps(body,lid,spec,it.tyNo,true)},
     onPass:(host,results)=>{
       p.tday=today();p.trackDone=3;p.concept=true;p.steps=Math.max(Number(p.steps)||0,1);
@@ -1399,6 +1456,7 @@ window.HG_TRACKS={
   register(lid,spec){SPECS[lid]=spec},
   viewTrackLesson,
   mountOwlShow,
+  mountTrackFig,
   scheduleTypeRev,
   dueTypeList,
   buildDailyRevQueue,
