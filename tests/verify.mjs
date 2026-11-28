@@ -616,6 +616,31 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   Object.keys(DB).forEach(k=>delete DB[k]);Object.assign(DB,JSON.parse(keep));return E})()`, sandbox);
   if (r37.length) errors.push('T37 review/stamp/boss: ' + r37.join(', ')); }
 
+// [T36] 기초 연산·오늘의 계산 새 규칙(총정리 2-3·2-4·2-5·2-11): 시험 범위 넓히기 · 차시↔바탕 계산 표 · 6문제(집중 2 + 섞기 4) · 미리 도전 · 길잡이 한 줄
+{ const t36 = vm.runInContext(`(()=>{const keep=JSON.stringify(DB),out={};
+    const ids=new Set(CALC.map(t=>t.id));out.exam=['signed','signsub','signmul','fracdiv'].every(id=>EXAM_FOCUS.includes(id))&&EXAM_FOCUS.every(id=>EXAM_TAG[id]);
+    const L19=['coord','graph','prop','propg','inv','invg','arc','cent','sector','poly','regular','rotation','rotprop','area','area2','volume','conearea','conearea2','cone'];
+    out.table=L19.every(id=>Array.isArray(LESSON_BASE_CALC[id])&&LESSON_BASE_CALC[id].every(c=>ids.has(c)));
+    const T=CALC.find(t=>t.id==='pi'),a=calcQ(T,2,mulberry(5)),b=Object.assign({type:'num'},T.gen(2,mulberry(a.seed)));out.seed=a.q===b.q&&a.ans===b.ans;
+    for(const k of Object.keys(DB))delete DB[k];
+    const p=drillPlan(mulberry(7),6),m=p.Q.filter(q=>!q.extra);out.n6=m.length;out.adj=m.some((q,i)=>i&&q.tid===m[i-1].tid&&new Set(m.map(x=>x.tid)).size>2);out.kw=p.Q.some(q=>q.kw||q.ea);out.pre=p.Q.filter(q=>q.pre).length;
+    DB._needCalc={id:'signmul',from:'prop',at:Date.now()};const p2=drillPlan(mulberry(9),6);out.focus=p2.focus&&p2.focus.id;out.focusN=p2.Q.filter(q=>!q.extra&&q.tid==='signmul').length;out.now=(calcNowT()||{}).id;
+    const S=guideSteps();out.guideCalc=S.filter(x=>/^기초 연산 · /.test(x.t)).length;out.guideRev=S.some(x=>/복습 노트/.test(x.t));out.guideDrill=S.filter(x=>x.t==='오늘의 계산'&&x.d6).length;
+    for(const k of Object.keys(DB))delete DB[k];DB._calc={facts:{stars:3},div:{stars:3}};const pc=preCandidate(null);out.preId=pc&&pc.id;
+    if(pc){DB._calcPre={id:pc.id,n:1,d:addDays(today(),-1),day:addDays(today(),-1)};out.preAgain=(preCandidate(null)||{}).id===pc.id;preResult(pc.id,true);out.skip=!!(DB._calcSkip||{})[pc.id]&&diagOk(pc.id);out.preToday=preCandidate(null)}
+    for(const k of Object.keys(DB))delete DB[k];Object.assign(DB,JSON.parse(keep));return out})()`, sandbox);
+  if (!t36.exam) errors.push('[T36] EXAM_FOCUS에 부호 계산·분수 나누기 + 꼬리표가 있어야 해요');
+  if (!t36.table) errors.push('[T36] LESSON_BASE_CALC 19차시 표가 비었거나 없는 칸이 있어요');
+  if (!t36.seed) errors.push('[T36] calcQ: 같은 seed면 같은 문제여야 해요(신고 다시 만들기)');
+  if (t36.n6 !== 6) errors.push(`[T36] drillPlan(6) count ${t36.n6}`);
+  if (t36.adj) errors.push('[T36] drillPlan: 같은 칸이 연달아 나와요');
+  if (t36.kw) errors.push('[T36] drillPlan: 낱말 떠올리기·틀린 풀이 찾기는 넣지 않아요');
+  if (t36.pre > 1) errors.push('[T36] 미리 도전은 하루 1문제');
+  if (t36.focus !== 'signmul' || t36.focusN !== 2 || t36.now !== 'signmul') errors.push(`[T36] 막힌 계산이 집중할 칸 2문제가 아니에요 (${t36.focus}/${t36.focusN}/${t36.now})`);
+  if (t36.guideCalc || t36.guideRev || t36.guideDrill !== 1) errors.push('[T36] 길잡이: 계산은 오늘의 계산 한 줄, 복습 노트 줄 없음');
+  if (!t36.preId || !t36.preAgain || !t36.skip || t36.preToday) errors.push(`[T36] 미리 도전 이틀 연속 → 건너뛰기 규칙 (${JSON.stringify(t36)})`);
+}
+
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);
