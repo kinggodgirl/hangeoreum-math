@@ -5,3 +5,4 @@
 
 - 공통 규칙·파일 구조·협업 프로토콜: @AGENTS.md
 - 현재 작업 보드·담당 분배·인계 메모: @COLLAB.md
+- 새로 합류한 에이전트용 작업 흐름·판단 기준: `docs/AGENT-ONBOARDING.md`
