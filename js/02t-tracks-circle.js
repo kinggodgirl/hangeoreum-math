@@ -254,31 +254,31 @@ if(typeof HG_TRACKS==='object'){
         return{fig:pr.fig.svg(),ans:st.ans,why:st.ok||'',also:st.also||null}}},
     /* [T21] 부엉 쌤 그림극: 화면을 누를 때마다 한 줄씩 나오고, 선이 그려지듯 나타나요. 교과서 194~195쪽 순서(호 → 현 → 부채꼴·중심각 → 활꼴) */
     owlScenes:[
-      {cap:'장면 ① 호와 그 기호',svg:()=>owlArcScene(1),beats:[
+      {lv:1,cap:'장면 ① 호와 그 기호',svg:()=>owlArcScene(1),beats:[
         '원 O를 그렸어요. 가운데 점 O가 <b>원의 중심</b>이에요.',
         '원 위에 서로 다른 두 점 <b>A</b>, <b>B</b>를 잡아요.',
         'A에서 원을 따라 B까지 가 보세요. 원 위의 두 점 사이에 있는 원의 일부분을 <b>호 AB</b>라고 해요.',
         '호 AB는 기호로 <span class="arc-sym">AB</span>와 같이 나타내요. AB 위에 굽은 선을 그려요.',
         {say:'반대쪽으로 돌아가는 긴 호도 있어요. 보통 <span class="arc-sym">AB</span>는 <span class="kw">짧은 쪽 호</span>이고, 긴 쪽은 그 위에 점 C를 잡아 <span class="arc-sym">ACB</span>로 나타내요.',exp:'happy'}]},
-      {cap:'장면 ② 곧게 이으면 현',svg:()=>owlArcScene(2),beats:[
+      {lv:1,cap:'장면 ② 곧게 이으면 현',svg:()=>owlArcScene(2),beats:[
         '이번에는 두 점 A, B를 원을 따라가지 않고 <span class="kw">곧게</span> 이어 볼게요.',
         '원 위의 두 점을 이은 선분을 <b>현</b>이라고 해요. 이 선분은 <b>현 AB</b>예요. 굽은 선은 호, 곧은 선분은 현!',
         '점 B에서 원 위의 여러 점까지 현을 그어 보면 길이가 모두 달라요.',
         {say:'그중에서 <span class="num">원의 중심 O</span>를 지나는 현이 <b>지름</b>이에요. 지름은 가장 긴 현이에요.',exp:'happy'}]},
-      {cap:'장면 ③ 부채꼴과 중심각',svg:()=>owlArcScene(3),beats:[
+      {lv:1,cap:'장면 ③ 부채꼴과 중심각',svg:()=>owlArcScene(3),beats:[
         '이번에는 원의 중심 O에서 시작해 볼게요.',
         'O에서 A, B까지 두 <b>반지름</b> OA, OB를 그어요.',
         '두 반지름 OA, OB와 <span class="arc-sym">AB</span>로 둘러싸인 도형을 <b>부채꼴 AOB</b>라고 해요. 피자 한 조각 모양이에요.',
         {say:'두 반지름이 이루는 ∠AOB를 부채꼴 AOB의 <b>중심각</b>이라고 해요. <span class="arc-sym">AB</span>에 대한 중심각이라고도 해요.',exp:'happy'}]},
-      {cap:'장면 ④ 현과 호로 둘러싸이면 활꼴',svg:()=>owlArcScene(4),beats:[
+      {lv:1,cap:'장면 ④ 현과 호로 둘러싸이면 활꼴',svg:()=>owlArcScene(4),beats:[
         '두 점 A, B를 곧게 이어 <b>현 AB</b>를 그어요.',
         '현 AB와 <span class="arc-sym">AB</span>로 둘러싸인 도형을 <b>활꼴</b>이라고 해요. 활처럼 생겼죠?',
         {say:'무엇으로 둘러싸였는지 보면 돼요. <span class="kw">반지름 2개 + 호</span>는 부채꼴, <span class="kw">현 + 호</span>는 활꼴이에요.',exp:'happy'}]},
-      {cap:'장면 ⑤ 꼭짓점이 중심 O인가요?',exp:'warn',svg:()=>owlArcScene(5),beats:[
+      {lv:1,cap:'장면 ⑤ 꼭짓점이 중심 O인가요?',exp:'warn',svg:()=>owlArcScene(5),beats:[
         '이 도형도 피자 조각처럼 생겼어요. 그런데 꼭짓점이 중심 O가 아니라 점 P예요.',
         'PA, PB는 중심 O에서 나온 선분이 아니라서 <span class="warn">반지름이 아니에요</span>. 그래서 이 도형은 <span class="warn">부채꼴이 아니에요</span>.'],
         ask:{q:'부채꼴이 되려면 두 선분은 어디에서 시작해야 할까요?',choices:['원의 중심 O','원 위의 아무 점','원 안의 아무 점','원 밖의 점'],ans:'원의 중심 O',hint:'부채꼴은 두 반지름과 호로 둘러싸여요. 반지름은 어디에서 시작하나요?',ok:'맞아요! 두 선분이 중심 O에서 시작하는 반지름이어야 부채꼴이에요.'}},
-      {cap:'장면 ⑥ 반원은 이름이 두 개',exp:'happy',svg:()=>owlArcScene(6),beats:[
+      {lv:1,cap:'장면 ⑥ 반원은 이름이 두 개',exp:'happy',svg:()=>owlArcScene(6),beats:[
         '중심각이 <span class="num">180°</span>인 부채꼴을 그려 볼게요. 바로 <b>반원</b>이에요.',
         'OA, OB는 반지름이에요. <span class="kw">반지름 2개 + 호</span>로 둘러싸였으니 <b>부채꼴</b>이에요.',
         '그런데 선분 AB는 지름, 곧 <b>현</b>이기도 해요. <span class="kw">현 + 호</span>로 둘러싸였으니 <b>활꼴</b>이기도 해요.'],
@@ -370,27 +370,27 @@ if(typeof HG_TRACKS==='object'){
     compoundBridgeNo:6,
     /* [T21] 부엉 쌤 그림극: 둘레를 펴 보고(π), 잘라 붙이고(넓이), 조각으로 나누고(중심각/360), 둘레를 한 바퀴 따라가요 */
     owlScenes:[
-      {cap:'장면 ① 원의 둘레 = 지름 × π',svg:()=>owlSecScene(1),beats:[
-        '반지름이 <span class="num">6 cm</span>인 원이에요. 주황색 선이 원의 <b>둘레</b>예요.',
+      {lv:1,cap:'장면 ① 다시 떠올리기: 원의 둘레 = 지름 × π',svg:()=>owlSecScene(1),beats:[
+        '초등학교에서 배운 <b>원의 둘레</b>를 다시 떠올려 봐요. 반지름이 <span class="num">6 cm</span>인 원이에요. 주황색 선이 원의 <b>둘레</b>예요.',
         '중심 O를 지나는 지름은 6 × 2 = <span class="num">12 cm</span>예요.',
         '둘레를 쭉 펴서 지름과 비교해 보면 지름 3개보다 조금 더 길어요. 약 3.14배, 이 수가 <b>π</b>예요.',
         {say:'<b>둘레</b> 하면 <b>π</b>를 떠올려요! π는 <span class="kw">지름을 원의 둘레로 바꾸는 마법의 수</span>예요. 그래서 <b>원의 둘레 = 지름 × π</b>, 이 원의 둘레는 12 × π = <span class="num">12π cm</span>예요.',exp:'happy'}]},
-      {cap:'장면 ② 원의 넓이 = 반둘레 × 반지름',svg:()=>owlSecScene(2),beats:[
-        '원을 피자처럼 똑같이 8조각으로 잘라요.',
+      {lv:1,cap:'장면 ② 다시 떠올리기: 원의 넓이 = 반둘레 × 반지름',svg:()=>owlSecScene(2),beats:[
+        '이번에는 <b>원의 넓이</b>를 다시 떠올려요. 원을 피자처럼 똑같이 8조각으로 잘라요.',
         '조각을 위아래로 엇갈려 붙이면 직사각형에 가까워져요. 많이 자를수록 더 직사각형이 돼요.',
         '가로는 둘레의 반, 곧 <span class="kw">반둘레(반지름 × π)</span>이고 세로는 <span class="kw">반지름</span>이에요.',
         {say:'그래서 <b>원의 넓이 = 반둘레 × 반지름</b>이에요. 반지름이 6이면 6π × 6 = <span class="num">36π cm²</span>예요.',exp:'happy'}]},
-      {cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',svg:()=>owlSecScene(3),beats:[
+      {lv:1,cap:'장면 ③ 부채꼴은 원의 (중심각/360) 조각',svg:()=>owlSecScene(3),beats:[
         '반지름이 <span class="num">6 cm</span>이고 중심각이 <span class="num">60°</span>인 부채꼴이에요.',
         '360 ÷ 60 = <span class="num">6</span>이니까, 원을 똑같이 6조각으로 나눈 것 중 1조각이에요.',
         '그래서 호의 길이는 원의 둘레 12π의 <span class="num">60/360</span>, 곧 <b>2π cm</b>예요.',
         {say:'넓이도 똑같이 원의 넓이 36π의 60/360, 곧 <b>6π cm²</b>예요. 원 전체에 <span class="kw">중심각/360</span>을 곱하면 돼요.',exp:'happy'}]},
-      {cap:'장면 ④ 중심각을 모를 때: 호의 반 × 반지름',svg:()=>owlSecScene(4),beats:[
+      {lv:2,cap:'장면 ④ 중심각을 모를 때: 호의 반 × 반지름',svg:()=>owlSecScene(4),beats:[
         '이번에는 중심각을 몰라요. 반지름 r와 호의 길이 l만 알아요.',
         '부채꼴도 잘게 잘라 엇갈려 붙이면 직사각형에 가까워져요.',
         '가로는 <span class="kw">호의 반(½ l)</span>, 세로는 <span class="kw">반지름 r</span>이에요. 그래서 <b>부채꼴의 넓이 = 호의 반 × 반지름</b>이에요.'],
         ask:{q:'반지름이 6 cm, 호의 길이가 4π cm인 부채꼴의 넓이는?',choices:['12π cm²','24π cm²','6π cm²','4π cm²'],ans:'12π cm²',hint:'호의 반(2π)에 반지름(6)을 곱해요.',ok:'맞아요! 호의 반 2π × 반지름 6 = 12π cm²예요.'}},
-      {cap:'장면 ⑤ 둘레는 한 바퀴 빙 둘러요',exp:'warn',svg:()=>owlSecScene(5),beats:[
+      {lv:2,cap:'장면 ⑤ 둘레는 한 바퀴 빙 둘러요',exp:'warn',svg:()=>owlSecScene(5),beats:[
         '색칠한 도형의 <b>둘레</b>를 구해 볼게요. 둘레는 도형을 한 바퀴 빙 둘러싼 선이에요.',
         '먼저 바깥쪽 <span class="kw">① 큰 호</span>를 따라가요.',
         '다음은 안쪽 <span class="kw">② 작은 호</span>예요.',
@@ -423,7 +423,7 @@ if(typeof HG_TRACKS==='object'){
         givenChips:[{k:'r',t:'반지름 5 cm',ok:true},{k:'l',t:'호의 길이 6π cm',ok:true},{k:'t',t:'중심각 90°',ok:false}],
         teacherEq:'가로(호의 반 3π) × 세로(반지름 5) = 15π',pairQ:'식에서 <b>3π</b>는 어떻게 나온 수인가요?',
         pairChoices:['호의 길이 6π의 반','반지름 5의 반'],pairAns:'호의 길이 6π의 반',
-        calcPrompt:'부채꼴의 넓이는 몇 cm²인가요? (π를 붙여 써요. 예: 8π)',calcAns:15,calcTopic:'mul',calcExplain:'(호의 반 3π) × (반지름 5) = <b>15π cm²</b>예요.'}
+        calcPrompt:'부채꼴의 넓이는 몇 cm²인가요? (π를 붙여 써요. 예: 8π)',calcAns:15,calcTopic:'pi',calcExplain:'(호의 반 3π) × (반지름 5) = <b>15π cm²</b>예요.'}
     ],
     stratRows:[
       ['반지름 r·중심각 x','원 전체 × x/360','둘레(지름×π) 또는 넓이(반둘레×반지름) × (x/360)'],

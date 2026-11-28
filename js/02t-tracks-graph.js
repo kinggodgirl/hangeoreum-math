@@ -37,9 +37,9 @@ if(typeof HG_TRACKS!=='object')return;
 HG_TRACKS.register('coord',{
   kind:'proc',
   owlScenes:[
-    {cap:'장면 ① 영화관 자리처럼 (가로 x, 세로 y)',say:'순서쌍 <span class="kw">(x, y)</span>는 <b>가로 x축을 먼저</b> 찾고, <b>세로 y축을 나중에</b> 찾아요. (2, 3)과 (3, 2)는 완전히 다른 점이에요!',svg:()=>owlPlane({pts:[{x:2,y:3,lab:'(2,3)'},{x:3,y:2,lab:'(3,2)'}]})},
-    {cap:'장면 ② 네 개의 방 = 사분면',say:'원점 O를 중심으로 반시계 방향으로 <span class="num">제1(+,+) → 제2(−,+) → 제3(−,−) → 제4(+,−)</span> 사분면! 부호만 봐도 몇 사분면인지 알아요.',svg:()=>owlPlane({qHL:2,pts:[{x:-2,y:2,lab:'제2 (−,+)'}]})},
-    {cap:'장면 ③ 좌표축 위는 어느 사분면도 아님!',exp:'warn',say:'x축 위(y=0)나 y축 위(x=0) 점은 경계선 위에 서 있어서 <span class="warn">어느 사분면에도 속하지 않아요</span>!',svg:()=>owlPlane({pts:[{x:3,y:0,lab:'(3,0) 축 위!'}]}),
+    {lv:1,cap:'장면 ① 영화관 자리처럼 (가로 x, 세로 y)',say:'순서쌍 <span class="kw">(x, y)</span>는 <b>가로 x축을 먼저</b> 찾고, <b>세로 y축을 나중에</b> 찾아요. (2, 3)과 (3, 2)는 완전히 다른 점이에요!',svg:()=>owlPlane({pts:[{x:2,y:3,lab:'(2,3)'},{x:3,y:2,lab:'(3,2)'}]})},
+    {lv:1,cap:'장면 ② 네 개의 방 = 사분면',say:'원점 O를 중심으로 반시계 방향으로 <span class="num">제1(+,+) → 제2(−,+) → 제3(−,−) → 제4(+,−)</span> 사분면! 부호만 봐도 몇 사분면인지 알아요.',svg:()=>owlPlane({qHL:2,pts:[{x:-2,y:2,lab:'제2 (−,+)'}]})},
+    {lv:1,cap:'장면 ③ 좌표축 위는 어느 사분면도 아님!',exp:'warn',say:'x축 위(y=0)나 y축 위(x=0) 점은 경계선 위에 서 있어서 <span class="warn">어느 사분면에도 속하지 않아요</span>!',svg:()=>owlPlane({pts:[{x:3,y:0,lab:'(3,0) 축 위!'}]}),
       ask:{q:'점 (0, −4)는 어느 사분면에 속할까요?',choices:['어느 사분면에도 속하지 않아요','제3사분면','제4사분면'],ans:'어느 사분면에도 속하지 않아요',hint:'x좌표가 0이면 y축 위에 놓여 있어요!',ok:'맞아요! 0이 들어간 축 위의 점은 어느 사분면에도 속하지 않아요.'}}
   ],
   owlSummary:['수직선 위 점: 오른쪽 +, 왼쪽 −','좌표평면 순서쌍 (x, y): 가로(x) 먼저, 세로(y) 나중','사분면: 1(+,+), 2(−,+), 3(−,−), 4(+,−) · 축 위의 점(0 포함)은 사분면 아님!'],
@@ -113,8 +113,8 @@ HG_TRACKS.register('coord',{
 HG_TRACKS.register('graph',{
   kind:'proc',
   owlScenes:[
-    {cap:'장면 ① 그래프의 방향이 말해 주는 것',say:'오른쪽 위로 올라가면 <span class="kw">증가</span>, <span class="kw">가로로 평평(수평)</span>하면 <b>멈춤(변화 없음)</b>, 오른쪽 아래로 내려가면 <span class="warn">감소</span>예요!',svg:owlWalkGraph},
-    {cap:'장면 ② 용기 모양과 물 높이',say:'물을 일정하게 넣을 때, 병 폭이 <span class="kw">좁은 곳</span>은 높이가 쑥쑥 빠르게 올라가고, <span class="kw">넓은 곳</span>은 천천히 올라가요!',svg:owlWalkGraph,
+    {lv:1,cap:'장면 ① 그래프의 방향이 말해 주는 것',say:'오른쪽 위로 올라가면 <span class="kw">증가</span>, <span class="kw">가로로 평평(수평)</span>하면 <b>멈춤(변화 없음)</b>, 오른쪽 아래로 내려가면 <span class="warn">감소</span>예요!',svg:owlWalkGraph},
+    {lv:2,cap:'장면 ② 용기 모양과 물 높이',say:'물을 일정하게 넣을 때, 병 폭이 <span class="kw">좁은 곳</span>은 높이가 쑥쑥 빠르게 올라가고, <span class="kw">넓은 곳</span>은 천천히 올라가요!',svg:owlWalkGraph,
       ask:{q:'두 사람의 시간-거리 그래프가 한 점에서 만났을 때 그 점(교점)의 뜻은?',choices:['같은 시각에 같은 위치에 있음','둘 다 정지해 있음','속력이 0이 됨'],ans:'같은 시각에 같은 위치에 있음',hint:'만난 점에서는 시각(x)과 거리(y)가 둘 다 똑같아요!',ok:'맞아요! 두 그래프가 만나는 점은 추월하거나 마주친 순간이에요.'}}
   ],
   owlSummary:['오른쪽 위(증가) · 수평(변화 없음/휴식) · 오른쪽 아래(감소)','병 폭이 좁을수록 물 높이는 가파르게(빠르게) 올라감','두 그래프 교점 = 같은 시각에 위치·높이가 같은 순간'],
@@ -182,13 +182,117 @@ HG_TRACKS.register('graph',{
   t3PracticeCids:['C1','C2']
 });
 
+/* ── [T39] 정비례·반비례 '생김새 구별' 빠른 구별 (설계 총정리 2-1 아 ③) ──
+   식·표·그래프 그림만 보고 고르게 해요(문제 글에 판단 근거를 쓰지 않음). 판단할 것 = 주황.
+   보기는 실제로 헷갈리는 생각 수만큼, 늘 같은 순서. 🌱 숫자: 정비례 a = −3~4(0 빼고, 음수 꼭 포함). */
+const rRnd=seed=>typeof mulberry==='function'?mulberry(seed):(()=>{let s=seed>>>0;return()=>((s=(s*1664525+1013904223)>>>0)/4294967296)})();
+const rPick=(r,arr)=>arr[Math.floor(r()*arr.length)%arr.length];
+const itx=s=>String(s).replace(/([xy])/g,'<tspan font-style="italic">$1</tspan>');
+/* 식 카드: parts = 문자열 또는 {fr:[분자, 분모]} */
+function rEqSVG(parts){
+  let x=0,body='';const fs=34,cy=82;
+  const w=t=>String(t).replace(/<[^>]+>/g,'').length*fs*0.5;
+  parts.forEach(p=>{
+    if(typeof p==='string'){body+=`<text x="${x}" y="${cy+12}" font-size="${fs}" fill="${HL}">${itx(p)}</text>`;x+=w(p)}
+    else{const [n,d]=p.fr,ww=Math.max(w(n),w(d))+10;
+      body+=`<text x="${x+ww/2}" y="${cy-8}" text-anchor="middle" font-size="${fs-4}" fill="${HL}">${itx(n)}</text>`+
+        `<line x1="${x}" y1="${cy+1}" x2="${x+ww}" y2="${cy+1}" stroke="${HL}" stroke-width="2.4"/>`+
+        `<text x="${x+ww/2}" y="${cy+34}" text-anchor="middle" font-size="${fs-4}" fill="${HL}">${itx(d)}</text>`;x+=ww+6}
+  });
+  const W=280,ox=(W-x)/2;
+  if(parts.length===1&&typeof parts[0]==='string')body=`<text x="${W/2}" y="${cy+12}" text-anchor="middle" font-size="${fs}" fill="${HL}">${itx(parts[0])}</text>`;
+  return gB(W,160,`<rect x="8" y="8" width="${W-16}" height="144" rx="16" fill="${HLs}" fill-opacity=".45" stroke="${HL}" stroke-width="2.4"/><g transform="translate(${parts.length===1&&typeof parts[0]==='string'?0:f1(ox)},0)">${body}</g>`,'관계식 카드');
+}
+/* 표 카드: xs, ys (4칸) */
+function rTabSVG(xs,ys){
+  const W=290,c0=56,cw=54,y0=40,rh=44;
+  let s=`<rect x="${c0-46}" y="${y0}" width="${46+cw*xs.length}" height="${rh*2}" fill="#fff" stroke="${HL}" stroke-width="2.4"/>`+
+    `<line x1="${c0-46}" y1="${y0+rh}" x2="${c0+cw*xs.length}" y2="${y0+rh}" stroke="${HL}" stroke-width="1.6"/>`;
+  for(let i=0;i<=xs.length;i++)s+=`<line x1="${c0+cw*i}" y1="${y0}" x2="${c0+cw*i}" y2="${y0+rh*2}" stroke="${HL}" stroke-width="${i?1.2:2}"/>`;
+  s+=`<text x="${c0-23}" y="${y0+29}" text-anchor="middle" font-size="22" font-style="italic" fill="${INK}">x</text><text x="${c0-23}" y="${y0+rh+29}" text-anchor="middle" font-size="22" font-style="italic" fill="${INK}">y</text>`;
+  xs.forEach((v,i)=>{s+=`<text x="${c0+cw*i+cw/2}" y="${y0+29}" text-anchor="middle" font-size="21" fill="${INK}">${neg(v)}</text><text x="${c0+cw*i+cw/2}" y="${y0+rh+29}" text-anchor="middle" font-size="21" font-weight="700" fill="${HL}">${neg(ys[i])}</text>`});
+  if(xs.length>1)s+=`<text x="${c0+cw*xs.length+8}" y="${y0+rh+29}" font-size="18" fill="${GY}">…</text>`;
+  return gB(W,140,s,'x와 y의 표');
+}
+/* 그래프 카드: g = {line:[a,b]} | {inv:a} | {para:k} — 판단할 그래프를 주황으로 */
+function rPlaneSVG(g){
+  const W=240,H=220,rng=4,cx=W/2,cy=H/2,st=24,X=v=>f1(cx+v*st),Y=v=>f1(cy-v*st);
+  let s='';
+  for(let i=-rng;i<=rng;i++){s+=`<line x1="${X(-rng)}" y1="${Y(i)}" x2="${X(rng)}" y2="${Y(i)}" stroke="${i===0?INK:'#e3e8f1'}" stroke-width="${i===0?1.8:0.8}"/><line x1="${X(i)}" y1="${Y(-rng)}" x2="${X(i)}" y2="${Y(rng)}" stroke="${i===0?INK:'#e3e8f1'}" stroke-width="${i===0?1.8:0.8}"/>`}
+  s+=`<text x="${X(rng)+6}" y="${cy+5}" font-size="14" font-style="italic" fill="${INK}">x</text><text x="${cx+6}" y="${Y(rng)-4}" font-size="14" font-style="italic" fill="${INK}">y</text><text x="${cx-14}" y="${cy+16}" font-size="13" font-style="italic" fill="${INK}">O</text>`;
+  const pl=pts=>`<polyline points="${pts.join(' ')}" fill="none" stroke="${HL}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const clip=(fn,x0,x1)=>{const pts=[];for(let k=0;k<=60;k++){const x=x0+(x1-x0)*k/60,y=fn(x);if(Math.abs(y)<=rng+0.05&&Math.abs(x)<=rng)pts.push(`${X(x)},${Y(y)}`)}return pts};
+  if(g.line){const[a,b]=g.line;s+=pl(clip(x=>a*x+b,-rng,rng))}
+  if(g.inv!=null){s+=pl(clip(x=>g.inv/x,0.2,rng))+pl(clip(x=>g.inv/x,-rng,-0.2))}
+  if(g.para!=null){s+=pl(clip(x=>g.para*x*x,-rng,rng))}
+  return gB(W,H,s,'좌표평면 위의 그래프');
+}
+const PROP_A=[-3,-2,-1,2,3,4],PROP_AP=[2,3,4],PROP_AN=[-3,-2,-1];
+const INV_A=[4,6,8,12],ax_=a=>a===1?'x':a===-1?'−x':neg(a)+'x';
+const R_EQ=['정비례예요','정비례가 아니에요'],R_PI=['정비례','반비례','둘 다 아니에요'];
+/* prop: 식·표가 정비례인지 (사례 6 : 비사례 4) */
+const propRapid={n:10,kinds:10,title:'정비례일까요? 생김새로 구별해요',q:'주황색 관계에서 y는 x에 정비례할까요?',choices:R_EQ,check:[2,5,7],
+  make(k,seed){const r=rRnd(seed),xs=[1,2,3,4];
+    if(k===0){const a=rPick(r,PROP_AP);return{fig:rEqSVG([`y = ${ax_(a)}`]),ans:R_EQ[0],why:`y = (수) × x 꼴이에요. a = ${a}인 정비례예요.`}}
+    if(k===1){const a=rPick(r,PROP_AN);return{fig:rEqSVG([`y = ${ax_(a)}`]),ans:R_EQ[0],why:`a가 음수(${neg(a)})여도 y = ax 꼴이면 정비례예요.`}}
+    if(k===2){const d=rPick(r,[2,3,4]);return{fig:rEqSVG(['y = ',{fr:['x',String(d)]}]),ans:R_EQ[0],why:`x가 위(분자)에 있어요. y = ${'1/'+d} × x 라서 정비례예요. x가 아래(분모)에 있을 때만 반비례예요.`}}
+    if(k===3){const a=rPick(r,PROP_AP);return{fig:rTabSVG(xs,xs.map(x=>a*x)),ans:R_EQ[0],why:`x가 1일 때 y가 ${a}, x가 2배·3배가 되면 y도 2배·3배예요. y = ${a}x예요.`}}
+    if(k===4){const a=rPick(r,PROP_AN);return{fig:rTabSVG(xs,xs.map(x=>a*x)),ans:R_EQ[0],why:`y가 줄어들어도 x가 2배일 때 y도 2배(${neg(a)} → ${neg(2*a)})예요. y = ${ax_(a)}인 정비례예요.`}}
+    if(k===5){const a=rPick(r,[1,2,3]),b=rPick(r,[1,2,3,5]);return{fig:rEqSVG([`y = ${ax_(a)} + ${b}`]),ans:R_EQ[1],why:`+ ${b}가 붙어 있어요. x = 1을 넣으면 ${a+b}, x = 2를 넣으면 ${2*a+b}라서 2배가 안 돼요.`}}
+    if(k===6){const a=rPick(r,INV_A);return{fig:rEqSVG(['y = ',{fr:[String(a),'x']}]),ans:R_EQ[1],why:`x가 아래(분모)에 있어요. x가 커지면 y가 작아지는 반비례예요.`}}
+    if(k===7){const b=rPick(r,[1,2,3]);return{fig:rTabSVG(xs,xs.map(x=>x+b)),ans:R_EQ[1],why:`x가 1에서 2로 2배가 될 때 y는 ${1+b}에서 ${2+b}로, 2배가 아니에요. 늘어난다고 다 정비례는 아니에요.`}}
+    if(k===8){const a=rPick(r,[-1,1]);return{fig:rEqSVG([`y = ${ax_(a)}`]),ans:R_EQ[0],why:`y = ${a===1?'1':'−1'} × x 예요. 수 1은 쓰지 않을 뿐, y = ax 꼴이라 정비례예요.`}}
+    const a=12;return{fig:rTabSVG(xs,[12,6,4,3]),ans:R_EQ[1],why:`x가 2배가 될 때 y는 ½배가 돼요(12 → 6). 곱 x × y = ${a}로 같은 반비례예요.`}}};
+/* propg: 그래프가 정비례 그래프인지 → a의 부호 */
+const R_GQ='주황색 그래프는 정비례 y = ax의 그래프일까요?',R_GC=['정비례 그래프예요','정비례 그래프가 아니에요'],R_SQ='주황색 정비례 그래프에서 a는 양수일까요, 음수일까요?',R_SC=['a > 0','a < 0'];
+const propgRapid={n:9,kinds:9,title:'정비례 그래프일까요? 모양으로 구별해요',q:R_GQ,choices:R_GC,check:[2,3,8],
+  order(r){const g=[0,1,2,3,4,5,6];for(let i=g.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[g[i],g[j]]=[g[j],g[i]]}return g.concat(r()<0.5?[7,8]:[8,7])},
+  make(k,seed){const r=rRnd(seed);
+    if(k===0){const a=rPick(r,[1,2]);return{fig:rPlaneSVG({line:[a,0]}),ans:R_GC[0],why:'원점 O를 지나는 곧은 직선이에요. 정비례 그래프예요.'}}
+    if(k===1){const a=rPick(r,[-1,-2]);return{fig:rPlaneSVG({line:[a,0]}),ans:R_GC[0],why:'오른쪽 아래로 내려가도 원점을 지나는 직선이면 정비례 그래프예요(a가 음수).'}}
+    if(k===2){const a=rPick(r,[1,2,-1]),b=rPick(r,[1,2,-2]);return{fig:rPlaneSVG({line:[a,b]}),ans:R_GC[1],why:'곧은 직선이지만 원점 O를 지나지 않아요. 정비례 그래프는 꼭 원점을 지나요.'}}
+    if(k===3){const a=rPick(r,[2,3,-2,-3]);return{fig:rPlaneSVG({inv:a}),ans:R_GC[1],why:'곡선 두 개이고 원점을 지나지 않아요. 반비례 그래프예요.'}}
+    if(k===4){const a=rPick(r,[0.5,-0.5,1]);return{fig:rPlaneSVG({para:a}),ans:R_GC[1],why:'원점을 지나지만 휘어진 곡선이에요. 정비례 그래프는 곧은 직선이에요.'}}
+    if(k===5){const a=rPick(r,[3,4]);return{fig:rPlaneSVG({line:[a,0]}),ans:R_GC[0],why:'가파르지만 원점을 지나는 곧은 직선이에요. 정비례 그래프예요.'}}
+    if(k===6){const a=rPick(r,[-3,-0.5]);return{fig:rPlaneSVG({line:[a,0]}),ans:R_GC[0],why:'기울기와 상관없이 원점을 지나는 직선이면 정비례 그래프예요.'}}
+    if(k===7){const a=rPick(r,PROP_AP);return{q:R_SQ,choices:R_SC,fig:rPlaneSVG({line:[a,0]}),ans:R_SC[0],why:'오른쪽 위로 올라가요(제1·3사분면). a > 0이에요.'}}
+    const a=rPick(r,PROP_AN);return{q:R_SQ,choices:R_SC,fig:rPlaneSVG({line:[a,0]}),ans:R_SC[1],why:'오른쪽 아래로 내려가요(제2·4사분면). a < 0이에요.'}}};
+/* inv: 정비례 / 반비례 / 둘 다 아님 */
+const invRapid={n:10,kinds:10,title:'정비례? 반비례? 생김새로 구별해요',q:'주황색 관계는 무엇일까요?',choices:R_PI,check:[2,7,8],
+  make(k,seed){const r=rRnd(seed),a=rPick(r,INV_A),xs=[1,2,3,4];
+    if(k===0)return{fig:rEqSVG(['y = ',{fr:[String(a),'x']}]),ans:R_PI[1],why:`x가 아래(분모)에 있는 y = a/x 꼴이에요. 반비례예요.`};
+    if(k===1)return{fig:rEqSVG(['y = −',{fr:[String(a),'x']}]),ans:R_PI[1],why:`a가 음수(−${a})여도 y = a/x 꼴이면 반비례예요.`};
+    if(k===2)return{fig:rEqSVG([`xy = ${a}`]),ans:R_PI[1],why:`두 수의 곱 x × y가 ${a}로 늘 같아요. y = ${a}/x 인 반비례예요.`};
+    if(k===3){const b=12,xx=[1,2,3,4];return{fig:rTabSVG(xx,xx.map(x=>b/x)),ans:R_PI[1],why:`위아래를 곱하면 1 × 12 = 2 × 6 = 3 × 4 = 4 × 3 = 12로 늘 같아요. 반비례예요.`}}
+    if(k===4){const p=rPick(r,PROP_A);return{fig:rEqSVG([`y = ${ax_(p)}`]),ans:R_PI[0],why:'y = (수) × x 꼴이에요. 정비례예요.'}}
+    if(k===5){const p=rPick(r,[2,3,4]);return{fig:rTabSVG(xs,xs.map(x=>p*x)),ans:R_PI[0],why:`x가 2배·3배가 되면 y도 2배·3배예요. y = ${p}x인 정비례예요.`}}
+    if(k===6){const b=rPick(r,[2,3,5]);return{fig:rEqSVG([`y = x + ${b}`]),ans:R_PI[2],why:`+ ${b}가 붙어 있어요. 곱도 일정하지 않고 2배도 아니라서 둘 다 아니에요.`}}
+    if(k===7){const s=rPick(r,[10,12]);return{fig:rEqSVG([`x + y = ${s}`]),ans:R_PI[2],why:`두 수의 '합'이 ${s}로 같아요. 반비례는 '곱'이 같아야 해요. 둘 다 아니에요.`}}
+    if(k===8){const s=rPick(r,[8,10]);return{fig:rTabSVG(xs,xs.map(x=>s-x)),ans:R_PI[2],why:`y가 줄어들지만 곱이 같지 않아요(1 × ${s-1}, 2 × ${s-2}). 합 x + y = ${s}가 같아요. 둘 다 아니에요.`}}
+    const d=rPick(r,[2,3]);return{fig:rEqSVG(['y = ',{fr:['x',String(d)]}]),ans:R_PI[0],why:`분수 모양이지만 x가 위(분자)에 있어요. y = 1/${d} × x 라서 정비례예요.`}}};
+/* invg: 그래프 모양 → 사분면 */
+const R_IGC=['정비례 그래프','반비례 그래프','둘 다 아니에요'],R_IQ='주황색 반비례 그래프는 어느 사분면에 있을까요?',R_IQC=['제1·3사분면','제2·4사분면'];
+const invgRapid={n:8,kinds:8,title:'반비례 그래프일까요? 모양으로 구별해요',q:'주황색 그래프는 무엇일까요?',choices:R_IGC,check:[3,4,7],
+  order(r){const g=[0,1,2,3,4,5];for(let i=g.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[g[i],g[j]]=[g[j],g[i]]}return g.concat(r()<0.5?[6,7]:[7,6])},
+  make(k,seed){const r=rRnd(seed);
+    if(k===0){const a=rPick(r,[2,3,4]);return{fig:rPlaneSVG({inv:a}),ans:R_IGC[1],why:'축에 닿지 않는 매끄러운 곡선 한 쌍이에요. 반비례 그래프예요.'}}
+    if(k===1){const a=rPick(r,[-2,-3,-4]);return{fig:rPlaneSVG({inv:a}),ans:R_IGC[1],why:'제2·4사분면에 있어도 곡선 한 쌍이면 반비례 그래프예요(a가 음수).'}}
+    if(k===2){const a=rPick(r,[1,2,-1,-2]);return{fig:rPlaneSVG({line:[a,0]}),ans:R_IGC[0],why:'원점을 지나는 곧은 직선이에요. 정비례 그래프예요.'}}
+    if(k===3){const a=rPick(r,[1,-1]),b=rPick(r,[2,-2]);return{fig:rPlaneSVG({line:[a,b]}),ans:R_IGC[2],why:'직선이지만 원점을 지나지 않아요. 곡선도 아니라서 둘 다 아니에요.'}}
+    if(k===4){const a=rPick(r,[0.5,-0.5]);return{fig:rPlaneSVG({para:a}),ans:R_IGC[2],why:'곡선이지만 원점을 지나요. 반비례 그래프는 원점과 축을 절대 지나지 않아요.'}}
+    if(k===5){const a=rPick(r,[-3,3]);return{fig:rPlaneSVG({line:[a,0]}),ans:R_IGC[0],why:'가파르지만 원점을 지나는 직선이에요. 정비례 그래프예요.'}}
+    if(k===6){const a=rPick(r,[2,3,4]);return{q:R_IQ,choices:R_IQC,fig:rPlaneSVG({inv:a}),ans:R_IQC[0],why:'오른쪽 위 칸(제1사분면)과 왼쪽 아래 칸(제3사분면)에 있어요. a > 0이에요.'}}
+    const a=rPick(r,[-2,-3,-4]);return{q:R_IQ,choices:R_IQC,fig:rPlaneSVG({inv:a}),ans:R_IQC[1],why:'왼쪽 위 칸(제2사분면)과 오른쪽 아래 칸(제4사분면)에 있어요. a < 0이에요.'}}};
+/* 🌱 마무리: 구별 문제 + 교과서 크기 숫자 1문제(대입, 계산은 쉽게) */
+const t1FromSchema=qs=>qs.map(q=>({id:'t1'+q.id,kind:q.id,q:q.q,fig:q.fig,choices:q.choices,ans:q.ans,hint:q.hint,why:q.why}));
+
 /* ── 3차시 prop · 정비례의 뜻과 식 (개념형, T35) ── */
 HG_TRACKS.register('prop',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① x가 2배, 3배 → y도 2배, 3배 (y = ax)',say:'사과 1개 200원, 2개 400원, 3개 600원처럼 <span class="kw">x가 k배 될 때 y도 k배</span> 되는 관계가 <b>정비례 y = ax</b>예요!',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]}),
+    {lv:1,cap:'장면 ① x가 2배, 3배 → y도 2배, 3배 (y = ax)',say:'사과 1개 200원, 2개 400원, 3개 600원처럼 <span class="kw">x가 k배 될 때 y도 k배</span> 되는 관계가 <b>정비례 y = ax</b>예요!',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]}),
       ask:{q:'다음 중 y가 x에 정비례하지 <b>않는</b> 식은?',choices:['y = x + 3','y = 3x','y = −2x','y = 5x'],ans:'y = x + 3',hint:'x가 2배가 될 때 y도 2배가 되는지 x = 1, 2를 넣어 확인해 봐요.',ok:'정확해요! y = x + 3은 x가 2배가 되어도 y가 2배가 되지 않아 정비례가 아니에요.'}},
-    {cap:'장면 ② a는 x가 1일 때의 y',say:'y = ax에서 <span class="kw">a</span>는 x가 1일 때 y의 값이에요. 사과 1개에 200원이면 a = 200, 그래서 <b>y = 200x</b>예요.',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1, a)'}]})}
+    {lv:1,cap:'장면 ② a는 x가 1일 때의 y',say:'y = ax에서 <span class="kw">a</span>는 x가 1일 때 y의 값이에요. 사과 1개에 200원이면 a = 200, 그래서 <b>y = 200x</b>예요.',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1, a)'}]})}
   ],
   owlSummary:['정비례 식: y = ax (a ≠ 0) · x가 2배면 y도 2배','x = 1일 때의 y 값이 바로 a (1당 변화량)'],
   schemaQs:[
@@ -199,9 +303,9 @@ HG_TRACKS.register('prop',{
   firstGuide:[
     {id:'prfg1',tyNo:1,title:'유형 1 · 정비례 표 채우기',problem:'y가 x에 정비례하고, x = 2일 때 y = 10이에요. x = 6일 때 y의 값은?',fig:()=>owlPlane({a:2}),
       wantChips:['x=6일 때 y 값','a의 부호','x절편'],wantAns:'x=6일 때 y 값',wantHl:[],
-      givenChips:[{k:'a',t:'x가 2→6 (3배)',ok:true},{k:'b',t:'처음 y = 10',ok:true},{k:'t',t:'합 2+10',ok:false}],
-      teacherEq:'x가 3배 → y도 3배 → 10 × 3',pairQ:'왜 10에 <b>3</b>을 곱했나요?',pairChoices:['x가 2에서 6으로 3배 되었으니까','x+3이라서'],pairAns:'x가 2에서 6으로 3배 되었으니까',
-      calcPrompt:'10 × 3 = ?',calcAns:30,calcTopic:'mul',calcExplain:'y도 3배인 <b>30</b>이에요.'},
+      givenChips:[{k:'a',t:'x = 2일 때 y = 10',ok:true},{k:'b',t:'새 x = 6',ok:true},{k:'t',t:'합 2 + 10',ok:false}],
+      teacherEq:'y = ax에 x, y를 넣어요 → 10 = a × 2 → a = 5 → y = 5 × 6',pairQ:'10 = a × 2 에서 a는 어떻게 구하나요?',pairChoices:['10 ÷ 2 = 5','10 × 2 = 20'],pairAns:'10 ÷ 2 = 5',
+      calcPrompt:'y = 5 × 6 = ?',calcAns:30,calcTopic:'mul',calcExplain:'y = 5x에 6을 넣으면 <b>30</b>이에요.'},
     {id:'prfg2',tyNo:2,title:'유형 2 · 정비례 식 y=ax 값 구하기',problem:'1시간에 <b>8 km</b> 가는 자전거가 x시간 간 거리를 y km라 할 때, <b>7시간</b> 간 거리는?',fig:()=>owlPlane({a:2}),
       wantChips:['7시간 이동 거리 y','분속','원점'],wantAns:'7시간 이동 거리 y',wantHl:[],
       givenChips:[{k:'a',t:'식 y = 8x (1시간당 8 km)',ok:true},{k:'b',t:'x = 7',ok:true},{k:'t',t:'반비례 y=8/x',ok:false}],
@@ -249,10 +353,10 @@ HG_TRACKS.register('prop',{
 HG_TRACKS.register('propg',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① 표의 점을 찍으면 한 직선',say:'y = 2x의 표 (1, 2), (2, 4), (3, 6)을 좌표평면에 찍어 이으면 <span class="kw">원점을 지나는 한 직선</span>이 돼요.',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]})},
-    {cap:'장면 ② 원점 (0, 0) 지나는 직선 & a의 부호',say:'y = ax 그래프는 항상 <span class="kw">원점 (0, 0)</span>을 지나는 직선! a > 0이면 ↗(1·3사분면), a < 0이면 ↘(2·4사분면)이에요.',svg:()=>owlPlane({a:-2,pts:[{x:-1,y:2,lab:'(-1,2)'}]}),
+    {lv:1,cap:'장면 ① 표의 점을 찍으면 한 직선',say:'y = 2x의 표 (1, 2), (2, 4), (3, 6)을 좌표평면에 찍어 이으면 <span class="kw">원점을 지나는 한 직선</span>이 돼요.',svg:()=>owlPlane({a:2,pts:[{x:1,y:2,lab:'(1,2)'},{x:2,y:4,lab:'(2,4)'}]})},
+    {lv:1,cap:'장면 ② 원점 (0, 0) 지나는 직선 & a의 부호',say:'y = ax 그래프는 항상 <span class="kw">원점 (0, 0)</span>을 지나는 직선! a > 0이면 ↗(1·3사분면), a < 0이면 ↘(2·4사분면)이에요.',svg:()=>owlPlane({a:-2,pts:[{x:-1,y:2,lab:'(-1,2)'}]}),
       ask:{q:'정비례 관계 <b>y = −2x</b>의 그래프는 어느 사분면을 지나나요?',choices:['제2사분면, 제4사분면','제1사분면, 제3사분면','제1사분면, 제2사분면','제3사분면, 제4사분면'],ans:'제2사분면, 제4사분면',hint:'a = −2 < 0이면 원점을 지나 오른쪽 아래로 내려가요.',ok:'정확해요! a가 음수이면 오른쪽 아래로 내려가는 직선이라 제2·4사분면을 지나요.'}},
-    {cap:'장면 ③ 지나는 점으로 a 구하기',say:'그래프가 점 (2, 6)을 지나면 <span class="kw">y = ax에 x, y를 넣어요</span>. 6 = a × 2, 그래서 <b>a = 3</b>이에요.',svg:()=>owlPlane({a:3,pts:[{x:1,y:3,lab:'(2, 6)'}]})}
+    {lv:1,cap:'장면 ③ 지나는 점으로 a 구하기',say:'그래프가 점 (2, 6)을 지나면 <span class="kw">y = ax에 x, y를 넣어요</span>. 6 = a × 2, 그래서 <b>a = 3</b>이에요.',svg:()=>owlPlane({a:3,pts:[{x:1,y:3,lab:'(2, 6)'}]})}
   ],
   owlSummary:['그래프: 원점 (0, 0)을 지나는 직선 (a>0 제1·3, a<0 제2·4)','지나는 점 (p, q)를 y = ax에 넣기 → q = a × p → a 구하기'],
   schemaQs:[
@@ -261,11 +365,11 @@ HG_TRACKS.register('propg',{
     {id:'prq6',q:'정비례 그래프 <b>y = 2x</b>는 x가 커질 때 어느 쪽으로 가나요?',fig:()=>owlPlane({a:2}),choices:['오른쪽 위로 올라가요','오른쪽 아래로 내려가요'],ans:'오른쪽 위로 올라가요',hint:'a = 2 > 0이에요.',why:'맞아요! a가 양수이면 오른쪽 위로 올라가는 직선이에요.'}
   ],
   firstGuide:[
-    {id:'prfg3',tyNo:2,title:'유형 2 · 지나는 점으로 a 구하기',problem:'y = ax의 그래프가 점 <b>(3, −12)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({a:-2,pts:[{x:2,y:-4,lab:'점 대입'}]}),
+    {id:'prfg3',tyNo:2,title:'유형 2 · 지나는 점으로 a 구하기',problem:'y = ax의 그래프가 점 <b>(3, −9)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({a:-2,pts:[{x:2,y:-4,lab:'점 대입'}]}),
       wantChips:['상수 a의 값','x좌표','넓이'],wantAns:'상수 a의 값',wantHl:[],
-      givenChips:[{k:'a',t:'x = 3, y = −12 대입',ok:true},{k:'b',t:'a = y ÷ x',ok:true},{k:'t',t:'a = x × y',ok:false}],
-      teacherEq:'−12 = a × 3 → a = −12 ÷ 3',pairQ:'a를 구하려면 y를 x로 나누는 이유는?',pairChoices:['y = ax에서 양변을 x로 나누면 a = y/x니까','반비례라서'],pairAns:'y = ax에서 양변을 x로 나누면 a = y/x니까',
-      calcPrompt:'−12 ÷ 3 = ?',calcAns:-4,calcTopic:'eq',calcExplain:'a = (−12) ÷ 3 = <b>−4</b>예요.'}
+      givenChips:[{k:'a',t:'x = 3, y = −9 넣기',ok:true},{k:'b',t:'−9 = a × 3',ok:true},{k:'t',t:'a = x × y',ok:false}],
+      teacherEq:'y = ax에 x, y를 넣어요 → −9 = a × 3 → a = (−9) ÷ 3',pairQ:'a를 구하려면 y를 x로 나누는 이유는?',pairChoices:['y = ax에서 양변을 x로 나누면 a = y/x니까','반비례라서'],pairAns:'y = ax에서 양변을 x로 나누면 a = y/x니까',
+      calcPrompt:'(−9) ÷ 3 = ?',calcAns:-3,calcTopic:'signmul',calcExplain:'a = (−9) ÷ 3 = <b>−3</b>예요.'}
   ],
   stratRows:[
     ['그래프 모양','원점 지나는 직선','a > 0 ↗ 제1·3사분면 / a < 0 ↘ 제2·4사분면'],
@@ -309,9 +413,9 @@ HG_TRACKS.register('propg',{
 HG_TRACKS.register('inv',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① x × y = a (곱이 항상 같아요!)',say:'사탕 24개를 x명에게 똑같이 나누어 주면 한 사람 몫 y = 24/x! <b>x가 2배, 3배 되면 y는 ½배, ⅓배</b>가 되는 것이 <span class="kw">반비례 y = a/x</span>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4=4'},{x:2,y:2,lab:'2×2=4'}]}),
+    {lv:1,cap:'장면 ① x × y = a (곱이 항상 같아요!)',say:'사탕 24개를 x명에게 똑같이 나누어 주면 한 사람 몫 y = 24/x! <b>x가 2배, 3배 되면 y는 ½배, ⅓배</b>가 되는 것이 <span class="kw">반비례 y = a/x</span>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4=4'},{x:2,y:2,lab:'2×2=4'}]}),
       ask:{q:'다음 중 y가 x에 <b>반비례</b>하는 관계는?',choices:['x × y = 20','x + y = 20','y = 20x','y = x − 20'],ans:'x × y = 20',hint:'두 수의 곱(xy)이 일정한 것을 찾아요!',ok:'정확해요! x × y = 20이면 y = 20/x가 되어 반비례예요.'}},
-    {cap:'장면 ② a는 x × y',say:'표에서 짝지은 x와 y를 곱해 보면 늘 같아요. <span class="kw">그 곱이 바로 a</span>! 2 × 12 = 3 × 8 = 24이면 <b>y = 24/x</b>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4'},{x:2,y:2,lab:'2×2'}]})}
+    {lv:1,cap:'장면 ② a는 x × y',say:'표에서 짝지은 x와 y를 곱해 보면 늘 같아요. <span class="kw">그 곱이 바로 a</span>! 2 × 12 = 3 × 8 = 24이면 <b>y = 24/x</b>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'1×4'},{x:2,y:2,lab:'2×2'}]})}
   ],
   owlSummary:['반비례 식: y = a/x (x × y = a 곱이 일정!)','x가 2배, 3배 → y는 ½배, ⅓배'],
   schemaQs:[
@@ -322,8 +426,8 @@ HG_TRACKS.register('inv',{
   firstGuide:[
     {id:'ifg1',tyNo:1,title:'유형 1 · 반비례 표 빈칸 구하기',problem:'y가 x에 <b>반비례</b>하고 x = 3일 때 y = 8이에요. x = 6일 때 y는?',fig:()=>owlPlane({inv:4}),
       wantChips:['x=6일 때 y 값','두 수의 합','x축 교점'],wantAns:'x=6일 때 y 값',wantHl:[],
-      givenChips:[{k:'a',t:'일정한 곱 3 × 8 = 24',ok:true},{k:'b',t:'x = 6',ok:true},{k:'t',t:'합 3+8 = 11',ok:false}],
-      teacherEq:'3 × 8 = 24 (일정) → 24 ÷ 6 = y',pairQ:'곱이 항상 <b>24</b>로 같으니까 y를 어떻게 구하나요?',pairChoices:['24를 6으로 나눈다','24에서 6을 뺀다'],pairAns:'24를 6으로 나눈다',
+      givenChips:[{k:'a',t:'x = 3일 때 y = 8',ok:true},{k:'b',t:'새 x = 6',ok:true},{k:'t',t:'합 3 + 8 = 11',ok:false}],
+      teacherEq:'y = a/x에 넣어요 → 8 = a ÷ 3 → a = 24 → y = 24 ÷ 6',pairQ:'8 = a ÷ 3 에서 a는 어떻게 구하나요?',pairChoices:['8 × 3 = 24','8 ÷ 3'],pairAns:'8 × 3 = 24',
       calcPrompt:'24 ÷ 6 = ?',calcAns:4,calcTopic:'div',calcExplain:'24 ÷ 6 = <b>4</b>예요.'},
     {id:'ifg2',tyNo:2,title:'유형 2 · 반비례 활용 문제',problem:'사탕 <b>36개</b>를 x명에게 똑같이 나누어 줄 때 한 사람 몫을 y개라 해요. <b>9명</b>이면 몇 개씩 받나요?',fig:()=>owlPlane({inv:4}),
       wantChips:['9명일 때 한 사람 몫 y','남은 사탕','전체 합'],wantAns:'9명일 때 한 사람 몫 y',wantHl:[],
@@ -371,10 +475,10 @@ HG_TRACKS.register('inv',{
 HG_TRACKS.register('invg',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① 표의 점을 찍으면 매끄러운 곡선',say:'y = 4/x의 표 (1, 4), (2, 2), (4, 1)을 찍어 이으면 직선이 아니라 <span class="kw">매끄러운 곡선</span>이 돼요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'(1,4)'},{x:2,y:2,lab:'(2,2)'}]})},
-    {cap:'장면 ② 원점 안 지나는 한 쌍의 쌍곡선!',say:'x가 0이 될 수 없기 때문에 반비례 그래프는 <span class="warn">원점 (0, 0)과 x축·y축을 절대 만나지 않고</span> 매끄러운 곡선 한 쌍이 그려져요.',svg:()=>owlPlane({inv:-4}),
+    {lv:1,cap:'장면 ① 표의 점을 찍으면 매끄러운 곡선',say:'y = 4/x의 표 (1, 4), (2, 2), (4, 1)을 찍어 이으면 직선이 아니라 <span class="kw">매끄러운 곡선</span>이 돼요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'(1,4)'},{x:2,y:2,lab:'(2,2)'}]})},
+    {lv:1,cap:'장면 ② 원점 안 지나는 한 쌍의 쌍곡선!',say:'x가 0이 될 수 없기 때문에 반비례 그래프는 <span class="warn">원점 (0, 0)과 x축·y축을 절대 만나지 않고</span> 매끄러운 곡선 한 쌍이 그려져요.',svg:()=>owlPlane({inv:-4}),
       ask:{q:'반비례 관계 <b>y = 6/x</b>의 그래프에 대해 바른 것은?',choices:['원점을 지나지 않아요','원점을 지나는 직선이에요','x축과 만나요','제2·4사분면에 있어요'],ans:'원점을 지나지 않아요',hint:'x에 0을 넣을 수 있는지 생각해 봐요.',ok:'정확해요! x = 0을 넣을 수 없어서 원점과 두 축을 만나지 않는 곡선이에요.'}},
-    {cap:'장면 ③ 지나는 점으로 a 구하기',say:'그래프가 점 (2, 6)을 지나면 <span class="kw">y = a/x에 x, y를 넣어요</span>. 6 = a ÷ 2, 그래서 <b>a = 12</b>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'(2, 6)'}]})}
+    {lv:1,cap:'장면 ③ 지나는 점으로 a 구하기',say:'그래프가 점 (2, 6)을 지나면 <span class="kw">y = a/x에 x, y를 넣어요</span>. 6 = a ÷ 2, 그래서 <b>a = 12</b>예요.',svg:()=>owlPlane({inv:4,pts:[{x:1,y:4,lab:'(2, 6)'}]})}
   ],
   owlSummary:['그래프: 원점 안 지나고 축에 닿지 않는 한 쌍의 매끄러운 곡선 (a>0 제1·3, a<0 제2·4)','지나는 점 (p, q)를 y = a/x에 넣기 → q = a ÷ p → a 구하기'],
   schemaQs:[
@@ -385,8 +489,8 @@ HG_TRACKS.register('invg',{
   firstGuide:[
     {id:'ifg3',tyNo:2,title:'유형 2 · 지나는 점으로 a 구하기',problem:'y = a/x 그래프가 점 <b>(−3, 5)</b>를 지날 때 a의 값을 구하시오.',fig:()=>owlPlane({inv:-4,pts:[{x:-2,y:2,lab:'(-3,5)'}]}),
       wantChips:['상수 a의 값','원의 반지름','y절편'],wantAns:'상수 a의 값',wantHl:[],
-      givenChips:[{k:'a',t:'x = −3, y = 5',ok:true},{k:'b',t:'a = x × y',ok:true},{k:'t',t:'a = y ÷ x',ok:false}],
-      teacherEq:'a = (−3) × 5',pairQ:'왜 반비례에서는 두 좌표를 <b>곱하면</b> 바로 a가 나올까요?',pairChoices:['y = a/x 양변에 x를 곱하면 xy = a니까','정비례라서'],pairAns:'y = a/x 양변에 x를 곱하면 xy = a니까',
+      givenChips:[{k:'a',t:'x = −3, y = 5 넣기',ok:true},{k:'b',t:'5 = a ÷ (−3)',ok:true},{k:'t',t:'a = y ÷ x',ok:false}],
+      teacherEq:'y = a/x에 넣어요 → 5 = a ÷ (−3) → a = 5 × (−3)',pairQ:'5 = a ÷ (−3) 에서 a는 어떻게 구하나요?',pairChoices:['5 × (−3)으로 곱한다','5 ÷ (−3)으로 나눈다'],pairAns:'5 × (−3)으로 곱한다',
       calcPrompt:'(−3) × 5 = ?',calcAns:-15,calcTopic:'signmul',calcExplain:'a = (−3) × 5 = <b>−15</b>예요.'}
   ],
   stratRows:[
@@ -425,5 +529,17 @@ HG_TRACKS.register('invg',{
   },
   t3PracticeCids:['C2','C3']
 });
+/* [T39] 정비례·반비례 4차시: 빠른 구별 + 🌱 마무리(구별 문제 + 교과서 크기 숫자 1문제, 대입으로) */
+(()=>{
+  const S=HG_TRACKS.specs,big=(id,q,fig,choices,ans,hint,why)=>({id,kind:id,q,fig,choices,ans,hint,why});
+  S.prop.schemaRapid=propRapid;
+  S.prop.t1Check=t1FromSchema(S.prop.schemaQs).concat([big('t1prbig','y가 x에 정비례하고 x = <b>12</b>일 때 y = <b>36</b>이에요. y = ax의 a는?',()=>rTabSVG([12],[36]),['3','24','48','1/3'],'3','y = ax에 x, y를 넣어요 → 36 = a × 12','y = ax에 넣으면 36 = a × 12, 그래서 a = 3이에요. 숫자가 커도 넣는 방법은 똑같아요.')]);
+  S.propg.schemaRapid=propgRapid;
+  S.propg.t1Check=t1FromSchema(S.propg.schemaQs).concat([big('t1pgbig','y = ax의 그래프가 점 <b>(10, −30)</b>을 지나요. a는?',()=>rPlaneSVG({line:[-3,0]}),['−3','3','−20','−300'],'−3','y = ax에 x = 10, y = −30을 넣어요 → −30 = a × 10','−30 = a × 10, 그래서 a = −3이에요. 오른쪽 아래로 내려가는 그래프와도 맞아요.')]);
+  S.inv.schemaRapid=invRapid;
+  S.inv.t1Check=t1FromSchema(S.inv.schemaQs).concat([big('t1ivbig','y가 x에 반비례하고 x = <b>12</b>일 때 y = <b>3</b>이에요. y = a/x의 a는?',()=>rTabSVG([12],[3]),['36','4','15','1/4'],'36','y = a/x에 넣어요 → 3 = a ÷ 12','y = a/x에 넣으면 3 = a ÷ 12, 그래서 a = 3 × 12 = 36이에요.')]);
+  S.invg.schemaRapid=invgRapid;
+  S.invg.t1Check=t1FromSchema(S.invg.schemaQs).concat([big('t1igbig','y = a/x의 그래프가 점 <b>(10, 6)</b>을 지나요. a는?',()=>rPlaneSVG({inv:4}),['60','16','4','0.6'],'60','y = a/x에 x = 10, y = 6을 넣어요 → 6 = a ÷ 10','6 = a ÷ 10, 그래서 a = 6 × 10 = 60이에요.')]);
+})();
 function pick_(r,arr){return arr[r%arr.length]}
 })();
