@@ -39,6 +39,7 @@
 | **T27** | 오늘의 계산 `낱말 떠올리기`를 `친구의 틀린 풀이 찾기`로 바꾸기(선생님 선택 ②안): 5문제에 1개·10문제에 2개, 친구의 틀린 답 → 어디서 잘못했는지 고르기 → 바른 답 구하기, 이유를 잘못 고르면 끝에 비슷한 문제 한 번 더 | Claude Code | `js/05-calc.js`(`errFind`·`errFindAdd`·`drillRun` `errStage`), `styles.css`(1줄), `tests/verify.mjs`(1줄), `COLLAB.md` | **완료** |
 | **T28** | 새 AI 에이전트용 첫날 안내서(작업 흐름·차시별 파일 지도·공용 파일 규칙·선생님 판단 기준·위치·코드 보고 읽는 법·답장 방법 + 붙여 넣는 프롬프트) | Claude Code | `docs/AGENT-ONBOARDING.md`(신규), `AGENTS.md`(1줄), `CLAUDE.md`(1줄), `COLLAB.md` | **완료** (문서 전용) |
 | **T29** | 학생용 `⚑ 이 문제 이상해요` 팝업(이유 고르기 + 직접 적기) → 선생님께 위치·코드 보고 양식으로 전달(교사 화면 신고 칸에 양식 그대로 + 복사 버튼) · 📍 위치 보고 양식 보완(화면 경로 중복 제거·차시 번호, 문제 글·학생이 고른 답, 화면 폭·시각) · 빠른 구별·구별 체크·첫걸음 마무리 화면에도 신고 버튼 | Claude Code | `js/09r-report.js`(신규), `js/09-debug-loc.js`, `js/02t-track-engine.js`(신고 훅 3줄), `js/03-teacher.js`(`loadReports`), `index.html`(1줄), `tests/verify.mjs`(1~2줄), `docs/AGENT-ONBOARDING.md`(5-1절), `AGENTS.md`(1줄), `COLLAB.md` | **완료** |
+| **T30** | 보스전 보완(선생님 선택: 보상 + 모르게 복습): 폭탄 문제에 차시 그림 문제 섞기(차시 문제 장치 `GEN`·복합 + 보스 문제 은행) · 걸음(🌱🌿🌳)·필살기 맞춤 · 틀린 유형/오래 안 본 차시 더 자주 · 결과 화면에 복습한 차시와 같은 그림 단계 풀이 · 전투 화면 내 캐릭터 · 보스전 📍 위치 보고·⚑ 신고 | Claude Code | `js/04b-boss-mix.js`(신규), `js/04-games.js`(보스 도전 `raidPick`·`raidOpen` 훅 몇 줄), `boss-raid.css`(끝에 덧붙이기), `index.html`(1줄), `tests/verify.mjs`(1~2줄), `COLLAB.md` | **진행 중** |
 
 ---
 
