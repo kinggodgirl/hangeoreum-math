@@ -692,6 +692,39 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     const base=LESSON_BASE_CALC[l.id];if(base&&base.length)(sp.firstGuide||[]).forEach(g=>{if(!base.includes(g.calcTopic)&&!(OK_EXTRA[l.id]||[]).includes(g.calcTopic))E.push(l.id+' calcTopic '+g.calcTopic)})}
   return JSON.stringify(E)})()`, sandbox));
   if (t39.length) errors.push('[T39] ' + t39.join(', ')); }
+// [T38] 묶음 D: 나의 길 = 걸음 · 올린 단원 지키기 · 차시 마무리 +15 · 미션 카드 → 길잡이 +3/+10 · 3초 자동 이동 없음 · 개념형 🌱 B 잠금 · 장면 걸음 표시
+{
+  const src = rel => fs.readFileSync(path.join(root, rel), 'utf8');
+  const eng = src('js/02t-track-engine.js'), home = src('js/02-unit-solid.js'), help = src('js/07-print-omr-boot.js'), games = src('js/04-games.js');
+  if (/autoNavTimer|setTimeout\([^)]*location\.hash='#calc-'/.test(eng)) errors.push('[T38] 3초 자동 이동이 남아 있어요');
+  if (!eng.includes('지금 기초 연산 가기') || !eng.includes('이 차시 먼저 끝내기')) errors.push('[T38] 계산 도움 버튼 두 개');
+  for (const k of ['t1', 't2', 't3']) if (!eng.includes(`award(15,lid+':${k}'`)) errors.push(`[T38] 차시 마무리 ${k} +15`);
+  if (/id="misCard"|missionCardHTML\(\)\}/.test(home)) errors.push('[T38] 홈에 미션 카드가 남아 있어요');
+  const vh = home.slice(home.indexOf('function viewHome'), home.indexOf('function HOME_UNITS'));
+  if (vh.includes('<h2>열린 단원</h2>') || vh.includes('같이 풀기 → 혼자 풀기')) errors.push('[T38] 홈 옛 문구');
+  if (/MISSIONS\s*=|review1/.test(games)) errors.push('[T38] 옛 미션 목록이 남아 있어요');
+  if (help.includes('세 번 연속 맞히면 졸업')) errors.push('[T38] 복습 노트 도움말 옛 규칙');
+  if (!eng.includes('owlMore') || !eng.includes('lvOf')) errors.push('[T38] 부엉 쌤 장면 걸음 표시');
+  const r38 = JSON.parse(vm.runInContext(`(()=>{const keep=JSON.stringify(DB),E={};const t=today(),_pp=popPts,_cb=celebrate,_ts=toast;popPts=()=>{};celebrate=()=>{};toast=()=>{};
+    Object.keys(DB).forEach(k=>delete DB[k]);
+    E.names=GOALS.map(g=>g.ic+' '+g.nm).join('|');
+    DB.arc={concept:true};DB.poly={};DB._unitTrack={circle:3,solid:2};goalChoose('base');
+    E.ut=JSON.stringify(DB._unitTrack);E.arcTr=DB.arc.track;E.polyTr=DB.poly.track;
+    Object.keys(DB).forEach(k=>delete DB[k]);DB._goal={k:'calc',d:t};
+    const S=HG_TRACKS.specs,cid=Object.keys(S).find(id=>S[id].kind==='concept'&&(S[id].firstGuide||[]).length&&(typeof S[id].owlScenes==='function'?S[id].owlScenes():(S[id].owlScenes||[])).length);
+    E.cid=cid;DB[cid]={};E.lock1=HG_TRACKS.t1GuideLocked(cid,S[cid]);DB[cid].concept=true;E.lock2=HG_TRACKS.t1GuideLocked(cid,S[cid]);
+    DB[cid]={track:2};E.lock3=HG_TRACKS.t1GuideLocked(cid,S[cid]);
+    Object.keys(DB).forEach(k=>delete DB[k]);
+    const p0=me().pts;DB._drill={last:t};checkMissions();const p1=me().pts;
+    const G=guideSteps(),lr=G.find(x=>x.les);if(lr){const id=(lr.href.match(/^#([a-z0-9]+)/)||[])[1];DB[id]=Object.assign(DB[id]||{},{tday:t})}
+    checkMissions();const p2=me().pts;checkMissions();const p3=me().pts;
+    E.pts=[p1-p0,p2-p1,p3-p2];E.streak=missionStreak();E.allDone=guideSteps().every(x=>x.done);E.note=guidePtsNote();
+    Object.keys(DB).forEach(k=>delete DB[k]);Object.assign(DB,JSON.parse(keep));popPts=_pp;celebrate=_cb;toast=_ts;return JSON.stringify(E)})()`, sandbox));
+  if (r38.names !== '🌱 첫걸음 · 계산부터 탄탄히|🌿 한걸음 · 시험 기본 문제 잡기|🌳 두걸음 · 시험 점수 더 올리기') errors.push(`[T38] 나의 길 이름 ${r38.names}`);
+  if (r38.ut !== '{"circle":3}' || r38.arcTr !== 3 || r38.polyTr !== 2) errors.push(`[T38] 올린 단원 지키기 ${JSON.stringify(r38)}`);
+  if (!r38.cid || r38.lock1 !== true || r38.lock2 !== false || r38.lock3 !== false) errors.push(`[T38] 개념형 🌱 B 잠금 ${JSON.stringify(r38)}`);
+  if (JSON.stringify(r38.pts) !== '[3,13,0]' || r38.streak !== 1 || !r38.allDone || !/\+10/.test(r38.note)) errors.push(`[T38] 길잡이 포인트 ${JSON.stringify(r38)}`);
+}
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);

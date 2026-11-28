@@ -305,14 +305,24 @@ function owlDraw(root){
   });
 }
 function mountOwlShow(host,lid,spec,opt={}){
-  const scenes=typeof spec.owlScenes==='function'?spec.owlScenes():(spec.owlScenes||[]);
-  if(!scenes.length){host.innerHTML='';return}
-  const B=scenes.map(owlBeats);
-  let idx=0,beat=0,seen=0,finished=false,doneOnce=false;const askedDone=new Set();
+  const ALL=typeof spec.owlScenes==='function'?spec.owlScenes():(spec.owlScenes||[]);
+  if(!ALL.length){host.innerHTML='';return}
+  /* [T38] 총정리 2-1 다 8: 장면마다 걸음 표시 lv(1 🌱 · 2 🌿 · 3 🌳, 없으면 🌱). 내 걸음까지의 장면만 보여 주고,
+     끝나면 '🌿 더 알아보기'(그다음 걸음 장면)로 이어 봐요. 🌿·🌳 학생은 장면 점으로 건너뛸 수 있어요. */
+  const LV_IC=['','🌱','🌿','🌳'],LV_NM=['','🌱 첫걸음','🌿 한걸음','🌳 두걸음'];
+  const lvOf=sc=>(sc&&(sc.lv===2||sc.lv===3))?sc.lv:1;
+  const tr=(opt.track===1||opt.track===2||opt.track===3)?opt.track:curTrack(lid);
+  let maxLv=tr;if(!ALL.some(sc=>lvOf(sc)<=maxLv))maxLv=3;
+  let scenes=[],B=[];
+  const pick=()=>{scenes=ALL.filter(sc=>lvOf(sc)<=maxLv);B=scenes.map(owlBeats)};
+  pick();
+  const moreLv=()=>{const l=ALL.map(lvOf).filter(v=>v>maxLv);return l.length?Math.min(...l):0};
+  let idx=0,beat=0,finished=false,doneOnce=false,extra=false;const askedDone=new Set(),seenS=new Set();
+  const canJump=i=>tr>=2||seenS.has(scenes[i]);
   const plain=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
 
   const paint=anim=>{
-    const sc=scenes[idx],bs=B[idx],bt=bs[beat]||bs[0],atEnd=beat>=bs.length-1,showAsk=!!sc.ask&&atEnd,needAsk=showAsk&&!askedDone.has(idx),isLast=idx>=scenes.length-1;
+    const sc=scenes[idx],bs=B[idx],bt=bs[beat]||bs[0],atEnd=beat>=bs.length-1,showAsk=!!sc.ask&&atEnd,needAsk=showAsk&&!askedDone.has(scenes[idx]),isLast=idx>=scenes.length-1;
     const svg=$('.owl-stage svg',host);
     if(svg){
       const gs=$$('[data-b]',svg);
@@ -338,26 +348,29 @@ function mountOwlShow(host,lid,spec,opt={}){
     if(ak){
       ak.innerHTML=showAsk?`<div class="owl-ask">
         <div class="owl-ask-q">✋ 잠깐 확인! ${sc.ask.q}</div>
-        <div class="ct-hit-row" id="owlAskBtns">${sc.ask.choices.map(c=>`<button type="button" class="ct-hit${askedDone.has(idx)&&c===sc.ask.ans?' ok':''}" data-oa="${c}"${askedDone.has(idx)?' disabled':''}>${c}</button>`).join('')}</div>
-        <div id="owlAskMsg">${askedDone.has(idx)?`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`:''}</div></div>`:'';
+        <div class="ct-hit-row" id="owlAskBtns">${sc.ask.choices.map(c=>`<button type="button" class="ct-hit${askedDone.has(scenes[idx])&&c===sc.ask.ans?' ok':''}" data-oa="${c}"${askedDone.has(scenes[idx])?' disabled':''}>${c}</button>`).join('')}</div>
+        <div id="owlAskMsg">${askedDone.has(scenes[idx])?`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`:''}</div></div>`:'';
       $$('[data-oa]',ak).forEach(b=>b.onclick=()=>{
         const msg=$('#owlAskMsg',ak);
-        if(b.dataset.oa===sc.ask.ans){askedDone.add(idx);b.classList.add('ok');$$('[data-oa]',ak).forEach(x=>x.disabled=true);if(msg)msg.innerHTML=`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`;paintHint()}
+        if(b.dataset.oa===sc.ask.ans){askedDone.add(scenes[idx]);b.classList.add('ok');$$('[data-oa]',ak).forEach(x=>x.disabled=true);if(msg)msg.innerHTML=`<div class="feedback ok" style="margin-top:6px">${sc.ask.ok}</div>`;paintHint()}
         else{b.classList.add('bad');b.disabled=true;if(msg)msg.innerHTML=`<div class="ct-cool" style="margin-top:6px">💡 ${sc.ask.hint}</div>`}
       });
     }
     const sum=$('#owlSumHost',host);
-    if(sum)sum.innerHTML=finished&&Array.isArray(spec.owlSummary)&&spec.owlSummary.length?`<div class="owl-sum"><b>📌 부엉 쌤 핵심 정리</b><ul>${spec.owlSummary.map(x=>`<li>${arcSymHTML(x)}</li>`).join('')}</ul></div>`:'';
+    if(sum){const ml=finished?moreLv():0,mk=ml?ALL.filter(x=>lvOf(x)===ml).length:0;
+      sum.innerHTML=(finished&&Array.isArray(spec.owlSummary)&&spec.owlSummary.length?`<div class="owl-sum"><b>📌 부엉 쌤 핵심 정리</b><ul>${spec.owlSummary.map(x=>`<li>${arcSymHTML(x)}</li>`).join('')}</ul></div>`:'')
+        +(ml?`<div class="owl-more"><button type="button" class="btn primary" id="owlMore">${LV_IC[ml]} 더 알아보기 · 장면 ${mk}개</button><small>${LV_NM[ml]}에서 쓰는 내용이에요. 하고 싶을 때 봐요.</small></div>`:'');
+      const mb=$('#owlMore',sum);if(mb)mb.onclick=()=>{const first=ALL.find(x=>lvOf(x)===ml);maxLv=ml;pick();idx=Math.max(0,scenes.indexOf(first));beat=0;finished=false;extra=true;enter()}}
     const pg=$('.owl-pg',host);if(pg)pg.innerHTML=`장면 ${idx+1} / ${scenes.length}${bs.length>1?` <span class="owl-bdots">${bs.map((_,i)=>`<i class="${i<=beat?'on':''}"></i>`).join('')}</span>`:''}`;
     const pv=$('#owlPrev',host);if(pv)pv.disabled=idx===0&&beat===0;
-    $$('.owl-dot',host).forEach((d,i)=>{d.className='owl-dot'+(i<idx||(finished&&i===idx)?' done':i===idx?' on':'');d.disabled=i>seen});
+    $$('.owl-dot',host).forEach((d,i)=>{d.className='owl-dot lv'+lvOf(scenes[i])+(i<idx||(finished&&i===idx)?' done':i===idx?' on':'');d.disabled=!canJump(i)});
     paintHint();
     if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,file:'js/02t-track-engine.js',fn:'mountOwlShow',section:'부엉 쌤 개념 극장',owlScene:idx+1,owlTotal:scenes.length,owlBeat:beat+1,owlBeatTotal:bs.length,owlCap:sc.cap||''});
     void needAsk;void isLast;
   };
   const paintHint=()=>{
     const h=$('.owl-hint',host);if(!h)return;
-    const sc=scenes[idx],atEnd=beat>=B[idx].length-1,needAsk=!!sc.ask&&atEnd&&!askedDone.has(idx),isLast=idx>=scenes.length-1;
+    const sc=scenes[idx],atEnd=beat>=B[idx].length-1,needAsk=!!sc.ask&&atEnd&&!askedDone.has(scenes[idx]),isLast=idx>=scenes.length-1;
     h.className='owl-hint'+(finished?' fin':needAsk?' ask':'');
     h.innerHTML=finished?'✓ 개념을 끝까지 봤어요. 장면 점을 누르면 다시 볼 수 있어요.'
       :needAsk?'✋ 질문에 답하면 다음으로 넘어가요.'
@@ -366,11 +379,11 @@ function mountOwlShow(host,lid,spec,opt={}){
   };
   const enter=()=>{
     const sc=scenes[idx],hadFocus=typeof host.contains==='function'&&typeof document==='object'&&host.contains(document.activeElement);
-    seen=Math.max(seen,idx);
+    seenS.add(sc);
     host.innerHTML=`<div class="owl-wrap owl-tap" tabindex="0" role="group" aria-label="부엉 쌤 개념 그림극. 화면을 누르면 다음으로 넘어가요.">
       <div class="owl-top">
-        <span class="owl-title">🦉 부엉 쌤의 개념 그림극</span>
-        <div class="owl-dots">${scenes.map((_,i)=>`<button type="button" class="owl-dot" data-oi="${i}" aria-label="${i+1}장면"></button>`).join('')}</div>
+        <span class="owl-title">🦉 부엉 쌤의 개념 그림극 <span class="owl-lv l${lvOf(sc)}" title="이 장면은 ${LV_NM[lvOf(sc)]} 내용이에요">${LV_NM[lvOf(sc)]}</span></span>
+        <div class="owl-dots">${scenes.map((x,i)=>`<button type="button" class="owl-dot lv${lvOf(x)}" data-oi="${i}" aria-label="${i+1}장면 · ${LV_NM[lvOf(x)]}"></button>`).join('')}</div>
       </div>
       <div class="owl-panel">
         <div class="owl-stage owl-new"><div class="owl-fig-slot"></div>${sc.cap?`<div class="owl-cap">${sc.cap}</div>`:''}</div>
@@ -387,9 +400,9 @@ function mountOwlShow(host,lid,spec,opt={}){
     const wrap=$('.owl-wrap',host);
     wrap.onclick=e=>{if(e.target.closest&&e.target.closest('button,a,input,select,label,.owl-ask,.owl-sum,canvas,.ct-3d-stage'))return;next()};
     wrap.onkeydown=e=>{if(e.target!==wrap)return;if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}};
-    $$('[data-oi]',host).forEach(b=>b.onclick=()=>{const t=+b.dataset.oi;if(t<=seen){idx=t;beat=0;finished=false;enter()}});
+    $$('[data-oi]',host).forEach(b=>b.onclick=()=>{const t=+b.dataset.oi;if(canJump(t)){idx=t;beat=0;finished=false;extra=false;enter()}});
     $('#owlPrev',host).onclick=prev;
-    $('#owlReplay',host).onclick=()=>{idx=0;beat=0;finished=false;enter()};
+    $('#owlReplay',host).onclick=()=>{idx=0;beat=0;finished=false;extra=false;enter()};
     const sy=$('#owlSay',host);if(sy)sy.onclick=()=>{const bt=B[idx][beat];speak(plain(bt&&bt.say),sy)};
     if(hadFocus&&wrap.focus)try{wrap.focus({preventScroll:true})}catch(e){}
     paint(true);
@@ -398,8 +411,9 @@ function mountOwlShow(host,lid,spec,opt={}){
     if(finished)return;
     const sc=scenes[idx];
     if(beat<B[idx].length-1){beat++;paint(true);return}
-    if(sc.ask&&!askedDone.has(idx)){const a=$('.owl-ask',host);if(a){a.classList.remove('owl-shake');void a.offsetWidth;a.classList.add('owl-shake')}return}
-    if(idx<scenes.length-1){idx++;beat=0;enter();return}
+    if(sc.ask&&!askedDone.has(scenes[idx])){const a=$('.owl-ask',host);if(a){a.classList.remove('owl-shake');void a.offsetWidth;a.classList.add('owl-shake')}return}
+    {let n=idx+1;if(extra)while(n<scenes.length&&seenS.has(scenes[n]))n++;
+      if(n<scenes.length){idx=n;beat=0;enter();return}}
     finished=true;
     /* 처음부터·장면 점으로 다시 볼 때는 finished를 풀어요. 기록·포인트·onFinish는 처음 한 번만 */
     if(doneOnce){paint(false);return}
@@ -435,14 +449,23 @@ function renderT1Steps(body,lid,spec){
     const bStat=soloDoneCnt>=guideList.length?'완료 ✓':soloDoneCnt?`${soloDoneCnt}/${guideList.length}유형`:`${guideList.length}유형`;
     body.innerHTML=`<div class="ct-subtabs">
       <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 맞는지 · 아닌지 구별하기 (${p.t1SchemaDone?'완료 ✓':(spec.schemaRapid?spec.schemaRapid.n:schemaList.length)+'문항'})</button>
-      ${guideList.length?`<button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${bStat})</button>`:''}
+      ${guideList.length?`<button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${t1GuideLocked(lid,spec)?'🔒 개념 보기 먼저':bStat})</button>`:''}
     </div><div id="t1SubHost"></div>`;
     $$('.ct-subtab',body).forEach(b=>b.onclick=()=>{sub=b.dataset.s;drawSub()});
     const host=$('#t1SubHost',body);
     if(sub==='schema')renderT1Schema(host,lid,spec,()=>{if(guideList.length){sub='guide';drawSub()}else if(typeof location==='object')location.hash='#'+lid+'-'+(spec.kind==='concept'?'concept':'practice')});
+    else if(t1GuideLocked(lid,spec))host.innerHTML=`<div class="ct-card ct-t1-lock"><div class="ct-lock-ic" aria-hidden="true">🦉</div>
+      <p><b>🦉 개념 보기를 먼저 봐요.</b><br>부엉 쌤 그림극에서 이름과 뜻을 확인하면 B. 따라 풀기가 열려요.</p>
+      <div class="next-row" style="justify-content:center"><a class="btn primary" href="#${lid}-concept">② 부엉 쌤 개념 보기 →</a></div></div>`;
     else renderT1Guide(host,lid,spec);
   };
   drawSub();
+}
+/* [T38] 총정리 2-1 라 B5: 개념형 🌱에서는 부엉 쌤을 본 뒤에 B 따라 풀기가 열려요(p.concept = 그림극 끝까지 봄) */
+function t1GuideLocked(lid,spec){
+  if(spec.kind!=='concept'||!(spec.firstGuide||[]).length||curTrack(lid)!==1)return false;
+  const sc=typeof spec.owlScenes==='function'?spec.owlScenes():(spec.owlScenes||[]);
+  return sc.length>0&&!lesProg(lid).concept;
 }
 
 /* [T31] 첫걸음 A를 마친 뒤 다음 할 일(선생님 의견: B 따라 풀기도 분명히 추천).
@@ -454,7 +477,7 @@ function t1AfterSchemaHTML(lid,spec,p){
   const cBtn=cls=>`<a class="btn ${cls}" href="#${lid}-concept">② 부엉 쌤 개념 보기 →</a>`;
   const pBtn=`<a class="btn primary" href="#${lid}-practice">첫걸음 차시 마무리 →</a>`;
   let msg,btns;
-  if(isC&&hasG&&!seen){msg='다음 순서: <b>② 개념 보기</b>에서 이름을 확인한 뒤 → <b>B. 선생님과 같이 따라 풀기</b>로 넘어가요.';btns=cBtn('primary')+gBtn('ghost')}
+  if(isC&&hasG&&!seen){msg='다음 순서: <b>② 개념 보기</b>에서 이름을 확인한 뒤 → <b>B. 선생님과 같이 따라 풀기</b>로 넘어가요. B는 개념 보기를 본 뒤에 열려요.';btns=cBtn('primary')}
   else if(hasG){msg='이제 <b>B. 선생님과 같이 따라 풀기</b>로 넘어가요.';btns=gBtn('primary')+(isC?cBtn('ghost'):'')}
   else if(isC&&!seen){msg='방금 본 모양의 이름을 <b>② 개념 보기</b>에서 확인해 봐요.';btns=cBtn('primary')}
   else{msg='이제 <b>차시 마무리</b>로 넘어가요.';btns=pBtn+(isC?cBtn('ghost'):'')}
@@ -1615,7 +1638,9 @@ function guideLessonStep(){
   const uTr=unitActiveTrack(cur.unit||'solid');
   const p=lesProg(cur.id),info=window.lessonProgressInfo(cur.id,DB,uTr),tr=info.track,spec=SPECS[cur.id];
   const order=tr===1?(spec.kind==='concept'?['steps','concept','practice']:['concept','steps','practice']):['steps','practice'];
-  const tab=order.find(k=>!info.tabs[k])||'practice';
+  let tab=order.find(k=>!info.tabs[k])||'practice';
+  /* [T38] 개념형 🌱: A를 마쳤고 B가 잠겨 있으면(부엉 쌤 전) 개념 보기부터 */
+  if(tab==='steps'&&info.t1SchemaDone&&t1GuideLocked(cur.id,spec))tab='concept';
   const stepLabel=tr===1?(info.t1SchemaDone&&info.t1GuideTotal>0?'유형 익히기 · 따라 풀기':'유형 익히기 · 구별하기'):tr===2?'유형 익히기 · 대표 예제':'유형 익히기 · 복합 문제';
   const TAB={concept:'개념 보기 · 부엉 쌤 그림극',steps:stepLabel,practice:'차시 마무리'};
   return{les:true,done:p.tday===t,more:true,t:`${cur.no}차시 ${cur.title}`,s:`${unitNm} · ${TRACK_NM[tr]} · ${last===cur&&info.started?'이어서 ':''}${TAB[tab]}`,href:`#${cur.id}-${tab}`};
@@ -1666,6 +1691,7 @@ window.HG_TRACKS={
   lessonProgressInfo:window.lessonProgressInfo,
   unitActiveTrack,
   promoteUnitTrack,
-  lessonCompleteCrossroadsHTML
+  lessonCompleteCrossroadsHTML,
+  t1GuideLocked
 };
 })();
