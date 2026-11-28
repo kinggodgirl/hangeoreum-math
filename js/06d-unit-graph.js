@@ -1,4 +1,5 @@
-/* [T14] Ⅳ. 좌표평면과 그래프 (unit: 'graph') — 1.coord · 2.graph · 3.prop · 4.inv */
+/* [T14] Ⅳ. 좌표평면과 그래프 (unit: 'graph') — 1.coord · 2.graph · 3.prop · 4.propg · 5.inv · 6.invg
+   [T35] 정비례·반비례를 '뜻과 식(prop·inv) / 그래프(propg·invg)'로 나눠 19차시가 됐어요. */
 (()=>{
 'use strict';
 
@@ -17,8 +18,10 @@ if(typeof UNITS!=='undefined'&&Array.isArray(UNITS)){
 const G_LESSONS=[
   {id:'coord',no:1,title:'순서쌍과 좌표',sub:'수직선·좌표평면 위 점의 위치와 사분면',tb:'01 순서쌍과 좌표 · 108~112쪽',ready:true,unit:'graph'},
   {id:'graph',no:2,title:'그래프와 그 해석',sub:'변화를 그림으로 읽고 그릇 모양 맞추기',tb:'02 그래프 · 113~119쪽',ready:true,unit:'graph'},
-  {id:'prop',no:3,title:'정비례',sub:'x가 2배, 3배 → y도 2배, 3배 (y = ax)',tb:'03 정비례 · 120~126쪽',ready:true,unit:'graph'},
-  {id:'inv',no:4,title:'반비례',sub:'x와 y의 곱이 일정 (y = a/x)',tb:'04 반비례 · 127~131쪽',ready:true,unit:'graph'}
+  {id:'prop',no:3,title:'정비례의 뜻과 식',sub:'x가 2배, 3배 → y도 2배, 3배 (y = ax)',tb:'03 정비례 · 120~121쪽',ready:true,unit:'graph'},
+  {id:'propg',no:4,title:'정비례의 그래프',sub:'원점을 지나는 직선, a의 부호로 방향 보기',tb:'03 정비례 · 122~126쪽',ready:true,unit:'graph'},
+  {id:'inv',no:5,title:'반비례의 뜻과 식',sub:'x와 y의 곱이 일정 (y = a/x)',tb:'04 반비례 · 127~128쪽',ready:true,unit:'graph'},
+  {id:'invg',no:6,title:'반비례의 그래프',sub:'축에 닿지 않는 한 쌍의 곡선, a의 부호로 사분면 보기',tb:'04 반비례 · 129~131쪽',ready:true,unit:'graph'}
 ];
 if(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS)){
   G_LESSONS.forEach(L=>{if(!LESSONS.some(x=>x.id===L.id))LESSONS.push(L)});
@@ -379,18 +382,20 @@ GEN.propFormula=seed=>{
 GEN.propGraph=seed=>{
   const a=seed%2===0?ri(mulberry(seed),2,5):-ri(mulberry(seed),2,5);
   const ans=a>0?'제1사분면, 제3사분면':'제2사분면, 제4사분면';
-  return{ptype:'prop:graph',title:`정비례 관계 <b>y = ${neg(a)}x</b>의 그래프가 지나는 사분면을 모두 고르시오.`,
+  return{ptype:'propg:graph',title:`정비례 관계 <b>y = ${neg(a)}x</b>의 그래프가 지나는 사분면을 모두 고르시오.`,
     fig:{svg:()=>`<div class="figbox">${planeGridSVG({lineA:a})}</div>`},
     steps:[{q:'지나는 사분면은?',type:'choice',choices:['제1사분면, 제3사분면','제2사분면, 제4사분면','제1사분면, 제2사분면','제3사분면, 제4사분면'],ans,hint:`a = ${neg(a)}의 부호(${a>0?'> 0':'< 0'})를 보세요.`,ok:`a ${a>0?'> 0 → 제1·3사분면':'< 0 → 제2·4사분면'}`}]};
 };
 GEN.propFindA=seed=>{
   const r=mulberry(seed),a=pick(r,[-4,-3,-2,2,3,4]),px=pick(r,[-3,-2,2,3]),py=a*px;
-  return{ptype:'prop:findA',title:`원점과 점 <b>(${neg(px)}, ${neg(py)})</b>을 지나는 직선 y = ax에서 <b>a</b>의 값을 구하시오.`,
+  return{ptype:'propg:findA',title:`원점과 점 <b>(${neg(px)}, ${neg(py)})</b>을 지나는 직선 y = ax에서 <b>a</b>의 값을 구하시오.`,
     fig:{svg:()=>`<div class="figbox">${planeGridSVG({lineA:a,pts:[{x:px,y:py}]})}</div>`},
     finalQ:'a의 값은?',steps:[{tag:'y ÷ x로 a 찾기',q:`y = ax에 x = ${neg(px)}, y = ${neg(py)}를 넣으면 a = (${neg(py)}) ÷ (${neg(px)}) = ?`,type:'sn',ans:a,ansText:neg(a),hint:`부호에 주의해 ${neg(py)} ÷ ${neg(px)}`,ok:`y = ${neg(a)}x`}]};
 };
-GEN.prop=seed=>[GEN.propTable,GEN.propFormula,GEN.propGraph,GEN.propFindA][seed%4](seed);
-GEN.propStep=seed=>GEN.propFindA(seed);
+GEN.prop=seed=>[GEN.propTable,GEN.propFormula][seed%2](seed);
+GEN.propStep=seed=>GEN.propFormula(seed);
+GEN.propg=seed=>[GEN.propGraph,GEN.propFindA][seed%2](seed);
+GEN.propgStep=seed=>GEN.propFindA(seed);
 
 /* ── 4. 문제 생성기: 4차시 inv ── */
 GEN.invTable=seed=>{
@@ -412,18 +417,20 @@ GEN.invFormula=seed=>{
 GEN.invGraph=seed=>{
   const r=mulberry(seed),a=seed%2===0?pick(r,[2,4,6]):pick(r,[-2,-4,-6]);
   const ans=a>0?'제1사분면, 제3사분면':'제2사분면, 제4사분면';
-  return{ptype:'inv:graph',title:`반비례 관계 <b>y = ${neg(a)}/x</b>의 그래프가 지나는 사분면을 모두 고르시오.`,
+  return{ptype:'invg:graph',title:`반비례 관계 <b>y = ${neg(a)}/x</b>의 그래프가 지나는 사분면을 모두 고르시오.`,
     fig:{svg:()=>`<div class="figbox">${planeGridSVG({invA:a})}</div>`},
     steps:[{q:'지나는 사분면은?',type:'choice',choices:['제1사분면, 제3사분면','제2사분면, 제4사분면','제1사분면, 제2사분면','제3사분면, 제4사분면'],ans,hint:`a = ${neg(a)}의 부호(${a>0?'> 0':'< 0'})를 보세요.`,ok:`a ${a>0?'> 0 → 제1·3사분면':'< 0 → 제2·4사분면'}`}]};
 };
 GEN.invFindA=seed=>{
   const r=mulberry(seed),px=pick(r,[-3,-2,2,3]),py=pick(r,[-4,-2,2,4]),a=px*py;
-  return{ptype:'inv:findA',title:`반비례 관계 y = a/x의 그래프가 점 <b>(${neg(px)}, ${neg(py)})</b>을 지날 때, <b>a</b>의 값을 구하시오.`,
+  return{ptype:'invg:findA',title:`반비례 관계 y = a/x의 그래프가 점 <b>(${neg(px)}, ${neg(py)})</b>을 지날 때, <b>a</b>의 값을 구하시오.`,
     fig:{svg:()=>`<div class="figbox">${planeGridSVG({invA:a,pts:[{x:px,y:py}]})}</div>`},
     finalQ:'a의 값은?',steps:[{tag:'a = x × y 이용하기',q:`a = x × y = (${neg(px)}) × (${neg(py)}) = ?`,type:'sn',ans:a,ansText:neg(a),hint:`두 좌표의 곱 (${neg(px)}) × (${neg(py)})`,ok:`y = ${neg(a)}/x`}]};
 };
-GEN.inv=seed=>[GEN.invTable,GEN.invFormula,GEN.invGraph,GEN.invFindA][seed%4](seed);
-GEN.invStep=seed=>GEN.invFindA(seed);
+GEN.inv=seed=>[GEN.invTable,GEN.invFormula][seed%2](seed);
+GEN.invStep=seed=>GEN.invFormula(seed);
+GEN.invg=seed=>[GEN.invGraph,GEN.invFindA][seed%2](seed);
+GEN.invgStep=seed=>GEN.invFindA(seed);
 
 /* ── 5. PTYPES & 전역 계약 등록 ── */
 Object.assign(PTYPES,{
@@ -442,18 +449,22 @@ Object.assign(PTYPES,{
   prop:[
     {no:1,nm:'정비례 표 빈칸 구하기',tb:'120쪽',key:'x가 k배면 y도 k배! 비율이 항상 같아요.',pt:['prop:table'],src:['propTable']},
     {no:2,nm:'정비례 식 y = ax 활용',tb:'121쪽 · 125쪽',key:'기준 양 1당 변화량 <b>a</b>를 찾아 <b>y = ax</b>에 대입해요.',pt:['prop:formula'],src:['propFormula']},
-    {no:3,nm:'정비례 그래프의 사분면',tb:'122~124쪽',key:'a &gt; 0 → <b>제1·3사분면</b> / a &lt; 0 → <b>제2·4사분면</b>',pt:['prop:graph'],src:['propGraph']},
-    {no:4,nm:'지나는 점으로 a 구하기',tb:'124쪽 6번',key:'원점이 아닌 점 (p, q)를 넣어 <b>a = q ÷ p</b>로 구해요.',pt:['prop:findA'],src:['propFindA']}
+  ],
+  propg:[
+    {no:1,nm:'정비례 그래프의 사분면',tb:'122~124쪽',key:'a &gt; 0 → <b>제1·3사분면</b> / a &lt; 0 → <b>제2·4사분면</b>',pt:['propg:graph'],src:['propGraph']},
+    {no:2,nm:'지나는 점으로 a 구하기',tb:'124쪽 6번',key:'원점이 아닌 점 (p, q)를 <b>y = ax에 넣어</b> a를 구해요.',pt:['propg:findA'],src:['propFindA']}
   ],
   inv:[
     {no:1,nm:'반비례 표 빈칸 구하기',tb:'127쪽',key:'두 수의 곱 <b>x × y = a</b>가 항상 똑같아요!',pt:['inv:table'],src:['invTable']},
     {no:2,nm:'반비례 식 y = a/x 활용',tb:'128쪽',key:'일정한 곱 a를 구하고 <b>y = a ÷ x</b>로 찾아요.',pt:['inv:formula'],src:['invFormula']},
-    {no:3,nm:'반비례 그래프의 사분면',tb:'129~130쪽',key:'원점을 안 지나고 축에 닿지 않는 쌍곡선! a&gt;0(1·3), a&lt;0(2·4)',pt:['inv:graph'],src:['invGraph']},
-    {no:4,nm:'지나는 점으로 a 구하기',tb:'131쪽',key:'곡선 위의 점 (p, q)에서 <b>a = p × q</b>로 바로 구해요.',pt:['inv:findA'],src:['invFindA']}
+  ],
+  invg:[
+    {no:1,nm:'반비례 그래프의 사분면',tb:'129~130쪽',key:'원점을 안 지나고 축에 닿지 않는 쌍곡선! a&gt;0(1·3), a&lt;0(2·4)',pt:['invg:graph'],src:['invGraph']},
+    {no:2,nm:'지나는 점으로 a 구하기',tb:'131쪽',key:'곡선 위의 점 (p, q)를 <b>y = a/x에 넣어</b> a를 구해요.',pt:['invg:findA'],src:['invFindA']}
   ]
 });
 
-['coord','graph','prop','inv'].forEach(lid=>{
+['coord','graph','prop','propg','inv','invg'].forEach(lid=>{
   PTYPES[lid].forEach(T_=>{
     const g=tyKey(lid,T_.no);
     GEN[g]=seed=>GEN[T_.src[0]](seed);
@@ -465,22 +476,32 @@ Object.assign(PTYPES,{
 });
 ['coordNL','coordRead','coordQuad','coordTerm','coordStep'].forEach(g=>LESSON_OF[g]='coord');
 ['graphDraw','graphRead','graphShape','graphComp','graphStep'].forEach(g=>LESSON_OF[g]='graph');
-['propTable','propFormula','propGraph','propFindA','propStep'].forEach(g=>LESSON_OF[g]='prop');
-['invTable','invFormula','invGraph','invFindA','invStep'].forEach(g=>LESSON_OF[g]='inv');
-Object.assign(STEPGEN,{coord:GEN.coordStep,graph:GEN.graphStep,prop:GEN.propStep,inv:GEN.invStep});
+['propTable','propFormula','propStep'].forEach(g=>LESSON_OF[g]='prop');
+['propGraph','propFindA','propgStep'].forEach(g=>LESSON_OF[g]='propg');
+['invTable','invFormula','invStep'].forEach(g=>LESSON_OF[g]='inv');
+['invGraph','invFindA','invgStep'].forEach(g=>LESSON_OF[g]='invg');
+Object.assign(STEPGEN,{coord:GEN.coordStep,graph:GEN.graphStep,prop:GEN.propStep,propg:GEN.propgStep,inv:GEN.invStep,invg:GEN.invgStep});
 Object.assign(CALC_FOR,{
   coord:['signed','fdconv'],
   graph:['add2','mul'],
-  prop:['mul','eq','signmul'],
-  inv:['div','eq','signmul']
+  prop:['mul','eq'],
+  propg:['signmul','eq'],
+  inv:['div','eq'],
+  invg:['signmul','fracdiv']
 });
 Object.assign(PTYPE_NM,{
   'coord:numline':'1차시 · 수직선 좌표','coord:read':'1차시 · 순서쌍 읽기','coord:quad':'1차시 · 사분면 판단','coord:term':'1차시 · 축 위의 점',
   'graph:draw':'2차시 · 변화 값 구하기','graph:read':'2차시 · 그래프 해석','graph:shape':'2차시 · 용기와 그래프','graph:comp':'2차시 · 두 그래프 비교',
-  'prop:table':'3차시 · 정비례 표','prop:formula':'3차시 · 정비례 식 활용','prop:graph':'3차시 · 정비례 그래프','prop:findA':'3차시 · 정비례 a 구하기',
-  'inv:table':'4차시 · 반비례 표','inv:formula':'4차시 · 반비례 식 활용','inv:graph':'4차시 · 반비례 그래프','inv:findA':'4차시 · 반비례 a 구하기'
+  'prop:table':'3차시 · 정비례 표','prop:formula':'3차시 · 정비례 식 활용','propg:graph':'4차시 · 정비례 그래프','propg:findA':'4차시 · 정비례 a 구하기',
+  'inv:table':'5차시 · 반비례 표','inv:formula':'5차시 · 반비례 식 활용','invg:graph':'6차시 · 반비례 그래프','invg:findA':'6차시 · 반비례 a 구하기',
+  /* [T35] 나누기 전 기록(학생 풀이 기록·신고)에 남은 옛 꼬리표 */
+  'prop:graph':'4차시 · 정비례 그래프','prop:findA':'4차시 · 정비례 a 구하기','inv:graph':'6차시 · 반비례 그래프','inv:findA':'6차시 · 반비례 a 구하기'
 });
 
+/* [T35] 옛 단원 화면(미리 보기·개념·탐구)은 나누기 전 내용을 그래프 차시에서도 같이 보여 줘요. 차시 학습은 엔진(02t-tracks-graph.js)이 따로 그려요. */
+[['propg','prop'],['invg','inv']].forEach(([n,o])=>{
+  [typeof PREVIEW==='object'?PREVIEW:null,typeof PV_CARDS==='object'?PV_CARDS:null,typeof CONCEPT==='object'?CONCEPT:null,typeof EXPLORE==='object'?EXPLORE:null,window.CONCEPT_QUIZ].forEach(R=>{if(R&&R[o]&&!R[n])R[n]=R[o]});
+});
 const addT=(k,o)=>{if(typeof TERMS==='object'&&TERMS&&!TERMS[k])TERMS[k]=o};
 addT('순서쌍',{k:'1학년 · 좌표',b:'<p>두 수의 순서를 정하여 (x, y)와 같이 짝지어 나타낸 쌍이에요.</p>'});
 addT('좌표평면',{k:'1학년 · 좌표',b:'<p>x축(가로)과 y축(세로)이 원점 O에서 수직으로 만나 이루는 평면이에요.</p>'});

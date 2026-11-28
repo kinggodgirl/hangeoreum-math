@@ -703,7 +703,7 @@ HG_TRACKS.register('rotation',{
 
 /* ── 4차시 rotprop ── */
 HG_TRACKS.register('rotprop',{
-  kind:'concept',
+  kind:'proc',
   owlScenes:[
     {cap:'장면 ① 회전축에 수직 = 언제나 원!',say:'원기둥·원뿔·원뿔대·구 모두 회전축에 <span class="kw">수직으로 자르면</span> 단면의 경계는 언제나 <span class="num">원</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'perp'})},
     {cap:'장면 ② 회전축을 품고 자르면 선대칭 · 합동!',say:'회전축을 품고 자른 단면은 어느 방향에서 잘라도 모두 <span class="kw">합동</span>! 단, 가로 길이는 반지름이 아니라 <span class="warn">지름(2r)</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'axis',rLab:'4 cm',hLab:'6 cm'}),
@@ -787,21 +787,20 @@ HG_TRACKS.register('rotprop',{
   t3PracticeCids:['C1','C2']
 });
 
-/* ── 5차시 area ── */
+/* ── 5차시 area · 각기둥의 겉넓이 (T35: 원기둥은 6차시 area2로) ── */
 HG_TRACKS.register('area',{
   kind:'proc',
-  compoundBridgeNo:3,
+  compoundBridgeNo:2,
   owlScenes:[
-    {cap:'장면 ① 전개도 펼치기: 밑면 2개 + 옆넓이',say:'기둥의 겉넓이는 전개도를 펼쳐 모든 면의 넓이를 더한 거예요! 기둥은 <span class="kw">밑넓이 × 2 + 옆넓이</span>예요.',svg:()=>figTriPrism3D(3,4,5,5,{hl:'all'})},
-    {cap:'장면 ② 옆면 펼치면 큰 직사각형!',say:'옆면을 펼친 직사각형의 <span class="kw">가로 = 밑면의 둘레</span>, 세로 = 높이에요. 원기둥이면 가로 = <span class="num">지름 × π</span>!',svg:()=>figCyl3D(3,5,{hl:'side'}),
-      ask:{q:'밑면 반지름 3 cm, 높이 5 cm인 원기둥 전개도에서 옆면 직사각형의 가로는?',choices:['6π cm','3π cm','9π cm'],ans:'6π cm',hint:'지름 × π = (3 × 2) × π예요!',ok:'정확해요! 가로 = 밑면 원의 둘레 = 6π cm예요.'}},
+    {cap:'장면 ① 전개도 펼치기: 밑면 2개 + 옆넓이',say:'기둥의 겉넓이는 전개도를 펼쳐 모든 면의 넓이를 더한 거예요! 기둥은 <span class="kw">밑넓이 × 2 + 옆넓이</span>예요.',svg:()=>figTriPrism3D(3,4,5,5,{hl:'all'}),
+      ask:{q:'기둥의 겉넓이를 구하는 바른 식은?',choices:['(밑넓이) × 2 + (옆넓이)','(밑넓이) + (옆넓이)','(밑넓이) × (높이)','(옆넓이) × 2'],ans:'(밑넓이) × 2 + (옆넓이)',hint:'기둥은 위아래에 밑면이 2개 있어요.',ok:'정확해요! 밑면 2개와 옆면을 모두 더해요.'}},
     {cap:'장면 ③ L자로 잘라 낸 기둥 함정!',exp:'warn',say:'모서리를 직각으로 잘라 내도 안쪽 벽이 바깥쪽을 대신 채워 주므로 <span class="warn">밑면 둘레가 원래 직사각형과 똑같아요</span>!',svg:()=>lPrismSVG(6,5,2,2,4,{hlPerim:true})}
   ],
-  owlSummary:['기둥 겉넓이 = (밑넓이) × 2 + (밑면의 둘레) × (높이)','삼각기둥: 삼각형 넓이 ÷ 2, 둘레는 세 변 모두 더하기','원기둥: 밑넓이 = 반둘레 × 반지름(r²π), 옆넓이 가로 = 지름 × π'],
+  owlSummary:['기둥 겉넓이 = (밑넓이) × 2 + (밑면의 둘레) × (높이)','삼각기둥: 삼각형 넓이 ÷ 2, 둘레는 세 변 모두 더하기'],
   schemaQs:[
     {id:'arq1',q:'삼각기둥의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더해야 하나요?',fig:()=>figTriPrism3D(3,4,5,5,{hl:'baseAsk',noDims:true}),choices:['2번 (위 · 아래)','1번만','3번'],ans:'2번 (위 · 아래)',hint:'기둥은 위와 아래에 합동인 밑면이 2개 있어요.',why:'맞아요! 기둥 겉넓이는 항상 밑넓이 × 2 + 옆넓이예요.'},
-    {id:'arq2',q:'원기둥 전개도에서 옆면 직사각형의 가로는 무엇과 같나요?',fig:()=>figCyl3D(3,5,{hl:'baseEdge',noDims:true}),choices:['밑면의 둘레 (지름 × π)','밑면의 반지름','밑면의 넓이'],ans:'밑면의 둘레 (지름 × π)',hint:'밑면 원을 한 바퀴 감싸던 종이를 쫙 펼쳤어요.',why:'맞아요! 원기둥 옆넓이의 가로는 지름 × π예요.'},
-    {id:'arq3',q:'직육면체 모서리에서 작은 직육면체를 직각으로 잘라 내면 밑면의 <b>둘레</b>는 어떻게 될까요?',fig:()=>lPrismSVG(6,5,2,2,4,{noLabels:true}),choices:['원래와 똑같아요 (함정 주의!)','반으로 줄어요','2배가 돼요'],ans:'원래와 똑같아요 (함정 주의!)',hint:'파인 안쪽 가로·세로 변을 바깥으로 밀어 맞춰 보세요.',why:'맞아요! 모서리를 직각으로 파면 둘레가 그대로 유지돼요.'}
+    {id:'arq3',q:'직육면체 모서리에서 작은 직육면체를 직각으로 잘라 내면 밑면의 <b>둘레</b>는 어떻게 될까요?',fig:()=>lPrismSVG(6,5,2,2,4,{noLabels:true}),choices:['원래와 똑같아요 (함정 주의!)','반으로 줄어요','2배가 돼요'],ans:'원래와 똑같아요 (함정 주의!)',hint:'파인 안쪽 가로·세로 변을 바깥으로 밀어 맞춰 보세요.',why:'맞아요! 모서리를 직각으로 파면 둘레가 그대로 유지돼요.'},
+    {id:'arq5',q:'각기둥의 옆면을 한 장으로 펴면 직사각형의 <b>가로</b>는 무엇과 같나요?',fig:()=>figTriPrism3D(3,4,5,5,{hl:'all'}),choices:['밑면의 둘레','밑면의 넓이','높이'],ans:'밑면의 둘레',hint:'옆면이 밑면 테두리를 한 바퀴 감싸고 있어요.',why:'맞아요! 옆넓이 = (밑면의 둘레) × (높이)예요.'}
   ],
   firstGuide:[
     {id:'afg1',tyNo:1,title:'유형 1 · 직육면체·삼각기둥 겉넓이',problem:'밑면이 가로 <b>4 cm</b>, 세로 <b>3 cm</b>이고 높이가 <b>5 cm</b>인 직육면체의 겉넓이를 구하시오.',fig:hl=>figBox3D(4,3,5,{hl:(hl&&hl.length)?hl:'all'}),
@@ -809,12 +808,7 @@ HG_TRACKS.register('area',{
       givenChips:[{k:'a',t:'밑넓이 4×3 = 12',ok:true,hl:'base1'},{k:'b',t:'둘레 2×(4+3) = 14',ok:true,hl:'baseEdge'},{k:'c',t:'높이 5 cm',ok:true,hl:'side'},{k:'t',t:'반지름 4 cm',ok:false}],
       teacherEq:'12 × 2 + 14 × 5 = 24 + 70',pairQ:'옆넓이 식 <b>14 × 5</b>에서 14는 무엇인가요?',pairChoices:['밑면의 둘레 (4+3+4+3)','밑면의 넓이'],pairAns:'밑면의 둘레 (4+3+4+3)',
       calcPrompt:'24 + 70 = ? (cm²)',calcAns:94,calcTopic:'surf',calcExplain:'24 + 70 = <b>94 cm²</b>예요.'},
-    {id:'afg2',tyNo:2,title:'유형 2 · 원기둥 겉넓이',problem:'반지름 <b>3 cm</b>, 높이 <b>5 cm</b>인 원기둥의 겉넓이(kπ cm²)에서 k를 구하시오.',fig:hl=>figCyl3D(3,5,{hl:(hl&&hl.length)?hl:'all'}),
-      wantChips:['원기둥 겉넓이 (π 앞 숫자)','원기둥 부피','모선'],wantAns:'원기둥 겉넓이 (π 앞 숫자)',wantHl:['all'],
-      givenChips:[{k:'a',t:'밑넓이 9π × 2 = 18π',ok:true,hl:'base1'},{k:'b',t:'옆넓이 6π × 5 = 30π',ok:true,hl:'side'},{k:'t',t:'삼각형 나누기 2',ok:false}],
-      teacherEq:'(9π × 2) + (6π × 5) = 18π + 30π',pairQ:'옆넓이 <b>6π × 5</b>에서 6π는 어떻게 나왔나요?',pairChoices:['지름(3×2) × π = 밑면 둘레','반지름 × 5'],pairAns:'지름(3×2) × π = 밑면 둘레',
-      calcPrompt:'18 + 30 = ? (π 앞 숫자)',calcAns:48,calcTopic:'pi',calcExplain:'18π + 30π = <b>48π cm²</b>예요.'},
-    {id:'afg3',tyNo:3,title:'유형 3 · L자 기둥 겉넓이',problem:'가로 6, 세로 5 직사각형 모서리에서 2×2를 잘라 낸 높이 4인 기둥 겉넓이는?',fig:()=>lPrismSVG(6,5,2,2,4),
+    {id:'afg3',tyNo:2,title:'유형 2 · L자 기둥 겉넓이',problem:'가로 6, 세로 5 직사각형 모서리에서 2×2를 잘라 낸 높이 4인 기둥 겉넓이는?',fig:()=>lPrismSVG(6,5,2,2,4),
       wantChips:['잘린 기둥 전체 겉넓이','밑넓이만','부피'],wantAns:'잘린 기둥 전체 겉넓이',wantHl:[],
       givenChips:[{k:'a',t:'남은 밑넓이 30−4 = 26',ok:true},{k:'b',t:'둘레 그대로 22, 높이 4',ok:true},{k:'t',t:'둘레에서 8 빼기',ok:false}],
       teacherEq:'26 × 2 + 22 × 4 = 52 + 88',pairQ:'밑면 둘레가 왜 원래대로 <b>22</b>인가요?',pairChoices:['파인 변을 밖으로 밀면 원래 직사각형 변과 같아져서','잘린 넓이가 4라서'],pairAns:'파인 변을 밖으로 밀면 원래 직사각형 변과 같아져서',
@@ -822,35 +816,31 @@ HG_TRACKS.register('area',{
   ],
   stratRows:[
     ['각기둥 겉넓이','밑넓이×2 + 둘레×높이','삼각기둥 밑넓이 ÷ 2 주의, 세 변 모두 더하기'],
-    ['원기둥 겉넓이','r²π×2 + (지름×π)×h','반지름 → 지름×2 → 둘레×π → 옆넓이'],
     ['L자 잘린 기둥','둘레 유지 함정','밑넓이는 빼지만, 모서리 직각 절단이면 둘레는 그대로!']
   ],
   worked:{
     1:{no:1,nm:'각기둥의 겉넓이',prob:'삼각기둥·직육면체의 겉넓이 구하기',fig:hl=>figTriPrism3D(3,4,5,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 × 2',hl:['base'],body:'삼각형은 (밑변×높이÷2), 직사각형은 가로×세로'},{t:'② 밑면 둘레 × 높이',hl:['side'],body:'밑면의 모든 변을 더해 높이를 곱해요.'},{t:'③ 합산',hl:['all'],body:'두 값을 더하면 끝!'}],pitfall:'⚠️ 밑면 2개를 1개만 더하거나 빗변을 둘레에서 빼먹지 마세요!'},
-    2:{no:2,nm:'원기둥의 겉넓이',prob:'반지름 r, 높이 h인 원기둥 겉넓이',fig:hl=>figCyl3D(3,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 = 반둘레 × 반지름',hl:['base'],body:'rπ × r = r²π (위아래 × 2)'},{t:'② 옆넓이 가로 = 지름 × π',hl:['side'],body:'2rπ × 높이'},{t:'③ 더하기',hl:['all'],body:'π끼리 계수를 더해요.'}],pitfall:'⚠️ 2πr²+2πrh 암기보다 전개도(밑 2개+큰 직사각형)로 풀어요!'},
-    3:{no:3,nm:'잘라 낸 L자 기둥 겉넓이',prob:'모서리가 직각으로 잘린 기둥의 겉넓이',fig:()=>lPrismSVG(6,5,2,2,4),steps:[{t:'① 남은 밑넓이 × 2',hl:[],body:'전체 직사각형 − 잘린 작은 직사각형'},{t:'② 밑면 둘레는 원래대로',hl:[],body:'꺾인 안쪽 변을 밀어 원래 둘레 사용'},{t:'③ 더하기',hl:[],body:'남은 밑넓이×2 + 원래 둘레×높이'}],pitfall:'⚠️ 안쪽 벽면 2개가 생겨서 옆넓이가 줄지 않아요!'}
+    2:{no:2,nm:'잘라 낸 L자 기둥 겉넓이',prob:'모서리가 직각으로 잘린 기둥의 겉넓이',fig:()=>lPrismSVG(6,5,2,2,4),steps:[{t:'① 남은 밑넓이 × 2',hl:[],body:'전체 직사각형 − 잘린 작은 직사각형'},{t:'② 밑면 둘레는 원래대로',hl:[],body:'꺾인 안쪽 변을 밀어 원래 둘레 사용'},{t:'③ 더하기',hl:[],body:'남은 밑넓이×2 + 원래 둘레×높이'}],pitfall:'⚠️ 안쪽 벽면 2개가 생겨서 옆넓이가 줄지 않아요!'}
   },
   compoundList:[
-    {id:'C1',nm:'복합 ① · 같은 부피 두 원기둥 캔 재료(겉넓이) 비교',sub:'지름을 반지름으로 바꿔 두 캔의 겉넓이를 각각 구해 차이 비교'},
+    {id:'C3',nm:'복합 ② · 직각삼각형 밑면 삼각기둥 겉넓이',sub:'밑넓이 ÷ 2를 두 번, 옆넓이는 세 변의 합 × 높이'},
     {id:'C2',nm:'복합 ② · 정육면체 연결큐브 겉면만 두른 블록 개수',sub:'전체 큐브에서 속 안의 보이지 않는 정육면체 빼기'}
   ],
   genCompound:{
-    C1:seed=>{
-      const r=(seed*1664525+1013904223)>>>0;
-      const specs=[{d1:6,h1:24,d2:12,h2:6},{d1:4,h1:16,d2:8,h2:4},{d1:6,h1:16,d2:12,h2:4}];
-      const sp=specs[r%specs.length],r1=sp.d1/2,r2=sp.d2/2,s1=2*r1*r1+sp.d1*sp.h1,s2=2*r2*r2+sp.d2*sp.h2,diff=Math.abs(s1-s2);
-      return{id:'C1',combo:[2,1],comboWhy:'① 지름으로 원기둥 두 캔의 겉넓이를 각각 구하고(유형 2) → ② 두 넓이 차이 계산(유형 1)',ptype:'area:c1',
-        title:`부피가 같은 두 원기둥 캔 A(지름 ${sp.d1} cm, 높이 ${sp.h1} cm)와 B(지름 ${sp.d2} cm, 높이 ${sp.h2} cm)의 <b>겉넓이의 차</b>를 구하시오.`,
-        fig:{svg:()=>twoCansSVG(sp.d1,sp.h1,sp.d2,sp.h2)},finalQ:'두 캔의 겉넓이의 차는 몇 cm²인가요?',
+    C3:seed=>{
+      const r0=(seed*2654435761+9)>>>0,[p,q,c]=[[3,4,5],[6,8,10]][r0%2],h=[4,5,6,7][(r0>>>4)%4],B=p*q/2,per=p+q+c,ans=B*2+per*h;
+      return{id:'C3',combo:[1,1],comboWhy:'① 직각삼각형 밑넓이(÷ 2)를 두 번 더하고 → ② 세 변의 합 × 높이로 옆넓이(유형 1)',ptype:'area:c3',
+        title:`밑면이 세 변의 길이가 <b>${p} cm, ${q} cm, ${c} cm</b>인 직각삼각형이고 높이가 <b>${h} cm</b>인 삼각기둥의 겉넓이를 구하시오.`,
+        fig:figTriPrism3D(p,q,c,h,{hl:'all'}),finalQ:'삼각기둥의 겉넓이는 몇 cm²인가요?',
         steps:[
-          {tag:'1단계 · 캔 A 겉넓이 (반지름 '+r1+')',q:`캔 A 겉넓이 = (${r1*r1}π×2) + (${sp.d1}π×${sp.h1}) = ?`,type:'pi',ans:s1,suffix:'cm²',hint:`${2*r1*r1} + ${sp.d1*sp.h1}π`},
-          {tag:'2단계 · 캔 B 겉넓이',q:`캔 B(반지름 ${r2}) 겉넓이 = (${r2*r2}π×2) + (${sp.d2}π×${sp.h2}) = ?`,type:'pi',ans:s2,suffix:'cm²',hint:`${2*r2*r2} + ${sp.d2*sp.h2}π`},
-          {tag:'3단계 · 두 겉넓이의 차',q:`|${s1}π − ${s2}π| = ?`,type:'pi',ans:diff,suffix:'cm²',hint:`큰 쪽에서 작은 쪽 빼기`,ok:`넓이 차는 ${diff}π cm²예요 (B가 재료가 적게 들어요!).`}
+          {tag:'1단계 · 밑넓이 × 2',q:`(${p} × ${q} ÷ 2) × 2 = ?`,type:'num',ans:B*2,suffix:'cm²',hint:`삼각형 ${B} cm²가 위아래 2개`},
+          {tag:'2단계 · 옆넓이 = 둘레 × 높이',q:`(${p} + ${q} + ${c}) × ${h} = ?`,type:'num',ans:per*h,suffix:'cm²',hint:`${per} × ${h}`},
+          {tag:'3단계 · 겉넓이',q:`${B*2} + ${per*h} = ?`,type:'num',ans,suffix:'cm²',hint:'두 넓이 더하기',ok:`겉넓이는 ${ans} cm²예요.`}
         ]};
     },
     C2:seed=>{
       const r=(seed*22695477+1)>>>0,n=3+(r%3),inN=n-2,tot=n*n*n,inn=inN*inN*inN,ans=tot-inn;
-      return{id:'C2',combo:[1,3],comboWhy:'① 큰 정육면체 구조를 파악하고(유형 1) → ② 보이지 않는 안쪽을 빼기(유형 3)',ptype:'area:c2',
+      return{id:'C2',combo:[1,2],comboWhy:'① 큰 정육면체 구조를 파악하고(유형 1) → ② 보이지 않는 안쪽을 빼기(유형 2)',ptype:'area:c2',
         title:`한 모서리에 작은 큐브 <b>${n}개</b>씩 쌓은 정육면체에서 <b>겉면에 드러난 블록만</b> 남기고 속을 비우려 해요. 필요한 겉면 큐브 개수는?`,
         fig:{svg:()=>cubeGridSVG(n)},finalQ:'겉면을 두르는 데 필요한 큐브는 모두 몇 개인가요?',
         steps:[
@@ -859,10 +849,69 @@ HG_TRACKS.register('area',{
         ]};
     }
   },
+  t3PracticeCids:['C2','C3']
+});
+
+/* ── 6차시 area2 · 원기둥의 겉넓이 (T35) ── */
+HG_TRACKS.register('area2',{
+  kind:'proc',
+  owlScenes:[
+    {cap:'장면 ① 원기둥 전개도 = 원 2개 + 직사각형 1개',say:'원기둥을 펼치면 위아래 <span class="kw">원 2개</span>와 옆면 <span class="kw">직사각형 1개</span>예요. 겉넓이는 이 세 장을 모두 더해요.',svg:()=>figCyl3D(3,5,{hl:'all'})},
+    {cap:'장면 ② 옆면 펼치면 큰 직사각형!',say:'옆면을 펼친 직사각형의 <span class="kw">가로 = 밑면의 둘레</span>, 세로 = 높이에요. 원기둥이면 가로 = <span class="num">지름 × π</span>!',svg:()=>figCyl3D(3,5,{hl:'side'}),
+      ask:{q:'밑면 반지름 3 cm, 높이 5 cm인 원기둥 전개도에서 옆면 직사각형의 가로는?',choices:['6π cm','3π cm','9π cm'],ans:'6π cm',hint:'지름 × π = (3 × 2) × π예요!',ok:'정확해요! 가로 = 밑면 원의 둘레 = 6π cm예요.'}},
+  ],
+  owlSummary:['원기둥 겉넓이 = (밑넓이) × 2 + (옆넓이)','밑넓이 = 반둘레 × 반지름(r²π), 옆면 직사각형의 가로 = 밑면의 둘레(지름 × π)'],
+  schemaQs:[
+    {id:'arq2',q:'원기둥 전개도에서 옆면 직사각형의 가로는 무엇과 같나요?',fig:()=>figCyl3D(3,5,{hl:'baseEdge',noDims:true}),choices:['밑면의 둘레 (지름 × π)','밑면의 반지름','밑면의 넓이'],ans:'밑면의 둘레 (지름 × π)',hint:'밑면 원을 한 바퀴 감싸던 종이를 쫙 펼쳤어요.',why:'맞아요! 원기둥 옆넓이의 가로는 지름 × π예요.'},
+    {id:'arq4',q:'원기둥의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더해야 하나요?',fig:()=>figCyl3D(3,5,{hl:'baseAsk',noDims:true}),choices:['2번 (위아래)','1번만'],ans:'2번 (위아래)',hint:'원기둥은 위와 아래에 똑같은 원이 있어요.',why:'맞아요! 기둥은 밑면이 2개라 밑넓이를 2번 더해요.'},
+    {id:'arq6',q:'원기둥의 옆넓이를 구할 때 직사각형의 <b>세로</b>는 무엇인가요?',fig:()=>figCyl3D(3,5,{hl:'all',noDims:true}),choices:['원기둥의 높이','밑면의 반지름','밑면의 둘레'],ans:'원기둥의 높이',hint:'옆면을 펴면 위아래 길이는 그대로예요.',why:'맞아요! 옆넓이 = (밑면의 둘레) × (높이)예요.'}
+  ],
+  firstGuide:[
+    {id:'afg2',tyNo:1,title:'유형 1 · 원기둥 겉넓이',problem:'반지름 <b>3 cm</b>, 높이 <b>5 cm</b>인 원기둥의 겉넓이(kπ cm²)에서 k를 구하시오.',fig:hl=>figCyl3D(3,5,{hl:(hl&&hl.length)?hl:'all'}),
+      wantChips:['원기둥 겉넓이 (π 앞 숫자)','원기둥 부피','모선'],wantAns:'원기둥 겉넓이 (π 앞 숫자)',wantHl:['all'],
+      givenChips:[{k:'a',t:'밑넓이 9π × 2 = 18π',ok:true,hl:'base1'},{k:'b',t:'옆넓이 6π × 5 = 30π',ok:true,hl:'side'},{k:'t',t:'삼각형 나누기 2',ok:false}],
+      teacherEq:'(9π × 2) + (6π × 5) = 18π + 30π',pairQ:'옆넓이 <b>6π × 5</b>에서 6π는 어떻게 나왔나요?',pairChoices:['지름(3×2) × π = 밑면 둘레','반지름 × 5'],pairAns:'지름(3×2) × π = 밑면 둘레',
+      calcPrompt:'18 + 30 = ? (π 앞 숫자)',calcAns:48,calcTopic:'pi',calcExplain:'18π + 30π = <b>48π cm²</b>예요.'},
+  ],
+  stratRows:[
+    ['원기둥 겉넓이','r²π×2 + (지름×π)×h','반지름 → 지름×2 → 둘레×π → 옆넓이']
+  ],
+  worked:{
+    1:{no:1,nm:'원기둥의 겉넓이',prob:'반지름 r, 높이 h인 원기둥 겉넓이',fig:hl=>figCyl3D(3,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 = 반둘레 × 반지름',hl:['base'],body:'rπ × r = r²π (위아래 × 2)'},{t:'② 옆넓이 가로 = 지름 × π',hl:['side'],body:'2rπ × 높이'},{t:'③ 더하기',hl:['all'],body:'π끼리 계수를 더해요.'}],pitfall:'⚠️ 2πr²+2πrh 암기보다 전개도(밑 2개+큰 직사각형)로 풀어요!'}
+  },
+  compoundList:[
+    {id:'C2',nm:'복합 ② · 옆넓이로 원기둥 높이 거꾸로 구하기',sub:'옆면 가로(밑면 둘레)를 먼저 구하고 옆넓이 ÷ 가로'},
+    {id:'C1',nm:'복합 ① · 같은 부피 두 원기둥 캔 재료(겉넓이) 비교',sub:'지름을 반지름으로 바꿔 두 캔의 겉넓이를 각각 구해 차이 비교'}
+  ],
+  genCompound:{
+    C2:seed=>{
+      const r0=(seed*2654435761+3)>>>0,rad=[2,3,4,5][r0%4],h=[3,4,5,6][(r0>>>4)%4],circ=2*rad,side=circ*h;
+      return{id:'C2',combo:[1,1],comboWhy:'① 옆면 직사각형의 가로 = 밑면의 둘레를 구하고 → ② 옆넓이 ÷ 가로로 높이 구하기(유형 1)',ptype:'area2:c2',
+        title:`밑면의 반지름이 <b>${rad} cm</b>인 원기둥의 옆넓이가 <b>${side}π cm²</b>일 때, 이 원기둥의 높이를 구하시오.`,
+        fig:figCyl3D(rad,'?'),finalQ:'원기둥의 높이는 몇 cm인가요?',
+        steps:[
+          {tag:'1단계 · 옆면의 가로 = 밑면의 둘레',q:`밑면의 둘레(지름 × π)는 몇 π cm인가요? (π 앞 숫자)`,type:'num',ans:circ,hint:`지름 ${circ} × π`},
+          {tag:'2단계 · 높이 = 옆넓이 ÷ 가로',q:`${side}π ÷ ${circ}π = ?`,type:'num',ans:h,suffix:'cm',hint:`${side} ÷ ${circ}`,ok:`높이는 ${h} cm예요.`}
+        ]};
+    },
+    C1:seed=>{
+      const r=(seed*1664525+1013904223)>>>0;
+      const specs=[{d1:6,h1:24,d2:12,h2:6},{d1:4,h1:16,d2:8,h2:4},{d1:6,h1:16,d2:12,h2:4}];
+      const sp=specs[r%specs.length],r1=sp.d1/2,r2=sp.d2/2,s1=2*r1*r1+sp.d1*sp.h1,s2=2*r2*r2+sp.d2*sp.h2,diff=Math.abs(s1-s2);
+      return{id:'C1',combo:[1,1],comboWhy:'① 지름으로 원기둥 두 캔의 겉넓이를 각각 구하고(유형 1) → ② 두 넓이 차이 계산(유형 1)',ptype:'area2:c1',
+        title:`부피가 같은 두 원기둥 캔 A(지름 ${sp.d1} cm, 높이 ${sp.h1} cm)와 B(지름 ${sp.d2} cm, 높이 ${sp.h2} cm)의 <b>겉넓이의 차</b>를 구하시오.`,
+        fig:{svg:()=>twoCansSVG(sp.d1,sp.h1,sp.d2,sp.h2)},finalQ:'두 캔의 겉넓이의 차는 몇 cm²인가요?',
+        steps:[
+          {tag:'1단계 · 캔 A 겉넓이 (반지름 '+r1+')',q:`캔 A 겉넓이 = (${r1*r1}π×2) + (${sp.d1}π×${sp.h1}) = ?`,type:'pi',ans:s1,suffix:'cm²',hint:`${2*r1*r1} + ${sp.d1*sp.h1}π`},
+          {tag:'2단계 · 캔 B 겉넓이',q:`캔 B(반지름 ${r2}) 겉넓이 = (${r2*r2}π×2) + (${sp.d2}π×${sp.h2}) = ?`,type:'pi',ans:s2,suffix:'cm²',hint:`${2*r2*r2} + ${sp.d2*sp.h2}π`},
+          {tag:'3단계 · 두 겉넓이의 차',q:`|${s1}π − ${s2}π| = ?`,type:'pi',ans:diff,suffix:'cm²',hint:`큰 쪽에서 작은 쪽 빼기`,ok:`넓이 차는 ${diff}π cm²예요 (B가 재료가 적게 들어요!).`}
+        ]};
+    }
+  },
   t3PracticeCids:['C1','C2']
 });
 
-/* ── 6차시 volume ── */
+/* ── 7차시 volume ── */
 HG_TRACKS.register('volume',{
   kind:'proc',
   compoundBridgeNo:4,
@@ -938,20 +987,19 @@ HG_TRACKS.register('volume',{
   t3PracticeCids:['C1','C2']
 });
 
-/* ── 7차시 conearea ── */
+/* ── 8차시 conearea · 각뿔의 겉넓이 (T35: 원뿔은 9차시 conearea2로) ── */
 HG_TRACKS.register('conearea',{
   kind:'proc',
-  compoundBridgeNo:4,
   owlScenes:[
     {cap:'장면 ① 뿔은 밑면이 딱 1개!',say:'기둥은 밑면이 2개였지만 뿔은 <span class="kw">밑면이 1개뿐</span>이에요! 그래서 <b>(뿔의 겉넓이) = (밑넓이) + (옆넓이)</b>예요.',svg:()=>figPyr3D(4,4,null,5,{hl:'all'})},
-    {cap:'장면 ② 원뿔 옆넓이 = (호의 반) × 모선!',say:'원뿔을 펼치면 옆면이 부채꼴! 부채꼴의 호 = 밑면 둘레(<span class="num">지름 × π</span>).<br>따라서 옆넓이 = <span class="num">(호의 반) × (모선)</span> = <span class="num">r × l × π</span>!',svg:()=>coneNetSVG(3,5),
-      ask:{q:'밑면 반지름 4 cm, 높이 3 cm, 모선 5 cm인 원뿔의 겉넓이를 구할 때 <b>옆넓이</b>에 쓸 길이는?',choices:['모선 5 cm','높이 3 cm','지름 8 cm'],ans:'모선 5 cm',hint:'전개도를 펼쳤을 때 부채꼴의 반지름이 되는 기울어진 선분이에요!',ok:'정확해요! 겉넓이는 모선 5 cm를 써서 4π × 5 = 20π cm²예요.'}}
+    {cap:'장면 ② 옆면 삼각형을 꼭짓점에 모아 펼치기',say:'정사각뿔의 옆면 삼각형 4개를 <span class="kw">꼭짓점에 모아 부채꼴처럼</span> 펼쳐요. 옆넓이 = 삼각형 1개 넓이 × 4예요.',svg:()=>figPyr3D(4,4,null,5,{hl:'all'}),
+      ask:{q:'정사각뿔의 겉넓이를 구하는 바른 식은?',choices:['밑넓이 + 삼각형 넓이 × 4','밑넓이 × 2 + 삼각형 넓이 × 4','밑넓이 + 삼각형 넓이','삼각형 넓이 × 4'],ans:'밑넓이 + 삼각형 넓이 × 4',hint:'뿔은 밑면이 1개, 옆면 삼각형은 4개예요.',ok:'정확해요! 밑넓이 1번 + 옆면 삼각형 4개예요.'}}
   ],
-  owlSummary:['뿔 겉넓이 = 밑넓이(1개!) + 옆넓이','정사각뿔 옆넓이 = 삼각형 1개(÷2) × 4','원뿔 옆넓이 = (호의 반) × 모선 = r l π (높이 쓰지 않기!)'],
+  owlSummary:['뿔 겉넓이 = 밑넓이(1개!) + 옆넓이','정사각뿔 옆넓이 = 삼각형 1개(÷2) × 4'],
   schemaQs:[
-    {id:'caq1',q:'원뿔의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더할까요?',fig:()=>figCone3D(3,null,5,{hl:'baseAsk',noDims:true}),choices:['1번만','2번 (위아래)'],ans:'1번만',hint:'원뿔은 아래에만 원이 1개 있어요.',why:'맞아요! 기둥만 2번, 뿔은 1번만 더해요.'},
-    {id:'caq2',q:'원뿔에서 높이 8 cm, 모선 10 cm일 때 <b>옆넓이</b>를 구하려면 어느 길이를 쓰나요?',fig:()=>figCone3D(6,8,10),choices:['모선 10 cm','높이 8 cm'],ans:'모선 10 cm',hint:'펼친 전개도에서 부채꼴의 반지름은 모선이에요.',why:'맞아요! 겉넓이에는 반드시 모선 길이를 써요.'},
-    {id:'caq3',q:'"원뿔 전개도에서 옆면은 삼각형이다." 맞나요?',fig:()=>figCone3D(4,null,8,{hl:'side',noDims:true}),choices:['아니요, 부채꼴이에요','맞아요, 삼각형이에요'],ans:'아니요, 부채꼴이에요',hint:'밑면 원을 감싸는 테두리가 굽은 호예요.',why:'아니에요! 원뿔의 옆면은 부채꼴, 각뿔의 옆면이 삼각형이에요.'}
+    {id:'caq4',q:'정사각뿔의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더할까요?',fig:()=>figPyr3D(4,4,null,5,{hl:'all'}),choices:['1번만','2번 (위아래)'],ans:'1번만',hint:'뿔은 아래에만 밑면이 1개 있어요.',why:'맞아요! 기둥만 2번, 뿔은 1번만 더해요.'},
+    {id:'caq5',q:'정사각뿔의 옆면은 어떤 도형이 몇 개 있나요?',fig:()=>figPyr3D(4,4,null,5,{hl:'all'}),choices:['삼각형 4개','사각형 4개'],ans:'삼각형 4개',hint:'꼭짓점에서 밑면의 네 변으로 면이 내려와요.',why:'맞아요! 밑면의 변 4개마다 삼각형이 하나씩 있어요.'},
+    {id:'caq6',q:'옆면 삼각형 1개의 넓이는 (밑변) × (높이)에 무엇을 더 해야 하나요?',fig:()=>figPyr3D(4,4,null,5,{hl:'all'}),choices:['÷ 2','× 2'],ans:'÷ 2',hint:'삼각형은 직사각형의 반이에요.',why:'맞아요! 삼각형 넓이는 ÷ 2를 꼭 해요.'}
   ],
   firstGuide:[
     {id:'cafg1',tyNo:1,title:'유형 1 · 정사각뿔 겉넓이',problem:'밑면이 한 변 <b>4 cm</b>인 정사각형, 옆면 삼각형 높이가 <b>5 cm</b>인 정사각뿔의 겉넓이는?',fig:hl=>figPyr3D(4,4,null,5,{hl:(hl&&hl.length)?hl:'all'}),
@@ -959,38 +1007,88 @@ HG_TRACKS.register('conearea',{
       givenChips:[{k:'a',t:'밑넓이 4×4 = 16',ok:true,hl:'base'},{k:'b',t:'삼각형 1개 4×5÷2 = 10',ok:true,hl:'side'},{k:'c',t:'옆면 4개 = 40',ok:true,hl:'side'},{k:'t',t:'밑넓이 × 2',ok:false}],
       teacherEq:'16 + (10 × 4) = 16 + 40',pairQ:'삼각형 10에 왜 <b>4</b>를 곱하고, 밑넓이 16은 1번만 더하나요?',pairChoices:['사각뿔은 옆면 4개, 밑면 1개니까','정육면체라서'],pairAns:'사각뿔은 옆면 4개, 밑면 1개니까',
       calcPrompt:'16 + 40 = ? (cm²)',calcAns:56,calcTopic:'surf',calcExplain:'16 + 40 = <b>56 cm²</b>예요.'},
-    {id:'cafg2',tyNo:2,title:'유형 2 · 원뿔 겉넓이',problem:'밑면 반지름 <b>4 cm</b>, 모선 <b>6 cm</b>인 원뿔의 겉넓이(kπ cm²)에서 k를 구하시오.',fig:hl=>figCone3D(4,null,6,{hl:(hl&&hl.length)?hl:'all'}),
+  ],
+  stratRows:[
+    ['정사각뿔 겉넓이','밑 1개 + 삼각형 × 4','삼각형 넓이 ÷ 2 빼먹지 않기']
+  ],
+  worked:{
+    1:{no:1,nm:'정사각뿔 겉넓이',prob:'정사각뿔 겉넓이 구하기',fig:hl=>figPyr3D(4,4,null,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 (1개)',hl:['base'],body:'한 변 × 한 변'},{t:'② 삼각형 × 4',hl:['side'],body:'(밑변 × 옆면 높이 ÷ 2) × 4'},{t:'③ 더하기',hl:['all'],body:'밑넓이 + 옆넓이'}],pitfall:'⚠️ 삼각형 ÷ 2와 밑면 1개를 헷갈리지 마세요!'}
+  },
+  compoundList:[
+    {id:'C3',nm:'복합 ② · 밑면 없는 정사각뿔 텐트의 천 넓이',sub:'밑넓이는 빼고 옆면 삼각형 4개만 더하기'},
+    {id:'C2',nm:'복합 ② · 정사각뿔 겉넓이로 옆면 높이 거꾸로 구하기',sub:'겉넓이에서 밑넓이를 빼고 삼각형 높이 구하기'}
+  ],
+  genCompound:{
+    C3:seed=>{
+      const r0=(seed*2654435761+5)>>>0,a=[4,6,8][r0%3],sh=[5,6,7,9][(r0>>>4)%4],tri=a*sh/2,ans=tri*4;
+      return{id:'C3',combo:[1,1],comboWhy:'① 옆면 삼각형 1개 넓이를 구하고 → ② 4개를 더하되 밑넓이는 넣지 않기(유형 1)',ptype:'conearea:c3',
+        title:`밑면이 한 변 <b>${a} m</b>인 정사각형이고 옆면 삼각형의 높이가 <b>${sh} m</b>인 정사각뿔 모양 텐트를 만들어요. 바닥 없이 옆면만 천으로 만들 때 필요한 천의 넓이를 구하시오.`,
+        fig:figPyr3D(a,a,null,sh,{hl:'all'}),finalQ:'필요한 천의 넓이는 몇 m²인가요?',
+        steps:[
+          {tag:'1단계 · 옆면 삼각형 1개',q:`${a} × ${sh} ÷ 2 = ?`,type:'num',ans:tri,suffix:'m²',hint:'삼각형은 ÷ 2'},
+          {tag:'2단계 · 삼각형 4개 (바닥 없음)',q:`${tri} × 4 = ?`,type:'num',ans,suffix:'m²',hint:`${tri} × 4`,ok:`천은 ${ans} m²가 필요해요.`}
+        ]};
+    },
+    C2:seed=>{
+      const r=(seed*22695477+1)>>>0,a=[6,8,10][r%3],sh=4+(r>>>3)%5,validSh=(a*sh)%2===0?sh:sh+1;
+      const B=a*a,S=B+4*(a*validSh/2),side=S-B;
+      return{id:'C2',combo:[1,1],comboWhy:'① 정사각뿔 전체 겉넓이에서 밑넓이를 빼고(유형 1) → ② 방정식으로 높이 거꾸로 구하기(유형 4)',ptype:'conearea:c2',
+        title:`밑면 한 변이 <b>${a} cm</b>이고 겉넓이가 <b>${S} cm²</b>인 정사각뿔의 <b>옆면 삼각형 높이 x</b>를 구하시오.`,
+        fig:figPyr3D(a,a,null,'x',{askS:true}),finalQ:'옆면 삼각형의 높이 x는 몇 cm인가요?',
+        steps:[
+          {tag:'1단계 · 옆넓이 구하기',q:`전체 겉넓이(${S}) − 밑넓이(${B}) = ?`,type:'num',ans:side,suffix:'cm²',hint:`${S} − ${B}`},
+          {tag:'2단계 · 삼각형 높이 x 구하기',q:`삼각형 1개 넓이는 ${side}÷4 = ${side/4} cm²예요. (${a} × x ÷ 2 = ${side/4}) → x는?`,type:'num',ans:validSh,suffix:'cm',hint:`(${side/4} × 2) ÷ ${a}`,ok:`x = ${validSh} cm`}
+        ]};
+    }
+  },
+  t3PracticeCids:['C2','C3']
+});
+
+/* ── 9차시 conearea2 · 원뿔의 겉넓이 (T35) ── */
+HG_TRACKS.register('conearea2',{
+  kind:'proc',
+  compoundBridgeNo:3,
+  owlScenes:[
+    {cap:'장면 ① 원뿔을 펼치면 원 + 부채꼴',say:'원뿔을 펼치면 밑면 <span class="kw">원 1개</span>와 옆면 <span class="kw">부채꼴 1개</span>예요. 먼저 기억해요: <b>부채꼴의 호 = 밑면의 둘레</b>!',svg:()=>figCone3D(4,null,6,{hl:'all'})},
+    {cap:'장면 ② 원뿔 옆넓이 = (호의 반) × 모선!',say:'원뿔을 펼치면 옆면이 부채꼴! 부채꼴의 호 = 밑면 둘레(<span class="num">지름 × π</span>).<br>따라서 옆넓이 = <span class="num">(호의 반) × (모선)</span> = <span class="num">r × l × π</span>!',svg:()=>coneNetSVG(3,5),
+      ask:{q:'밑면 반지름 4 cm, 높이 3 cm, 모선 5 cm인 원뿔의 겉넓이를 구할 때 <b>옆넓이</b>에 쓸 길이는?',choices:['모선 5 cm','높이 3 cm','지름 8 cm'],ans:'모선 5 cm',hint:'전개도를 펼쳤을 때 부채꼴의 반지름이 되는 기울어진 선분이에요!',ok:'정확해요! 겉넓이는 모선 5 cm를 써서 4π × 5 = 20π cm²예요.'}}
+  ],
+  owlSummary:['원뿔 겉넓이 = 밑넓이(r²π) + 옆넓이','옆면은 부채꼴! 부채꼴 호 = 밑면 둘레','원뿔 옆넓이 = (호의 반) × 모선 = r l π (높이 쓰지 않기!)'],
+  schemaQs:[
+    {id:'caq1',q:'원뿔의 겉넓이를 구할 때 <b>밑넓이</b>는 몇 번 더할까요?',fig:()=>figCone3D(3,null,5,{hl:'baseAsk',noDims:true}),choices:['1번만','2번 (위아래)'],ans:'1번만',hint:'원뿔은 아래에만 원이 1개 있어요.',why:'맞아요! 기둥만 2번, 뿔은 1번만 더해요.'},
+    {id:'caq2',q:'원뿔에서 높이 8 cm, 모선 10 cm일 때 <b>옆넓이</b>를 구하려면 어느 길이를 쓰나요?',fig:()=>figCone3D(6,8,10),choices:['모선 10 cm','높이 8 cm'],ans:'모선 10 cm',hint:'펼친 전개도에서 부채꼴의 반지름은 모선이에요.',why:'맞아요! 겉넓이에는 반드시 모선 길이를 써요.'},
+    {id:'caq3',q:'"원뿔 전개도에서 옆면은 삼각형이다." 맞나요?',fig:()=>figCone3D(4,null,8,{hl:'side',noDims:true}),choices:['아니요, 부채꼴이에요','맞아요, 삼각형이에요'],ans:'아니요, 부채꼴이에요',hint:'밑면 원을 감싸는 테두리가 굽은 호예요.',why:'아니에요! 원뿔의 옆면은 부채꼴, 각뿔의 옆면이 삼각형이에요.'}
+  ],
+  firstGuide:[
+    {id:'cafg2',tyNo:1,title:'유형 1 · 원뿔 겉넓이',problem:'밑면 반지름 <b>4 cm</b>, 모선 <b>6 cm</b>인 원뿔의 겉넓이(kπ cm²)에서 k를 구하시오.',fig:hl=>figCone3D(4,null,6,{hl:(hl&&hl.length)?hl:'all'}),
       wantChips:['원뿔 겉넓이 (π 앞 숫자)','부채꼴 중심각','원뿔 부피'],wantAns:'원뿔 겉넓이 (π 앞 숫자)',wantHl:['all'],
       givenChips:[{k:'a',t:'밑넓이 16π',ok:true,hl:'base'},{k:'b',t:'옆넓이 4π × 6 = 24π',ok:true,hl:'side'},{k:'t',t:'밑넓이 16π × 2',ok:false}],
       teacherEq:'16π + (4π × 6) = 16π + 24π',pairQ:'옆넓이 <b>4π × 6</b>에서 4π는 무엇인가요?',pairChoices:['밑면 둘레(8π)의 반(=호의 반)','지름'],pairAns:'밑면 둘레(8π)의 반(=호의 반)',
       calcPrompt:'16 + 24 = ? (π 앞 숫자)',calcAns:40,calcTopic:'pi',calcExplain:'16π + 24π = <b>40π cm²</b>예요.'},
-    {id:'cafg3',tyNo:3,title:'유형 3 · 원뿔 전개도 부채꼴 중심각',problem:'밑면 반지름 <b>3 cm</b>, 모선 <b>9 cm</b>인 원뿔의 옆면 부채꼴 중심각은?',fig:()=>coneNetSVG(3,9,{askAng:true}),
+    {id:'cafg3',tyNo:2,title:'유형 2 · 원뿔 전개도 부채꼴 중심각',problem:'밑면 반지름 <b>3 cm</b>, 모선 <b>9 cm</b>인 원뿔의 옆면 부채꼴 중심각은?',fig:()=>coneNetSVG(3,9,{askAng:true}),
       wantChips:['옆면 부채꼴 중심각 (°)','겉넓이','부피'],wantAns:'옆면 부채꼴 중심각 (°)',wantHl:[],
       givenChips:[{k:'a',t:'밑면 둘레 6π cm',ok:true},{k:'b',t:'큰 원 둘레 18π cm',ok:true},{k:'t',t:'삼각형 넓이',ok:false}],
       teacherEq:'360° × (6π / 18π) = 360° × (1/3)',pairQ:'비율 <b>6π / 18π</b>를 약분하면 몇 분의 몇인가요?',pairChoices:['1/3','1/2'],pairAns:'1/3',
       calcPrompt:'360 ÷ 3 = ? (°)',calcAns:120,calcTopic:'frac',calcExplain:'360° × 1/3 = <b>120°</b>예요.'}
   ],
   stratRows:[
-    ['정사각뿔 겉넓이','밑 1개 + 삼각형 × 4','삼각형 넓이 ÷ 2 빼먹지 않기'],
     ['원뿔 겉넓이','r²π + (호의 반)×모선','호 = 2rπ → 호의 반 = rπ → rπ×모선'],
     ['전개도 중심각','360° × (r / 모선)','밑면 둘레 / 큰 원 둘레 = r / 모선']
   ],
   worked:{
-    1:{no:1,nm:'정사각뿔 겉넓이',prob:'정사각뿔 겉넓이 구하기',fig:hl=>figPyr3D(4,4,null,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 (1개)',hl:['base'],body:'한 변 × 한 변'},{t:'② 삼각형 × 4',hl:['side'],body:'(밑변 × 옆면 높이 ÷ 2) × 4'},{t:'③ 더하기',hl:['all'],body:'밑넓이 + 옆넓이'}],pitfall:'⚠️ 삼각형 ÷ 2와 밑면 1개를 헷갈리지 마세요!'},
-    2:{no:2,nm:'원뿔 겉넓이',prob:'밑면 반지름 r, 모선 l 원뿔 겉넓이',fig:hl=>figCone3D(4,null,6,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 = r²π',hl:['base'],body:'반둘레 × 반지름'},{t:'② 옆넓이 = (호의 반) × 모선',hl:['side'],body:'rπ × 모선'},{t:'③ 더하기',hl:['all'],body:'두 값의 π 계수 합산'}],pitfall:'⚠️ 높이가 같이 주어지면 옆넓이엔 반드시 "모선"을 써요!'},
-    3:{no:3,nm:'원뿔 전개도 중심각',prob:'밑면 반지름 r, 모선 l → 중심각',fig:()=>coneNetSVG(3,9,{askAng:true}),steps:[{t:'① 밑면 둘레',hl:[],body:'2rπ'},{t:'② 모선 원 둘레',hl:[],body:'2lπ'},{t:'③ 360° × 비율',hl:[],body:'360° × (r/l)'}],pitfall:'⚠️ 분모에 반지름이 아니라 "모선"이 들어가야 해요!'},
-    4:{no:4,nm:'뿔대의 겉넓이',prob:'원뿔대·사각뿔대의 겉넓이 구하기',fig:hl=>figFrustCone3D(6,3,10,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 위아래 두 밑넓이',hl:['base'],body:'크기가 다른 두 밑면 모두 더하기'},{t:'② 옆넓이',hl:['side'],body:'큰 부채꼴 − 작은 부채꼴 (또는 사다리꼴 4개)'},{t:'③ 합산',hl:['all'],body:'두 밑넓이 + 옆넓이'}],pitfall:'⚠️ 뿔대는 뿔과 달리 밑면이 2개(위+아래)예요!'}
+    1:{no:1,nm:'원뿔 겉넓이',prob:'밑면 반지름 r, 모선 l 원뿔 겉넓이',fig:hl=>figCone3D(4,null,6,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 밑넓이 = r²π',hl:['base'],body:'반둘레 × 반지름'},{t:'② 옆넓이 = (호의 반) × 모선',hl:['side'],body:'rπ × 모선'},{t:'③ 더하기',hl:['all'],body:'두 값의 π 계수 합산'}],pitfall:'⚠️ 높이가 같이 주어지면 옆넓이엔 반드시 "모선"을 써요!'},
+    2:{no:2,nm:'원뿔 전개도 중심각',prob:'밑면 반지름 r, 모선 l → 중심각',fig:()=>coneNetSVG(3,9,{askAng:true}),steps:[{t:'① 밑면 둘레',hl:[],body:'2rπ'},{t:'② 모선 원 둘레',hl:[],body:'2lπ'},{t:'③ 360° × 비율',hl:[],body:'360° × (r/l)'}],pitfall:'⚠️ 분모에 반지름이 아니라 "모선"이 들어가야 해요!'},
+    3:{no:3,nm:'뿔대의 겉넓이',prob:'원뿔대·사각뿔대의 겉넓이 구하기',fig:hl=>figFrustCone3D(6,3,10,5,{hl:(hl&&hl.length)?hl:'all'}),steps:[{t:'① 위아래 두 밑넓이',hl:['base'],body:'크기가 다른 두 밑면 모두 더하기'},{t:'② 옆넓이',hl:['side'],body:'큰 부채꼴 − 작은 부채꼴 (또는 사다리꼴 4개)'},{t:'③ 합산',hl:['all'],body:'두 밑넓이 + 옆넓이'}],pitfall:'⚠️ 뿔대는 뿔과 달리 밑면이 2개(위+아래)예요!'}
   },
   compoundList:[
     {id:'C1',nm:'복합 ① · 모선과 높이 구별해 원뿔 겉넓이 구하기',sub:'높이와 모선이 함께 나올 때 모선을 골라 겉넓이 계산'},
-    {id:'C2',nm:'복합 ② · 정사각뿔 겉넓이로 옆면 높이 거꾸로 구하기',sub:'겉넓이에서 밑넓이를 빼고 삼각형 높이 구하기'},
     {id:'C3',nm:'복합 ③ · 원뿔 n바퀴 굴려 제자리 겉넓이',sub:'큰 원 둘레 = 밑면 둘레 × n으로 모선 찾고 겉넓이 구하기'}
   ],
   genCompound:{
     C1:seed=>{
       const r=(seed*1664525+1013904223)>>>0,specs=[[3,4,5],[6,8,10],[5,12,13]];
       const [rad,h,l]=specs[r%specs.length],B=rad*rad,L=rad*l,S=B+L;
-      return{id:'C1',combo:[2,3],comboWhy:'① 높이·모선 중 모선을 골라 옆넓이 계산(유형 2) → ② 전개도 구조 연결(유형 3)',ptype:'conearea:c1',
+      return{id:'C1',combo:[1,2],comboWhy:'① 높이·모선 중 모선을 골라 옆넓이 계산(유형 1) → ② 전개도 구조 연결(유형 2)',ptype:'conearea2:c1',
         title:`밑면 반지름 <b>${rad} cm</b>, 높이 <b>${h} cm</b>, 모선 <b>${l} cm</b>인 원뿔의 <b>겉넓이</b>를 구하시오.`,
         fig:figCone3D(rad,h,l),finalQ:'원뿔의 겉넓이는 몇 cm²인가요?',
         steps:[
@@ -998,20 +1096,9 @@ HG_TRACKS.register('conearea',{
           {tag:'2단계 · 밑넓이 + 옆넓이',q:`밑넓이(${B}π) + 옆넓이(${rad}π×${l}=${L}π) = ?`,type:'pi',ans:S,suffix:'cm²',hint:`${B} + ${L}π`,ok:`${S}π cm²`}
         ]};
     },
-    C2:seed=>{
-      const r=(seed*22695477+1)>>>0,a=[6,8,10][r%3],sh=4+(r>>>3)%5,validSh=(a*sh)%2===0?sh:sh+1;
-      const B=a*a,S=B+4*(a*validSh/2),side=S-B;
-      return{id:'C2',combo:[1,4],comboWhy:'① 정사각뿔 전체 겉넓이에서 밑넓이를 빼고(유형 1) → ② 방정식으로 높이 거꾸로 구하기(유형 4)',ptype:'conearea:c2',
-        title:`밑면 한 변이 <b>${a} cm</b>이고 겉넓이가 <b>${S} cm²</b>인 정사각뿔의 <b>옆면 삼각형 높이 x</b>를 구하시오.`,
-        fig:figPyr3D(a,a,null,'x',{askS:true}),finalQ:'옆면 삼각형의 높이 x는 몇 cm인가요?',
-        steps:[
-          {tag:'1단계 · 옆넓이 구하기',q:`전체 겉넓이(${S}) − 밑넓이(${B}) = ?`,type:'num',ans:side,suffix:'cm²',hint:`${S} − ${B}`},
-          {tag:'2단계 · 삼각형 높이 x 구하기',q:`삼각형 1개 넓이는 ${side}÷4 = ${side/4} cm²예요. (${a} × x ÷ 2 = ${side/4}) → x는?`,type:'num',ans:validSh,suffix:'cm',hint:`(${side/4} × 2) ÷ ${a}`,ok:`x = ${validSh} cm`}
-        ]};
-    },
     C3:seed=>{
       const r=(seed*1103515245+12345)>>>0,rad=2+(r%4),k=2+(r>>>3)%3,l=rad*k,B=rad*rad,L=rad*l,S=B+L;
-      return{id:'C3',combo:[3,2],comboWhy:'① 회전 수로 모선의 길이를 먼저 구하고(유형 3) → ② 원뿔 겉넓이 계산(유형 2)',ptype:'conearea:c3',
+      return{id:'C3',combo:[2,1],comboWhy:'① 회전 수로 모선의 길이를 먼저 구하고(유형 2) → ② 원뿔 겉넓이 계산(유형 1)',ptype:'conearea2:c3',
         title:`밑면 반지름이 <b>${rad} cm</b>인 원뿔을 평면 위에서 꼭짓점을 고정하고 굴렸더니 딱 <b>${k}바퀴</b> 돌았을 때 제자리로 왔어요. 이 원뿔의 <b>겉넓이</b>를 구하시오.`,
         fig:figCone3D(rad,null,'?',{askL:true}),finalQ:'원뿔의 겉넓이는 몇 cm²인가요?',
         steps:[
@@ -1023,7 +1110,7 @@ HG_TRACKS.register('conearea',{
   t3PracticeCids:['C1','C3']
 });
 
-/* ── 8차시 cone ── */
+/* ── 10차시 cone ── */
 HG_TRACKS.register('cone',{
   kind:'proc',
   compoundBridgeNo:4,

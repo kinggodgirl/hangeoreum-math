@@ -3,6 +3,14 @@
 'use strict';
 if(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS)){
   LESSONS.forEach(l=>{if(l.id==='volume'||l.id==='conearea'||l.id==='cone')l.ready=true});
+  /* [T35] 19차시: 겉넓이를 각기둥/원기둥(area·area2), 각뿔/원뿔(conearea·conearea2)로 나눠요. 입체도형 차시 번호도 다시 매겨요. */
+  const ins=(after,L)=>{if(LESSONS.some(x=>x.id===L.id))return;const i=LESSONS.findIndex(x=>x.id===after);if(i>=0)LESSONS.splice(i+1,0,L)};
+  const A=LESSONS.find(l=>l.id==='area'),C=LESSONS.find(l=>l.id==='conearea');
+  if(A)Object.assign(A,{title:'각기둥의 겉넓이',sub:'전개도를 한 장으로 펴서 넓이 구하기',tb:'03 기둥의 겉넓이와 부피 · 221쪽'});
+  ins('area',{id:'area2',no:6,title:'원기둥의 겉넓이',sub:'옆면의 가로 = 밑면 원의 둘레',tb:'03 기둥의 겉넓이와 부피 · 222쪽',ready:true,unit:'solid'});
+  if(C)Object.assign(C,{title:'각뿔의 겉넓이',sub:'밑넓이 1개 + 옆면 삼각형들',tb:'04 뿔의 겉넓이와 부피 · 227쪽'});
+  ins('conearea',{id:'conearea2',no:9,title:'원뿔의 겉넓이',sub:'옆면은 부채꼴, 부채꼴 호 = 밑면 둘레',tb:'04 뿔의 겉넓이와 부피 · 228~229쪽',ready:true,unit:'solid'});
+  let k=0;LESSONS.forEach(l=>{if((l.unit||'solid')==='solid'&&l.ready)l.no=++k});
 }
 
 const INK='#1d2640',BL='#2a4d9e',BLs='#dbe5f7',HL='#e08a1e',HLs='#fde3c3',OK='#2b7a4b',RD='#b83a3a';
@@ -98,20 +106,33 @@ GEN.areaComp=seed=>{
 if(typeof PTYPES==='object'&&!PTYPES.area){
   PTYPES.area=[
     {no:1,nm:'각기둥의 겉넓이',tb:'221~222쪽',key:'<b>밑넓이 × 2 + 옆넓이</b> · 옆넓이 = (밑면의 둘레) × (높이)',pt:['area:tri','area:box'],src:['areaStep']},
-    {no:2,nm:'원기둥의 겉넓이',tb:'222쪽 2번',key:'밑면은 원(<b>반둘레 × 반지름</b>), 옆면 직사각형의 가로는 <b>지름 × π</b>!',pt:['area:cyl'],src:['areaStep']},
-    {no:3,nm:'잘라 낸 L자 기둥의 겉넓이',tb:'226쪽 5번 · 자주 나오는 복합',key:'밑넓이는 빼고, 모서리를 직각으로 잘랐을 때 <b>옆면 둘레는 원래와 같다</b>는 점을 확인해요.',pt:['area:comp'],src:['areaComp']}
+    {no:2,nm:'잘라 낸 L자 기둥의 겉넓이',tb:'226쪽 5번 · 자주 나오는 복합',key:'밑넓이는 빼고, 모서리를 직각으로 잘랐을 때 <b>옆면 둘레는 원래와 같다</b>는 점을 확인해요.',pt:['area:comp'],src:['areaComp']}
   ];
-  PTYPES.area.forEach(T_=>{
-    const g=tyKey('area',T_.no);
-    GEN[g]=seed=>{
-      const src=T_.src[seed%T_.src.length];
-      for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}
-      return GEN[T_.src[0]](seed);
-    };
-    LESSON_OF[g]='area';
+  /* [T35] 원기둥의 겉넓이는 6차시 area2로. 옛 생성기(areaStep)가 내는 'area:cyl'을 'area2:cyl'로 바꿔 달아요. */
+  PTYPES.area2=[
+    {no:1,nm:'원기둥의 겉넓이',tb:'222쪽 2번',key:'밑면은 원(<b>반둘레 × 반지름</b>), 옆면 직사각형의 가로는 <b>지름 × π</b>!',pt:['area2:cyl'],src:['areaStep'],from:'area:cyl'}
+  ];
+  ['area','area2'].forEach(lid=>{
+    PTYPES[lid].forEach(T_=>{
+      const g=tyKey(lid,T_.no);
+      const want=T_.from?[T_.from]:T_.pt;   /* 옛 생성기가 내는 꼬리표로 고른 뒤 새 꼬리표로 바꿔 달아요 */
+      const pick=seed=>{
+        const src=T_.src[seed%T_.src.length];
+        for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(want.includes(P.ptype))return P}
+        return GEN[T_.src[0]](seed);
+      };
+      GEN[g]=T_.from?seed=>{const P=pick(seed);if(P&&P.ptype===T_.from)P.ptype=T_.pt[0];return P}:pick;
+      LESSON_OF[g]=lid;
+    });
+    GEN['mix_'+lid]=seed=>{const L=PTYPES[lid];return GEN[tyKey(lid,L[seed%L.length].no)](Math.floor(seed/L.length)+1)};
+    LESSON_OF['mix_'+lid]=lid;
   });
-  GEN.mix_area=seed=>{const L=PTYPES.area;return GEN[tyKey('area',L[seed%L.length].no)](Math.floor(seed/L.length)+1)};
-  LESSON_OF.mix_area='area';
+  GEN.area2=seed=>GEN[tyKey('area2',1)](seed);
+  GEN.area2Step=seed=>GEN[tyKey('area2',1)](seed);
+  LESSON_OF.area2='area2';LESSON_OF.area2Step='area2';
+  if(typeof STEPGEN==='object')STEPGEN.area2=GEN.area2Step;
+  if(typeof CALC_FOR==='object')CALC_FOR.area2=['pi','surf','area'];
+  Object.assign(PTYPE_NM,{'area2:cyl':'6차시 · 원기둥 겉넓이','area:cyl':'6차시 · 원기둥 겉넓이'});
   LESSON_OF.areaComp='area';
   Object.assign(PTYPE_NM,{'area:comp':'5차시 · 잘라 낸 기둥 겉넓이'});
 }
@@ -354,7 +375,7 @@ GEN.conePyrArea=seed=>{
 
 GEN.coneSideArea=seed=>{
   const r=mulberry(seed),rr=ri(r,2,8),l=ri(r,rr+2,13),B=rr*rr,lat=rr*l,S=B+lat;
-  return{ptype:'conearea:cone',title:`밑면의 반지름이 ${rr} cm이고 모선의 길이가 ${l} cm인 원뿔의 <b>겉넓이</b>를 구하시오.`,
+  return{ptype:'conearea2:cone',title:`밑면의 반지름이 ${rr} cm이고 모선의 길이가 ${l} cm인 원뿔의 <b>겉넓이</b>를 구하시오.`,
     fig:{svg:()=>`<div class="figbox">${coneSVG(rr,null,l)}</div>`},
     finalQ:'원뿔의 겉넓이는 몇 cm²인가요?',steps:[
       {tag:'밑넓이 (원 1개)',q:`밑면 원의 넓이는? (${rr}π × ${rr})`,type:'pi',ans:B,suffix:'cm²',hint:`${rr} × ${rr}π`},
@@ -367,7 +388,7 @@ GEN.coneAng=seed=>{
   const r=mulberry(seed);
   const pairs=[[2,6],[2,8],[2,12],[3,6],[3,9],[3,12],[4,8],[4,12],[5,10],[5,15],[6,9],[6,12],[6,15]];
   const [rr,l]=pick(r,pairs),ang=Math.round(360*rr/l);
-  return{ptype:'conearea:ang',title:`밑면의 반지름이 ${rr} cm이고 모선의 길이가 ${l} cm인 원뿔의 전개도에서 <b>옆면 부채꼴의 중심각의 크기</b>를 구하시오.`,
+  return{ptype:'conearea2:ang',title:`밑면의 반지름이 ${rr} cm이고 모선의 길이가 ${l} cm인 원뿔의 전개도에서 <b>옆면 부채꼴의 중심각의 크기</b>를 구하시오.`,
     fig:{svg:()=>`<div class="figbox">${coneSVG(rr,null,l)}</div>`},
     finalQ:'부채꼴의 중심각은 몇 도인가요?',steps:[
       {tag:'호의 길이 (= 밑면 둘레)',q:`옆면 부채꼴의 호의 길이는? (지름 ${2*rr} × π)`,type:'pi',ans:2*rr,suffix:'cm',hint:`${2*rr}π`},
@@ -381,7 +402,7 @@ GEN.coneFrustArea=seed=>{
     const a=ri(r,2,5),b=a+ri(r,2,5),sh=ri(r,3,7);
     const validSh=((a+b)*sh)%2===0?sh:sh+1;
     const B1=a*a,B2=b*b,trap=(a+b)*validSh/2,S=B1+B2+4*trap;
-    return{ptype:'conearea:frust',title:`두 밑면이 한 변 ${a} cm, ${b} cm인 정사각형이고 옆면 사다리꼴의 높이가 ${validSh} cm인 <b>정사각뿔대</b>의 <b>겉넓이</b>를 구하시오.`,
+    return{ptype:'conearea2:frust',title:`두 밑면이 한 변 ${a} cm, ${b} cm인 정사각형이고 옆면 사다리꼴의 높이가 ${validSh} cm인 <b>정사각뿔대</b>의 <b>겉넓이</b>를 구하시오.`,
       fig:null,finalQ:'정사각뿔대의 겉넓이는 몇 cm²인가요?',steps:[
         {tag:'두 밑넓이의 합',q:`위(${a}×${a}) + 아래(${b}×${b}) = ?`,type:'num',ans:B1+B2,suffix:'cm²',hint:`${B1} + ${B2}`},
         {tag:'사다리꼴 1개의 넓이',q:`옆면 사다리꼴 1개 넓이는? ((${a}+${b}) × ${validSh} ÷ 2)`,type:'num',ans:trap,suffix:'cm²',hint:`${a+b} × ${validSh} ÷ 2`},
@@ -390,7 +411,7 @@ GEN.coneFrustArea=seed=>{
   }
   const [R,rr,lBig,lCut]=pick(r,[[6,3,10,5],[8,4,12,6],[6,2,9,3],[9,3,12,4],[4,2,10,5]]);
   const B=R*R+rr*rr,L=R*lBig-rr*lCut,S=B+L;
-  return{ptype:'conearea:frust',title:`원뿔대의 두 밑면 반지름이 ${R} cm, ${rr} cm이고, 자르기 전 큰 원뿔의 모선 ${lBig} cm에서 작은 원뿔의 모선 ${lCut} cm를 잘라 내었어요. 이 <b>원뿔대의 겉넓이</b>를 구하시오.`,
+  return{ptype:'conearea2:frust',title:`원뿔대의 두 밑면 반지름이 ${R} cm, ${rr} cm이고, 자르기 전 큰 원뿔의 모선 ${lBig} cm에서 작은 원뿔의 모선 ${lCut} cm를 잘라 내었어요. 이 <b>원뿔대의 겉넓이</b>를 구하시오.`,
     fig:null,finalQ:'원뿔대의 겉넓이는 몇 cm²인가요?',steps:[
       {tag:'두 밑넓이 합',q:`큰 밑면(${R*R}π) + 작은 밑면(${rr*rr}π) = ?`,type:'pi',ans:B,suffix:'cm²',hint:`${R*R} + ${rr*rr}π`},
       {tag:'옆넓이 (큰 부채꼴 − 작은 부채꼴)',q:`큰 옆넓이(${R*lBig}π) − 작은 옆넓이(${rr*lCut}π) = ?`,type:'pi',ans:L,suffix:'cm²',hint:`${R*lBig} − ${rr*lCut}π`},
@@ -398,8 +419,10 @@ GEN.coneFrustArea=seed=>{
     ]};
 };
 
-GEN.conearea=seed=>[GEN.conePyrArea,GEN.coneSideArea,GEN.coneAng,GEN.coneFrustArea][seed%4](seed);
-GEN.coneareaStep=seed=>GEN.coneSideArea(seed);
+GEN.conearea=seed=>GEN.conePyrArea(seed);
+GEN.coneareaStep=seed=>GEN.conePyrArea(seed);
+GEN.conearea2=seed=>[GEN.coneSideArea,GEN.coneAng,GEN.coneFrustArea][seed%3](seed);
+GEN.conearea2Step=seed=>GEN.coneSideArea(seed);
 
 /* ── 8차시 cone 생성기 ── */
 GEN.conePyrVol=seed=>{
@@ -463,10 +486,12 @@ Object.assign(PTYPES,{
     {no:4,nm:'구멍 뚫린·잘린 기둥 부피',tb:'241쪽 · 자주 나오는 복합',key:'<b>(큰 밑넓이 − 작은 밑넓이) × 높이</b> · 뚫린 만큼 빼요.',pt:['volume:comp'],src:['volComp']}
   ],
   conearea:[
-    {no:1,nm:'정사각뿔의 겉넓이',tb:'227~228쪽',key:'뿔은 밑면이 <b>1개</b>! (밑넓이) + (삼각형 넓이) × 4',pt:['conearea:pyr'],src:['conePyrArea']},
-    {no:2,nm:'원뿔의 겉넓이',tb:'228~229쪽',key:'밑넓이(<b>r²π</b>) + 옆넓이(<b>호의 반 × 모선 = r l π</b>)',pt:['conearea:cone'],src:['coneSideArea']},
-    {no:3,nm:'원뿔 전개도 중심각 구하기',tb:'228쪽',key:'중심각 = 360° × (밑면 둘레 ÷ 큰 원 둘레) = <b>360° × (r / 모선)</b>',pt:['conearea:ang'],src:['coneAng']},
-    {no:4,nm:'뿔대의 겉넓이',tb:'229쪽 2번 · 자주 나오는 복합',key:'위아래 두 밑넓이 합 + (큰 부채꼴 − 작은 부채꼴 또는 사다리꼴 4개)',pt:['conearea:frust'],src:['coneFrustArea']}
+    {no:1,nm:'정사각뿔의 겉넓이',tb:'227~228쪽',key:'뿔은 밑면이 <b>1개</b>! (밑넓이) + (삼각형 넓이) × 4',pt:['conearea:pyr'],src:['conePyrArea']}
+  ],
+  conearea2:[
+    {no:1,nm:'원뿔의 겉넓이',tb:'228~229쪽',key:'밑넓이(<b>r²π</b>) + 옆넓이(<b>호의 반 × 모선 = r l π</b>)',pt:['conearea2:cone'],src:['coneSideArea']},
+    {no:2,nm:'원뿔 전개도 중심각 구하기',tb:'228쪽',key:'중심각 = 360° × (밑면 둘레 ÷ 큰 원 둘레) = <b>360° × (r / 모선)</b>',pt:['conearea2:ang'],src:['coneAng']},
+    {no:3,nm:'뿔대의 겉넓이',tb:'229쪽 2번 · 자주 나오는 복합',key:'위아래 두 밑넓이 합 + (큰 부채꼴 − 작은 부채꼴 또는 사다리꼴 4개)',pt:['conearea2:frust'],src:['coneFrustArea']}
   ],
   cone:[
     {no:1,nm:'각뿔의 부피',tb:'229~230쪽',key:'<b>(밑넓이) × (높이) ÷ 3</b> · 마지막에 ÷ 3을 꼭 기억해요!',pt:['cone:pyr'],src:['conePyrVol']},
@@ -476,7 +501,7 @@ Object.assign(PTYPES,{
   ]
 });
 
-['volume','conearea','cone'].forEach(lid=>{
+['volume','conearea','conearea2','cone'].forEach(lid=>{
   PTYPES[lid].forEach(T_=>{
     const g=tyKey(lid,T_.no);
     GEN[g]=seed=>GEN[T_.src[0]](seed);
@@ -487,20 +512,28 @@ Object.assign(PTYPES,{
   LESSON_OF[lid]=lid;
 });
 ['volPrism','volCyl','volInv','volComp','volumeStep'].forEach(g=>LESSON_OF[g]='volume');
-['conePyrArea','coneSideArea','coneAng','coneFrustArea','coneareaStep'].forEach(g=>LESSON_OF[g]='conearea');
+['conePyrArea','coneareaStep'].forEach(g=>LESSON_OF[g]='conearea');
+['coneSideArea','coneAng','coneFrustArea','conearea2Step'].forEach(g=>LESSON_OF[g]='conearea2');
 ['conePyrVol','coneVol','coneInv','coneFrustVol','coneStep'].forEach(g=>LESSON_OF[g]='cone');
-Object.assign(STEPGEN,{volume:GEN.volumeStep,conearea:GEN.coneareaStep,cone:GEN.coneStep});
+Object.assign(STEPGEN,{volume:GEN.volumeStep,conearea:GEN.coneareaStep,conearea2:GEN.conearea2Step,cone:GEN.coneStep});
 Object.assign(CALC_FOR,{
   volume:['area','pi','mul','eq'],
-  conearea:['area','pi','surf','frac'],
+  conearea:['area','surf'],
+  conearea2:['pi','frac'],
   cone:['area','pi','frac','div']
 });
 Object.assign(PTYPE_NM,{
   'volume:prism':'6차시 · 각기둥 부피','volume:cyl':'6차시 · 원기둥 부피','volume:inv':'6차시 · 높이 역산','volume:comp':'6차시 · 잘린 기둥 부피',
-  'conearea:pyr':'7차시 · 사각뿔 겉넓이','conearea:cone':'7차시 · 원뿔 겉넓이','conearea:ang':'7차시 · 전개도 중심각','conearea:frust':'7차시 · 뿔대 겉넓이',
+  'conearea:pyr':'8차시 · 사각뿔 겉넓이','conearea2:cone':'9차시 · 원뿔 겉넓이','conearea2:ang':'9차시 · 전개도 중심각','conearea2:frust':'9차시 · 뿔대 겉넓이',
+  'conearea:cone':'9차시 · 원뿔 겉넓이','conearea:ang':'9차시 · 전개도 중심각','conearea:frust':'9차시 · 뿔대 겉넓이',
   'cone:pyr':'8차시 · 각뿔 부피','cone:cone':'8차시 · 원뿔 부피','cone:inv':'8차시 · 뿔 높이 역산','cone:frust':'8차시 · 뿔대 부피'
 });
 
+/* [T35] 옛 단원 화면(미리 보기·개념·탐구)은 나누기 전 내용을 새 차시에서도 같이 보여 줘요(02c-concept-plus.js가 area를 나중에 채우면 그때 이어 붙여요). */
+const aliasOld=()=>[['area2','area'],['conearea2','conearea']].forEach(([n,o])=>{
+  [typeof PREVIEW==='object'?PREVIEW:null,typeof PV_CARDS==='object'?PV_CARDS:null,typeof CONCEPT==='object'?CONCEPT:null,typeof EXPLORE==='object'?EXPLORE:null,window.CONCEPT_QUIZ].forEach(R=>{if(R&&R[o]&&!R[n])R[n]=R[o]});
+});
+aliasOld();
 const addT=(k,o)=>{if(typeof TERMS==='object'&&TERMS&&!TERMS[k])TERMS[k]=o};
 addT('기둥의 부피',{k:'1학년 · 입체도형',b:'<p class="formula">(밑넓이) × (높이)</p><p>각기둥과 원기둥 모두 밑면 넓이에 높이를 곱해요.</p>'});
 addT('뿔의 겉넓이',{k:'1학년 · 입체도형',b:'<p class="formula">(밑넓이) + (옆넓이)</p><p>뿔은 밑면이 1개뿐이라 밑넓이를 1번만 더해요.</p>'});
