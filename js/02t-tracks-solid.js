@@ -456,20 +456,20 @@ HG_TRACKS.register('poly',{
   kind:'concept',
   owlScenes:[
     /* [T32] 박자마다 말이 가리키는 부분만 칠하고 깜빡여요(부엉 쌤 기본 원리). */
-    {cap:'장면 ① 다각형 면으로만 = 다면체',svg:figPolyDuo,beats:[
+    {lv:1,cap:'장면 ① 다각형 면으로만 = 다면체',svg:figPolyDuo,beats:[
       {say:'상자를 보세요. 면이 모두 <span class="kw">다각형</span>(사각형)이에요.',hl:['A',null]},
       {say:'이렇게 <span class="kw">다각형인 면으로만</span> 둘러싸인 입체도형이 <b>다면체</b>예요!',hl:['all',null]},
       {say:'캔(원기둥)의 옆면은 <span class="warn">굽은 면(곡면)</span>이에요.',hl:[null,'side']},
       {say:'굽은 면이 <b>하나라도</b> 있으면 다면체가 아니에요. 공(구)도 마찬가지예요.',hl:[null,'side']}
     ]},
-    {cap:'장면 ② 각뿔대 = 밑면에 평행하게 싹둑',svg:()=>figFrustum3D(4,null,true),beats:[
+    {lv:1,cap:'장면 ② 각뿔대 = 밑면에 평행하게 싹둑',svg:()=>figFrustum3D(4,null,true),beats:[
       {say:'각뿔을 <span class="kw">밑면에 평행한 평면</span>으로 싹둑 잘라요. 잘린 자리가 위 밑면이 돼요.',hl:'one'},
       {say:'뾰족한 쪽을 떼어 내고 남은 아래쪽 입체가 <b>각뿔대</b>예요!',hl:'A'},
       {say:'위아래 두 밑면은 평행하지만 <span class="warn">크기가 달라요</span>.',hl:baseEdgesHL},
       {say:'옆면은 모두 <span class="num">사다리꼴</span>이에요.',hl:'side'}
     ]},
     /* [T31] 선생님 의견: 지금 무엇을 세는지 보이게 박자마다 그 부분만 주황으로 깜빡이고, 센 곳은 파랑으로 남겨요. */
-    {cap:'장면 ③ 층 건물로 세기 (1층·2층·층사이)',exp:'happy',svg:figPolyFloors,beats:[
+    {lv:1,cap:'장면 ③ 층 건물로 세기 (1층·2층·층사이)',exp:'happy',svg:figPolyFloors,beats:[
       {say:'입체도형을 <span class="kw">층 건물</span>처럼 봐요. 먼저 <b>꼭짓점</b>! 아래 밑면, <span class="kw">1층</span>에 꼭짓점이 <span class="num">5</span>개 있어요.',hl:[floorHL('v',['lo']),floorHL('v',['lo'])]},
       {say:'이번엔 <span class="kw">2층</span>! 오각기둥은 2층에도 <span class="num">5</span>개라 5 + 5 = <span class="num">2n</span>. 오각뿔은 꼭대기 점 <span class="num">1</span>개뿐이라 5 + 1 = <span class="num">n+1</span>이에요.',hl:[floorHL('v',['hi'],['lo']),floorHL('v',['hi'],['lo'])]},
       {say:'<b>모서리</b>는 <span class="kw">1층 둘레</span> <span class="num">5</span>개부터 세요.',hl:[floorHL('e',['lo']),floorHL('e',['lo'])]},
@@ -558,10 +558,10 @@ HG_TRACKS.register('poly',{
 HG_TRACKS.register('regular',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① 정다면체의 두 조건!',say:'모든 면이 <span class="kw">합동인 정다각형</span>이고, 각 꼭짓점에 <span class="kw">모인 면의 개수가 모두 같아야</span> 정다면체예요!',svg:()=>({items:[{mesh:SOLIDS.cube.mk(),hl:'A',cap:'정육면체 ○'},{mesh:bipyramid(),hl:'V:3',cap:'삼각쌍뿔 ✕'}]})},
-    {cap:'장면 ② 왜 5가지뿐일까? (각의 합 < 360°)',say:'정육각형 3개를 모으면 <span class="warn">120° × 3 = 360°</span>라 평평하게 깔려요! 틈이 남아 접어 올리려면 각의 합이 <span class="num">360°보다 작아야</span> 해요.',svg:()=>figRegFan(6,3,false,false),
+    {lv:1,cap:'장면 ① 정다면체의 두 조건!',say:'모든 면이 <span class="kw">합동인 정다각형</span>이고, 각 꼭짓점에 <span class="kw">모인 면의 개수가 모두 같아야</span> 정다면체예요!',svg:()=>({items:[{mesh:SOLIDS.cube.mk(),hl:'A',cap:'정육면체 ○'},{mesh:bipyramid(),hl:'V:3',cap:'삼각쌍뿔 ✕'}]})},
+    {lv:2,cap:'장면 ② 왜 5가지뿐일까? (각의 합 < 360°)',say:'정육각형 3개를 모으면 <span class="warn">120° × 3 = 360°</span>라 평평하게 깔려요! 틈이 남아 접어 올리려면 각의 합이 <span class="num">360°보다 작아야</span> 해요.',svg:()=>figRegFan(6,3,false,false),
       ask:{q:'모든 면이 합동인 정삼각형이지만, 꼭짓점마다 모인 면이 3개·4개로 다른 입체(삼각쌍뿔)는 정다면체일까요?',choices:['아니요 (꼭짓점마다 면의 수가 달라요)','네 (정다면체가 맞아요)'],ans:'아니요 (꼭짓점마다 면의 수가 달라요)',hint:'두 번째 조건 "각 꼭짓점에 모인 면의 개수가 같다"를 확인해요!',ok:'맞아요! 두 조건 중 하나라도 어기면 정다면체가 아니에요.'}},
-    {cap:'장면 ③ 겹쳐 세기 공식 (÷ 2, ÷ 모인 면)',say:'모서리는 두 면이 만나니까 <span class="num">면 × 변 ÷ 2</span>! 꼭짓점은 모인 면 개수만큼 겹치니까 <span class="num">면 × 변 ÷ (모인 면)</span>이에요.',exp:'happy',svg:()=>figOctNet(false)}
+    {lv:1,cap:'장면 ③ 겹쳐 세기 공식 (÷ 2, ÷ 모인 면)',say:'모서리는 두 면이 만나니까 <span class="num">면 × 변 ÷ 2</span>! 꼭짓점은 모인 면 개수만큼 겹치니까 <span class="num">면 × 변 ÷ (모인 면)</span>이에요.',exp:'happy',svg:()=>figOctNet(false)}
   ],
   owlSummary:['두 조건: ① 모든 면 합동 정다각형 ② 각 꼭짓점에 모인 면의 수 같음','한 꼭짓점 각의 합 < 360° → 5종류(정4, 정6, 정8, 정12, 정20면체)뿐!','모서리 = (면×변)÷2 / 꼭짓점 = (면×변)÷(모인 면 수)'],
   schemaQs:[
@@ -584,7 +584,7 @@ HG_TRACKS.register('regular',{
       wantChips:['모인 각의 합 (°)','둘레 길이','면의 수'],wantAns:'모인 각의 합 (°)',wantHl:[],
       givenChips:[{k:'a',t:'정삼각형 한 내각 60°',ok:true},{k:'b',t:'5개 모임',ok:true},{k:'t',t:'정사각형 90°',ok:false}],
       teacherEq:'60° × 5 = 300° < 360° → 정이십면체',pairQ:'각의 합이 얼마보다 작아야 입체가 되나요?',pairChoices:['360°','180°'],pairAns:'360°',
-      calcPrompt:'60 × 5 = ? (°)',calcAns:300,calcTopic:'mul',calcExplain:'300° < 360°이므로 <b>정이십면체</b>가 돼요.'}
+      calcPrompt:'60 × 5 = ? (°)',calcAns:300,calcTopic:'facts',calcExplain:'300° < 360°이므로 <b>정이십면체</b>가 돼요.'}
   ],
   stratRows:[
     ['정다면체 판별','두 조건 모두 ○','① 합동 정다각형 ② 꼭짓점마다 모인 면 개수 같음'],
@@ -634,8 +634,8 @@ HG_TRACKS.register('regular',{
 HG_TRACKS.register('rotation',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① 한 바퀴 빙글! 회전체',say:'직사각형·직각삼각형·사다리꼴·반원을 <span class="kw">회전축 l</span> 둘레로 1회전 시키면 각각 <b>원기둥 · 원뿔 · 원뿔대 · 구</b>가 돼요.',svg:()=>({items:[figRotSolid3D('cyl',{}),figRotSolid3D('cone',{})]})},
-    {cap:'장면 ② 모선과 회전축',say:'회전체의 옆면을 만드는 기울어진 선분을 <span class="kw">모선</span>, 기준 직선을 <span class="kw">회전축</span>이라고 해요. 다면체는 굽은 면이 없어 회전체가 아니에요!',svg:()=>figRotSolid3D('frust',{hl:'side'}),
+    {lv:1,cap:'장면 ① 한 바퀴 빙글! 회전체',say:'직사각형·직각삼각형·사다리꼴·반원을 <span class="kw">회전축 l</span> 둘레로 1회전 시키면 각각 <b>원기둥 · 원뿔 · 원뿔대 · 구</b>가 돼요.',svg:()=>({items:[figRotSolid3D('cyl',{}),figRotSolid3D('cone',{})]})},
+    {lv:1,cap:'장면 ② 모선과 회전축',say:'회전체의 옆면을 만드는 기울어진 선분을 <span class="kw">모선</span>, 기준 직선을 <span class="kw">회전축</span>이라고 해요. 다면체는 굽은 면이 없어 회전체가 아니에요!',svg:()=>figRotSolid3D('frust',{hl:'side'}),
       ask:{q:'원뿔을 밑면에 평행한 평면으로 자를 때 생기는 입체 중 원뿔이 아닌 쪽은?',choices:['원뿔대','각뿔대','원기둥'],ans:'원뿔대',hint:'원뿔을 자르면 작은 원뿔과 원뿔대가 남아요.',ok:'정확해요! 위아래 원의 크기가 다른 원뿔대예요.'}}
   ],
   owlSummary:['직사각형→원기둥 / 직각삼각형→원뿔 / 사다리꼴→원뿔대 / 반원→구','회전축에서 떨어져 있으면 가운데 구멍이 뚫려요','원뿔대 두 밑면: 평행 ○, 합동 ✕'],
@@ -705,8 +705,8 @@ HG_TRACKS.register('rotation',{
 HG_TRACKS.register('rotprop',{
   kind:'proc',
   owlScenes:[
-    {cap:'장면 ① 회전축에 수직 = 언제나 원!',say:'원기둥·원뿔·원뿔대·구 모두 회전축에 <span class="kw">수직으로 자르면</span> 단면의 경계는 언제나 <span class="num">원</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'perp'})},
-    {cap:'장면 ② 회전축을 품고 자르면 선대칭 · 합동!',say:'회전축을 품고 자른 단면은 어느 방향에서 잘라도 모두 <span class="kw">합동</span>! 단, 가로 길이는 반지름이 아니라 <span class="warn">지름(2r)</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'axis',rLab:'4 cm',hLab:'6 cm'}),
+    {lv:1,cap:'장면 ① 회전축에 수직 = 언제나 원!',say:'원기둥·원뿔·원뿔대·구 모두 회전축에 <span class="kw">수직으로 자르면</span> 단면의 경계는 언제나 <span class="num">원</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'perp'})},
+    {lv:1,cap:'장면 ② 회전축을 품고 자르면 선대칭 · 합동!',say:'회전축을 품고 자른 단면은 어느 방향에서 잘라도 모두 <span class="kw">합동</span>! 단, 가로 길이는 반지름이 아니라 <span class="warn">지름(2r)</span>이에요.',svg:()=>figRotSolid3D('cone',{cut:'axis',rLab:'4 cm',hLab:'6 cm'}),
       ask:{q:'밑면 반지름 5 cm, 높이 6 cm인 원뿔을 회전축 포함 평면으로 자른 삼각형의 밑변은?',choices:['10 cm (지름!)','5 cm','6 cm'],ans:'10 cm (지름!)',hint:'돌리기 전 직각삼각형 2개가 좌우 대칭으로 붙어 있어요.',ok:'맞아요! 5 × 2 = 10 cm가 단면의 밑변이에요.'}}
   ],
   owlSummary:['수직 단면: 항상 원 (원뿔·원뿔대는 크기가 다름)','회전축 포함 단면: 모두 합동 · 선대칭도형 · 밑변=지름(2r)','원기둥→직사각형 / 원뿔→이등변삼각형 / 원뿔대→등변사다리꼴 / 구→원'],
@@ -716,21 +716,22 @@ HG_TRACKS.register('rotprop',{
     {id:'rpq3',q:'원뿔대를 회전축을 포함하는 평면으로 자르면 어떤 사각형이 나오나요?',fig:()=>figRotSolid3D('frust',{cut:'axis'}),choices:['등변사다리꼴','직사각형','마름모'],ans:'등변사다리꼴',hint:'양쪽 빗변(모선) 길이가 같은 사다리꼴이에요.',why:'맞아요! 원뿔대의 축 포함 단면은 등변사다리꼴이에요.'}
   ],
   firstGuide:[
-    {id:'rpfg1',tyNo:3,title:'유형 3 · 축 포함 단면 넓이 (원기둥)',problem:'반지름 <b>4 cm</b>, 높이 <b>7 cm</b>인 원기둥을 회전축 포함 평면으로 자른 단면 넓이는?',fig:()=>figRotSolid3D('cyl',{cut:'axis',rLab:'4 cm',hLab:'7 cm'}),
-      wantChips:['단면(직사각형)의 넓이','원의 둘레','부피'],wantAns:'단면(직사각형)의 넓이',wantHl:[],
-      givenChips:[{k:'a',t:'반지름 4 cm → 지름 8 cm',ok:true},{k:'b',t:'높이 7 cm',ok:true},{k:'t',t:'모선 10 cm',ok:false}],
-      teacherEq:'(지름 8) × (높이 7) = 56',pairQ:'왜 가로에 반지름 4가 아니라 <b>8</b>을 썼나요?',pairChoices:['축을 품고 자르면 양쪽이 합쳐져 지름이 되니까','원기둥 2개라서'],pairAns:'축을 품고 자르면 양쪽이 합쳐져 지름이 되니까',
-      calcPrompt:'8 × 7 = ? (cm²)',calcAns:56,calcTopic:'facts',calcExplain:'지름 8 × 높이 7 = <b>56 cm²</b>예요.'},
-    {id:'rpfg2',tyNo:3,title:'유형 3 · 축 포함 단면 넓이 (원뿔)',problem:'반지름 <b>5 cm</b>, 높이 <b>6 cm</b>인 원뿔을 회전축 포함 평면으로 자른 단면 넓이는?',fig:()=>figRotSolid3D('cone',{cut:'axis',rLab:'5 cm',hLab:'6 cm'}),
-      wantChips:['이등변삼각형 단면 넓이','원의 넓이','모선'],wantAns:'이등변삼각형 단면 넓이',wantHl:[],
-      givenChips:[{k:'a',t:'밑변 = 지름 10 cm',ok:true},{k:'b',t:'높이 = 6 cm',ok:true},{k:'t',t:'사다리꼴',ok:false}],
-      teacherEq:'(지름 10 × 높이 6) ÷ 2 = 30',pairQ:'식 마지막에 왜 <b>÷ 2</b>를 했나요?',pairChoices:['단면이 이등변삼각형이니까','반지름이라서'],pairAns:'단면이 이등변삼각형이니까',
-      calcPrompt:'10 × 6 ÷ 2 = ? (cm²)',calcAns:30,calcTopic:'div',calcExplain:'10 × 6 ÷ 2 = <b>30 cm²</b>예요.'},
-    {id:'rpfg3',tyNo:1,title:'유형 1 · 수직 단면 넓이 구하기',problem:'반지름 <b>5 cm</b>인 원기둥을 회전축에 수직으로 자른 단면 넓이는? (π 앞 숫자)',fig:()=>figRotSolid3D('cyl',{cut:'perp',rLab:'5 cm'}),
-      wantChips:['원 단면 넓이 (π 앞 숫자)','직사각형 넓이','높이'],wantAns:'원 단면 넓이 (π 앞 숫자)',wantHl:[],
-      givenChips:[{k:'a',t:'수직 단면 = 원',ok:true},{k:'b',t:'반지름 5 cm',ok:true},{k:'t',t:'지름 5 cm',ok:false}],
-      teacherEq:'반둘레(5π) × 반지름(5) = 25π',pairQ:'원을 직사각형으로 바꿨을 때 가로와 세로는 각각 얼마인가요?',pairChoices:['5π와 5','10π와 5'],pairAns:'5π와 5',
-      calcPrompt:'5 × 5 = ? (π 앞 숫자)',calcAns:25,calcTopic:'pow',calcExplain:'5 × 5 = 25 → <b>25π cm²</b>예요.'}
+    /* [T39] 🌱 B 따라 풀기(단면 넓이) — 선생님 말투: 공식처럼 설명하지 않고 '회전체를 머릿속에 그려 보게'(돌려 보는 3D → 단면 모양 → 넓이) */
+    {id:'rpfg1',tyNo:1,title:'유형 1 · 회전축에 수직인 단면의 넓이',problem:'반지름이 <b>3 cm</b>인 원기둥을 회전축에 <b>수직</b>인 평면으로 잘랐어요. 단면의 넓이는? (π를 붙여 써요)',fig:()=>figRotSolid3D('cyl',{cut:'perp',rLab:'3 cm'}),
+      wantChips:['단면의 넓이','단면의 둘레','원기둥의 높이'],wantAns:'단면의 넓이',wantHl:[],
+      givenChips:[{k:'a',t:'회전축에 수직으로 자름',ok:true},{k:'b',t:'반지름 3 cm',ok:true},{k:'t',t:'지름 3 cm',ok:false}],
+      teacherEq:'머릿속으로 원기둥을 돌려 보며 가로로 싹둑 → 단면은 원 → 원의 넓이 = 반둘레 3π × 반지름 3',pairQ:'가로로 자른 단면이 왜 <b>원</b>일까요?',pairChoices:['한 바퀴 돌린 자국이라 어디를 잘라도 둥그니까','원기둥 밑면이 사각형이라서'],pairAns:'한 바퀴 돌린 자국이라 어디를 잘라도 둥그니까',
+      calcPrompt:'원의 넓이는 몇 cm²인가요? (3π × 3, π를 붙여 써요. 예: 8π)',calcAns:9,calcTopic:'pow',calcExplain:'3π × 3 = <b>9π cm²</b>예요.'},
+    {id:'rpfg2',tyNo:2,title:'유형 2 · 회전축을 품은 단면 (원뿔)',problem:'반지름 <b>4 cm</b>, 높이 <b>6 cm</b>인 원뿔을 <b>회전축을 품은</b> 평면으로 잘랐어요. 단면의 넓이는?',fig:()=>figRotSolid3D('cone',{cut:'axis',rLab:'4 cm',hLab:'6 cm'}),
+      wantChips:['단면의 넓이','밑면의 넓이','모선의 길이'],wantAns:'단면의 넓이',wantHl:[],
+      givenChips:[{k:'a',t:'회전축을 품고 자름',ok:true},{k:'b',t:'반지름 4 cm',ok:true},{k:'c',t:'높이 6 cm',ok:true},{k:'t',t:'수직으로 자름',ok:false}],
+      teacherEq:'머릿속으로 직각삼각형을 돌려 원뿔 → 축을 품고 자르면 직각삼각형 2개가 붙은 이등변삼각형 → 밑변 4 + 4 = 8 → 8 × 6 ÷ 2',pairQ:'단면의 밑변이 왜 4가 아니라 <b>8</b>일까요?',pairChoices:['축 양쪽에 반지름이 하나씩, 둘이 붙어 지름이 되니까','높이가 6이라서'],pairAns:'축 양쪽에 반지름이 하나씩, 둘이 붙어 지름이 되니까',
+      calcPrompt:'8 × 6 ÷ 2 = ? (cm²)',calcAns:24,calcTopic:'area',calcExplain:'밑변 8 × 높이 6 ÷ 2 = <b>24 cm²</b>예요.'},
+    {id:'rpfg3',tyNo:3,title:'유형 3 · 회전축을 품은 단면의 넓이 (원기둥)',problem:'반지름 <b>3 cm</b>, 높이 <b>7 cm</b>인 원기둥을 <b>회전축을 품은</b> 평면으로 잘랐어요. 단면의 넓이는?',fig:()=>figRotSolid3D('cyl',{cut:'axis',rLab:'3 cm',hLab:'7 cm'}),
+      wantChips:['단면의 넓이','원의 둘레','원기둥의 부피'],wantAns:'단면의 넓이',wantHl:[],
+      givenChips:[{k:'a',t:'회전축을 품고 자름',ok:true},{k:'b',t:'반지름 3 cm',ok:true},{k:'c',t:'높이 7 cm',ok:true},{k:'t',t:'모선 10 cm',ok:false}],
+      teacherEq:'머릿속으로 직사각형을 돌려 원기둥 → 축을 품고 자르면 직사각형 2개가 붙은 큰 직사각형 → 가로 3 + 3 = 6 → 6 × 7',pairQ:'단면의 가로가 왜 3이 아니라 <b>6</b>일까요?',pairChoices:['축 양쪽에 반지름이 하나씩, 둘이 붙어 지름이 되니까','원기둥이 2개라서'],pairAns:'축 양쪽에 반지름이 하나씩, 둘이 붙어 지름이 되니까',
+      calcPrompt:'6 × 7 = ? (cm²)',calcAns:42,calcTopic:'area',calcExplain:'가로 6 × 세로 7 = <b>42 cm²</b>예요.'}
   ],
   stratRows:[
     ['수직으로 자름','언제나 원','반지름을 보고 원의 넓이(r²π) 또는 둘레(2rπ)'],
@@ -792,9 +793,15 @@ HG_TRACKS.register('area',{
   kind:'proc',
   compoundBridgeNo:2,
   owlScenes:[
-    {cap:'장면 ① 전개도 펼치기: 밑면 2개 + 옆넓이',say:'기둥의 겉넓이는 전개도를 펼쳐 모든 면의 넓이를 더한 거예요! 기둥은 <span class="kw">밑넓이 × 2 + 옆넓이</span>예요.',svg:()=>figTriPrism3D(3,4,5,5,{hl:'all'}),
+    /* [T39] 🌱 첫 부분 '다시 떠올리기'(초등 직육면체의 겉넓이) */
+    {lv:1,cap:'장면 ① 다시 떠올리기: 직육면체의 겉넓이',svg:()=>figBox3D(4,3,5,{hl:'all'}),beats:[
+      {say:'초등학교에서 배운 <b>직육면체</b>예요. <b>겉넓이</b>는 겉에 있는 면 <span class="num">6개</span>의 넓이를 모두 더한 거예요.',hl:'all'},
+      {say:'위와 아래의 면은 크기가 같아요. 가로 4 × 세로 3 = <span class="num">12 cm²</span>짜리 면이 <span class="kw">2개</span>예요.',hl:'base'},
+      {say:'둘레를 감싼 면 4개는 옆에 있어요. 이 4개를 이어 붙이면 한 장의 큰 직사각형이 돼요.',hl:'side'},
+      {say:'직육면체도 <b>기둥</b>이에요! 위아래 면이 <span class="kw">밑면</span>, 둘레의 면이 <span class="kw">옆면</span>이라서 <b>밑넓이 × 2 + 옆넓이</b>로 구해요.',hl:'all',exp:'happy'}]},
+    {lv:1,cap:'장면 ② 전개도 펼치기: 밑면 2개 + 옆넓이',say:'기둥의 겉넓이는 전개도를 펼쳐 모든 면의 넓이를 더한 거예요! 기둥은 <span class="kw">밑넓이 × 2 + 옆넓이</span>예요.',svg:()=>figTriPrism3D(3,4,5,5,{hl:'all'}),
       ask:{q:'기둥의 겉넓이를 구하는 바른 식은?',choices:['(밑넓이) × 2 + (옆넓이)','(밑넓이) + (옆넓이)','(밑넓이) × (높이)','(옆넓이) × 2'],ans:'(밑넓이) × 2 + (옆넓이)',hint:'기둥은 위아래에 밑면이 2개 있어요.',ok:'정확해요! 밑면 2개와 옆면을 모두 더해요.'}},
-    {cap:'장면 ③ L자로 잘라 낸 기둥 함정!',exp:'warn',say:'모서리를 직각으로 잘라 내도 안쪽 벽이 바깥쪽을 대신 채워 주므로 <span class="warn">밑면 둘레가 원래 직사각형과 똑같아요</span>!',svg:()=>lPrismSVG(6,5,2,2,4,{hlPerim:true})}
+    {lv:3,cap:'장면 ③ L자로 잘라 낸 기둥 함정!',exp:'warn',say:'모서리를 직각으로 잘라 내도 안쪽 벽이 바깥쪽을 대신 채워 주므로 <span class="warn">밑면 둘레가 원래 직사각형과 똑같아요</span>!',svg:()=>lPrismSVG(6,5,2,2,4,{hlPerim:true})}
   ],
   owlSummary:['기둥 겉넓이 = (밑넓이) × 2 + (밑면의 둘레) × (높이)','삼각기둥: 삼각형 넓이 ÷ 2, 둘레는 세 변 모두 더하기'],
   schemaQs:[
@@ -812,7 +819,7 @@ HG_TRACKS.register('area',{
       wantChips:['잘린 기둥 전체 겉넓이','밑넓이만','부피'],wantAns:'잘린 기둥 전체 겉넓이',wantHl:[],
       givenChips:[{k:'a',t:'남은 밑넓이 30−4 = 26',ok:true},{k:'b',t:'둘레 그대로 22, 높이 4',ok:true},{k:'t',t:'둘레에서 8 빼기',ok:false}],
       teacherEq:'26 × 2 + 22 × 4 = 52 + 88',pairQ:'밑면 둘레가 왜 원래대로 <b>22</b>인가요?',pairChoices:['파인 변을 밖으로 밀면 원래 직사각형 변과 같아져서','잘린 넓이가 4라서'],pairAns:'파인 변을 밖으로 밀면 원래 직사각형 변과 같아져서',
-      calcPrompt:'52 + 88 = ? (cm²)',calcAns:140,calcTopic:'add2',calcExplain:'52 + 88 = <b>140 cm²</b>예요.'}
+      calcPrompt:'52 + 88 = ? (cm²)',calcAns:140,calcTopic:'surf',calcExplain:'52 + 88 = <b>140 cm²</b>예요.'}
   ],
   stratRows:[
     ['각기둥 겉넓이','밑넓이×2 + 둘레×높이','삼각기둥 밑넓이 ÷ 2 주의, 세 변 모두 더하기'],
@@ -856,8 +863,8 @@ HG_TRACKS.register('area',{
 HG_TRACKS.register('area2',{
   kind:'proc',
   owlScenes:[
-    {cap:'장면 ① 원기둥 전개도 = 원 2개 + 직사각형 1개',say:'원기둥을 펼치면 위아래 <span class="kw">원 2개</span>와 옆면 <span class="kw">직사각형 1개</span>예요. 겉넓이는 이 세 장을 모두 더해요.',svg:()=>figCyl3D(3,5,{hl:'all'})},
-    {cap:'장면 ② 옆면 펼치면 큰 직사각형!',say:'옆면을 펼친 직사각형의 <span class="kw">가로 = 밑면의 둘레</span>, 세로 = 높이에요. 원기둥이면 가로 = <span class="num">지름 × π</span>!',svg:()=>figCyl3D(3,5,{hl:'side'}),
+    {lv:1,cap:'장면 ① 원기둥 전개도 = 원 2개 + 직사각형 1개',say:'원기둥을 펼치면 위아래 <span class="kw">원 2개</span>와 옆면 <span class="kw">직사각형 1개</span>예요. 겉넓이는 이 세 장을 모두 더해요.',svg:()=>figCyl3D(3,5,{hl:'all'})},
+    {lv:1,cap:'장면 ② 옆면 펼치면 큰 직사각형!',say:'옆면을 펼친 직사각형의 <span class="kw">가로 = 밑면의 둘레</span>, 세로 = 높이에요. 원기둥이면 가로 = <span class="num">지름 × π</span>!',svg:()=>figCyl3D(3,5,{hl:'side'}),
       ask:{q:'밑면 반지름 3 cm, 높이 5 cm인 원기둥 전개도에서 옆면 직사각형의 가로는?',choices:['6π cm','3π cm','9π cm'],ans:'6π cm',hint:'지름 × π = (3 × 2) × π예요!',ok:'정확해요! 가로 = 밑면 원의 둘레 = 6π cm예요.'}},
   ],
   owlSummary:['원기둥 겉넓이 = (밑넓이) × 2 + (옆넓이)','밑넓이 = 반둘레 × 반지름(r²π), 옆면 직사각형의 가로 = 밑면의 둘레(지름 × π)'],
@@ -916,8 +923,14 @@ HG_TRACKS.register('volume',{
   kind:'proc',
   compoundBridgeNo:4,
   owlScenes:[
-    {cap:'장면 ① 바닥(밑넓이) × 층수(높이) = 부피',say:'기둥의 부피는 아주 간단해요! 바닥 넓이(<span class="kw">밑넓이</span>)를 <span class="kw">높이</span>만큼 겹겹이 쌓으면 <span class="num">(밑넓이) × (높이)</span>!',svg:()=>figBox3D(4,3,5,{hl:'base1'})},
-    {cap:'장면 ② 원기둥도 r²π × 높이!',say:'원기둥도 기둥이니까 밑면 원의 넓이 <span class="num">(반둘레 × 반지름 = r²π)</span>에 <b>높이</b>를 곱해요.',svg:()=>figCyl3D(3,5,{hl:'base1'}),
+    /* [T39] 🌱 첫 부분 '다시 떠올리기'(초등 직육면체의 부피) */
+    {lv:1,cap:'장면 ① 다시 떠올리기: 직육면체의 부피',svg:()=>figBox3D(4,3,5,{hl:'base1'}),beats:[
+      {say:'초등학교에서 배운 <b>직육면체의 부피</b>를 다시 떠올려요. 부피는 <span class="kw">1 cm³ 쌓기나무</span>가 몇 개 들어가는지예요.',hl:'base1'},
+      {say:'바닥 한 층에 가로 4개 × 세로 3개 = <span class="num">12개</span>가 깔려요. 이게 바닥의 넓이 12 cm²와 같아요.',hl:'base1'},
+      {say:'이 층을 높이만큼 <span class="num">5층</span> 쌓으면 12 × 5 = <span class="num">60개</span>, 곧 <b>60 cm³</b>예요.',hl:'all'},
+      {say:'가로 × 세로가 바로 <span class="kw">밑넓이</span>! 그래서 <b>부피 = 밑넓이 × 높이</b>예요. 이 생각이 모든 기둥에 그대로 쓰여요.',hl:'base1',exp:'happy'}]},
+    {lv:1,cap:'장면 ② 바닥(밑넓이) × 층수(높이) = 부피',say:'기둥의 부피는 아주 간단해요! 바닥 넓이(<span class="kw">밑넓이</span>)를 <span class="kw">높이</span>만큼 겹겹이 쌓으면 <span class="num">(밑넓이) × (높이)</span>!',svg:()=>figBox3D(4,3,5,{hl:'base1'})},
+    {lv:1,cap:'장면 ③ 원기둥도 r²π × 높이!',say:'원기둥도 기둥이니까 밑면 원의 넓이 <span class="num">(반둘레 × 반지름 = r²π)</span>에 <b>높이</b>를 곱해요.',svg:()=>figCyl3D(3,5,{hl:'base1'}),
       ask:{q:'구멍이 뚫린 원기둥 부피를 구할 때 바른 식은?',choices:['(바깥 밑넓이 − 안쪽 밑넓이) × 높이','바깥 밑넓이 × 높이 + 안쪽','겉넓이 × 높이'],ans:'(바깥 밑넓이 − 안쪽 밑넓이) × 높이',hint:'구멍이 뚫렸으므로 바닥 도넛 넓이를 구해 높이를 곱해요!',ok:'정확해요! 도넛 밑넓이에 높이를 곱하면 돼요.'}}
   ],
   owlSummary:['모든 기둥의 부피 = (밑넓이) × (높이)','겉넓이(cm²)와 부피(cm³) 공식 섞지 않기!','구멍 뚫리거나 잘린 기둥: (남은 밑넓이) × (높이)'],
@@ -991,8 +1004,8 @@ HG_TRACKS.register('volume',{
 HG_TRACKS.register('conearea',{
   kind:'proc',
   owlScenes:[
-    {cap:'장면 ① 뿔은 밑면이 딱 1개!',say:'기둥은 밑면이 2개였지만 뿔은 <span class="kw">밑면이 1개뿐</span>이에요! 그래서 <b>(뿔의 겉넓이) = (밑넓이) + (옆넓이)</b>예요.',svg:()=>figPyr3D(4,4,null,5,{hl:'all'})},
-    {cap:'장면 ② 옆면 삼각형을 꼭짓점에 모아 펼치기',say:'정사각뿔의 옆면 삼각형 4개를 <span class="kw">꼭짓점에 모아 부채꼴처럼</span> 펼쳐요. 옆넓이 = 삼각형 1개 넓이 × 4예요.',svg:()=>figPyr3D(4,4,null,5,{hl:'all'}),
+    {lv:1,cap:'장면 ① 뿔은 밑면이 딱 1개!',say:'기둥은 밑면이 2개였지만 뿔은 <span class="kw">밑면이 1개뿐</span>이에요! 그래서 <b>(뿔의 겉넓이) = (밑넓이) + (옆넓이)</b>예요.',svg:()=>figPyr3D(4,4,null,5,{hl:'all'})},
+    {lv:1,cap:'장면 ② 옆면 삼각형을 꼭짓점에 모아 펼치기',say:'정사각뿔의 옆면 삼각형 4개를 <span class="kw">꼭짓점에 모아 부채꼴처럼</span> 펼쳐요. 옆넓이 = 삼각형 1개 넓이 × 4예요.',svg:()=>figPyr3D(4,4,null,5,{hl:'all'}),
       ask:{q:'정사각뿔의 겉넓이를 구하는 바른 식은?',choices:['밑넓이 + 삼각형 넓이 × 4','밑넓이 × 2 + 삼각형 넓이 × 4','밑넓이 + 삼각형 넓이','삼각형 넓이 × 4'],ans:'밑넓이 + 삼각형 넓이 × 4',hint:'뿔은 밑면이 1개, 옆면 삼각형은 4개예요.',ok:'정확해요! 밑넓이 1번 + 옆면 삼각형 4개예요.'}}
   ],
   owlSummary:['뿔 겉넓이 = 밑넓이(1개!) + 옆넓이','정사각뿔 옆넓이 = 삼각형 1개(÷2) × 4'],
@@ -1049,8 +1062,8 @@ HG_TRACKS.register('conearea2',{
   kind:'proc',
   compoundBridgeNo:3,
   owlScenes:[
-    {cap:'장면 ① 원뿔을 펼치면 원 + 부채꼴',say:'원뿔을 펼치면 밑면 <span class="kw">원 1개</span>와 옆면 <span class="kw">부채꼴 1개</span>예요. 먼저 기억해요: <b>부채꼴의 호 = 밑면의 둘레</b>!',svg:()=>figCone3D(4,null,6,{hl:'all'})},
-    {cap:'장면 ② 원뿔 옆넓이 = (호의 반) × 모선!',say:'원뿔을 펼치면 옆면이 부채꼴! 부채꼴의 호 = 밑면 둘레(<span class="num">지름 × π</span>).<br>따라서 옆넓이 = <span class="num">(호의 반) × (모선)</span> = <span class="num">r × l × π</span>!',svg:()=>coneNetSVG(3,5),
+    {lv:1,cap:'장면 ① 원뿔을 펼치면 원 + 부채꼴',say:'원뿔을 펼치면 밑면 <span class="kw">원 1개</span>와 옆면 <span class="kw">부채꼴 1개</span>예요. 먼저 기억해요: <b>부채꼴의 호 = 밑면의 둘레</b>!',svg:()=>figCone3D(4,null,6,{hl:'all'})},
+    {lv:1,cap:'장면 ② 원뿔 옆넓이 = (호의 반) × 모선!',say:'원뿔을 펼치면 옆면이 부채꼴! 부채꼴의 호 = 밑면 둘레(<span class="num">지름 × π</span>).<br>따라서 옆넓이 = <span class="num">(호의 반) × (모선)</span> = <span class="num">r × l × π</span>!',svg:()=>coneNetSVG(3,5),
       ask:{q:'밑면 반지름 4 cm, 높이 3 cm, 모선 5 cm인 원뿔의 겉넓이를 구할 때 <b>옆넓이</b>에 쓸 길이는?',choices:['모선 5 cm','높이 3 cm','지름 8 cm'],ans:'모선 5 cm',hint:'전개도를 펼쳤을 때 부채꼴의 반지름이 되는 기울어진 선분이에요!',ok:'정확해요! 겉넓이는 모선 5 cm를 써서 4π × 5 = 20π cm²예요.'}}
   ],
   owlSummary:['원뿔 겉넓이 = 밑넓이(r²π) + 옆넓이','옆면은 부채꼴! 부채꼴 호 = 밑면 둘레','원뿔 옆넓이 = (호의 반) × 모선 = r l π (높이 쓰지 않기!)'],
@@ -1115,8 +1128,8 @@ HG_TRACKS.register('cone',{
   kind:'proc',
   compoundBridgeNo:4,
   owlScenes:[
-    {cap:'장면 ① 기둥의 딱 ⅓!',say:'밑면과 높이가 같은 기둥 그릇에 뿔로 물을 부으면 정확히 <span class="num">3번</span> 만에 가득 차요! 그래서 <b>(뿔의 부피) = (밑넓이) × (높이) ÷ 3</b>!',svg:()=>({items:[figCyl3D(3,5,{cap:'원기둥',noDims:true}),figCone3D(3,5,null,{cap:'원뿔 (⅓)',noDims:true})]})},
-    {cap:'장면 ② 모선이 아니라 수직 높이! · 뿔대는 큰 뿔 − 작은 뿔',say:'부피에는 <span class="warn">수직 높이</span>를 써요. 뿔대는 <span class="kw">큰 뿔 부피 − 작은 뿔 부피</span>로 구하면 실수가 없어요.',svg:()=>figFrustCone3D(6,3,8,4),
+    {lv:1,cap:'장면 ① 기둥의 딱 ⅓!',say:'밑면과 높이가 같은 기둥 그릇에 뿔로 물을 부으면 정확히 <span class="num">3번</span> 만에 가득 차요! 그래서 <b>(뿔의 부피) = (밑넓이) × (높이) ÷ 3</b>!',svg:()=>({items:[figCyl3D(3,5,{cap:'원기둥',noDims:true}),figCone3D(3,5,null,{cap:'원뿔 (⅓)',noDims:true})]})},
+    {lv:1,cap:'장면 ② 모선이 아니라 수직 높이! · 뿔대는 큰 뿔 − 작은 뿔',say:'부피에는 <span class="warn">수직 높이</span>를 써요. 뿔대는 <span class="kw">큰 뿔 부피 − 작은 뿔 부피</span>로 구하면 실수가 없어요.',svg:()=>figFrustCone3D(6,3,8,4),
       ask:{q:'밑면의 반지름 3 cm, 높이 5 cm인 원뿔의 부피는?',choices:['15π cm³','45π cm³','30π cm³'],ans:'15π cm³',hint:'밑넓이(9π) × 높이(5)를 구한 뒤 ÷ 3을 꼭 해요!',ok:'정확해요! 45π ÷ 3 = 15π cm³예요.'}}
   ],
   owlSummary:['뿔의 부피 = (밑넓이) × (높이) ÷ 3 (÷ 3 잊지 마세요!)','원뿔 부피 = r²π × 높이 ÷ 3 (수직 높이 사용)','뿔대 부피 = 큰 뿔 부피 − 작은 뿔 부피'],

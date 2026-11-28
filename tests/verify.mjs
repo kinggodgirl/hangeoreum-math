@@ -676,6 +676,22 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   const empty = JSON.parse(vm.runInContext("(()=>{const d={};HG_SPLIT19.migrate(d);d.prop={rev:{ty2:{ok:1}}};const again=HG_SPLIT19.migrate(d);return JSON.stringify({again,d})})()", sandbox));
   if (empty.again || !empty.d.prop.rev.ty2 || empty.d.propg) errors.push('[T35] new empty record should not be split later');
 }
+// [T39] 묶음 E: 정비례·반비례 빠른 구별 · rotprop 🌱 B · 다시 떠올리기 · 장면 걸음 표시(lv) · 따라 풀기 calcTopic = 차시↔바탕 계산 표
+{ const t39 = JSON.parse(vm.runInContext(`(()=>{const E=[],S=HG_TRACKS.specs;
+  for(const lid of ['prop','propg','inv','invg']){const R=S[lid].schemaRapid;if(!R||R.kinds<8){E.push(lid+' rapid kinds');continue}
+    if((R.check||[]).some(k=>k>=R.kinds))E.push(lid+' rapid check');
+    for(let k=0;k<R.kinds;k++){const it=R.make(k,k+R.kinds*7),ch=it.choices||R.choices;if(ch.length>4)E.push(lid+' too many choices');if(/정비례예요|반비례예요|아니에요/.test(it.q||R.q))E.push(lid+' q gives answer')}
+    const big=(S[lid].t1Check||[]).find(q=>/big$/.test(q.id));if(!big||big.choices.length!==4||!big.choices.includes(big.ans))E.push(lid+' t1Check textbook-size item')}
+  {const R=S.prop.schemaRapid;let yes=0;for(let k=0;k<R.kinds;k++)if(R.make(k,k+R.kinds).ans===R.choices[0])yes++;if(yes<R.kinds/2)E.push('prop examples should outnumber non-examples')}
+  const G=S.rotprop.firstGuide,tys=G.map(g=>g.tyNo);if(new Set(tys).size!==G.length||!tys.includes(1)||!tys.includes(3))E.push('rotprop guide tyNo '+tys);
+  if(G.some(g=>!/머릿속/.test(g.teacherEq)))E.push('rotprop teacher wording');
+  for(const lid of ['sector','area','volume']){const sc=S[lid].owlScenes;if(!/다시 떠올리기/.test(sc[0].cap)||sc[0].lv!==1)E.push(lid+' recall scene')}
+  const OK_EXTRA={coord:['eq'],graph:['sub','mul'],poly:['add'],cone:['sub']};
+  for(const l of LESSONS.filter(l=>S[l.id]&&l.ready)){const sp=S[l.id],sc=typeof sp.owlScenes==='function'?sp.owlScenes():sp.owlScenes;
+    sc.forEach((x,i)=>{if(![1,2,3].includes(x.lv))E.push(l.id+' scene '+(i+1)+' lv')});
+    const base=LESSON_BASE_CALC[l.id];if(base&&base.length)(sp.firstGuide||[]).forEach(g=>{if(!base.includes(g.calcTopic)&&!(OK_EXTRA[l.id]||[]).includes(g.calcTopic))E.push(l.id+' calcTopic '+g.calcTopic)})}
+  return JSON.stringify(E)})()`, sandbox));
+  if (t39.length) errors.push('[T39] ' + t39.join(', ')); }
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);

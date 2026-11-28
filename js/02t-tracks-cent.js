@@ -189,7 +189,7 @@ const FIRST_GUIDE=[
     givenChips:[{k:'r',t:'세 호의 비 2 : 3 : 4',ok:true,hl:'BC'},{k:'full',t:'원 한 바퀴 = 360°',ok:true,hl:'ang'},{k:'trap',t:'반지름 6 cm',ok:false}],
     teacherEq:'전체 2 + 3 + 4 = 9칸 → 360° ÷ 9 = 40° → 40° × 3',pairQ:'식에서 <b>360°</b>를 왜 <b>9</b>로 나누었을까요?',
     pairChoices:['한 바퀴 360°가 전체 9칸에 나눠져 있어서','호 BC의 비가 9라서'],pairAns:'한 바퀴 360°가 전체 9칸에 나눠져 있어서',
-    calcPrompt:'1칸 40° × 호 BC 3칸 = ? (°)',calcAns:120,calcTopic:'div',calcExplain:'1칸 = 40°, 호 BC는 3칸 = <b>120°</b>예요.'}
+    calcPrompt:'1칸 40° × 호 BC 3칸 = ? (°)',calcAns:120,calcTopic:'mul',calcExplain:'1칸 = 40°, 호 BC는 3칸 = <b>120°</b>예요.'}
 ];
 
 const WORKED=[
@@ -317,32 +317,32 @@ function owlCentScene(k){
   return'';
 }
 const OWL_SCENES=[
-  {cap:'장면 ① 중심각이 같으면 포개져요',svg:()=>owlCentScene(1),beats:[
+  {lv:1,cap:'장면 ① 중심각이 같으면 포개져요',svg:()=>owlCentScene(1),beats:[
     '한 원에 중심각이 <span class="num">50°</span>로 같은 부채꼴 두 개가 있어요.',
     '주황 부채꼴을 중심 O를 축으로 빙글 돌려 볼게요. 파란 부채꼴에 꼭 포개져요!',
     {say:'꼭 포개지니까 한 원에서 중심각이 같으면 <b>호의 길이도, 넓이도 같아요</b>. 현의 길이도 같아요.',exp:'happy'}]},
-  {cap:'장면 ② 2배, 3배로 붙여 보기',svg:()=>owlCentScene(2),beats:[
+  {lv:1,cap:'장면 ② 2배, 3배로 붙여 보기',svg:()=>owlCentScene(2),beats:[
     '한 원에서 중심각이 <span class="num">40°</span>이고 호의 길이가 <span class="num">3 cm</span>인 부채꼴이에요.',
     '똑같은 부채꼴을 돌려서 옆에 붙이면 중심각은 <span class="num">80°</span>, 2배가 돼요. 호의 길이도 3 + 3 = <span class="num">6 cm</span>, 2배예요.',
     '하나 더 붙이면 중심각 <span class="num">120°</span>, 3배! 호의 길이도 <span class="num">9 cm</span>, 3배가 돼요. 넓이도 똑같이 3배예요.',
     {say:'그래서 한 원에서 호의 길이와 넓이는 중심각의 크기에 <b>정비례</b>해요.',exp:'happy'}]},
-  {cap:'장면 ③ 딱 떨어지면 몇 배, 아니면 비',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl:['ang1','ang2'],lenMark:true}),beats:[
+  {lv:2,cap:'장면 ③ 딱 떨어지면 몇 배, 아니면 비',svg:()=>ctTwoSec({a:50,b:70,l1:'10 cm',l2:'x cm',mode:'arc',hl:['ang1','ang2'],lenMark:true}),beats:[
     '중심각이 <span class="num">50°</span>일 때 호가 <span class="num">10 cm</span>예요. 중심각이 <span class="num">70°</span>이면 호는 몇 cm일까요?',
     '70 ÷ 50은 나누어떨어지지 않아요. 이럴 때는 <span class="kw">비</span>로 써요. 중심각끼리, 호끼리 같은 순서로 <b>50 : 70 = 10 : x</b>',
     '50 : 70을 간단히 하면 5 : 7이에요. 그래서 <b>5 : 7 = 10 : x</b>예요.',
     '<span class="kw">앞앞</span> 비교: 5 × 2 = 10, 앞끼리 2배예요. <span class="kw">뒤뒤</span>도 2배라서 7 × 2 = <b>x = 14</b>예요.',
     {say:'x가 앞에 있으면 뒤끼리 먼저 비교해요. 5 : 7 = x : 21이면 7 × 3 = 21이니까 x = 5 × 3 = <b>15</b>예요.',exp:'happy'}]},
-  {cap:'장면 ④ 세 호를 합치면 원 한 바퀴',svg:()=>ctThreeArcs(2,3,4,{want:'BC',hl:['want','ang']}),beats:[
+  {lv:3,cap:'장면 ④ 세 호를 합치면 원 한 바퀴',svg:()=>ctThreeArcs(2,3,4,{want:'BC',hl:['want','ang']}),beats:[
     '원 위의 세 점 A, B, C가 만든 세 호의 길이의 비가 <span class="num">2 : 3 : 4</span>예요.',
     '세 호를 모두 합치면 원 한 바퀴예요. 그래서 중심각도 모두 합치면 <span class="num">360°</span>예요.',
     '2 + 3 + 4 = <span class="num">9칸</span>으로 나누면 1칸은 360 ÷ 9 = <span class="num">40°</span>예요.',
     {say:'호 BC는 3칸이니까 호 BC에 대한 중심각은 40 × 3 = <b>120°</b>예요.',exp:'happy'}]},
-  {cap:'장면 ⑤ 현은 2배가 되지 않아요',exp:'warn',svg:()=>owlCentScene(4),beats:[
+  {lv:1,cap:'장면 ⑤ 현은 2배가 되지 않아요',exp:'warn',svg:()=>owlCentScene(4),beats:[
     '중심각이 <span class="num">45°</span>인 현 AB를 그었어요.',
     '옆에 똑같이 45°인 현 BC를 하나 더 그었어요. A에서 C까지 중심각은 <span class="num">90°</span>, 2배예요.',
     {say:'그런데 현 AC는 곧게 질러가서 현 AB + 현 BC보다 <span class="warn">짧아요</span>. 중심각이 2배가 되어도 현의 길이는 <span class="warn">2배가 되지 않아요</span>!',exp:'warn'}],
     ask:{q:'한 원에서 중심각의 크기에 정비례하지 <b>않는</b> 것은?',choices:['현의 길이','호의 길이','부채꼴의 넓이','어느 것도 아니에요'],ans:'현의 길이',hint:'굽은 길(호)과 곧게 질러가는 길(현) 중에서 어느 쪽이 2배보다 짧았는지 떠올려요.',ok:'정확해요! 호의 길이와 넓이는 정비례하지만 현의 길이는 정비례하지 않아요.'}},
-  {cap:'장면 ⑥ 크기가 다른 원이면 안 돼요',exp:'happy',svg:()=>ctTwoSec({a:60,b:60,diffRadius:true}),beats:[
+  {lv:2,cap:'장면 ⑥ 크기가 다른 원이면 안 돼요',exp:'happy',svg:()=>ctTwoSec({a:60,b:60,diffRadius:true}),beats:[
     '작은 원과 큰 원에 중심각이 똑같이 <span class="num">60°</span>인 부채꼴이 있어요.',
     '중심각은 같아도 큰 원의 호가 더 길어요. 원의 크기가 다르기 때문이에요.',
     '그래서 정비례는 꼭 <span class="kw">한 원</span> 또는 <span class="kw">크기가 같은 원</span>에서만 써요.']}
