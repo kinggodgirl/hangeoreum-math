@@ -1386,12 +1386,12 @@ function homeStepRowHTML(info){
 }
 function homeLessonStateBadgeHTML(info){
   if(info.isDone){
-    return`<span class="ct-pl-right"><span class="ct-pl-badge done">✓ 완료</span>${info.bonusTrack?`<span class="ct-pl-bonus t${info.bonusTrack}" title="${TRACK_NM[info.bonusTrack]} 보너스 완료">${TRACK_IC[info.bonusTrack]}+</span>`:''}</span>`;
+    return`<span class="ct-pl-right"><span class="ct-pl-badge st-done">✓ 완료</span>${info.bonusTrack?`<span class="ct-pl-bonus t${info.bonusTrack}" title="${TRACK_NM[info.bonusTrack]} 보너스 완료">${TRACK_IC[info.bonusTrack]}+</span>`:''}</span>`;
   }
   if(info.started){
-    return`<span class="ct-pl-right"><span class="ct-pl-badge prog">진행 중</span></span>`;
+    return`<span class="ct-pl-right"><span class="ct-pl-badge st-prog">진행 중</span></span>`;
   }
-  return`<span class="ct-pl-right"><span class="ct-pl-badge todo">시작 전</span></span>`;
+  return`<span class="ct-pl-right"><span class="ct-pl-badge st-todo">시작 전</span></span>`;
 }
 function unitCrossroadsHTML(u,uTr,d,len,isBanner){
   if(!(len>0&&d===len))return'';

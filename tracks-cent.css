@@ -301,9 +301,9 @@ a.ct-my-track:hover{transform:translateY(-1px)}
 .ct-unit-head .ct-unit-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .ct-pl-right{flex:none;display:inline-flex;align-items:center;gap:5px}
 .ct-pl-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
-.ct-pl-badge.done{background:#e5f4ea;border:1px solid #84c79d;color:#1a5c35}
-.ct-pl-badge.prog{background:#eef3fb;border:1px solid #a5bce8;color:#2a4d9e}
-.ct-pl-badge.todo{background:#f3f5f8;border:1px solid #d9dfe8;color:#667085;font-weight:600}
+.ct-pl-badge.st-done{background:#e5f4ea;border:1px solid #84c79d;color:#1a5c35}
+.ct-pl-badge.st-prog{background:#eef3fb;border:1px solid #a5bce8;color:#2a4d9e}
+.ct-pl-badge.st-todo{background:#f3f5f8;border:1px solid #d9dfe8;color:#667085;font-weight:600}
 .ct-pl-bonus{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .ct-pl-bonus.t2{background:#eaf0fc;border:1px solid #a5bce8;color:#2a4d9e}
 .ct-pl-bonus.t3{background:#f2ecfc;border:1px solid #c2ade8;color:#5a389e}
