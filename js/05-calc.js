@@ -1076,7 +1076,7 @@ function drillPlan(r,count=10){const out=[],allDue=dueList().filter(inExam).sort
   for(const t of started.filter(t=>!due.includes(t))){if(out.length>=count)break;add(t,lvOf(t))}
   const basics=EXAM_FOCUS.map(id=>CALC.find(t=>t.id===id)).filter(t=>t&&calcVisible(t));let i=0;while(out.length<count){const t=basics[i%basics.length];add(t,lvOf(t));i++}
   const Q=shuffle(r,out);for(let pass=0;pass<4;pass++)for(let j=1;j<Q.length;j++)if(Q[j].tid===Q[j-1].tid){const k=Q.findIndex((x,m)=>m>j&&x.tid!==Q[j].tid&&Q[m-1].tid!==Q[j].tid&&(m+1>=Q.length||Q[m+1].tid!==Q[j].tid));if(k>0)[Q[j],Q[k]]=[Q[k],Q[j]]}
-  errFindAdd(Q,r,count<=5?1:2);
+  /* [T33] 선생님 결정: 오늘의 계산에서 '친구의 틀린 풀이 찾기'는 빼요(과함). errFindAdd·errStage는 남겨 둠 */
   return{Q,due,totalDue:allDue.length}}
 function viewDrill(){crumbs.innerHTML=`<span class="sep">›</span><span>오늘의 계산</span>`;stopSpeak();
   const D=DB._drill=DB._drill||{},CNT=calcLenPref(),tm=!!lsGet('hangeoreum-drill-timer',false),{Q,due,totalDue}=drillPlan(mulberry(newSeed()),CNT);
