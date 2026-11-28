@@ -1,13 +1,14 @@
 /* ───────── 나의 길: 학생이 고르는 목표 3갈래 ─────────
    기록(시작점 찾기 · 별)으로 하나를 추천하고, 결정은 학생이 해요. 언제든 바꿀 수 있고, 2주가 지나면 다시 고르자고 권해요.
    학생 화면에는 점수 구간을 보여 주지 않아요. 선생님 화면(03-teacher.js)은 고른 길과 추천을 나란히 보여 줘요.
+   [T38] 나의 길 = 걸음(총정리 2-6 가): 이름·그림을 🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음과 묶어 보여 줘요.
    저장: DB._goal = {k:'calc'|'base'|'up', d:'YYYY-MM-DD', rec:추천 k 또는 null, h:[[k,d],…최근 6번]} */
 const GOALS=[
- {k:'calc',ic:'🌱',nm:'계산부터 탄탄히',aim:'계산 힘을 되찾고, 시험의 쉬운 계산 문제를 맞혀요.',
+ {k:'calc',ic:'🌱',nm:'첫걸음 · 계산부터 탄탄히',aim:'계산 힘을 되찾고, 시험의 쉬운 계산 문제를 맞혀요.',
   how:['수 감각 사다리와 구구단부터 해요','오늘의 계산은 5문제씩 짧게 해요','차시는 🌱 첫걸음으로 개념 구별과 따라 풀기부터 해요']},
- {k:'base',ic:'🌿',nm:'시험 기본 문제 잡기',aim:'교과서 기본 문제를 확실히 맞혀요.',
-  how:['시작점 찾기에서 흔들린 계산부터, 그다음 시험 범위 계산을 해요','차시는 🌿 한걸음으로 기본 유형과 차시 마무리를 익혀요','틀린 문제는 복습 노트로 다시 풀어요']},
- {k:'up',ic:'🌳',nm:'시험 점수 더 올리기',aim:'교과서 유형까지 풀고 실수를 줄여요.',
+ {k:'base',ic:'🌿',nm:'한걸음 · 시험 기본 문제 잡기',aim:'교과서 기본 문제를 확실히 맞혀요.',
+  how:['시작점 찾기에서 흔들린 계산부터, 그다음 시험 범위 계산을 해요','차시는 🌿 한걸음으로 기본 유형과 차시 마무리를 익혀요','다음 날 [복습 추천]으로 익힌 유형을 다시 확인해요']},
+ {k:'up',ic:'🌳',nm:'두걸음 · 시험 점수 더 올리기',aim:'교과서 유형까지 풀고 실수를 줄여요.',
   how:['시험 범위 계산을 별 3개까지 채워요','오늘의 계산은 10문제로 해요','차시는 🌳 두걸음 복합 문제와 실전 마무리까지 도전해요']}];
 /* 받침에 맞는 조사: 마지막 한글 글자를 보고 골라요. jo('잡기','을','를') → '잡기를', jo('길','으로','로') → '길로' */
 const jo=(w,a,b)=>{const m=String(w).match(/[가-힣](?=[^가-힣]*$)/),c=m?m[0].charCodeAt(0)-0xAC00:-1,f=c>=0?c%28:0;return w+(f&&!(a==='으로'&&f===8)?a:b)};
@@ -68,18 +69,6 @@ function goalMount(){const box=$('#goalCard');if(!box)return;box.innerHTML=goalC
 /* 기초 연산 화면: 처음 기기에서는 고른 길에 맞춰 시험 모드·문제 수를 정해요 */
 {const _calc=viewCalc;viewCalc=function(){const G=myGoal();if(G)goalApplyPrefs(G.k,false);_calc.apply(this,arguments);
   if(!G||!$('.unit-head',app))return;const g=goalBy(G.k);$('.unit-head',app).insertAdjacentHTML('afterend',`<p class="goal-line">${g.ic} <b>${g.nm}</b> · ${g.aim} <a href="#me">길 바꾸기</a></p>`)}}
-/* 오늘의 길잡이: 고른 길에 맞춰 할 일을 조금 바꿔요 */
-{const _gs=guideSteps;guideSteps=function(){const S=_gs.apply(this,arguments),G=myGoal();if(!G)return S;
-  const li=S.findIndex(x=>/^\d+차시 /.test(x.t)),ci=S.findIndex(x=>/^기초 연산 · /.test(x.t)&&x.href!=='#calc-start');
-  if(G.k==='calc'){
-    if(li>=0&&!S[li].les&&/-(practice|explore)$/.test(S[li].href))S[li]=Object.assign({},S[li],{who:'S',s:'개념 보기와 유형 익히기를 했어요 · 차시 마무리는 도전이에요'});
-    if(ci>=0){const P=CALC_PATHS.find(p=>p.k==='num'),ids=P?P.ids.filter(id=>{const t=CALC.find(c=>c.id===id);return t&&calcVisible(t)}):[],due=dueList().map(t=>t.id).find(id=>ids.includes(id)),pl=calcPlan().find(id=>ids.includes(id)&&NUM(calcPeek(id).stars)<1),id=due||pl||pathNow(ids);
-      if(id){const t=CALC.find(c=>c.id===id),st=calcPeek(id),cd=S[ci].done;S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${t.nm}`,s:cd?'오늘 한 세트 했어요':due?'복습할 때예요':`수 감각 사다리 · ${Math.min(calcLvN(id),NUM(st.stars)+1)}단계`,href:'#calc-'+id})}}}
-  else if(G.k==='base'){
-    const T=goalCalcFirst();if(T&&ci>=0){const cd=S[ci].done,lv=Math.min(calcLvN(T.id),NUM(calcPeek(T.id).stars)+1);S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${T.nm}`,s:cd?'오늘 한 세트 했어요':`시작점 찾기에서 흔들린 계산이에요 · ${lv}단계`,href:'#calc-'+T.id})}
-  }
-  else if(G.k==='up'&&li>=0&&!S[li].les&&/-explore$/.test(S[li].href))S[li]=Object.assign({},S[li],{s:'더 알아보기 · 탐구 활동까지 도전해요'});
-  /* [T21] 순서: 🌱·🌿 길은 기초 연산 → 교과서 한 걸음, 🌳 길은 교과서 한 걸음 → 기초 연산 (복습 노트는 맨 위, 오늘의 계산은 맨 아래 그대로) */
-  const L=S.findIndex(x=>/^\d+차시 |^열린 차시를/.test(x.t)),C=S.findIndex(x=>/^기초 연산 · /.test(x.t));
-  if(G.k!=='up'&&L>=0&&C>L){const[x]=S.splice(C,1);S.splice(L,0,x)}
-  return S}}
+/* [T38] 오늘의 길잡이를 길에 맞춰 바꾸던 부분은 뺐어요. T36부터 길잡이는 '오늘의 계산' 한 줄(05-calc.js, 🌱·🌿 길은 계산이 위)과
+   '교과서 한 걸음' 한 줄(엔진 guideLessonStep, 걸음은 unitActiveTrack)이라 여기서 고칠 '기초 연산 · …' 줄이 없어요.
+   🌿 길의 '시작점 찾기에서 흔들린 계산'은 홈 계산 칩(goalCalcFirst)에 그대로 남아 있어요. */

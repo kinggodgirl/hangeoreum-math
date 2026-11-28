@@ -74,9 +74,12 @@ if(typeof goalChoose==='function'){
     prevGC.apply(this,arguments);
     if(typeof DB==='object'&&DB){
       const tr=k==='calc'?1:k==='up'?3:2;
-      DB._unitTrack={};
+      /* [T38] 총정리 2-6 가: 갈림길로 올린 단원은 지켜요. 새 길보다 높은 단원 걸음만 남기고, 그 단원 차시는 높은 걸음 그대로 */
+      const keep={},old=DB._unitTrack&&typeof DB._unitTrack==='object'?DB._unitTrack:{};
+      Object.keys(old).forEach(u=>{const v=Number(old[u]);if((v===2||v===3)&&v>tr)keep[u]=v});
+      DB._unitTrack=keep;
       if(typeof LESSONS!=='undefined'&&Array.isArray(LESSONS)){
-        LESSONS.forEach(l=>{if(DB[l.id]&&typeof DB[l.id]==='object')DB[l.id].track=tr});
+        LESSONS.forEach(l=>{if(DB[l.id]&&typeof DB[l.id]==='object')DB[l.id].track=keep[l.unit||'solid']||tr});
       }
       if(typeof save==='function')save();
     }
@@ -1487,9 +1490,9 @@ if(typeof unitCardHTML==='function'){
     const goTxt=!anyStart?`${TRACK_NM[uTr]} 시작하기`:nx?`이어서 · ${nx.no}차시 ${nx.title}`:'모두 마쳤어요 · 다시 보기';
     const unitDone=L.length>0&&d===L.length;
     return`<div class="card unit ready ucard" data-u="${u}">
-      <a class="uc-h" href="#unit-${u}"><span class="uc-ch">${ROMAN_OF[I.ch]||''} ${I.ch}</span><b>${I.name}</b></a>
+      <a class="uc-h" href="#unit-${u}"><span class="uc-ch">${ROMAN_OF[I.ch]||''} ${I.ch}</span><b>${I.name}</b>${uTr!==defTr?`<span class="uc-tr t${uTr}" title="갈림길에서 이 단원만 올린 걸음이에요">이 단원 ${TRACK_NM[uTr]}</span>`:''}</a>
       <div class="uc-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
-      <div class="uc-stat-row"><small class="uc-n">${unitDone?`${TRACK_NM[uTr]} 모든 차시를 마쳤어요!`:`${uTr!==defTr?TRACK_NM[uTr]+' · ':''}${inProg?`진행 중 ${inProg}차시 · `:''}전체 ${pct}%`}</small><span class="uc-stat${unitDone?' all':''}">완료 ${d}/${L.length}차시</span></div>
+      <div class="uc-stat-row"><small class="uc-n">${unitDone?`${TRACK_NM[uTr]} 모든 차시를 마쳤어요!`:`${inProg?`진행 중 ${inProg}차시 · `:''}전체 ${pct}%`}</small><span class="uc-stat${unitDone?' all':''}">완료 ${d}/${L.length}차시</span></div>
       <ul class="uc-ls ct-prog-ls">${infos.map(({l,info})=>{
         const cls=info.isDone?'is-done':info.started?'is-prog':'';
         const showSteps=!info.isDone&&info.started;
@@ -1563,11 +1566,9 @@ if(typeof viewHome==='function'){
       const defTr=studentDefaultTrack();
       const hasGoal=typeof myGoal==='function'&&!!myGoal();
       if(typeof app.querySelectorAll==='function'){
-        const hp=app.querySelector('.hero p:not(.hero-go)');
-        if(hp)hp.innerHTML='<b>개념 보기 → 유형 익히기 → 차시 마무리</b> 3단계로, 내 수준에 맞는 걸음(<b>🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음</b>)을 골라 한 걸음씩 익혀요.';
         app.querySelectorAll('.sec-title').forEach(st=>{
           const h=st.querySelector('h2');
-          if(h&&(h.textContent==='열린 단원'||h.textContent==='교과서 한 걸음')){
+          if(h&&h.textContent==='교과서 한 걸음'){
             st.classList.add('ct-sec-head');
             const uCnt=typeof HOME_UNITS==='function'?HOME_UNITS().length:0;
             st.innerHTML=`<h2>교과서 한 걸음</h2><span class="ct-sec-sub">${uCnt}개 단원 · 완료 <b>${doneCnt}</b>/${RL.length}차시</span><a class="ct-my-track t${defTr}" href="${hasGoal?'#me':'#goalCard'}" title="${hasGoal?'내 기록에서 걸음을 바꿀 수 있어요':'나의 길을 골라 보세요'}">${hasGoal?'내 걸음':'기본 걸음'} · <b>${TRACK_NM[defTr]}</b></a>`;
@@ -1624,14 +1625,7 @@ if(typeof guideSteps==='function'){
   guideSteps=function(){
     const S=prevGS.apply(this,arguments);
     if(Array.isArray(S)){const li=S.findIndex(x=>/^\d+차시 |^열린 차시를/.test(x.t)),G=guideLessonStep();if(li>=0&&G)S[li]=G}
-    const need=typeof DB==='object'&&DB&&DB._needCalc;
-    if(!need||!need.id||!Array.isArray(S))return S;
-    const t=typeof CALC!=='undefined'&&CALC.find(c=>c.id===need.id);
-    const fromL=typeof LESSONS!=='undefined'&&LESSONS.find(l=>l.id===need.from);
-    const ci=S.findIndex(x=>/^기초 연산 · /.test(x.t));
-    if(t&&ci>=0&&!S[ci].done){
-      S[ci]=Object.assign({},S[ci],{t:`기초 연산 · ${t.nm}`,s:`${fromL?fromL.title:'차시'}에서 막혔던 계산을 먼저 연습해요`,href:'#calc-'+t.id});
-    }
+    /* [T38] 막힌 계산(DB._needCalc)은 05-calc.js 오늘의 계산 줄의 '집중할 칸'으로 들어가요(T36). 예전 '기초 연산 · …' 줄 바꾸기는 뺐어요 */
     return S;
   };
 }

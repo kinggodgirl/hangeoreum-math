@@ -34,16 +34,16 @@ function viewHome(){
   <section class="hero ${back?'compact':''}">
     <div>
       <h1>다음 수업은 <span class="mark">한 걸음 먼저</span>,<br>배운 것은 한 걸음씩 다시.</h1>
-      <p>정규 수업 전에 <b>미리 보기</b>로 낱말과 그림을 익히고, 수업이 끝나면 <b>같이 풀기 → 혼자 풀기</b>로 다져요. 어려운 문제는 단계로 나누어 풀어요.</p>
+      <p><b>개념 보기 → 유형 익히기 → 차시 마무리</b> 3단계로, 내 걸음(<b>🌱 첫걸음 · 🌿 한걸음 · 🌳 두걸음</b>)에 맞춰 한 걸음씩 익혀요. 익힌 유형은 다음 날 <b>[복습 추천]</b>으로 다시 확인해요.</p>
       <p class="hero-go">${HOME_UNITS().map((u,i)=>`<a class="btn ${i?'':'primary'}" href="#unit-${u}">${unitOf(u).start}</a>`).join('')}</p>
     </div>
     <div>${UNIT_ID==="solid"?'<div class="hero-fig"><canvas id="heroCv" aria-label="돌아가는 육각기둥"></canvas></div><div class="hero-note">끌어서 돌려 보세요</div>':`<div class="hero-fig svgfig">${typeof heroArt==="function"?heroArt():""}</div>`}</div>
   </section>
-  <div class="card guide" id="guide">${guideHTML()}</div>
-  <div class="sec-title"><h2>열린 단원</h2><span>${HOME_UNITS().length}개 단원 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*LESSON_REQ}</span></div>
+  <div class="card guide" id="guide">${guideHTML()}${typeof guidePtsNote==='function'?guidePtsNote():''}</div>
+  <div class="sec-title"><h2>교과서 한 걸음</h2><span>${HOME_UNITS().length}개 단원 · 진행 ${done}/${LESSONS.filter(l=>l.ready).length*LESSON_REQ}</span></div>
   <div class="units units-big">${HOME_UNITS().map(unitCardHTML).join('')}</div>
   <div class="sec-title"><h2>포인트와 게임</h2><span>포인트 <b class="rm">${M.pts}</b> · ${liveStreak()}일 연속 · 배지 ${nb}/${BADGES.length} · <a href="#me">내 기록 보기</a></span></div>
-  <div class="game-row${STANDALONE?' solo':''}"><div class="card mis-card" id="misCard">${missionCardHTML()}</div>${STANDALONE?'':`<div class="card boss-card" id="bossCard">${bossCardHTML()}</div>`}</div>
+  ${STANDALONE?'':`<div class="game-row solo"><div class="card boss-card" id="bossCard">${bossCardHTML()}</div></div>`}
   ${STANDALONE?'':`<a class="card bb-strip" href="#baseball">${BB_ICON}<span><b>숫자야구</b> · 친구와 포인트를 걸고 대결해요</span><span class="go">하러 가기 →</span></a>`}
   <div class="sec-title"><h2>기초 연산</h2><span>${dueN?`오늘 복습 <b class="rm">${dueN}</b> · `:''}별 <b class="rm">${calcStars()}</b>/${CALC.filter(calcVisible).length*3} · 구구단 ${factsKnown()}/36 · <a href="#calc">전체 보기</a></span></div>
   <div class="calc-strip">${homeCalcChips()}</div>
@@ -70,10 +70,18 @@ function viewMe(){
   <div class="card panel"><div class="bigstats"><div class="stat"><small>포인트</small><b>${M.pts}</b></div><div class="stat"><small>연속 공부</small><b>${liveStreak()}일</b></div><div class="stat"><small>배지</small><b>${Object.keys(M.badges).length}/${BADGES.length}</b></div><div class="stat"><small>숙달 ✓ 유형</small><b>${typeof HG_TRACKS==='object'&&HG_TRACKS&&HG_TRACKS.stampCount?LESSONS.filter(l=>l.ready).reduce((a,l)=>a+HG_TRACKS.stampCount(OBJ(DB[l.id]),l.id).ok,0):0}개</b></div></div>
    <h2>배지</h2><div class="badges">${BADGES.map((b,i)=>{const on=!!M.badges[b.k];return`<div class="badge ${on?'':'off'}">${badgeIcon(i,on)}<span><b>${b.nm}</b><small>${on?M.badges[b.k]+' 받음':b.d}</small></span></div>`}).join('')}</div></div>
   <div class="card panel"><h2>차시별 진행</h2><div class="lessons">${LESSONS.filter(l=>l.ready).map(l=>`<a class="card lesson ready" href="#${l.id}"><span class="n">${l.no}</span><span><b>${l.title}</b><small>${(DB[l.id]&&DB[l.id].prac?`연습 ${DB[l.id].prac.solved}문제 · `:'')}단계 문제 ${(DB[l.id]&&DB[l.id].steps)||0}번</small></span><span class="pips">${pipsOf(l.id)}</span></a>`).join('')}</div></div>
-  <div class="card panel"><h2>포인트 받는 방법</h2><table class="t"><tbody>
-   <tr><td class="l">단계 문제 끝까지 풀기</td><td class="rm">+10</td></tr><tr><td class="l">연습 문제 맞히기 (단계 없이 맞히면 +5)</td><td class="rm">+3</td></tr><tr><td class="l">연습 문제 끝까지 풀기 (틀려도)</td><td class="rm">+1</td></tr>
-   <tr><td class="l">복습 문제 한 번에 맞히기</td><td class="rm">+5</td></tr><tr><td class="l">탐구 활동 끝내기 (도형마다 한 번)</td><td class="rm">+2 ~ +5</td></tr><tr><td class="l">개념 처음 읽기</td><td class="rm">+5</td></tr><tr><td class="l">오늘의 계산 끝내기 (하루 한 번) + 첫 시도 정답마다 1</td><td class="rm">+5</td></tr>
-   <tr><td class="l">오늘의 미션 하나 (셋 다 하면 보너스 +10)</td><td class="rm">+3</td></tr><tr><td class="l">우리 반이 보스를 물리쳤을 때 (이번 주에 데미지를 줬다면)</td><td class="rm">+10 ~</td></tr></tbody></table>
+  <div class="card panel"><h2>포인트 받는 방법</h2><table class="t pts-how"><tbody>
+   <tr><th class="l" colspan="2">교과서 한 걸음</th></tr>
+   <tr><td class="l">🦉 부엉 쌤 개념 그림극 끝까지 보기</td><td class="rm">+5</td></tr><tr><td class="l">🌱 구별하기 다 하기</td><td class="rm">+5</td></tr>
+   <tr><td class="l">🌱 선생님 풀이 따라 풀기 (유형마다)</td><td class="rm">+3</td></tr><tr><td class="l">🌱 도움 없이 혼자 확인 1문제 (유형마다)</td><td class="rm">+5</td></tr>
+   <tr><td class="l">🌿 유형 익히기 혼자 풀기 1문제</td><td class="rm">+10</td></tr><tr><td class="l">🌳 복합 문제 단계별로 풀기</td><td class="rm">+8</td></tr>
+   <tr><td class="l">차시 마무리 통과 (🌱·🌿·🌳 모두 같아요)</td><td class="rm">+15</td></tr>
+   <tr><th class="l" colspan="2">날마다</th></tr>
+   <tr><td class="l">오늘의 길잡이 한 줄 끝내기 (다 하면 보너스 +10)</td><td class="rm">+3</td></tr><tr><td class="l">[복습 추천] 끝내기 (하루 한 번)</td><td class="rm">+2</td></tr>
+   <tr><td class="l">오늘의 계산 첫 완료 (하루 한 번) + 끝까지 하면 더</td><td class="rm">+5</td></tr><tr><td class="l">기초 연산 새 단계 도전 · 별 받기</td><td class="rm">+3 · +5</td></tr>
+   <tr><td class="l">복습 노트 문제 다시 풀어 처음 맞히기</td><td class="rm">+5</td></tr>
+   <tr><th class="l" colspan="2">게임</th></tr>
+   <tr><td class="l">오늘의 보스 도전 끝까지 하기 (하루 한 번)</td><td class="rm">+5</td></tr><tr><td class="l">우리 반이 보스를 물리쳤을 때 (이번 주에 데미지를 줬다면)</td><td class="rm">+10 ~</td></tr></tbody></table>
    <p class="muted" style="margin-bottom:0">로그인하면 받은 포인트만큼 우리 반 보스에게 데미지가 들어가요.</p></div>`;
   mountSpin($('#avMe',app),y=>avatarSVG(myEq(),150,y));refreshLedger().then(L=>{const b=$('.meBal');if(L&&b)b.textContent=balance()});
 }
