@@ -754,6 +754,20 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     return JSON.stringify({E:[...new Set(E)]})})()`, sandbox));
   if (r41.E.length) errors.push('[T41] ' + r41.E.join(', '));
 }
+// [T42] 정다면체 부엉 쌤: 🌱 장면 = 면 비교(박자마다 그림 바뀜) · 꼭짓점 세기 · 층으로 세기, 겹쳐 세기(÷2) 없음
+{
+  const r42 = JSON.parse(vm.runInContext(`(()=>{const S=HG_TRACKS.specs.regular,E=[],sc=S.owlScenes.filter(x=>(x.lv||1)===1);
+    if(sc.length<3)E.push('🌱 장면 수 '+sc.length);
+    if(!sc.some(x=>(x.beats||[]).some(b=>typeof b.fig==='function')))E.push('박자 그림 없음');
+    sc.forEach((x,i)=>{(x.beats||[]).forEach((b,j)=>{if(!b.hl&&b.hl!==null)E.push('박자 hl '+i+'.'+j);if(b.fig){const f=b.fig();if(!f.items||!f.items.every(t=>t.mesh))E.push('박자 그림 '+i+'.'+j)}})});
+    const txt=JSON.stringify(sc.map(x=>(x.beats||[]).map(b=>b.say)))+JSON.stringify((S.firstGuide||[]).map(g=>[g.teacherEq,g.calcPrompt]))+S.owlSummary.join();
+    if(/÷ ?2|겹쳐/.test(txt))E.push('겹쳐 세기 남음');
+    if(!/층/.test(txt))E.push('층으로 세기 없음');
+    return JSON.stringify({E})})()`, sandbox));
+  if (r42.E.length) errors.push('[T42] ' + r42.E.join(', '));
+  const eng = fs.readFileSync(path.join(root, 'js/02t-track-engine.js'), 'utf8');
+  if (!eng.includes('slot._figK')) errors.push('[T42] 부엉 쌤 박자 그림 바꾸기 훅 없음');
+}
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);

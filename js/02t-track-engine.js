@@ -338,6 +338,9 @@ function mountOwlShow(host,lid,spec,opt={}){
     /* [T31] 3D 장면: 박자에 hl이 있으면 돌려 놓은 그대로 표시만 바꿔요(그림이 하나면 값 하나, 여럿이면 [그림별 값]).
        [T32] 부엉 쌤 기본 원리(선생님): 말이 가리키는 대상은 반드시 움직임으로 강조해요.
        → 박자가 바뀔 때마다(박자 hl이 없으면 장면 첫 박자에) 표시된 부분을 3번 깜빡여요(owlPulse). */
+    /* [T42] 박자에 fig(그림 함수)가 있으면 그 박자부터 그림을 바꿔요(장면 안에서 여러 그림 비교). */
+    if(bs.some(x=>x.fig)){const slot=$('.owl-fig-slot',host);let k=-1;for(let i=0;i<=beat;i++)if(bs[i]&&bs[i].fig)k=i;
+      if(slot&&slot._figK!==k){slot._figK=k;mountTrackFig(slot,k<0?(sc.svg?sc.svg(true):null):bs[k].fig(),{interactive:true})}}
     {const slot=$('.owl-fig-slot',host),views=((slot&&slot._f3)||[]).filter(Boolean);
       if(bt.hl!==undefined)views.forEach((o,i)=>{const h=Array.isArray(bt.hl)?bt.hl[i]:bt.hl;const v=o.v;owlPulseStop(v);v._selfPulse=false;v.fcol=v.ecol=v.vcol=null;v.mode=null;applyTrackHl(v,o.mesh,h,true);v.dirty=true});
       if(anim&&(bt.hl!==undefined||beat===0))views.forEach(o=>owlPulse(o.v));}
@@ -396,7 +399,7 @@ function mountOwlShow(host,lid,spec,opt={}){
       </div>
       <div class="owl-hint"></div>
     </div>`;
-    mountTrackFig($('.owl-fig-slot',host),sc.svg?sc.svg(true):null,{interactive:true});
+    mountTrackFig($('.owl-fig-slot',host),sc.svg?sc.svg(true):null,{interactive:true});{const sl=$('.owl-fig-slot',host);if(sl)sl._figK=-1}
     const wrap=$('.owl-wrap',host);
     wrap.onclick=e=>{if(e.target.closest&&e.target.closest('button,a,input,select,label,.owl-ask,.owl-sum,canvas,.ct-3d-stage'))return;next()};
     wrap.onkeydown=e=>{if(e.target!==wrap)return;if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}};

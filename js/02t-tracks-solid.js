@@ -466,6 +466,9 @@ const regVertHL=(v,m)=>{
   const d=regDeg(m),cnt={};d.forEach(x=>cnt[x]=(cnt[x]||0)+1);const ord=Object.keys(cnt).map(Number).sort((a,b)=>cnt[b]-cnt[a]||a-b);
   v.mode='v';v.vcol=i=>REGC_V[ord.indexOf(d[i])%3];
 };
+/* [T42] 모인 면이 deg개인 꼭짓점 중 지금 앞쪽에 보이는 하나를 골라 그 꼭짓점과 모인 면을 칠해요(돌려 놓아도 보이는 곳) */
+const regFanHL=deg=>(v,m)=>{const d=regDeg(m);let best=-1,bz=-1e9;m.V.forEach((p,i)=>{if(d[i]!==deg)return;const z=v.proj(p)[2];if(z>bz){bz=z;best=i}});
+  v.mode='v';v.vcol=i=>i===best?'#e08a1e':null;v.fcol=i=>m.F[i].includes(best)?'#f7c97f':null};
 /* 정다면체가 아닌 입체(모든 면이 정다각형인 것도 있어요). 답이 하나로 정해지게 REG_NON_F는 꼭짓점마다 면 3개씩(조건 ②는 맞음), REG_NON_V는 면이 모두 합동인 정삼각형(조건 ①은 맞음)만 써요. */
 const hexPrismEq=()=>prism(regPoly(6,0.9),0.9);                      /* 정육각형 2 + 정사각형 6 (꼭짓점마다 3개씩이라 조건 ②는 맞아요) */
 const triPrismEq=()=>{const R=1.0;return prism(regPoly(3,R),R*Math.sqrt(3))}; /* 정삼각형 2 + 정사각형 3 */
@@ -615,12 +618,40 @@ HG_TRACKS.register('poly',{
 HG_TRACKS.register('regular',{
   kind:'concept',
   owlScenes:[
-    {lv:1,cap:'장면 ① 정다면체의 두 조건!',say:'모든 면이 <span class="kw">합동인 정다각형</span>이고, 각 꼭짓점에 <span class="kw">모인 면의 개수가 모두 같아야</span> 정다면체예요!',svg:()=>({items:[{mesh:SOLIDS.cube.mk(),hl:'A',cap:'정육면체 ○'},{mesh:bipyramid(),hl:'V:3',cap:'삼각쌍뿔 ✕'}]})},
-    {lv:2,cap:'장면 ② 왜 5가지뿐일까? (각의 합 < 360°)',say:'정육각형 3개를 모으면 <span class="warn">120° × 3 = 360°</span>라 평평하게 깔려요! 틈이 남아 접어 올리려면 각의 합이 <span class="num">360°보다 작아야</span> 해요.',svg:()=>figRegFan(6,3,false,false),
-      ask:{q:'모든 면이 합동인 정삼각형이지만, 꼭짓점마다 모인 면이 3개·4개로 다른 입체(삼각쌍뿔)는 정다면체일까요?',choices:['아니요 (꼭짓점마다 면의 수가 달라요)','네 (정다면체가 맞아요)'],ans:'아니요 (꼭짓점마다 면의 수가 달라요)',hint:'두 번째 조건 "각 꼭짓점에 모인 면의 개수가 같다"를 확인해요!',ok:'맞아요! 두 조건 중 하나라도 어기면 정다면체가 아니에요.'}},
-    {lv:1,cap:'장면 ③ 겹쳐 세기 공식 (÷ 2, ÷ 모인 면)',say:'모서리는 두 면이 만나니까 <span class="num">면 × 변 ÷ 2</span>! 꼭짓점은 모인 면 개수만큼 겹치니까 <span class="num">면 × 변 ÷ (모인 면)</span>이에요.',exp:'happy',svg:()=>figOctNet(false)}
+    /* [T42] 선생님 요청: 🌱 A에서 비교한 사례 그대로 부엉 쌤이 설명해요. 장면 ①은 박자마다 그림이 바뀌어요(박자 fig).
+       ① 정육면체 vs 직육면체 → 정육면체 vs 육각기둥(면이 모두 정다각형이어도 합동이 아니면 ✕) → 조건 ①
+       ② 정팔면체 vs 삼각쌍뿔: 꼭짓점 하나에 모인 면을 세어요 → 조건 ② */
+    {lv:1,cap:'장면 ① 조건 하나 · 면을 비교해요',svg:()=>({items:[regMesh(SOLIDS.cube.mk(),'A','정육면체'),regMesh(cuboid(),'A','직육면체')]}),beats:[
+      {say:'<b>정육면체</b>와 <b>직육면체</b>를 비교해 봐요. 둘 다 면이 6개이고, 꼭짓점마다 면이 3개씩 모여요.',hl:['A','A']},
+      {say:'정육면체의 면은 모두 <span class="kw">정사각형</span>이에요. 크기도 모양도 똑같아요. 이걸 <b>합동</b>이라고 해요.',hl:[regFaceHL,null]},
+      {say:'직육면체의 면은 <span class="warn">직사각형</span>이에요. 네 변의 길이가 같지 않아서 정다각형이 아니에요. 색이 다른 면은 모양도 달라요.',hl:[regFaceHL,regFaceHL]},
+      {fig:()=>({items:[regMesh(SOLIDS.cube.mk(),regFaceHL,'정육면체'),regMesh(hexPrismEq(),'A','육각기둥')]}),say:'이번엔 <b>육각기둥</b>! 면이 <span class="kw">정육각형</span>과 <span class="kw">정사각형</span>이라 모두 정다각형이에요.',hl:[null,'A']},
+      {say:'그런데 모양이 <span class="warn">두 가지</span>예요. 모든 면이 합동이 아니라서 정다면체가 아니에요.',hl:[regFaceHL,regFaceHL]},
+      {say:'조건 ① 모든 면이 <span class="kw">합동인 정다각형</span>이어야 해요!',hl:[regFaceHL,null]}
+    ]},
+    {lv:1,cap:'장면 ② 조건 둘 · 꼭짓점에 모인 면을 세어요',svg:()=>({items:[regMesh(SOLIDS.oct.mk(),'A','정팔면체'),regMesh(bipM(bipyramid()),'A','삼각쌍뿔')]}),beats:[
+      {say:'<b>정팔면체</b>와 <b>삼각쌍뿔</b>은 면이 모두 똑같은 <span class="kw">정삼각형</span>이에요. 조건 ①은 둘 다 맞아요.',hl:['A','A']},
+      {say:'정팔면체 꼭대기 꼭짓점에 모인 면을 세어 봐요. 하나, 둘, 셋, 넷! <span class="num">4개</span>예요.',hl:['V:4',null]},
+      {say:'정팔면체는 <b>어느 꼭짓점이든</b> 4개씩 모여요. 같은 색 점 = 모인 면의 수가 같은 꼭짓점이에요.',hl:[regVertHL,null]},
+      {say:'삼각쌍뿔 꼭대기 꼭짓점에는 면이 <span class="num">3개</span> 모여요.',hl:[null,'V:3']},
+      {say:'그런데 옆 꼭짓점에는 <span class="num">4개</span>가 모여요. 3개인 곳과 4개인 곳이 <span class="warn">섞여 있어요</span>!',hl:[null,regFanHL(4)]},
+      {say:'조건 ② 각 꼭짓점에 <span class="kw">모인 면의 수가 같아야</span> 해요. 두 조건을 모두 지켜야 정다면체예요!',hl:[regVertHL,regVertHL]}
+    ],
+      ask:{q:'모든 면이 합동인 정삼각형이지만, 꼭짓점마다 모인 면이 3개·4개로 다른 삼각쌍뿔은 정다면체일까요?',choices:['아니요 · 꼭짓점마다 모인 면의 수가 달라요','아니요 · 면이 합동이 아니에요','네 · 면이 모두 정삼각형이에요','네 · 꼭짓점이 5개뿐이에요'],ans:'아니요 · 꼭짓점마다 모인 면의 수가 달라요',hint:'두 번째 조건 "각 꼭짓점에 모인 면의 개수가 같다"를 확인해요!',ok:'맞아요! 두 조건 중 하나라도 어기면 정다면체가 아니에요.'}},
+    /* [T42] 선생님 수업 방식: 겹쳐 세기(÷2) 대신 층으로 세요. */
+    {lv:1,cap:'장면 ③ 층 건물로 세기',exp:'happy',svg:()=>({items:[regMesh(SOLIDS.oct.mk(),'Fv','정팔면체'),regMesh(SOLIDS.ico.mk(),'Fv','정이십면체')]}),beats:[
+      {say:'정다면체도 <span class="kw">층 건물</span>처럼 세어요. 같은 높이에 있는 꼭짓점끼리 한 층이에요.',hl:['Fv','Fv']},
+      {say:'정팔면체 <b>꼭짓점</b>은 위에서부터 1 + 4 + 1 = <span class="num">6개</span>예요.',hl:['Fv',null]},
+      {say:'정이십면체 꼭짓점은 1 + 5 + 5 + 1 = <span class="num">12개</span>예요.',hl:[null,'Fv']},
+      {say:'<b>모서리</b>도 층으로! <span class="kw">층 사이</span>와 <span class="kw">층 둘레</span>를 차례로 세어요. 정팔면체는 4 + 4 + 4 = <span class="num">12개</span>.',hl:['Fe',null]},
+      {say:'정이십면체는 5 + 5 + 10 + 5 + 5 = <span class="num">30개</span>예요. 빠뜨리지 않게 위층부터 차례로!',hl:[null,'Fe']},
+      {say:'<b>면</b>은 이름에 있어요! 정<b>팔</b>면체는 8개, 정<b>이십</b>면체는 20개예요.',hl:['A','A']}
+    ]},
+    {lv:2,cap:'장면 ④ 왜 5가지뿐일까? (각의 합 < 360°)',say:'정육각형 3개를 모으면 <span class="warn">120° × 3 = 360°</span>라 평평하게 깔려요! 틈이 남아 접어 올리려면 각의 합이 <span class="num">360°보다 작아야</span> 해요.',svg:()=>figRegFan(6,3,false,false),
+      ask:{q:'정삼각형 6개를 한 꼭짓점에 모으면 각의 합이 60° × 6 = 360°예요. 정다면체를 만들 수 있을까요?',choices:['만들 수 없어요 · 평평하게 깔려요','만들 수 있어요 · 정이십면체가 돼요','만들 수 있어요 · 정육면체가 돼요','만들 수 없어요 · 정삼각형은 안 돼요'],ans:'만들 수 없어요 · 평평하게 깔려요',hint:'360°가 되면 틈이 없어서 접어 올릴 수 없어요.',ok:'맞아요! 각의 합이 360°보다 작아야 입체가 돼요.'}},
+
   ],
-  owlSummary:['두 조건: ① 모든 면 합동 정다각형 ② 각 꼭짓점에 모인 면의 수 같음','한 꼭짓점 각의 합 < 360° → 5종류(정4, 정6, 정8, 정12, 정20면체)뿐!','모서리 = (면×변)÷2 / 꼭짓점 = (면×변)÷(모인 면 수)'],
+  owlSummary:['두 조건: ① 모든 면 합동 정다각형 ② 각 꼭짓점에 모인 면의 수 같음','한 꼭짓점 각의 합 < 360° → 5종류(정4, 정6, 정8, 정12, 정20면체)뿐!','층으로 세기: 꼭짓점 = 층마다 더하기 · 모서리 = 층 사이 + 층 둘레 · 면 = 이름의 수'],
   schemaQs:[
     {id:'rq1',q:'직육면체는 모든 꼭짓점에 면이 3개씩 모이지만 정다면체가 아니에요. 왜일까요?',fig:()=>({mesh:cuboid(),hl:'A',yaw:-0.5,pitch:0.36}),choices:['모든 면이 정다각형이 아니라서','각의 합이 360°보다 작아서'],ans:'모든 면이 정다각형이 아니라서',hint:'직사각형은 네 변의 길이가 같지 않아요.',why:'아니에요! 조건 ①(모든 면이 합동인 정다각형)을 어겼어요.'},
     {id:'rq2',q:'정육각형 3개를 한 꼭짓점에 모으면 각의 합이 360°예요. 정다면체를 만들 수 있을까요?',fig:()=>figRegFan(6,3,false,true),choices:['만들 수 없어요','만들 수 있어요'],ans:'만들 수 없어요',hint:'360°면 바닥에 평평하게 깔려 입체로 접어 올릴 수 없어요.',why:'아니에요! 360°보다 작아야 틈을 접어 입체가 돼요.'},
@@ -640,11 +671,12 @@ HG_TRACKS.register('regular',{
       givenChips:[{k:'a',t:'면=정오각형',ok:true},{k:'b',t:'한 꼭짓점에 면 3개',ok:true},{k:'t',t:'각뿔대',ok:false}],
       teacherEq:'정오각형 × 3 → 한 내각 108°×3 = 324° < 360° → 정십이면체',pairQ:'면의 모양이 정오각형인 정다면체는 몇 가지인가요?',pairChoices:['정십이면체 1가지뿐','3가지'],pairAns:'정십이면체 1가지뿐',
       calcPrompt:'정십이면체의 면은 몇 개?',calcAns:12,calcTopic:'facts',calcExplain:'이름이 <b>정십이면체</b>이므로 면은 12개예요.'},
-    {id:'rfg2',tyNo:3,title:'유형 3 · 겹쳐 세기로 모서리 구하기',problem:'<b>정십이면체</b>(면 12, 정오각형)의 모서리 개수를 구하시오.',fig:()=>({mesh:SOLIDS.dod.mk(),hl:'E',yaw:-0.45,pitch:0.35}),
-      wantChips:['모서리 개수','내각의 합','부피'],wantAns:'모서리 개수',wantHl:[],
-      givenChips:[{k:'a',t:'면 12개 (오각형 변 5개)',ok:true},{k:'b',t:'모서리마다 면 2개 겹침 (÷2)',ok:true},{k:'t',t:'모인 면 5개',ok:false}],
-      teacherEq:'(12 × 5) ÷ 2 = 60 ÷ 2',pairQ:'12×5를 왜 <b>2</b>로 나누나요?',pairChoices:['모서리 하나를 두 면이 공유해서 2번 세었으니까','면이 2종류라서'],pairAns:'모서리 하나를 두 면이 공유해서 2번 세었으니까',
-      calcPrompt:'60 ÷ 2 = ? (개)',calcAns:30,calcTopic:'div',calcExplain:'60 ÷ 2 = <b>30개</b>예요.'},
+    /* [T42] 선생님 수업 방식대로 층으로 세요(겹쳐 세기 ÷2 대신). */
+    {id:'rfg2',tyNo:3,title:'유형 3 · 층으로 모서리 세기',problem:'<b>정팔면체</b>의 모서리 개수를 구하시오.',fig:hl=>({mesh:SOLIDS.oct.mk(),hl:(hl&&hl.length)?hl:'Fe',yaw:-0.5,pitch:0.35,pad:0.38}),
+      wantChips:['모서리 개수','꼭짓점 개수','면의 개수'],wantAns:'모서리 개수',wantHl:['E'],
+      givenChips:[{k:'a',t:'층 1 + 4 + 1 (가운데 층 꼭짓점 4개)',ok:true,hl:'Fv'},{k:'b',t:'위 층 사이 · 가운데 둘레 · 아래 층 사이',ok:true,hl:'Fe'},{k:'t',t:'면 8개',ok:false}],
+      teacherEq:'4(위 층 사이) + 4(가운데 둘레) + 4(아래 층 사이) = 4 × 3',pairQ:'왜 4에 <b>3</b>을 곱했나요?',pairChoices:['위 층 사이, 가운데 둘레, 아래 층 사이 3곳에 4개씩 있어서','면이 3개씩 모여서'],pairAns:'위 층 사이, 가운데 둘레, 아래 층 사이 3곳에 4개씩 있어서',
+      calcPrompt:'4 × 3 = ? (개)',calcAns:12,calcTopic:'facts',calcExplain:'4 × 3 = <b>12개</b>예요.'},
     {id:'rfg3',tyNo:4,title:'유형 4 · 한 꼭짓점에 모을 수 있을까?',problem:'정삼각형 <b>5개</b>를 한 꼭짓점에 모을 때 각의 합을 구하고 입체가 되는지 확인하시오.',fig:()=>figRegFan(3,5,true,true),
       wantChips:['모인 각의 합 (°)','둘레 길이','면의 수'],wantAns:'모인 각의 합 (°)',wantHl:[],
       givenChips:[{k:'a',t:'정삼각형 한 내각 60°',ok:true},{k:'b',t:'5개 모임',ok:true},{k:'t',t:'정사각형 90°',ok:false}],
@@ -653,13 +685,13 @@ HG_TRACKS.register('regular',{
   ],
   stratRows:[
     ['정다면체 판별','두 조건 모두 ○','① 합동 정다각형 ② 꼭짓점마다 모인 면 개수 같음'],
-    ['모서리·꼭짓점 계산','겹쳐 세기','모서리 = (면×변)÷2 / 꼭짓점 = (면×변)÷(모인 면)'],
+    ['모서리·꼭짓점 계산','층으로 세기','꼭짓점 = 층마다 더하기 / 모서리 = 층 사이 + 층 둘레'],
     ['왜 5가지만?','각의 합 < 360°','삼(3·4·5개), 사(3개), 오(3개) 딱 5개뿐']
   ],
   worked:{
     1:{no:1,nm:'정다면체인지 가려내기',prob:'다면체가 정다면체인지 두 조건으로 확인하기',fig:()=>({items:[{mesh:SOLIDS.cube.mk(),hl:'A',cap:'정육면체 ○'},{mesh:bipyramid(),hl:'V:3',cap:'삼각쌍뿔 ✕'}]}),steps:[{t:'① 면 모양 확인',hl:[],body:'모든 면이 똑같은(합동인) 정다각형인가?'},{t:'② 꼭짓점 확인',hl:[],body:'모든 꼭짓점에 모인 면의 개수가 같은가?'},{t:'③ 판정',hl:[],body:'둘 다 예일 때만 정다면체!'}],pitfall:'⚠️ 삼각쌍뿔처럼 ①은 맞지만 ②가 틀린 함정 조심!'},
     2:{no:2,nm:'이름 찾기',prob:'면의 모양과 모인 면의 개수로 정다면체 찾기',fig:()=>({mesh:SOLIDS.oct.mk(),hl:'V:4',yaw:-0.5,pitch:0.35}),steps:[{t:'① 면의 모양',hl:[],body:'정삼각형(3가지) / 정사각형(정6) / 정오각형(정12)'},{t:'② 모인 면 개수',hl:[],body:'3→사면체, 4→팔면체, 5→이십면체'},{t:'③ 이름 결정',hl:[],body:'정삼각형 + 4개 = 정팔면체'}],pitfall:'⚠️ 정팔면체(면 8)와 정육면체(모인 면 3) 헷갈리지 않기!'},
-    3:{no:3,nm:'개수 구하기',prob:'정십이면체·정이십면체 개수 구하기',fig:()=>({items:[{mesh:SOLIDS.dod.mk(),hl:'E',cap:'정십이면체'},{mesh:SOLIDS.ico.mk(),hl:'E',cap:'정이십면체'}]}),steps:[{t:'① 면×변 곱하기',hl:[],body:'정십이면체: 12 × 5 = 60'},{t:'② 모서리는 ÷ 2',hl:[],body:'60 ÷ 2 = 30개'},{t:'③ 꼭짓점은 ÷ 모인 면',hl:[],body:'60 ÷ 3 = 20개'}],pitfall:'⚠️ 정이십면체는 모인 면이 5개 → 60 ÷ 5 = 12개!'},
+    3:{no:3,nm:'개수 구하기',prob:'정팔면체·정이십면체의 꼭짓점·모서리 개수 구하기',fig:()=>({items:[{mesh:SOLIDS.oct.mk(),hl:'Fv',cap:'정팔면체'},{mesh:SOLIDS.ico.mk(),hl:'Fv',cap:'정이십면체'}]}),steps:[{t:'① 층 나누기',hl:['Fv'],body:'같은 높이의 꼭짓점끼리 한 층 (정팔 1·4·1 / 정이십 1·5·5·1)'},{t:'② 꼭짓점은 층마다 더하기',hl:['Fv'],body:'정팔면체 1+4+1 = 6개, 정이십면체 1+5+5+1 = 12개'},{t:'③ 모서리는 층 사이 + 층 둘레',hl:['Fe'],body:'정팔면체 4+4+4 = 12개, 정이십면체 5+5+10+5+5 = 30개'}],pitfall:'⚠️ 위층부터 차례로! 층 사이 모서리를 빠뜨리기 쉬워요.'},
     4:{no:4,nm:'한 꼭짓점 모으기',prob:'정다각형 k개를 모아 입체 만들기',fig:()=>figRegFan(6,3,false,false),steps:[{t:'① 한 내각 확인',hl:[],body:'삼60° · 사90° · 오108° · 육120°'},{t:'② 곱해서 합 구하기',hl:[],body:'한 내각 × 개수'},{t:'③ 360°보다 작은지 비교',hl:[],body:'360° 이상이면 ✕'}],pitfall:'⚠️ 정삼각형 6개=360°, 정육각형 3개=360° 모두 불가!'},
     5:{no:5,nm:'성질 ○×',prob:'정다면체 설명 중 옳지 않은 것 고르기',fig:()=>({mesh:SOLIDS.ico.mk(),hl:'A',yaw:-0.5,pitch:0.35}),steps:[{t:'① 합동인 정다각형',hl:[],body:'"정다각형"만 쓰고 "합동" 빠뜨리면 ✕'},{t:'② 면·꼭짓점 표 대조',hl:[],body:'정팔면체 꼭짓점 6개, 정이십면체 면 정삼각형'},{t:'③ 옳지 않은 문장 고르기',hl:[],body:'하나씩 ○× 표시'}],pitfall:'⚠️ 정십이면체와 정이십면체는 모서리가 똑같이 30개예요 ○!'}
   },
@@ -670,14 +702,14 @@ HG_TRACKS.register('regular',{
   genCompound:{
     C1:seed=>{
       const r=(seed*1664525+1013904223)>>>0;
-      const list=[{face:'정삼각형',deg:4,nm:'정팔면체',F:8,n:3,E:12,V:6},{face:'정오각형',deg:3,nm:'정십이면체',F:12,n:5,E:30,V:20},{face:'정삼각형',deg:5,nm:'정이십면체',F:20,n:3,E:30,V:12}];
+      const list=[{face:'정삼각형',deg:4,nm:'정팔면체',F:8,n:3,E:12,V:6,fl:'4 + 4 + 4'},{face:'정오각형',deg:3,nm:'정십이면체',F:12,n:5,E:30,V:20,fl:'5 + 5 + 10 + 5 + 5'},{face:'정삼각형',deg:5,nm:'정이십면체',F:20,n:3,E:30,V:12,fl:'5 + 5 + 10 + 5 + 5'}];
       const R=list[r%list.length];
-      return{id:'C1',combo:[2,3],comboWhy:'① 조건으로 정다면체 이름을 찾고(유형 2) → ② 겹쳐 세기로 모서리 계산(유형 3)',ptype:'regular:c1',
+      return{id:'C1',combo:[2,3],comboWhy:'① 조건으로 정다면체 이름을 찾고(유형 2) → ② 층으로 모서리 세기(유형 3)',ptype:'regular:c1',
         title:`모든 면이 합동인 <b>${R.face}</b>이고 한 꼭짓점에 모인 면이 <b>${R.deg}개</b>인 정다면체의 <b>모서리</b> 개수를 구하시오.`,
         fig:{svg:()=>figRegFan(R.n,R.deg,true,true)},finalQ:'모서리는 모두 몇 개인가요?',
         steps:[
           {tag:'1단계 · 정다면체 이름',q:'조건을 만족하는 정다면체는?',type:'choice',choices:['정사면체','정육면체','정팔면체','정십이면체','정이십면체'],ans:R.nm,hint:`${R.face} + 모인 면 ${R.deg}개`},
-          {tag:'2단계 · 모서리 개수 (면×변÷2)',q:`${R.nm}(면 ${R.F}개, 변 ${R.n}개)의 모서리는? (${R.F} × ${R.n} ÷ 2)`,type:'num',ans:R.E,suffix:'개',hint:`${R.F*R.n} ÷ 2`,ok:`${R.nm}의 모서리는 ${R.E}개예요!`}
+          {tag:'2단계 · 모서리 개수 (층으로 세기)',q:`${R.nm}의 모서리를 층으로 세면? (층 사이와 층 둘레를 위층부터 차례로)`,type:'num',ans:R.E,suffix:'개',hint:`${R.fl}`,ok:`${R.nm}의 모서리는 ${R.E}개예요!`}
         ]};
     },
     C2:seed=>{
@@ -688,7 +720,7 @@ HG_TRACKS.register('regular',{
         steps:[
           {tag:'1단계 · 한 꼭짓점에 모인 면',q:'정팔면체는 한 꼭짓점에 정삼각형이 몇 개씩 모이나요?',type:'num',ans:4,suffix:'개',hint:'정팔면체의 한 꼭짓점에는 4개의 면이 모여요.'},
           {tag:'2단계 · 전개도 읽기',q:qType?'면 1과 평행하게 마주 보는 면은 1부터 8 중 7번(대칭 위치)인가요, 아니면 이웃한 면인가요?':'정팔면체는 면이 8개이므로 팔면체이고, 모서리는 몇 개인가요?',
-            type:qType?'choice':'num',choices:qType?['마주 보는 대칭 위치 (평행)','바로 옆에 붙은 면']:undefined,ans:qType?'마주 보는 대칭 위치 (평행)':12,suffix:qType?undefined:'개',hint:qType?'전개도에서 두 칸 건너 반대편에 놓여요.':'8 × 3 ÷ 2',ok:'전개도 접기 관계를 잘 찾았어요!'}
+            type:qType?'choice':'num',choices:qType?['마주 보는 대칭 위치 (평행)','바로 옆에 붙은 면']:undefined,ans:qType?'마주 보는 대칭 위치 (평행)':12,suffix:qType?undefined:'개',hint:qType?'전개도에서 두 칸 건너 반대편에 놓여요.':'층으로 세면 4(위 층 사이) + 4(가운데 둘레) + 4(아래 층 사이)',ok:'전개도 접기 관계를 잘 찾았어요!'}
         ]};
     }
   },
