@@ -91,12 +91,6 @@ function recordMetric(elapsedMs,errTag){
   if(typeof save==='function')save();
 }
 
-let autoNavTimer=null,autoNavTick=null;
-function clearAutoNav(){
-  if(autoNavTimer){clearTimeout(autoNavTimer);autoNavTimer=null}
-  if(autoNavTick){clearInterval(autoNavTick);autoNavTick=null}
-}
-if(typeof addEventListener==='function')addEventListener('hashchange',clearAutoNav);
 
 /* ── 2. [복습 추천] — 다음 날 한 번 · 유형 도장판 (T37: 설계 총정리 2-2) ──
    - 유형을 익히면 다음 날 [복습 추천]에 한 번 나와요(예전 3·7·14일 간격은 뺐어요).
@@ -434,7 +428,6 @@ function renderT1Steps(body,lid,spec){
   const guideList=spec.firstGuide||[];
   let sub=p.t1SchemaDone&&guideList.length?'guide':'schema';
   const drawSub=()=>{
-    clearAutoNav();
     const soloDoneCnt=guideList.filter(g=>p.t1Solo&&p.t1Solo[g.tyNo]).length;
     const bStat=soloDoneCnt>=guideList.length?'완료 ✓':soloDoneCnt?`${soloDoneCnt}/${guideList.length}유형`:`${guideList.length}유형`;
     body.innerHTML=`<div class="ct-subtabs">
@@ -624,7 +617,6 @@ function renderT1Guide(host,lid,spec){
   };
 
   const draw=()=>{
-    clearAutoNav();
     const g=GUIDE[gIdx];
     if(!g){host.innerHTML='';return}
     if(typeof HG_LOC!=='undefined')HG_LOC.set({lesson:lid,track:1,tab:'steps',subtab:'B. 선생님과 같이 따라 풀기',section:'',file:'js/02t-track-engine.js',fn:'renderT1Guide',guideId:g.id,tyNo:g.tyNo,guideStep:step,inSolo:false,rapidIdx:0,schemaId:'',prob:null});
@@ -706,26 +698,20 @@ function renderT1Guide(host,lid,spec){
 
     const hb=$('#fgHelpBtn',host),hbox=$('#fgHelpBox',host);
     if(hb&&hbox)hb.onclick=()=>{
-      clearAutoNav();helped=true;
+      helped=true;
       if(typeof DB==='object'&&DB){DB._needCalc={id:g.calcTopic,from:lid,at:Date.now()};if(typeof save==='function')save()}
       step=4;draw();
       const boxAfter=$('#fgHelpBox',host)||hbox;
-      let left=3;
-      const paintBox=()=>{
-        boxAfter.hidden=false;boxAfter.className='ct-calchelp-box';
-        boxAfter.innerHTML=`<div><b>선생님이 대신 계산했어요:</b> ${g.calcExplain}</div>
-          <div style="margin-top:6px">이 계산이 막혔으니 <b>기초 연산 · ${calcNm}</b>으로 <b id="fgSec">${left}</b>초 뒤 자동 이동해요.</div>
-          <div class="ct-timer-bar"><i id="fgBar" style="width:${Math.round((3-left)/3*100)}%"></i></div>
-          <div class="ct-calchelp-act">
-            <a class="btn primary" href="#calc-${g.calcTopic}">지금 바로 기초 연산 가기 →</a>
-            <button type="button" class="btn ghost" id="fgCancelNav">여기 머무르고 혼자 풀어 보기</button>
-          </div>`;
-        const cBtn=$('#fgCancelNav',boxAfter);
-        if(cBtn)cBtn.onclick=()=>{clearAutoNav();const sec=$('#fgSec',boxAfter);if(sec&&sec.parentNode)sec.parentNode.innerHTML='자동 이동을 멈췄어요. 위 버튼으로 언제든 갈 수 있어요.'};
-      };
-      paintBox();
-      autoNavTick=setInterval(()=>{left=Math.max(0,left-1);const s=$('#fgSec',boxAfter),br=$('#fgBar',boxAfter);if(s)s.textContent=left;if(br)br.style.width=`${Math.round((3-left)/3*100)}%`},1000);
-      autoNavTimer=setTimeout(()=>{clearAutoNav();if(typeof location==='object')location.hash='#calc-'+g.calcTopic},3100);
+      /* [T38] 총정리 2-3 마: 3초 자동 이동 없이 버튼 두 개. 고르지 않아도 길잡이에 '막혔던 계산'이 올라가요(DB._needCalc) */
+      boxAfter.hidden=false;boxAfter.className='ct-calchelp-box';
+      boxAfter.innerHTML=`<div><b>선생님이 대신 계산했어요:</b> ${g.calcExplain}</div>
+        <div style="margin-top:6px">이 계산은 <b>기초 연산 · ${calcNm}</b>에서 연습할 수 있어요. 어떻게 할까요?</div>
+        <div class="ct-calchelp-act">
+          <a class="btn primary" href="#calc-${g.calcTopic}">지금 기초 연산 가기 →</a>
+          <button type="button" class="btn ghost" id="fgStayHere">이 차시 먼저 끝내기</button>
+        </div>`;
+      const sBtn=$('#fgStayHere',boxAfter);
+      if(sBtn)sBtn.onclick=()=>{const act=$('.ct-calchelp-act',boxAfter);if(act)act.innerHTML='<small>좋아요! 이 차시를 끝낸 뒤 오늘의 길잡이에서 이 계산을 연습할 수 있어요.</small>'};
     };
 
     if(s3Done&&!twinDone)mountSoloTwin();
@@ -767,7 +753,7 @@ function renderT1Practice(body,lid,spec){
       p.tday=today();p.trackDone=Math.max(Number(p.trackDone)||0,1);
       p.concept=true;
       if(typeof save==='function')save();
-      if(typeof award==='function')award(10,lid+':t1','첫걸음 차시 마무리를 통과했어요');
+      if(typeof award==='function')award(15,lid+':t1','첫걸음 차시 마무리를 통과했어요');
       /* [T37] 🌱 마무리는 🌱 따라 풀기(firstGuide)에 나온 유형만 [복습 추천]에 올려요 */
       [...new Set((spec.firstGuide||[]).map(g=>g.tyNo).filter(Boolean))].forEach(no=>scheduleTypeRev(lid,no,false));
       body.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌱 첫걸음 차시 마무리 통과!</b><br>핵심 구별과 풀이 따라 하기 ${pool.length}가지를 모두 해냈어요.</div>
@@ -1154,7 +1140,7 @@ function renderT3Practice(body,lid,spec){
         scheduleTypeRev(lid,t.no,res&&res.status!=='first',true);
       });
       if(typeof save==='function')save();
-      if(typeof award==='function')award(20,lid+':t3','두걸음 실전 차시 마무리를 통과했어요');
+      if(typeof award==='function')award(15,lid+':t3','두걸음 실전 차시 마무리를 통과했어요');
 
       const metaOpts=spec.t3MetaOpts||['풀이 순서 잡기','조건 파악·식 세우기','계산 실수','없음'];
       host.innerHTML=`<div class="ct-card"><div class="feedback ok"><b>🌳 두걸음 실전 차시 마무리 통과!</b><br>기본 유형과 복합 유형 ${cids.length}가지를 모두 해결했어요.</div>
@@ -1185,7 +1171,6 @@ function bonusExploreHTML(lid){
 }
 
 function viewTrackLesson(id,tab){
-  clearAutoNav();
   const spec=SPECS[id];
   if(!spec)return;
   const L=(typeof LESSONS!=='undefined'&&LESSONS.find(l=>l.id===id))||{id,no:1,title:id,tb:'',unit:'solid'};
@@ -1278,7 +1263,6 @@ function viewTrackLesson(id,tab){
 
 /* ── 8. [복습 추천] 실행 화면 (#dailyrev) ── */
 window.viewDailyRev=function(){
-  clearAutoNav();
   if(typeof crumbs!=='undefined'&&crumbs)crumbs.innerHTML=`<span class="sep">›</span><span>복습 추천</span>`;
   const queue=buildDailyRevQueue();
   if(!queue.length){
