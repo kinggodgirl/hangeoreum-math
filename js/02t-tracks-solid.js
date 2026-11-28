@@ -96,9 +96,11 @@ const floorHL=(kind,on,done=[])=>(v,m,inter)=>{
   const ON=new Set(on.flatMap(p=>[...ids(p)])),DN=new Set(done.flatMap(p=>[...ids(p)]));
   let lit=true;const col=x=>ON.has(x)?(lit?(kind==='f'?FLOOR_ONF:FLOOR_ON):null):DN.has(x)?FLOOR_DONE[kind]:null;
   if(kind==='v'){v.mode='v';v.vcol=col}else if(kind==='e')v.ecol=col;else v.fcol=col;
-  (v._pulse||[]).forEach(clearTimeout);v._pulse=[];
+  (v._pulse||[]).forEach(clearTimeout);v._pulse=[];v._selfPulse=true;
   if(inter&&ON.size)for(let t=1;t<=6;t++)v._pulse.push(setTimeout(()=>{lit=t%2===0;v.dirty=true},230*t));
 };
+/* [T32] 두 밑면의 모서리만 주황(아래 밑면은 가려져도 굵은 선으로 보여요) */
+const baseEdgesHL=(v,m)=>{const K=new Set();(m.base||[]).forEach(fi=>{const f=m.F[fi];f.forEach((a,j)=>{const b=f[(j+1)%f.length];K.add(Math.min(a,b)+'-'+Math.max(a,b))})});v.ecol=k=>K.has(k)?'#e08a1e':null};
 const figPolyFloors=()=>({items:[
   {mesh:TYPE.prism.mk(5),hl:floorHL('v',['lo']),cap:'오각기둥',yaw:-0.5,pitch:0.34,pad:0.38},
   {mesh:TYPE.pyramid.mk(5),hl:floorHL('v',['lo']),cap:'오각뿔',yaw:-0.5,pitch:0.34,pad:0.38}
@@ -453,8 +455,19 @@ if(typeof HG_TRACKS!=='object')return;
 HG_TRACKS.register('poly',{
   kind:'concept',
   owlScenes:[
-    {cap:'장면 ① 다각형 면으로만 = 다면체',say:'상자처럼 <span class="kw">다각형인 면으로만</span> 둘러싸이면 <b>다면체</b>! 캔이나 공처럼 굽은 면이 하나라도 있으면 다면체가 아니에요.',svg:figPolyDuo},
-    {cap:'장면 ② 각뿔대 = 밑면에 평행하게 싹둑',say:'각뿔을 <span class="kw">밑면에 평행한 평면</span>으로 자를 때 뾰족하지 않은 쪽이 <b>각뿔대</b>! 옆면은 모두 <span class="num">사다리꼴</span>이에요.',svg:()=>figFrustum3D(4,'all',true)},
+    /* [T32] 박자마다 말이 가리키는 부분만 칠하고 깜빡여요(부엉 쌤 기본 원리). */
+    {cap:'장면 ① 다각형 면으로만 = 다면체',svg:figPolyDuo,beats:[
+      {say:'상자를 보세요. 면이 모두 <span class="kw">다각형</span>(사각형)이에요.',hl:['A',null]},
+      {say:'이렇게 <span class="kw">다각형인 면으로만</span> 둘러싸인 입체도형이 <b>다면체</b>예요!',hl:['all',null]},
+      {say:'캔(원기둥)의 옆면은 <span class="warn">굽은 면(곡면)</span>이에요.',hl:[null,'side']},
+      {say:'굽은 면이 <b>하나라도</b> 있으면 다면체가 아니에요. 공(구)도 마찬가지예요.',hl:[null,'side']}
+    ]},
+    {cap:'장면 ② 각뿔대 = 밑면에 평행하게 싹둑',svg:()=>figFrustum3D(4,null,true),beats:[
+      {say:'각뿔을 <span class="kw">밑면에 평행한 평면</span>으로 싹둑 잘라요. 잘린 자리가 위 밑면이 돼요.',hl:'one'},
+      {say:'뾰족한 쪽을 떼어 내고 남은 아래쪽 입체가 <b>각뿔대</b>예요!',hl:'A'},
+      {say:'위아래 두 밑면은 평행하지만 <span class="warn">크기가 달라요</span>.',hl:baseEdgesHL},
+      {say:'옆면은 모두 <span class="num">사다리꼴</span>이에요.',hl:'side'}
+    ]},
     /* [T31] 선생님 의견: 지금 무엇을 세는지 보이게 박자마다 그 부분만 주황으로 깜빡이고, 센 곳은 파랑으로 남겨요. */
     {cap:'장면 ③ 층 건물로 세기 (1층·2층·층사이)',exp:'happy',svg:figPolyFloors,beats:[
       {say:'입체도형을 <span class="kw">층 건물</span>처럼 봐요. 먼저 <b>꼭짓점</b>! 아래 밑면, <span class="kw">1층</span>에 꼭짓점이 <span class="num">5</span>개 있어요.',hl:[floorHL('v',['lo']),floorHL('v',['lo'])]},
