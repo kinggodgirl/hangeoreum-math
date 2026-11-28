@@ -738,6 +738,22 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   const hw = help.slice(help.indexOf('function viewHowto'), help.indexOf('function route('));
   if (/미리 보기|같이 풀기|혼자 풀기|5문제/.test(hw)) errors.push('[T40] 사용법 페이지에 옛 탭 이름이 남아 있어요');
 }
+// [T41] 정다면체 🌱 A = 비교하며 두 조건 찾기(스키마 만들기): 짝 그림의 ○는 색 1가지, ✕는 2가지 이상 · 360° 문항은 🌱에서 빼기
+{
+  const r41 = JSON.parse(vm.runInContext(`(()=>{const R=HG_TRACKS.specs.regular.schemaRapid,E=[];if(!R||typeof R.make!=='function')return JSON.stringify({E:['schemaRapid 없음']});
+    const ord=R.order(()=>0.3);if(ord.length!==R.n||ord[4]!==4||ord.slice(0,2).sort().join()!=='0,1'||ord.slice(2,4).sort().join()!=='2,3')E.push('순서 '+ord);
+    const cols=(it)=>{const v={},m=it.mesh;it.hl(v,m,false);const s=new Set();if(v.vcol)m.V.forEach((_,i)=>s.add(v.vcol(i)));else m.F.forEach((_,i)=>s.add(v.fcol(i)));return s.size};
+    for(let k=0;k<R.kinds;k++)for(let sd=1;sd<=30;sd++){const it=R.make(k,k+R.kinds*sd),ch=it.choices||R.choices;
+      if(!ch.includes(it.ans))E.push('답 '+k);if(it.both&&!it.both.every(x=>ch.includes(x)))E.push('두 답 '+k);
+      if(/360/.test(it.q+it.why))E.push('360 '+k);
+      const items=it.fig.items||[it.fig];if(!items.every(x=>x.mesh&&x.mesh.F.length))E.push('그림 '+k);
+      if(k<4){const a=cols(items[0]),b=cols(items[1]);if(a!==1||b<2)E.push('색 '+k+':'+a+'/'+b)}}
+    const uni=m=>{const d=m.V.map((_,i)=>m.F.filter(f=>f.includes(i)).length);return d.every(x=>x===d[0])};
+    for(let sd=1;sd<=20;sd++){if(!uni(R.make(6,6+R.kinds*sd).fig.mesh))E.push('면 ✕인데 꼭짓점도 달라요');if(uni(R.make(7,7+R.kinds*sd).fig.mesh))E.push('꼭짓점 ✕인데 같아요')}
+    const P=HG_TRACKS.specs.regular.t1Check||[];if(!P.length||P.some(q=>/360/.test(q.q)))E.push('마무리');
+    return JSON.stringify({E:[...new Set(E)]})})()`, sandbox));
+  if (r41.E.length) errors.push('[T41] ' + r41.E.join(', '));
+}
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);

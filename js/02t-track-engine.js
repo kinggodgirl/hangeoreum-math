@@ -448,7 +448,7 @@ function renderT1Steps(body,lid,spec){
     const soloDoneCnt=guideList.filter(g=>p.t1Solo&&p.t1Solo[g.tyNo]).length;
     const bStat=soloDoneCnt>=guideList.length?'완료 ✓':soloDoneCnt?`${soloDoneCnt}/${guideList.length}유형`:`${guideList.length}유형`;
     body.innerHTML=`<div class="ct-subtabs">
-      <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">A. 맞는지 · 아닌지 구별하기 (${p.t1SchemaDone?'완료 ✓':(spec.schemaRapid?spec.schemaRapid.n:schemaList.length)+'문항'})</button>
+      <button type="button" class="ct-subtab${sub==='schema'?' on':''}" data-s="schema">${(spec.schemaRapid&&spec.schemaRapid.tab)||'A. 맞는지 · 아닌지 구별하기'} (${p.t1SchemaDone?'완료 ✓':(spec.schemaRapid?spec.schemaRapid.n:schemaList.length)+'문항'})</button>
       ${guideList.length?`<button type="button" class="ct-subtab${sub==='guide'?' on':''}" data-s="guide">B. 선생님과 같이 따라 풀기 (${t1GuideLocked(lid,spec)?'🔒 개념 보기 먼저':bStat})</button>`:''}
     </div><div id="t1SubHost"></div>`;
     $$('.ct-subtab',body).forEach(b=>b.onclick=()=>{sub=b.dataset.s;drawSub()});
@@ -528,7 +528,7 @@ function renderT1Rapid(host,lid,spec,onNextPart){
       const v=btn.dataset.v,ms=Date.now()-shownAt;
       if(it.also&&it.also[v]){btn.disabled=true;msg.innerHTML=`<div class="ct-cool">💡 ${it.also[v]}</div>`;return}
       /* [T21] 이름이 두 개인 그림(반원 = 부채꼴 + 활꼴): 어느 쪽을 먼저 골라도 '하나 더'를 고르게 해요 */
-      if(it.both&&it.both.includes(v)){bothPick.add(v);btn.disabled=true;btn.classList.add('ok');if(it.both.some(x=>!bothPick.has(x))){msg.innerHTML=`<div class="ct-cool">👍 맞아요! 이 도형은 <b>이름이 하나 더</b> 있어요. 나머지 하나도 골라 보세요.</div>`;return}}
+      if(it.both&&it.both.includes(v)){bothPick.add(v);btn.disabled=true;btn.classList.add('ok');if(it.both.some(x=>!bothPick.has(x))){msg.innerHTML=`<div class="ct-cool">${it.bothMsg||'👍 맞아요! 이 도형은 <b>이름이 하나 더</b> 있어요. 나머지 하나도 골라 보세요.'}</div>`;return}}
       btns.forEach(b=>b.disabled=true);
       if(v===it.ans||(it.both&&it.both.includes(v))){
         recordMetric(ms,null);

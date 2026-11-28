@@ -449,6 +449,63 @@ function polyRapid(k,seed){
   }
 }
 
+/* [T41] regular 첫걸음 A 빠른 구별(선생님 요청: A의 목표는 스키마 만들기).
+   정다면체(○)와 정다면체가 아닌 것(✕)을 나란히 돌려 보며 '무엇이 다른지' 스스로 찾게 해요.
+   종류 0·1 면 비교(같은 색 면 = 똑같은 모양) → 2·3 꼭짓점 비교(같은 색 점 = 모인 면의 수가 같음) → 4 두 조건 정리 → 5~9 처음 보는 입체에 적용.
+   '왜 5가지뿐인가(각의 합 < 360°)'는 🌿 한걸음 몫이라 여기서 묻지 않아요(부엉 쌤 장면 ② lv 2 · 대표 예제 4). */
+const REGC_F=['#fde3c3','#cfe0fb','#cdeccf'],REGC_V=['#e08a1e','#2a4d9e','#2b7a4b'];
+/* 면을 모양(변 길이 묶음)별로 칠해요: 가장 많은 모양 = 주황, 다른 모양 = 파랑·초록 */
+const regFaceHL=(v,m)=>{
+  const sig=m.F.map(f=>f.map((a,j)=>{const b=f[(j+1)%f.length];return Math.hypot(m.V[a][0]-m.V[b][0],m.V[a][1]-m.V[b][1],m.V[a][2]-m.V[b][2]).toFixed(2)}).sort().join(','));
+  const cnt={};sig.forEach(s=>cnt[s]=(cnt[s]||0)+1);const ord=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
+  v.fcol=i=>REGC_F[ord.indexOf(sig[i])%3];
+};
+/* 꼭짓점을 모인 면의 수별로 칠해요 */
+const regDeg=m=>m.V.map((_,i)=>m.F.filter(f=>f.includes(i)).length);
+const regVertHL=(v,m)=>{
+  const d=regDeg(m),cnt={};d.forEach(x=>cnt[x]=(cnt[x]||0)+1);const ord=Object.keys(cnt).map(Number).sort((a,b)=>cnt[b]-cnt[a]||a-b);
+  v.mode='v';v.vcol=i=>REGC_V[ord.indexOf(d[i])%3];
+};
+/* 정다면체가 아닌 입체(모든 면이 정다각형인 것도 있어요). 답이 하나로 정해지게 REG_NON_F는 꼭짓점마다 면 3개씩(조건 ②는 맞음), REG_NON_V는 면이 모두 합동인 정삼각형(조건 ①은 맞음)만 써요. */
+const hexPrismEq=()=>prism(regPoly(6,0.9),0.9);                      /* 정육각형 2 + 정사각형 6 (꼭짓점마다 3개씩이라 조건 ②는 맞아요) */
+const triPrismEq=()=>{const R=1.0;return prism(regPoly(3,R),R*Math.sqrt(3))}; /* 정삼각형 2 + 정사각형 3 */
+function pentBipyr(R=1.15){const B=regPoly(5,R),a=2*R*Math.sin(Math.PI/5),h=Math.sqrt(a*a-R*R);
+  const V=[...B.map(p=>[p[0],p[1],0]),[0,0,h],[0,0,-h]],F=[];for(let i=0;i<5;i++){const j=(i+1)%5;F.push([i,j,5],[j,i,6])}return makeMesh(V,F)}
+const REG_NON_F=[{nm:'직육면체',mk:()=>cuboid(),why:'직육면체의 면은 <b>직사각형</b>이에요. 네 변의 길이가 같지 않아서 정다각형이 아니에요.'},
+  {nm:'육각기둥',mk:hexPrismEq,why:'면이 모두 정다각형이지만 <b>정육각형과 정사각형</b>이 섞여 있어요. 모든 면이 <b>합동</b>(똑같은 모양)이어야 해요.'},
+  {nm:'삼각기둥',mk:triPrismEq,why:'면이 모두 정다각형이지만 <b>정삼각형과 정사각형</b>이 섞여 있어요. 모든 면이 <b>합동</b>이어야 해요.'}];
+const bipM=m=>(m.bip=true,m);
+const REG_NON_V=[{nm:'삼각쌍뿔',mk:()=>bipM(bipyramid()),deg:'3개인 곳과 4개인 곳'},{nm:'오각쌍뿔',mk:()=>bipM(pentBipyr()),deg:'4개인 곳과 5개인 곳'}];
+const REG_KEYS=['tet','cube','oct','dod','ico'];
+const REG_PAIR=['면의 모양','꼭짓점에 모인 면의 수'];
+const REG_COND=['모든 면이 합동인 정다각형이에요','각 꼭짓점에 모인 면의 수가 같아요','모든 면이 삼각형이에요','두 밑면이 평행해요'];
+const REG_APPLY=['정다면체예요','아니에요 · 면이 모두 합동인 정다각형이 아니에요','아니에요 · 꼭짓점마다 모인 면의 수가 달라요'];
+const regMesh=(mesh,hl,cap)=>({mesh,hl,cap,yaw:mesh.bip?-0.25:-0.5,pitch:mesh.bip?0.22:0.35,pad:0.38});
+const regQPair=(what)=>`<small class="muted">1단계 · 비교하며 찾기</small><br>왼쪽은 <b>정다면체</b>, 오른쪽은 정다면체가 <b>아니에요</b>. 둘 다 돌려 보며 비교해요. <b>무엇이 다를까요?</b><br><small>${what}</small>`;
+const regQApply='<small class="muted">3단계 · 처음 보는 입체</small><br>이 입체도형은 <b>정다면체</b>일까요?<br><small>면의 모양과 꼭짓점에 모인 면의 수를 하나씩 확인해요.</small>';
+function regularRapid(k,seed){
+  const r=(seed*2654435761)>>>0,S=key=>SOLIDS[key];
+  switch(k){
+    case 0:{const pair=r%2?['cube',REG_NON_F[0]]:['dod',{nm:'오각기둥',mk:()=>TYPE.prism.mk(5),why:'오각기둥은 밑면은 정오각형인데 옆면은 <b>직사각형</b>이에요.'}];
+      return{fig:{items:[regMesh(S(pair[0]).mk(),regFaceHL,`${S(pair[0]).name} ○`),regMesh(pair[1].mk(),regFaceHL,`${pair[1].nm} ✕`)]},q:regQPair('같은 색 면 = 똑같은 모양의 면이에요.'),choices:REG_PAIR,ans:REG_PAIR[0],
+        why:`${S(pair[0]).name}는 모든 면이 똑같은 정다각형이에요. ${pair[1].why} → 정다면체는 <b>모든 면이 합동인 정다각형</b>이어야 해요.`}}
+    case 1:{const pair=r%2?['cube',REG_NON_F[1]]:['tet',REG_NON_F[2]];
+      return{fig:{items:[regMesh(S(pair[0]).mk(),regFaceHL,`${S(pair[0]).name} ○`),regMesh(pair[1].mk(),regFaceHL,`${pair[1].nm} ✕`)]},q:regQPair('같은 색 면 = 똑같은 모양의 면이에요.'),choices:REG_PAIR,ans:REG_PAIR[0],
+        why:`${S(pair[0]).name}는 면이 모두 똑같은 정다각형이에요. ${pair[1].why}`}}
+    case 2:case 3:{const reg=k===2?'oct':'ico',non=REG_NON_V[k===2?0:1];
+      return{fig:{items:[regMesh(S(reg).mk(),regVertHL,`${S(reg).name} ○`),regMesh(non.mk(),regVertHL,`${non.nm} ✕`)]},q:regQPair('두 입체 모두 면은 똑같은 정삼각형이에요. 같은 색 점 = 모인 면의 수가 같은 꼭짓점이에요.'),choices:REG_PAIR,ans:REG_PAIR[1],
+        why:`면은 둘 다 합동인 정삼각형이에요. 그런데 ${non.nm}는 꼭짓점에 모인 면이 <b>${non.deg}</b>이 섞여 있어요. ${S(reg).name}는 모든 꼭짓점에 ${reg==='oct'?4:5}개씩! → 정다면체는 <b>각 꼭짓점에 모인 면의 수가 같아야</b> 해요.`}}
+    case 4:return{fig:{items:[regMesh(S('cube').mk(),regFaceHL,'정육면체 ○'),regMesh(bipM(bipyramid()),regVertHL,'삼각쌍뿔 ✕')]},
+      q:'<small class="muted">2단계 · 정리</small><br>비교하며 찾은 <b>정다면체의 조건</b>을 <b>모두</b> 골라요.',choices:REG_COND,both:REG_COND.slice(0,2),ans:REG_COND[0],bothMsg:'👍 맞아요! 조건이 <b>하나 더</b> 있어요. 나머지 하나도 골라 보세요.',
+      why:'맞아요! 정다면체는 ① <b>모든 면이 합동인 정다각형</b>이고 ② <b>각 꼭짓점에 모인 면의 수가 같은</b> 다면체예요. 둘 중 하나라도 아니면 정다면체가 아니에요.'};
+    case 5:case 8:{const key=REG_KEYS[(r+(k===8?2:0))%5],d=regDeg(S(key).mk())[0];
+      return{fig:regMesh(S(key).mk(),null),q:regQApply,choices:REG_APPLY,ans:REG_APPLY[0],why:`${S(key).name}예요. 모든 면이 합동인 정다각형이고, 모든 꼭짓점에 면이 ${d}개씩 모여요. → 정다면체예요!`}}
+    case 6:{const N=REG_NON_F[r%3];return{fig:regMesh(N.mk(),null),q:regQApply,choices:REG_APPLY,ans:REG_APPLY[1],why:`${N.nm}예요. ${N.why}`}}
+    case 7:{const N=REG_NON_V[r%2];return{fig:regMesh(N.mk(),null),q:regQApply,choices:REG_APPLY,ans:REG_APPLY[2],why:`${N.nm}예요. 면은 모두 합동인 정삼각형이지만, 꼭짓점에 모인 면이 <b>${N.deg}</b>이 섞여 있어요.`}}
+    default:return r%2?regularRapid(6,seed+1):regularRapid(7,seed+1);
+  }
+}
+
 if(typeof HG_TRACKS!=='object')return;
 
 /* ── 1차시 poly ── */
@@ -568,6 +625,14 @@ HG_TRACKS.register('regular',{
     {id:'rq1',q:'직육면체는 모든 꼭짓점에 면이 3개씩 모이지만 정다면체가 아니에요. 왜일까요?',fig:()=>({mesh:cuboid(),hl:'A',yaw:-0.5,pitch:0.36}),choices:['모든 면이 정다각형이 아니라서','각의 합이 360°보다 작아서'],ans:'모든 면이 정다각형이 아니라서',hint:'직사각형은 네 변의 길이가 같지 않아요.',why:'아니에요! 조건 ①(모든 면이 합동인 정다각형)을 어겼어요.'},
     {id:'rq2',q:'정육각형 3개를 한 꼭짓점에 모으면 각의 합이 360°예요. 정다면체를 만들 수 있을까요?',fig:()=>figRegFan(6,3,false,true),choices:['만들 수 없어요','만들 수 있어요'],ans:'만들 수 없어요',hint:'360°면 바닥에 평평하게 깔려 입체로 접어 올릴 수 없어요.',why:'아니에요! 360°보다 작아야 틈을 접어 입체가 돼요.'},
     {id:'rq3',q:'정삼각형 4개를 한 꼭짓점에 모으면 각의 합이 240°(< 360°)예요. 어떤 정다면체가 되나요?',fig:()=>figRegFan(3,4,true,true),choices:['정팔면체','정사면체','정육면체'],ans:'정팔면체',hint:'정삼각형 3개→정사면체, 4개→정팔면체, 5개→정이십면체!',why:'맞아요! 한 꼭짓점에 정삼각형 4개가 모이면 정팔면체예요.'}
+  ],
+  /* [T41] 첫걸음 A = 비교하며 정다면체의 두 조건 찾기(스키마 만들기). 360° 문항(rq2·rq3)은 🌿 몫이라 🌱에서 빼요. */
+  schemaRapid:{n:10,kinds:10,tab:'A. 정다면체의 조건 찾기',title:'정다면체는 무엇이 다를까?',choices:REG_APPLY,check:[5,6,7],
+    order:rnd=>{const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+      return[...sh([0,1]),...sh([2,3]),4,...sh([5,6,7,8,9])]},
+    make:regularRapid},
+  t1Check:[
+    {id:'t1rq1',kind:'rq1',q:'직육면체는 모든 꼭짓점에 면이 3개씩 모이지만 정다면체가 아니에요. 왜일까요?',fig:()=>({mesh:cuboid(),hl:'A',yaw:-0.5,pitch:0.36}),choices:['모든 면이 합동인 정다각형이 아니라서','꼭짓점마다 모인 면의 수가 달라서'],ans:'모든 면이 합동인 정다각형이 아니라서',hint:'직사각형은 네 변의 길이가 같지 않아요.',why:'맞아요! 조건 ①(모든 면이 합동인 정다각형)을 어겼어요.'}
   ],
   firstGuide:[
     {id:'rfg1',tyNo:2,title:'유형 2 · 조건으로 정다면체 이름 찾기',problem:'모든 면이 합동인 <b>정오각형</b>이고, 한 꼭짓점에 모인 면이 <b>3개</b>인 정다면체를 찾으시오.',fig:()=>({mesh:SOLIDS.dod.mk(),hl:'A',yaw:-0.45,pitch:0.35}),
