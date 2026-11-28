@@ -1,41 +1,34 @@
-/* ───────── 게임: 오늘의 미션 · 꾸미기 상점 · 우리 반 보스전 ───────── */
+/* ───────── 게임: 길잡이 포인트 · 꾸미기 상점 · 우리 반 보스전 ───────── */
 const hashStr=s=>{let h=2166136261;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0};
 function celebrate(msg){if(msg)toast(msg);if(reduced)return;const box=el('<div class="confetti" aria-hidden="true"></div>');
   const cols=['#ffe266','#8ec5ff','#ff8f8f','#7fdcb8','#c7a7ff','#ffb59b'];
   for(let i=0;i<36;i++){const p=document.createElement('i');p.style.left=(Math.random()*100)+'%';p.style.background=cols[i%cols.length];p.style.animationDelay=(Math.random()*0.35)+'s';p.style.setProperty('--dx',(Math.random()*160-80)+'px');p.style.setProperty('--r',(Math.random()*720-360)+'deg');box.appendChild(p)}
   document.body.appendChild(box);setTimeout(()=>box.remove(),2600)}
 
-/* 오늘의 미션: 하루 3개. 하나에 +3, 셋 다 하면 +10 */
+/* [T38] 오늘의 미션 = 오늘의 길잡이 (총정리 2-10 다). 따로 있던 미션 카드(옛 단계 문제·연습 문제·용어 카드 숫자)는 없애고,
+   길잡이 줄 하나를 끝낼 때마다 +3, 다 하면 보너스 +10. 연속 일수는 '길잡이 다 한 날 연속 n일'(DB._mis {streak,last} 그대로 씀).
+   포인트 1회 열쇠: 'mis:날짜:줄 이름'(les·drill) · 'misall:날짜' — tidyDB가 60일 지난 것을 지워요. 배지 mission5는 길잡이 다 한 날 수(cnt.misall). */
 function dayState(){const t=today();let D=DB._day;if(!D||typeof D!=='object'||D.d!==t)D=DB._day={d:t,c:{},t:{},m:null};D.c=OBJ(D.c);D.t=OBJ(D.t);return D}
-const MISSIONS={
-  term3:{nm:'용어 카드 3개 열어 보기',k:'term',n:3},
-  drill:{nm:'오늘의 계산 끝내기',k:'drill',n:1},
-  steps1:{nm:'단계 문제 1개 끝까지 풀기',k:'steps',n:1},
-  prac3:{nm:'연습 문제 3개 풀기',k:'prac',n:3},
-  prac5:{nm:'연습 문제 5개 풀기',k:'prac',n:5},
-  explore1:{nm:'탐구 활동 1개 끝내기',k:'explore',n:1},
-  clean2:{nm:'연습 문제를 한 번도 안 틀리고 2개 맞히기',k:'clean',n:2},
-  drill8:{nm:'오늘의 계산에서 8문제 이상 첫 시도에 맞히기',k:'drill8',n:1},
-  review1:{nm:'복습 노트 문제 1개 풀기',k:'review',n:1},
-  calc1:{nm:'기초 연산 한 세트 끝내기',k:'calc',n:1}};
-function todayMissions(){const D=dayState();if(Array.isArray(D.m)&&D.m.length===3&&D.m.every(x=>MISSIONS[x]))return D.m;
-  const r=mulberry(hashStr('mission:'+D.d));const A=pick(r,['term3','drill','calc1']),B=pick(r,['steps1','prac3']);
-  let C=['clean2','drill8','prac5'];if(B==='prac3')C=C.filter(x=>x!=='prac5');if(A==='drill')C=C.filter(x=>x!=='drill8');if(dueReviews().length)C=C.concat(['review1','review1']);
-  D.m=[A,B,pick(r,C)];save();return D.m}
-const missionProg=id=>Math.min(MISSIONS[id].n,NUM(dayState().c[MISSIONS[id].k]));
 function dayBump(k,n=1){const D=dayState();D.c[k]=NUM(D.c[k])+n;checkMissions()}
 function dayTerm(key){const D=dayState();if(D.t[key])return;D.t[key]=1;D.c.term=Object.keys(D.t).length;checkMissions()}
 function missionStreak(){const S=OBJ(DB._mis),t=today();return(S.last===t||S.last===addDays(t,-1))?NUM(S.streak):0}
-function checkMissions(){const D=dayState(),ms=todayMissions();
-  ms.forEach(id=>{if(missionProg(id)>=MISSIONS[id].n&&award(3,'mis:'+D.d+':'+id))toast(`오늘의 미션 완료 · ${MISSIONS[id].nm} (+3)`)});
-  if(ms.every(id=>missionProg(id)>=MISSIONS[id].n)&&award(10,'misall:'+D.d)){const S=DB._mis=OBJ(DB._mis);S.streak=(S.last===addDays(D.d,-1))?NUM(S.streak)+1:1;S.last=D.d;bump('misall');setTimeout(()=>celebrate('오늘의 미션 3개를 모두 해냈어요! 보너스 +10'),700)}
-  save();refreshMissionCard()}
-function missionHref(id){const last=(DB._last&&LESSONS.find(l=>l.id===DB._last.id&&l.ready))||LESSONS.find(l=>l.ready);const L=last?last.id:'poly';
-  return{term3:'#'+L,drill:'#drill',drill8:'#drill',steps1:'#'+L+'-steps',prac3:'#'+L+'-practice',prac5:'#'+L+'-practice',clean2:'#'+L+'-practice',explore1:'#'+L+'-explore',review1:'#review',calc1:'#calc'}[id]||'#home'}
-function missionCardHTML(){const ms=todayMissions(),done=ms.filter(id=>missionProg(id)>=MISSIONS[id].n).length,sk=missionStreak();
-  return`<div class="g-head"><b class="t">오늘의 미션</b><span class="k">${done}/3${done===3?' · 다 했어요!':' · 셋 다 하면 보너스 +10'}${sk?` · 미션 연속 ${sk}일`:''}</span></div>
-  <ol class="mis">${ms.map(id=>{const M=MISSIONS[id],p=missionProg(id),ok=p>=M.n;return`<li class="${ok?'ok':''}"><span class="mchk">${ok?CHECK:''}</span><span class="mnm">${M.nm}${M.n>1?` <small class="rm">${p}/${M.n}</small>`:''}</span>${ok?'<span class="mpt rm">+3</span>':`<a class="mgo" href="${missionHref(id)}">하러 가기</a>`}</li>`}).join('')}</ol>`}
-function refreshMissionCard(){const c=$('#misCard');if(c)c.innerHTML=missionCardHTML()}
+const guideRowKey=(x,i)=>x.les?'les':x.d6?'drill':'g'+i;
+let _misBusy=false;
+function checkMissions(){if(_misBusy||typeof guideSteps!=='function'||!DB||typeof DB!=='object')return;_misBusy=true;
+  try{const D=dayState(),S=guideSteps();if(!Array.isArray(S)||!S.length)return;let got=0;
+    S.forEach((x,i)=>{if(x.done&&award(3,'mis:'+D.d+':'+guideRowKey(x,i),'오늘의 길잡이 한 줄을 끝냈어요')){got++;toast(`오늘의 길잡이 · ${x.t} 끝! (+3)`)}});
+    if(S.every(x=>x.done)&&award(10,'misall:'+D.d,'오늘의 길잡이를 다 했어요')){const M=DB._mis=OBJ(DB._mis);M.streak=(M.last===addDays(D.d,-1))?NUM(M.streak)+1:1;M.last=D.d;bump('misall');setTimeout(()=>celebrate(`오늘의 길잡이를 다 했어요! 보너스 +10 · 연속 ${M.streak}일`),700);got++}
+    if(got)save()}
+  catch(e){}finally{_misBusy=false}}
+/* 홈 길잡이 카드 아래 한 줄: 받는 포인트와 연속 일수 */
+function guidePtsNote(){const sk=missionStreak();return`<p class="g-pts">한 줄 끝낼 때마다 <b class="rm">+3</b> · 다 하면 보너스 <b class="rm">+10</b>${sk?` · 길잡이 다 한 날 <b>연속 ${sk}일</b>`:''}</p>`}
+/* 예전 이름(다른 파일·옛 화면이 부를 수 있어요): 카드가 없으니 아무것도 그리지 않아요 */
+function missionCardHTML(){return''}
+function refreshMissionCard(){}
+/* 차시에서 돌아오거나 다른 화면으로 옮길 때 길잡이 줄이 끝났는지 확인해요(차시 화면은 dayBump를 부르지 않아요) */
+if(typeof addEventListener==='function')addEventListener('hashchange',()=>setTimeout(()=>{try{if(!/^#teacher/.test(location.hash||''))checkMissions()}catch(e){}},0));
+/* 배지 '미션 수집가' 설명을 길잡이 기준으로(01-core.js BADGES는 그대로 두고 글만 바꿔요) */
+{const b=typeof BADGES!=='undefined'&&Array.isArray(BADGES)&&BADGES.find(x=>x.k==='mission5');if(b){b.nm='길잡이 수집가';b.d='오늘의 길잡이를 다 한 날 5일'}}
 
 /* 다면체 그리기 (SVG): 볼록 다면체라 앞을 보는 면만 그리면 겹치지 않아요 */
 function shadeHex(hex,f){const n=parseInt(hex.slice(1),16);let c=[n>>16&255,n>>8&255,n&255];const to=f>=1?[255,255,255]:[29,38,64],t=f>=1?Math.min(1,f-1):Math.min(1,1-f);c=c.map((v,i)=>Math.round(v+(to[i]-v)*t));return`rgb(${c[0]},${c[1]},${c[2]})`}
@@ -317,7 +310,7 @@ function renderBossPage(host,st,opt={}){host._st=st;const pl=bossPlan(st),c=pl.c
    <div class="roadmap" aria-label="이번 주 보스 순서">${pl.stages.map(s=>`<span class="rd ${pl.dmg>=s.end?'down':c&&s.k===c.k?'cur':''}"><span class="rdp">${bossSVG(s.boss,big?64:46,0.5)}</span><small>${s.k+1}단계</small>${pl.dmg>=s.end?'<i>격파</i>':''}</span>`).join('')}</div>
    <div class="wbars" aria-label="요일별 우리 반 데미지">${weekBarsHTML(st)}</div></div>
   ${opt.teacher?'':`<div class="card panel"><h2>데미지를 주는 방법</h2><p style="margin-top:0">포인트를 받으면 <b>그만큼 보스에게 데미지</b>가 들어가요. 정답보다 <b>끝까지 해 보는 것</b>에 포인트를 더 많이 줘요.</p>
-    <div class="dmg-ways"><span>단계 문제 끝까지 <b class="rm">10</b></span><span>연습 문제 <b class="rm">1~5</b></span><span>오늘의 계산 <b class="rm">5+</b></span><span>오늘의 미션 <b class="rm">3</b> · 셋 다 <b class="rm">+10</b></span><span>탐구 활동 <b class="rm">2~5</b></span><span>개념 처음 읽기 <b class="rm">5</b></span></div>
+    <div class="dmg-ways"><span>단계 문제 끝까지 <b class="rm">10</b></span><span>연습 문제 <b class="rm">1~5</b></span><span>오늘의 계산 <b class="rm">5+</b></span><span>오늘의 길잡이 한 줄 <b class="rm">3</b> · 다 하면 <b class="rm">+10</b></span><span>탐구 활동 <b class="rm">2~5</b></span><span>개념 처음 읽기 <b class="rm">5</b></span></div>
     <p class="muted" style="margin-bottom:0">우리 반이 보스를 물리치면, 이번 주에 한 번이라도 데미지를 준 친구 모두 보너스 포인트를 받아요.</p></div>`}
   ${trophyHTML(st)}`;
   const pic=$('.boss-pic',host);if(c)mountSpin(pic,y=>bossSVG(c.boss,big?330:240,y),{speed:0.5});else pic.innerHTML=winSVG()}

@@ -1152,3 +1152,7 @@ body.t-dopen{overflow:hidden}
 .calc-back{display:inline-block;margin:0 0 10px;padding:6px 12px;border-radius:999px;background:#eef3fc;color:#1f4fa0;font-weight:700;font-size:15px;text-decoration:none}
 .calc-ret{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#eef8f0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:15px}.calc-ret .btn{margin-left:auto}
 .dflash.pre{color:#6b4a00}.drill-focus small{font-size:13px}.drill-way .wayBody{margin-top:8px}
+
+/* [T38] 오늘의 길잡이 포인트 한 줄(미션 카드 대신) */
+.guide .g-pts{margin:10px 0 0;font-size:13.5px;color:var(--muted,#5b6475)}
+.pts-how th{font-size:13px;color:var(--muted,#5b6475);padding-top:12px;text-align:left}
