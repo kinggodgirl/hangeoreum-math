@@ -666,11 +666,15 @@ HG_TRACKS.register('regular',{
     {id:'t1rq1',kind:'rq1',q:'직육면체는 모든 꼭짓점에 면이 3개씩 모이지만 정다면체가 아니에요. 왜일까요?',fig:()=>({mesh:cuboid(),hl:'A',yaw:-0.5,pitch:0.36}),choices:['모든 면이 합동인 정다각형이 아니라서','꼭짓점마다 모인 면의 수가 달라서'],ans:'모든 면이 합동인 정다각형이 아니라서',hint:'직사각형은 네 변의 길이가 같지 않아요.',why:'맞아요! 조건 ①(모든 면이 합동인 정다각형)을 어겼어요.'}
   ],
   firstGuide:[
-    {id:'rfg1',tyNo:2,title:'유형 2 · 조건으로 정다면체 이름 찾기',problem:'모든 면이 합동인 <b>정오각형</b>이고, 한 꼭짓점에 모인 면이 <b>3개</b>인 정다면체를 찾으시오.',fig:()=>({mesh:SOLIDS.dod.mk(),hl:'A',yaw:-0.45,pitch:0.35}),
-      wantChips:['정다면체 이름','모서리 길이','겉넓이'],wantAns:'정다면체 이름',wantHl:[],
-      givenChips:[{k:'a',t:'면=정오각형',ok:true},{k:'b',t:'한 꼭짓점에 면 3개',ok:true},{k:'t',t:'각뿔대',ok:false}],
-      teacherEq:'정오각형 × 3 → 한 내각 108°×3 = 324° < 360° → 정십이면체',pairQ:'면의 모양이 정오각형인 정다면체는 몇 가지인가요?',pairChoices:['정십이면체 1가지뿐','3가지'],pairAns:'정십이면체 1가지뿐',
-      calcPrompt:'정십이면체의 면은 몇 개?',calcAns:12,calcTopic:'facts',calcExplain:'이름이 <b>정십이면체</b>이므로 면은 12개예요.'},
+    /* [T44] 3단계: 108°×3(🌿 몫) 대신 면을 층으로 세어 이름(면의 수)을 확인해요. */
+    {id:'rfg1',tyNo:2,title:'유형 2 · 조건으로 정다면체 이름 찾기',problem:'모든 면이 합동인 <b>정오각형</b>이고, 한 꼭짓점에 모인 면이 <b>3개</b>인 정다면체를 찾으시오.',fig:hl=>({mesh:SOLIDS.dod.mk(),hl:(hl&&hl.length)?hl:'A',yaw:-0.45,pitch:0.35}),
+      wantChips:['정다면체 이름','모서리 길이','겉넓이'],wantAns:'정다면체 이름',wantHl:['Ff'],
+      givenChips:[{k:'a',t:'면=정오각형',ok:true,hl:'A'},{k:'b',t:'한 꼭짓점에 면 3개',ok:true,hl:'A'},{k:'t',t:'각뿔대',ok:false}],
+      teacherEq:'면을 층으로 세면 1(지붕) + 5(위쪽 벽) + 5(아래쪽 벽) + 1(바닥)<br>→ 면이 몇 개인지가 곧 이름이에요(정 ○ 면체)',
+      pairQ:'식의 <b>5</b>는 어디서 왔나요? (같은 색 면을 세어 보세요)',
+      pairChoices:['한 꼭짓점에 면이 3개씩 모여서','지붕 정오각형의 변마다 벽 면이 하나씩 붙어서','정오각형의 꼭짓점 5개를 센 것이라서','층이 5개라서'],
+      pairAns:'지붕 정오각형의 변마다 벽 면이 하나씩 붙어서',
+      calcPrompt:'1 + 5 + 5 + 1 = ? (면의 개수)',calcAns:12,calcTopic:'facts',calcExplain:'면이 12개이므로 이름은 <b>정십이면체</b>예요.'},
     /* [T42] 선생님 수업 방식대로 층으로 세요(겹쳐 세기 ÷2 대신). */
     {id:'rfg2',tyNo:3,title:'유형 3 · 층으로 모서리 세기',problem:'<b>정팔면체</b>의 모서리 개수를 구하시오.',fig:hl=>({mesh:SOLIDS.oct.mk(),hl:(hl&&hl.length)?hl:'Fe',yaw:-0.5,pitch:0.35,pad:0.38}),
       wantChips:['모서리 개수','꼭짓점 개수','면의 개수'],wantAns:'모서리 개수',wantHl:['E'],
