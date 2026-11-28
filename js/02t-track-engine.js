@@ -263,6 +263,14 @@ function owlBeats(sc){
   const bal=x=>(x.match(/<span\b/g)||[]).length===(x.match(/<\/span>/g)||[]).length&&(x.match(/<b>/g)||[]).length===(x.match(/<\/b>/g)||[]).length;
   return(parts.length>1&&parts.length<=4&&parts.every(bal)?parts:[s]).map(say=>({say}));
 }
+/* [T32] 3D 그림의 강조(주황·파랑 칠) 깜빡이기. hl 함수가 스스로 깜빡이면(v._selfPulse) 건너뛰어요. */
+function owlPulseStop(v){if(v&&v._owlP){v._owlP.t.forEach(clearTimeout);const o=v._owlP.o;v.fcol=o[0];v.ecol=o[1];v.vcol=o[2];v._owlP=null;v.dirty=true}}
+function owlPulse(v){
+  if(!v||v._selfPulse||owlReduce())return;owlPulseStop(v);
+  const o=[v.fcol,v.ecol,v.vcol];if(!o.some(Boolean))return;
+  const P={o,t:[]};v._owlP=P;
+  for(let t=1;t<=6;t++)P.t.push(setTimeout(()=>{const off=t%2===1&&t<6;v.fcol=off?null:o[0];v.ecol=off?null:o[1];v.vcol=off?null:o[2];v.dirty=true;if(t===6)v._owlP=null},240*t));
+}
 function owlDraw(root){
   if(!root||owlReduce())return;
   $$('.dr',root).forEach((e,i)=>{
@@ -296,8 +304,12 @@ function mountOwlShow(host,lid,spec,opt={}){
         }
       }
     }
-    /* [T31] 3D 장면: 박자에 hl이 있으면 돌려 놓은 그대로 표시만 바꿔요(그림이 하나면 값 하나, 여럿이면 [그림별 값]). */
-    if(bt.hl!==undefined){const slot=$('.owl-fig-slot',host);((slot&&slot._f3)||[]).forEach((o,i)=>{if(!o)return;const h=Array.isArray(bt.hl)?bt.hl[i]:bt.hl;const v=o.v;v.fcol=v.ecol=v.vcol=null;v.mode=null;applyTrackHl(v,o.mesh,h,true);v.dirty=true})}
+    /* [T31] 3D 장면: 박자에 hl이 있으면 돌려 놓은 그대로 표시만 바꿔요(그림이 하나면 값 하나, 여럿이면 [그림별 값]).
+       [T32] 부엉 쌤 기본 원리(선생님): 말이 가리키는 대상은 반드시 움직임으로 강조해요.
+       → 박자가 바뀔 때마다(박자 hl이 없으면 장면 첫 박자에) 표시된 부분을 3번 깜빡여요(owlPulse). */
+    {const slot=$('.owl-fig-slot',host),views=((slot&&slot._f3)||[]).filter(Boolean);
+      if(bt.hl!==undefined)views.forEach((o,i)=>{const h=Array.isArray(bt.hl)?bt.hl[i]:bt.hl;const v=o.v;owlPulseStop(v);v._selfPulse=false;v.fcol=v.ecol=v.vcol=null;v.mode=null;applyTrackHl(v,o.mesh,h,true);v.dirty=true});
+      if(anim&&(bt.hl!==undefined||beat===0))views.forEach(o=>owlPulse(o.v));}
     const av=$('.owl-av',host);if(av)av.innerHTML=owlAvatarSVG(bt.exp||sc.exp||'normal');
     const bub=$('#owlBub',host);
     if(bub)bub.innerHTML=bs.slice(0,beat+1).map((x,i)=>`<p class="owl-line${i===beat?' now':''}">${arcSymHTML(x.say)}</p>`).join('');
