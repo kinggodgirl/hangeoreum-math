@@ -775,6 +775,10 @@ EXPLORE.area=body=>{
 const REG=[{k:'tet',nm:'정사면체',face:'정삼각형',n:3,deg:3,F:4,E:6,V:4},{k:'cube',nm:'정육면체',face:'정사각형',n:4,deg:3,F:6,E:12,V:8},{k:'oct',nm:'정팔면체',face:'정삼각형',n:3,deg:4,F:8,E:12,V:6},
   {k:'dod',nm:'정십이면체',face:'정오각형',n:5,deg:3,F:12,E:30,V:20},{k:'ico',nm:'정이십면체',face:'정삼각형',n:3,deg:5,F:20,E:30,V:12}];
 const REG_FLOOR={tet:'1+3',cube:'4+4',oct:'1+4+1',dod:'5+5+5+5',ico:'1+5+5+1'};
+/* [T43] 선생님 수업 방식: 모서리도 층으로(층 사이 + 층 둘레, 위층부터). 겹쳐 세기(÷2) 대신 */
+const REG_FLOOR_E={tet:'3+3',cube:'4+4+4',oct:'4+4+4',dod:'5+5+10+5+5',ico:'5+5+10+5+5'};
+const REG_FLOOR_EX={cube:['4+4','4+8+4'],oct:['4+4','1+4+1','4+8'],dod:['5+5+5+5','5+10+5','5+5+5+5+5'],ico:['5+5+5+5','5+10+5','5+5+5+5+5']};
+const regFl=(k,part)=>(part==='E'?REG_FLOOR_E[k]:REG_FLOOR[k]).replace(/\+/g,' + ');
 const REG_FLOOR_X={cube:['2+4+2','4+4+4'],oct:['2+4','1+3+1','4+4'],dod:['5+10+5','1+5+5+1','5+5+5'],ico:['1+5+1','5+5+5','1+10+1']};
 const REG_OF={'3,3':'tet','3,4':'oct','3,5':'ico','4,3':'cube','5,3':'dod'};
 const POLY_NM={3:'정삼각형',4:'정사각형',5:'정오각형',6:'정육각형'},inAng=n=>(n-2)*180/n;
@@ -808,10 +812,10 @@ CONCEPT.regular=body=>{
      <p style="margin-bottom:0">된다고 표시된 것이 딱 다섯 가지예요. 탐구에서 직접 모아 볼 수 있어요.</p>`)+
    fold(4,'몇 층 건물로 세기','정십이면체도 4층 건물',`<p style="margin-top:0">꼭짓점을 같은 높이끼리 묶어 층마다 세어 더해요. 정십이면체와 정이십면체는 <b>4층 건물</b>이에요.</p>
      <div class="reg5">${REG.map(R=>`<div class="figbox"><canvas data-rf="${R.k}" style="height:180px"></canvas><div class="figcap"><b>${R.nm}</b><br><span data-rfc="${R.k}"></span></div></div>`).join('')}</div>`)+
-   fold(5,'개수 정리와 겹쳐 세기','면 × (한 면의 변) ÷ 2',`<div class="tablewrap"><table class="t regt"><thead><tr><th></th><th>모인<br>면</th><th>면</th><th>모서리</th><th>꼭짓점</th></tr></thead><tbody>
+   fold(5,'개수 정리','층으로 세어 확인해요',`<div class="tablewrap"><table class="t regt"><thead><tr><th></th><th>모인<br>면</th><th>면</th><th>모서리</th><th>꼭짓점</th></tr></thead><tbody>
      ${REG.map(R=>`<tr><th>${R.nm}<br><small>${R.face}</small></th><td class="rm">${R.deg}</td><td class="rm">${R.F}</td><td class="rm">${R.E}</td><td class="rm">${R.V}</td></tr>`).join('')}</tbody></table></div>
-     <p class="muted" style="margin:6px 0 0;font-size:14px">모인 면: 한 꼭짓점에 모인 면의 개수</p><p>표를 외우지 않아도 돼요. 면을 하나씩 떼어 놓고 세면, 모서리는 <b>두 번씩</b>, 꼭짓점은 <b>모인 면의 개수만큼</b> 겹쳐 세게 돼요.</p>
-     <div class="box" style="margin-top:0">정십이면체: 면 ${M_('12')}개, 한 면의 변 ${M_('5')}개<br>모서리 = ${M_('12 × 5 ÷ 2 = 30')} · 꼭짓점 = ${M_('12 × 5 ÷ 3 = 20')} <span class="muted">(꼭짓점마다 면 3개)</span></div>`));
+     <p class="muted" style="margin:6px 0 0;font-size:14px">모인 면: 한 꼭짓점에 모인 면의 개수</p><p>표를 외우지 않아도 돼요. <b>층으로</b> 세면 돼요. 꼭짓점은 층마다 더하고, 모서리는 층 사이와 층 둘레를 위층부터 차례로 더해요.</p>
+     <div class="box" style="margin-top:0">정이십면체: 꼭짓점 = ${M_('1 + 5 + 5 + 1 = 12')} · 모서리 = ${M_('5 + 5 + 10 + 5 + 5 = 30')} · 면 = 이름에 있는 ${M_('20')}</div>`));
   wireFolds(body,'regular');
   const oc=SOLIDS.oct.mk();vtxFig($('#rgEx',body),oc,[{i:4,c:'#e08a1e',f:'#f6d9b0'},{i:0,c:'#e08a1e'}]);
   figure($('#rgCub',body),{visual:true,mesh:cuboid(),pitch:0.36,pad:0.40});const bp=bipyramid();vtxFig($('#rgNon',body),bp,[{i:3,c:'#c0504d',f:'#efc6c4'},{i:0,c:'#2a4d9e'}]);
@@ -869,16 +873,15 @@ GEN.regularStep=seed=>{const r=mulberry(seed);const kind=pick(r,['edge','vertex'
       {tag:'몇 층 건물인지 찾기',hl:'Fv',q:'꼭짓점을 같은 높이끼리 묶으면 몇 층 건물인가요?',type:'choice',choices:['2층','3층','4층'],ans:fl+'층',hint:'같은 색 꼭짓점이 한 층이에요. 그림을 돌려서 높이를 비교해 보세요.'},
       {tag:'층마다 꼭짓점 세기',hl:'Fv',q:'위층부터 차례로 꼭짓점의 개수를 쓰면?',type:'choice',mathChoices:true,choices:shuffle(r,[REG_FLOOR[R.k],...REG_FLOOR_X[R.k]]),ans:REG_FLOOR[R.k],hint:'한 층씩 같은 색 점을 세어 보세요.'},
       {tag:'층별 개수 더하기',hl:'Fv',q:'꼭짓점은 모두 몇 개인가요?',type:'num',ans:R.V,suffix:'개',hint:`${REG_FLOOR[R.k].replace(/\+/g,' + ')}`,ok:`${R.nm}의 꼭짓점은 ${R.V}개예요.`}]}}
-  const rk=pick(r,['cube','oct','dod','ico']),R=REG.find(x=>x.k===rk),m=SOLIDS[R.k].mk(),opts=['정삼각형','정사각형','정오각형'],sides=R.F*R.n;
-  const head=[{tag:'면의 모양 찾기',hl:'A',q:`${R.nm}의 면은 어떤 ${T('정다각형')}인가요?`,type:'choice',choices:opts,ans:R.face,hint:'면 하나의 변을 세어 보세요.'},
-    {tag:'면의 개수',q:'면은 모두 몇 개인가요?',type:'num',ans:R.F,suffix:'개',hint:`이름에 답이 있어요. ${R.nm} → ${kn(R.F)}면체`},
-    {tag:kind==='edge'?'모든 면의 변 세기 (면 × 변)':'모든 면의 꼭짓점 세기 (면 × 꼭짓점)',q:`면을 하나씩 떼어 놓고 ${kind==='edge'?'변':'꼭짓점'}을 모두 세면 몇 개인가요?`,type:'num',ans:sides,suffix:'개',hint:`면 ${R.F}개 × ${R.face}의 ${kind==='edge'?'변':'꼭짓점'} ${R.n}개`}];
-  if(kind==='edge')return{ptype:'regular:edge',title:`다음 ${R.nm}의 모서리의 개수를 구하시오.`,fig:solidFig(m),finalQ:'모서리는 모두 몇 개인가요?',steps:[...head,
-    {tag:'겹쳐 센 것 나누기 (÷ 2)',hl:'E',q:'모서리 하나에서 면이 2개씩 만나요. 모서리는 몇 개인가요?',type:'num',ans:R.E,suffix:'개',hint:`모서리를 두 번씩 셌어요. ${sides} ÷ 2`,ok:`${sides} ÷ 2 = ${R.E}, 모서리는 ${R.E}개예요.`}]};
-  const t=topVertex(m);
-  return{ptype:'regular:vertex',title:`다음 ${R.nm}의 꼭짓점의 개수를 구하시오.`,fig:solidFig(m),finalQ:'꼭짓점은 모두 몇 개인가요?',steps:[...head,
-    {tag:'한 꼭짓점에 모인 면 세기',hl:'V:'+t,q:'색칠한 꼭짓점에 모인 면은 몇 개인가요?',type:'num',ans:R.deg,suffix:'개',hint:'주황색 점 둘레의 칠한 면을 세어 보세요.'},
-    {tag:'겹쳐 센 것 나누기',hl:'Fv',q:'꼭짓점은 모두 몇 개인가요?',type:'num',ans:R.V,suffix:'개',hint:`꼭짓점 하나를 ${R.deg}번씩 셌어요. ${sides} ÷ ${R.deg}`,ok:`${sides} ÷ ${R.deg} = ${R.V}, 꼭짓점은 ${R.V}개예요.`}]}};
+  const rk=pick(r,['cube','oct','dod','ico']),R=REG.find(x=>x.k===rk),m=SOLIDS[R.k].mk(),fl=REG_FLOOR[R.k].split('+').length;
+  /* [T43] 모서리·꼭짓점 모두 층으로 세요(선생님 수업 방식). 정답(R.E·R.V)과 seed 순서는 예전과 같아요. */
+  const floors={tag:'몇 층 건물인지 찾기',hl:'Fv',q:'꼭짓점을 같은 높이끼리 묶으면 몇 층 건물인가요?',type:'choice',choices:['2층','3층','4층'],ans:fl+'층',hint:'같은 색 꼭짓점이 한 층이에요. 그림을 돌려서 높이를 비교해 보세요.'};
+  if(kind==='edge')return{ptype:'regular:edge',title:`다음 ${R.nm}의 모서리의 개수를 구하시오.`,fig:solidFig(m),finalQ:'모서리는 모두 몇 개인가요?',steps:[floors,
+    {tag:'층 사이 · 층 둘레 모서리 세기',hl:'Fe',q:'위층부터 차례로 층 사이와 층 둘레의 모서리 개수를 쓰면?',type:'choice',mathChoices:true,choices:shuffle(r,[REG_FLOOR_E[R.k],...REG_FLOOR_EX[R.k]]),ans:REG_FLOOR_E[R.k],hint:'같은 색 모서리끼리 세어요. 층과 층을 잇는 모서리, 한 층을 도는 둘레 모서리를 차례로!'},
+    {tag:'모두 더하기',hl:'Fe',q:'모서리는 모두 몇 개인가요?',type:'num',ans:R.E,suffix:'개',hint:regFl(R.k,'E'),ok:`${regFl(R.k,'E')} = ${R.E}, 모서리는 ${R.E}개예요.`}]};
+  return{ptype:'regular:vertex',title:`다음 ${R.nm}의 꼭짓점의 개수를 구하시오.`,fig:solidFig(m),finalQ:'꼭짓점은 모두 몇 개인가요?',steps:[floors,
+    {tag:'층마다 꼭짓점 세기',hl:'Fv',q:'위층부터 차례로 꼭짓점의 개수를 쓰면?',type:'choice',mathChoices:true,choices:shuffle(r,[REG_FLOOR[R.k],...REG_FLOOR_X[R.k]]),ans:REG_FLOOR[R.k],hint:'한 층씩 같은 색 점을 세어 보세요.'},
+    {tag:'층별 개수 더하기',hl:'Fv',q:'꼭짓점은 모두 몇 개인가요?',type:'num',ans:R.V,suffix:'개',hint:regFl(R.k,'V'),ok:`${regFl(R.k,'V')} = ${R.V}, 꼭짓점은 ${R.V}개예요.`}]}};
 const REG_TF={t:['정다면체는 다섯 가지뿐이다.','정육면체의 면은 모두 정사각형이다.','정팔면체의 한 꼭짓점에 모인 면은 4개이다.','정십이면체의 면은 정오각형이다.','정사면체의 모서리는 6개이다.','정이십면체의 꼭짓점은 12개이다.','면의 모양이 정삼각형인 정다면체는 세 가지이다.','정십이면체와 정이십면체는 모서리의 개수가 같다.'],
   f:[['다면체 중에서 각 면이 정다각형이고, 각 꼭짓점에 모인 면의 개수가 같은 다면체를 정다면체라고 한다.','각 면이 모두 "합동인" 정다각형이어야 해요. (교과서 215쪽 1번)'],['정이십면체의 면은 정오각형이다.','정이십면체의 면은 정삼각형이에요.'],['정육면체의 한 꼭짓점에 모인 면은 4개이다.','정육면체는 한 꼭짓점에 면이 3개 모여요.'],['면의 모양이 정육각형인 정다면체도 있다.','정육각형 3개를 모으면 120° × 3 = 360°라서 평평해져요.'],['정팔면체의 꼭짓점은 8개이다.','정팔면체의 꼭짓점은 6개예요. (1 + 4 + 1)'],['정사면체의 면은 정사각형이다.','정사면체의 면은 정삼각형이에요.'],['모든 면이 합동인 정삼각형이면 항상 정다면체이다.','삼각쌍뿔처럼 꼭짓점마다 모인 면의 개수가 다르면 정다면체가 아니에요.']]};
 const CIRC=['①','②','③','④','⑤'];
@@ -891,11 +894,11 @@ GEN.regular=seed=>{const r=mulberry(seed);const k=pick(r,['step','step','cond','
   if(k==='count'){const R=pick(r,REG),part=pick(r,['F','E','V']),m=SOLIDS[R.k].mk();
     return{ptype:'regular:count',title:`다음 그림의 정다면체의 ${PART[part]}의 개수를 구하시오.`,fig:solidFig(m),finalQ:`${josa(PART[part],'은','는')} 모두 몇 개인가요?`,steps:[
       {tag:'그림 보고 이름 찾기',q:'이 정다면체의 이름은?',type:'choice',choices:REG.map(x=>x.nm),ans:R.nm,hint:'면의 모양과 한 꼭짓점에 모인 면의 개수를 보세요.'},
-      {tag:'개수 구하기',q:`${josa(PART[part],'은','는')} 모두 몇 개인가요?`,type:'num',ans:R[part],suffix:'개',hint:part==='F'?`이름에 답이 있어요.`:part==='E'?`면 ${R.F} × 변 ${R.n} ÷ 2`:`면 ${R.F} × 꼭짓점 ${R.n} ÷ ${R.deg}`,ok:`${R.nm}의 ${josa(PART[part],'은','는')} ${R[part]}개예요.`}]}}
+      {tag:'개수 구하기',q:`${josa(PART[part],'은','는')} 모두 몇 개인가요?`,type:'num',ans:R[part],suffix:'개',hint:part==='F'?`이름에 답이 있어요.`:`층으로 세어요: ${regFl(R.k,part)}`,ok:`${R.nm}의 ${josa(PART[part],'은','는')} ${R[part]}개예요.`}]}}
   if(k==='sum'){const[A,B]=shuffle(r,REG.slice()).slice(0,2),pa=pick(r,['F','E','V']),pb=pick(r,['F','E','V']);
     return{ptype:'regular:sum',title:`${A.nm}의 ${PART[pa]}의 개수를 <span class="math">a</span>, ${B.nm}의 ${PART[pb]}의 개수를 <span class="math">b</span>라 할 때, <span class="rm"><i>a</i> + <i>b</i></span>의 값을 구하시오.`,fig:null,finalQ:'<span class="rm"><i>a</i> + <i>b</i></span>의 값은?',steps:[
-      {tag:'첫째 정다면체의 개수',q:`<span class="math">a</span>: ${A.nm}의 ${josa(PART[pa],'은','는')} 몇 개인가요?`,type:'num',ans:A[pa],suffix:'개',hint:pa==='F'?'이름에 답이 있어요.':`면 ${A.F} × ${A.n} ÷ ${pa==='E'?2:A.deg}`},
-      {tag:'둘째 정다면체의 개수',q:`<span class="math">b</span>: ${B.nm}의 ${josa(PART[pb],'은','는')} 몇 개인가요?`,type:'num',ans:B[pb],suffix:'개',hint:pb==='F'?'이름에 답이 있어요.':`면 ${B.F} × ${B.n} ÷ ${pb==='E'?2:B.deg}`},
+      {tag:'첫째 정다면체의 개수',q:`<span class="math">a</span>: ${A.nm}의 ${josa(PART[pa],'은','는')} 몇 개인가요?`,type:'num',ans:A[pa],suffix:'개',hint:pa==='F'?'이름에 답이 있어요.':`층으로 세어요: ${regFl(A.k,pa)}`},
+      {tag:'둘째 정다면체의 개수',q:`<span class="math">b</span>: ${B.nm}의 ${josa(PART[pb],'은','는')} 몇 개인가요?`,type:'num',ans:B[pb],suffix:'개',hint:pb==='F'?'이름에 답이 있어요.':`층으로 세어요: ${regFl(B.k,pb)}`},
       {tag:'더하기',q:'<span class="rm"><i>a</i> + <i>b</i></span>의 값은?',type:'num',ans:A[pa]+B[pb],hint:`${A[pa]} + ${B[pb]}`}]}}
   const[fs,why]=pick(r,REG_TF.f),ts=shuffle(r,REG_TF.t.slice()).slice(0,4),all=shuffle(r,[...ts,fs]),lab=all.map((x,i)=>CIRC[i]+' '+x);
   return{ptype:'regular:tf',title:'다음 중 정다면체에 대한 설명으로 <u>옳지 않은</u> 것은?',fig:null,steps:[{q:'옳지 않은 것을 고르세요.',type:'choice',choices:lab,ans:lab[all.indexOf(fs)],hint:'개념 카드의 표와 "왜 다섯 가지뿐일까?"를 떠올려 보세요.',ok:why}]}};
@@ -1168,7 +1171,7 @@ GEN.regularCondCount=seed=>{const r=mulberry(seed);const R=pick(r,REG),part=pick
     figAfter:{at:2,fig:solidFig(SOLIDS[R.k].mk()),hl:part==='E'?'E':'Fv',cap:R.nm},finalQ:`${josa(PART[part],'은','는')} 모두 몇 개인가요?`,steps:[
     {tag:'면 모양으로 후보 고르기',q:`면이 ${R.face}인 정다면체는 모두 몇 가지인가요?`,type:'num',ans:same,suffix:'가지',hint:'정삼각형: 정사면체 · 정팔면체 · 정이십면체 / 정사각형: 정육면체 / 정오각형: 정십이면체'},
     {tag:'정다면체 이름 찾기',q:'조건을 만족하는 정다면체는?',type:'choice',choices:REG.map(x=>x.nm),ans:R.nm,hint:`면이 ${R.face}이고 한 꼭짓점에 면이 ${R.deg}개 모이는 것`},
-    {tag:'개수 구하기',q:`${R.nm}의 ${josa(PART[part],'은','는')} 몇 개인가요?`,type:'num',ans:R[part],suffix:'개',hint:part==='E'?`면 ${R.F}개 × 변 ${R.n}개 ÷ 2`:`면 ${R.F}개 × 꼭짓점 ${R.n}개 ÷ ${R.deg}`,ok:`${R.nm}의 ${josa(PART[part],'은','는')} ${R[part]}개예요.`}]}};
+    {tag:'개수 구하기',q:`${R.nm}의 ${josa(PART[part],'은','는')} 몇 개인가요?`,type:'num',ans:R[part],suffix:'개',hint:`층으로 세어요: ${regFl(R.k,part)}`,ok:`${R.nm}의 ${josa(PART[part],'은','는')} ${R[part]}개예요.`}]}};
 /* 섞은 생성기: 같이 풀기(…Step2) · 혼자 풀기(…2) */
 GEN.polyStep2=seed=>{const r=mulberry(seed),k=pick(r,['all3','all3','faces','old']);return k==='all3'?GEN.polyAll3(seed+1):k==='faces'?GEN.polyFaces(seed+2):GEN.polyStep(seed+3)};
 GEN.poly2=seed=>{const r=mulberry(seed),k=pick(r,['all3','faces','faces','old','old']);return k==='all3'?GEN.polyAll3(seed+1):k==='faces'?GEN.polyFaces(seed+2):GEN.poly(seed+3)};
@@ -1197,7 +1200,7 @@ const PTYPES={
   regular:[
     {no:1,nm:'정다면체가 아닌 이유',tb:'214쪽 4번',key:'두 조건 ① 모든 면이 <b>합동인 정다각형</b> ② 각 꼭짓점에 모인 <b>면의 개수가 같다</b> — 하나라도 어기면 정다면체가 아니에요.',pt:['regular:why'],src:['regularWhy']},
     {no:2,nm:'조건으로 정다면체 찾기',tb:'213쪽 · 240쪽 2번',key:'<b>면의 모양</b>으로 후보를 줄이고, <b>한 꼭짓점에 모인 면의 개수</b>로 하나를 고르기',pt:['regular:cond','regular:condcount'],src:['regularCondCount','regular']},
-    {no:3,nm:'꼭짓점 · 모서리 · 면의 개수',tb:'214쪽 3번',key:'모서리 = 면 × 변 ÷ <b>2</b> · 꼭짓점 = 면 × 꼭짓점 ÷ <b>모인 면의 개수</b> (층으로 세어도 돼요)',pt:['regular:count','regular:edge','regular:vertex','regular:floor','regular:sum'],src:['regularStep','regular']},
+    {no:3,nm:'꼭짓점 · 모서리 · 면의 개수',tb:'214쪽 3번',key:'면: 이름에 있어요 · 꼭짓점: <b>층마다</b> 세어 더하기 · 모서리: <b>층 사이 + 층 둘레</b>를 위층부터',pt:['regular:count','regular:edge','regular:vertex','regular:floor','regular:sum'],src:['regularStep','regular']},
     {no:4,nm:'성질 ○× · 옳지 않은 것',tb:'215쪽 1번',key:'다섯 가지의 <b>면 모양</b>과 <b>한 꼭짓점에 모인 면의 개수</b>를 표로 떠올려 하나씩 확인해요.',pt:['regular:tf'],src:['regular']}]};
 const tyKey=(lid,no)=>`ty_${lid}_${no}`;
 const tyBanner=(T_,open)=>`<div class="tyb"><span class="tyn">유형 ${T_.no}</span><b>${T_.nm}</b><span class="tytb">${/쪽/.test(T_.tb)?'교과서 ':''}${T_.tb}</span></div>`+
@@ -1270,7 +1273,7 @@ PTYPES.poly=[
 PTYPES.poly.forEach(T_=>{const g=tyKey('poly',T_.no);
   GEN[g]=seed=>{const src=T_.src[seed%T_.src.length];for(let t=0;t<400;t++){const P=GEN[src](seed*31+t*7919);if(T_.pt.includes(P.ptype))return P}return GEN[T_.src[0]](seed)};LESSON_OF[g]='poly'});
 /* ───────── 2차시 「정다면체」 유형 5가지 (풀이 절차로 나눔) ─────────
-   ① 정다면체인지 가려내기 ② 그림 · 조건으로 이름 찾기 ③ 개수 구하기(층 · 겹쳐 세기) ④ 한 꼭짓점에 모을 수 있을까 ⑤ 성질 ○×
+   ① 정다면체인지 가려내기 ② 그림 · 조건으로 이름 찾기 ③ 개수 구하기(층으로 세기) ④ 한 꼭짓점에 모을 수 있을까 ⑤ 성질 ○×
    수업 시연(정다면체 2차시)과 같은 흐름: 정다각형 → 두 조건(직육면체 ✕ · 삼각쌍뿔 ✕) → 다섯 가지 → 층으로 세기 → 각의 합 */
 const cuboid=()=>prism([[-1.25,-0.7],[1.25,-0.7],[1.25,0.7],[-1.25,0.7]],1.0);
 const triPrism=()=>prism(regPoly(3,1.05),1.05*Math.sqrt(3));
@@ -1321,7 +1324,7 @@ GEN.rgTF=seed=>{const r=mulberry(seed),[fs,why]=pick(r,REG_TF.f),ts=shuffle(r,RE
 PTYPES.regular=[
   {no:1,nm:'정다면체인지 가려내기',tb:'213쪽 · 214쪽 4번',key:'① 면이 모두 <b>합동인 정다각형</b>인가? ② <b>꼭짓점마다</b> 모인 면의 개수가 같은가? 둘 다 예 → 정다면체 O',pt:['regular:is','regular:why'],src:['rgIs','rgIs','regularWhy']},
   {no:2,nm:'이름 찾기',tb:'213쪽 · 240쪽 2번',key:'<b>면의 모양</b>으로 후보를 줄이고, <b>한 꼭짓점에 모인 면의 개수</b>로 하나를 골라요.',pt:['regular:name','regular:cond'],src:['rgName','rgName','regular']},
-  {no:3,nm:'꼭짓점 · 모서리 · 면의 개수',tb:'214쪽 3번',key:'면: 이름에 있어요 · 꼭짓점: <b>층마다</b> 세어 더하기 · 모서리 = 면 × 변 ÷ <b>2</b>',pt:['regular:floor','regular:edge','regular:vertex','regular:count','regular:condcount','regular:sum'],src:['regularStep','regularStep','regularCondCount','regular']},
+  {no:3,nm:'꼭짓점 · 모서리 · 면의 개수',tb:'214쪽 3번',key:'면: 이름에 있어요 · 꼭짓점: <b>층마다</b> 세어 더하기 · 모서리: <b>층 사이 + 층 둘레</b>를 위층부터',pt:['regular:floor','regular:edge','regular:vertex','regular:count','regular:condcount','regular:sum'],src:['regularStep','regularStep','regularCondCount','regular']},
   {no:4,nm:'한 꼭짓점에 모을 수 있을까?',tb:'왜 다섯 가지뿐일까',key:'한 꼭짓점에 모인 각의 합이 <b>360°보다 작아야</b> 접어 올려 입체가 돼요.',pt:['regular:fan'],src:['rgFan']},
   {no:5,nm:'성질 ○× · 옳지 않은 것',tb:'215쪽 1번',key:'설명을 <b>하나씩 ○ ×</b>로 확인하고, ×인 것을 골라요. 면 모양 · 모인 면 · 개수 표를 떠올려요.',pt:['regular:tf'],src:['rgTF']}];
 PTYPES.regular.forEach(T_=>{const g=tyKey('regular',T_.no);

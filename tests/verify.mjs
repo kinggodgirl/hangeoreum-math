@@ -768,6 +768,15 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
   const eng = fs.readFileSync(path.join(root, 'js/02t-track-engine.js'), 'utf8');
   if (!eng.includes('slot._figK')) errors.push('[T42] 부엉 쌤 박자 그림 바꾸기 훅 없음');
 }
+// [T43] 정다면체 개수 문제는 층으로 세기(겹쳐 세기 ÷ 없음), 정답은 그대로
+{
+  const r43 = JSON.parse(vm.runInContext(`(()=>{const E=[];for(let sd=1;sd<=200;sd++){for(const g of ['regularStep','regular','regularCondCount']){const P=GEN[g](sd);if(!P||!/^regular:(edge|vertex|floor|count|sum|condcount)$/.test(P.ptype))continue;
+      const t=JSON.stringify(P.steps.map(x=>[x.q,x.hint,x.tag,x.ok]));if(/÷|겹쳐/.test(t))E.push(g+':'+P.ptype);
+      const last=P.steps[P.steps.length-1];if(P.ptype==='regular:edge'||P.ptype==='regular:vertex'){const R=REG.find(x=>P.title.includes(x.nm));if(!R||last.ans!==(P.ptype==='regular:edge'?R.E:R.V))E.push('답 '+P.ptype)}}}
+    return JSON.stringify({E:[...new Set(E)]})})()`, sandbox));
+  if (r43.E.length) errors.push('[T43] ' + r43.E.join(', '));
+  if (/÷/.test(fs.readFileSync(path.join(root, 'js/boss-bank.js'), 'utf8').split('\n').filter(l => /정십이면체/.test(l)).join(''))) errors.push('[T43] 보스 정다면체 풀이에 ÷');
+}
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
   process.exit(1);
