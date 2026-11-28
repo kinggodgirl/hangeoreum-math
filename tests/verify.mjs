@@ -435,9 +435,9 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
     const dueTom = HG_TRACKS.dueTypeList(t1);
     if (!dueTom.some(x => x.lid === 'sector' && x.tyNo === 1)) errors.push('[복습 추천] should be due next day');
     const q1 = HG_TRACKS.buildDailyRevQueue(t1);
-    if (q1.length !== 3) errors.push(`[복습 추천] single box-1 type should give 3 problems, got ${q1.length}`);
+    if (q1.length !== 1) errors.push(`[T37 복습 추천] one type should give 1 problem, got ${q1.length}`);
     HG_TRACKS.submitDailyRevType('sector', 1, true, t1);
-    if (!DB.sector.rev.ty1.ok || DB.sector.rev.ty1.box !== 2) errors.push('[복습 추천] pass did not promote/stamp ok');
+    if (!DB.sector.rev.ty1.ok || DB.sector.rev.ty1.due) errors.push('[T37 복습 추천] pass did not stamp ok / clear due');
     viewDailyRev();
     if (prevCent) DB.cent = prevCent; else delete DB.cent;
   }
@@ -573,6 +573,48 @@ for (const w of ['원의 둘레', '원의 넓이', '면', '모서리', '꼭짓�
 // [T30] 보스전 차시 그림 문제: 해결한 차시에서 나오고, 정답을 넣으면 맞다고 채점돼요
 { const bm = vm.runInContext('(()=>{const keep=JSON.stringify(DB);["cent","sector","cone","coord","poly"].forEach(id=>{DB[id]={trackDone:2,track:(id.length%3)+1}});let n=0,ok=0,bad=[];for(let i=0;i<120;i++){const q=BOSS_MIX.pick(i%2?"hard":"normal",{units:[""],qi:0,used:new Set()});if(!q)continue;n++;const v=q.type==="choice"?q.ans:q.type==="pi"?(q.ans===1?"":q.ans)+"π":(q.type==="sn"&&q.ans>0?"+":"")+q.ans;if(check(q,String(v))===true&&q.mix&&q.mix.lid&&LESSONS.find(l=>l.id===q.mix.lid))ok++;else bad.push(q.mix&&q.mix.gen)}Object.keys(DB).forEach(k=>delete DB[k]);Object.assign(DB,JSON.parse(keep));return[n,ok,bad.slice(0,3).join()]})()', sandbox);
   if (!(bm[0] > 20 && bm[0] === bm[1])) errors.push('T30 BOSS_MIX pick/check mismatch ' + bm.join('/')); }
+
+// [T37] 복습 추천(하루 5 · 유형당 1 · 어제 익힌 유형 먼저 · 다시 확인) · 복습 노트 모음 · 보스 오래된 차시 1/3 · 교사 도장
+{ const r37 = vm.runInContext(`(()=>{const keep=JSON.stringify(DB),E=[];const T=HG_TRACKS,t=today(),t1=addDays(t,1),y=addDays(t,-1);
+  Object.keys(DB).forEach(k=>delete DB[k]);
+  const ids=LESSONS.filter(l=>l.ready&&T.specs[l.id]&&(PTYPES[l.id]||[]).length>=2).map(l=>l.id);
+  const a=ids[0],b=ids[1],c=ids[2];
+  DB[a]={rev:{ty1:{due:t,ok:'',err:1,d:addDays(t,-3)},ty2:{due:t,ok:'',err:0,d:addDays(t,-4)}}};
+  DB[b]={rev:{ty1:{due:t,ok:'',err:0,d:y},ty2:{due:t,ok:'2026-01-01',err:0,d:y}}};
+  DB[c]={rev:{ty1:{due:t,ok:'',err:0,d:addDays(t,-2)},ty2:{due:t,ok:'',err:0,d:addDays(t,-2)}}};
+  const q=T.buildDailyRevQueue(t);
+  if(q.length!==5)E.push('queue '+q.length);
+  if(new Set(q.map(x=>x.lid+x.tyNo)).size!==q.length)E.push('dup type');
+  if(!(q[0].lid===b&&q[0].tyNo===1))E.push('yesterday first '+q[0].lid+q[0].tyNo);
+  if(q.some(x=>x.lid===b&&x.tyNo===2))E.push('mastered type should not come back');
+  if(q[1].lid!==a||q[1].tyNo!==1)E.push('err next '+q[1].lid+q[1].tyNo);
+  T.submitDailyRevType(b,2,false,t);
+  if(DB[b].rev.ty2.re!==1||T.typeStampState(b,2).cls!=='re')E.push('fail on mastered -> re');
+  if(DB[b].rev.ty2.due!==t1)E.push('re due tomorrow');
+  if(!T.dueTypeList(t1).some(x=>x.lid===b&&x.tyNo===2))E.push('re should be due');
+  T.submitDailyRevType(b,2,true,t1);
+  if(DB[b].rev.ty2.re||T.typeStampState(b,2).cls!=='ok')E.push('pass removes re');
+  T.scheduleTypeRev(b,2,true,true);
+  if(DB[b].rev.ty2.re!==1)E.push('final miss on mastered -> re');
+  DB[b].rev.ty2.re=undefined;delete DB[b].rev.ty2.re;
+  BOSS_MIX.miss({mix:{kind:'gen',lid:b,key:'ty2',tyNo:2}},false);
+  if(DB[b].rev.ty2.re!==1)E.push('boss miss on mastered -> re');
+  const info=lessonProgressInfo(b);if(info.recheck!==1||info.mastered!==0)E.push('progress recheck count');
+  const ds=dataSummary(JSON.parse(JSON.stringify(DB)));if(ds.recheck!==1)E.push('teacher recheck '+ds.recheck);
+  /* 복습 노트: 모음에만, 일정·졸업 없음 */
+  const g0=tyKey(a,1);addReview(g0,5,a);addReview(g0,5,a);addReview(tyKey(b,1),6,b);
+  if(DB._rev.length!==2)E.push('addReview dedupe');if(DB._rev.some(x=>'due' in x||'stage' in x))E.push('addReview should not schedule');
+  if(dueReviews().length!==0)E.push('dueReviews should be empty');
+  DB._rev.push({g:g0,seed:9,lid:a,due:'2020-01-01',stage:1});reviewResult(DB._rev[2],true);
+  if(DB._rev.length!==3||!DB._rev[2].redo)E.push('reviewResult should not graduate');
+  viewReview();const h=app.innerHTML;if((h.match(/rv-grp-h/g)||[]).length!==2||!h.includes('다시 풀어 보기'))E.push('viewReview groups');
+  /* 보스: 오래된 차시 몫 1/3 */
+  Object.keys(DB).forEach(k=>delete DB[k]);
+  const solvedIds=ids.slice(0,6);solvedIds.forEach((id,i)=>{DB[id]={trackDone:2,track:2,tday:i<2?addDays(t,-20):t}});
+  let st=0,n=0;for(let r=0;r<6;r++){const G={units:[''],qi:0,used:new Set()};for(let i=0;i<40;i++){const q0=BOSS_MIX.pick('normal',G);if(q0&&q0.mix&&q0.mix.kind==='gen'){n++;if(q0.mix.stale)st++}}}
+  if(!(n>30&&st/n>0.25&&st/n<0.45))E.push('stale share '+st+'/'+n);
+  Object.keys(DB).forEach(k=>delete DB[k]);Object.assign(DB,JSON.parse(keep));return E})()`, sandbox);
+  if (r37.length) errors.push('T37 review/stamp/boss: ' + r37.join(', ')); }
 
 if (errors.length) {
   console.error('✗ Verification failed:', errors);
