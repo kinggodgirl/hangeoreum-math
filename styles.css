@@ -1148,3 +1148,7 @@ body.t-dopen{overflow:hidden}
 .t-goals b{font-size:16px;display:flex;flex-wrap:wrap;gap:6px}
 /* 휴대폰 첫 화면: 처음 온 학생도 나의 길과 길잡이가 바로 보이게 그림을 작게 */
 @media (max-width:760px){.hero:not(.compact) .hero-fig{max-height:150px;max-width:150px;margin:0 auto}.hero:not(.compact) .hero-note{display:none}.hero:not(.compact){margin-bottom:20px;gap:12px}}
+/* [T36] 기초 연산 · 오늘의 계산: 차시로 돌아가기 줄 · ⭐ 미리 도전 · 처음 보는 칸 */
+.calc-back{display:inline-block;margin:0 0 10px;padding:6px 12px;border-radius:999px;background:#eef3fc;color:#1f4fa0;font-weight:700;font-size:15px;text-decoration:none}
+.calc-ret{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#eef8f0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:15px}.calc-ret .btn{margin-left:auto}
+.dflash.pre{color:#6b4a00}.drill-focus small{font-size:13px}.drill-way .wayBody{margin-top:8px}
